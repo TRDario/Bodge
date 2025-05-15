@@ -1,0 +1,42 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug",
+			"program": "${workspaceFolder}/build/Debug/Bodge",
+			"args": [
+				"--debug",
+				"--userdir",
+				"${workspaceFolder}/userdir",
+				"--datadir",
+				"${workspaceFolder}/data"
+			],
+			"cwd": "${workspaceFolder}",
+			"env": {
+				"SDL_VIDEODRIVER": "wayland"
+			}
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Release",
+			"program": "${workspaceFolder}/build/Release/Bodge",
+			"args": [
+				"--debug",
+				"--savedir",
+				"${workspaceFolder}/userdir",
+				"--datadir",
+				"${workspaceFolder}/data"
+			],
+			"cwd": "${workspaceFolder}",
+			"env": {
+				"SDL_VIDEODRIVER": "wayland"
+			}
+		}
+	]
+}
