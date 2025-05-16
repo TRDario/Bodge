@@ -1,9 +1,12 @@
 #pragma once
 #include "blur_renderer.hpp"
 #include "settings.hpp"
+#include "tooltip_renderer.hpp"
 
 // Standard 2D renderer layers.
 enum layer {
+	// Player used to draw tooltips.
+	TOOLTIP,
 	// Layer used to draw the cursor.
 	CURSOR
 };
@@ -40,6 +43,8 @@ struct engine {
 	static float render_scale() noexcept;
 	// Gets the screen rendering target.
 	static const tr::render_target& screen() noexcept;
+	// Gets the tooltip renderer.
+	static tooltip_renderer& tooltip_renderer() noexcept;
 	// Gets the vertex scratch space buffer.
 	static std::vector<tr::clrvtx2>& vertex_buffer() noexcept;
 };

@@ -165,11 +165,46 @@ font font_manager_t::determine_font(std::string_view text) noexcept
 	}
 }
 
-glm::vec2 font_manager_t::text_size(std::string_view text, font font, float size, int outline, int max_width)
+glm::vec2 font_manager_t::text_size(std::string_view text, font font, float size, int outline, int max_w)
 {
 	outline = std::max(static_cast<int>(outline * engine::render_scale()), 1);
 
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	return static_cast<glm::vec2>(font_ref.text_size(text, max_width, tr::ttf_style::NORMAL, outline)) / engine::render_scale();
+	return static_cast<glm::vec2>(font_ref.text_size(text, max_w, tr::ttf_style::NORMAL, outline)) / engine::render_scale();
+}
+
+tr::bitmap font_manager_t::render_text(std::string_view text, font font, float size, int outline, int max_w, tr::halign align)
+{
+	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
+	if (max_w != tr::UNLIMITED_WIDTH) {
+		max_w -= 2 * scaled_outline;
+	}
+
+	auto& font_ref{find_font(font)};
+	font_ref.resize(size * engine::render_scale());
+	tr::bitmap render{font_ref.draw(text, max_w + 2 * scaled_outline, align, {127, 127, 127, 127}, tr::ttf_style::NORMAL, scaled_outline)};
+	const tr::bitmap fill{font_ref.draw(text, max_w, align, {255, 255, 255, 255})};
+	render.blit(glm::ivec2{scaled_outline}, fill.sub({{}, render.size() - scaled_outline * 2}));
+	return render;
+}
+
+tr::bitmap font_manager_t::render_gradient_text(std::string_view text, font font, float size, int outline, int max_w, tr::halign align)
+{
+	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
+	if (max_w != tr::UNLIMITED_WIDTH) {
+		max_w -= 2 * scaled_outline;
+	}
+
+	auto& font_ref{find_font(font)};
+	font_ref.resize(size * engine::render_scale());
+	tr::bitmap render{font_ref.draw(text, max_w + 2 * scaled_outline, align, {0, 0, 0, 127}, tr::ttf_style::NORMAL, scaled_outline)};
+	tr::bitmap fill{font_ref.draw(text, max_w, align, {255, 255, 255, 255})};
+	for (auto it = fill.begin(); it != fill.end(); ++it) {
+		const tr::rgba8 value{*it};
+		std::uint8_t shade{static_cast<std::uint8_t>(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};
+		*it = tr::rgba8{shade, shade, shade, value.a};
+	}
+	render.blit(glm::ivec2{outline}, fill.sub({{}, render.size() - 2 * outline}));
+	return render;
 }

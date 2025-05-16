@@ -104,6 +104,8 @@ struct engine_data {
 	tr::layered_2d_renderer layers;
 	// Renderer for drawing blurred and desaturated images.
 	blur_renderer blur;
+	// Tooltip renderer.
+	tooltip_renderer tooltip;
 	// Shared scratch space for one-off vertex data.
 	std::vector<tr::clrvtx2> clrvtx2_buffer;
 	// Whether the screen should be redrawn. If above 1, ticks will be paused to catch up.
@@ -250,6 +252,11 @@ float engine::render_scale() noexcept
 const tr::render_target& engine::screen() noexcept
 {
 	return engine_data->screen;
+}
+
+tooltip_renderer& engine::tooltip_renderer() noexcept
+{
+	return engine_data->tooltip;
 }
 
 std::vector<tr::clrvtx2>& engine::vertex_buffer() noexcept

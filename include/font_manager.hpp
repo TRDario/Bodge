@@ -37,7 +37,13 @@ class font_manager_t {
 	// Tries to determine if a string can be drawn with the language font, or if it should be delegated to the fallback font.
 	font determine_font(std::string_view text) noexcept;
 	// Gets the size of a text string in window coordinates.
-	glm::vec2 text_size(std::string_view text, font font, float size, int outline, int max_width = tr::UNLIMITED_WIDTH);
+	glm::vec2 text_size(std::string_view text, font font, float size, int outline, int max_w = tr::UNLIMITED_WIDTH);
+	// Renders text.
+	tr::bitmap render_text(std::string_view text, font font, float size, int outline, int max_w = tr::UNLIMITED_WIDTH,
+						   tr::halign align = tr::halign::LEFT);
+	// Renders gradient text.
+	tr::bitmap render_gradient_text(std::string_view text, font font, float size, int outline, int max_w = tr::UNLIMITED_WIDTH,
+									tr::halign align = tr::halign::LEFT);
 
   private:
 	// Structure containing the standard fonts.
@@ -78,6 +84,8 @@ class font_manager_t {
 	optional_font _language_font;
 	// Optional additional language name preview font.
 	optional_font _language_preview_font;
+
+	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Turns a font name into an actual font reference.
 	tr::ttfont& find_font(font font) noexcept;
