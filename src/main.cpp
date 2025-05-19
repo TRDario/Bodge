@@ -15,6 +15,7 @@ int main(int argc, const char** argv)
 		font_manager.load_fonts();
 		audio::initialize();
 		engine::initialize();
+		engine::set_main_menu_state();
 		while (engine::active()) {
 			engine::handle_events();
 			engine::redraw_if_needed();

@@ -6,7 +6,8 @@ find_package(tr REQUIRED COMPONENTS graphics system audio)
 add_executable(
     Bodge
     src/main.cpp
-    src/audio.cpp src/blur_renderer.cpp src/engine.cpp src/font_manager.cpp src/tooltip_renderer.cpp
+    src/audio.cpp src/blur_renderer.cpp src/engine.cpp src/font_manager.cpp src/tooltip.cpp
+    src/ui/interpolated.cpp src/ui/non_text_widgets.cpp src/ui/ui_manager.cpp src/ui/ui_object.cpp
     src/gamemode.cpp src/global.cpp src/replay.cpp src/score.cpp src/settings.cpp
 )
 target_compile_features(Bodge PUBLIC cxx_std_23)

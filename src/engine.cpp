@@ -1,5 +1,7 @@
 #include "../include/engine.hpp"
 #include "../include/settings.hpp"
+#include "../include/ui/non_text_widgets.hpp"
+#include "../include/ui/ui_manager.hpp"
 
 using namespace std::chrono_literals;
 
@@ -16,6 +18,8 @@ tr::layered_2d_renderer create_layered_renderer()
 	const glm::mat4 MAT{tr::ortho(glm::vec2{1000.0f})};
 
 	tr::layered_2d_renderer renderer;
+	renderer.add_color_layer(layer::UI1, MAT);
+	renderer.add_color_layer(layer::TOOLTIP, MAT);
 	renderer.add_color_layer(layer::CURSOR, MAT);
 	return renderer;
 }
@@ -104,8 +108,8 @@ struct engine_data {
 	tr::layered_2d_renderer layers;
 	// Renderer for drawing blurred and desaturated images.
 	blur_renderer blur;
-	// Tooltip renderer.
-	tooltip_renderer tooltip;
+	// Tooltip manager.
+	tooltip tooltip;
 	// Shared scratch space for one-off vertex data.
 	std::vector<tr::clrvtx2> clrvtx2_buffer;
 	// Whether the screen should be redrawn. If above 1, ticks will be paused to catch up.
@@ -145,6 +149,45 @@ void engine::initialize()
 		tr::debug_renderer::initialize();
 	}
 	LOG(tr::severity::INFO, "Initialized the engine.");
+}
+
+void engine::set_main_menu_state()
+{
+	struct dummy_state : tr::state {
+		ui_manager ui;
+		std::uint16_t test{0};
+
+		dummy_state()
+		{
+			auto& a{ui.emplace<color_preview_widget>(glm::vec2{500}, tr::align::CENTER, std::ref(test))};
+			a.unhide(1_s);
+		}
+
+		std::uint32_t type() const noexcept
+		{
+			return 0;
+		}
+
+		std::unique_ptr<state> handle_event(const tr::event& event)
+		{
+			ui.handle_event(event);
+			return nullptr;
+		}
+
+		std::unique_ptr<state> update(tr::duration)
+		{
+			ui.update();
+			test = (test + 1) % 360;
+			return nullptr;
+		}
+
+		void draw()
+		{
+			ui.add_to_renderer();
+			engine::layered_renderer().draw(engine::screen());
+		}
+	};
+	engine_data->state.state = std::make_unique<dummy_state>();
 }
 
 void engine::apply_settings(const settings_t& old_settings)
@@ -254,7 +297,7 @@ const tr::render_target& engine::screen() noexcept
 	return engine_data->screen;
 }
 
-tooltip_renderer& engine::tooltip_renderer() noexcept
+tooltip& engine::tooltip() noexcept
 {
 	return engine_data->tooltip;
 }

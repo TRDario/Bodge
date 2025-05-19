@@ -1,10 +1,12 @@
 #pragma once
 #include "blur_renderer.hpp"
 #include "settings.hpp"
-#include "tooltip_renderer.hpp"
+#include "tooltip.hpp"
 
 // Standard 2D renderer layers.
 enum layer {
+	// First UI layer.
+	UI1,
 	// Player used to draw tooltips.
 	TOOLTIP,
 	// Layer used to draw the cursor.
@@ -17,6 +19,8 @@ struct engine {
 
 	// Initializes the engine.
 	static void initialize();
+	// Sets the game state to the main menu state.
+	static void set_main_menu_state();
 	// Applies new settings to the engine.
 	static void apply_settings(const settings_t& old_settings);
 	// Shuts the engine down.
@@ -43,8 +47,8 @@ struct engine {
 	static float render_scale() noexcept;
 	// Gets the screen rendering target.
 	static const tr::render_target& screen() noexcept;
-	// Gets the tooltip renderer.
-	static tooltip_renderer& tooltip_renderer() noexcept;
+	// Gets the tooltip manager.
+	static tooltip& tooltip() noexcept;
 	// Gets the vertex scratch space buffer.
 	static std::vector<tr::clrvtx2>& vertex_buffer() noexcept;
 };

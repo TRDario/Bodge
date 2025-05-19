@@ -1,18 +1,18 @@
 #pragma once
 #include "global.hpp"
 
-// Tooltip renderer.
-class tooltip_renderer {
+// Tooltip manager.
+class tooltip {
   public:
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
-	// Creates the tooltip renderer.
-	tooltip_renderer() = default;
+	// Creates the tooltip.
+	tooltip() = default;
 
 	///////////////////////////////////////////////////////////// OPERATIONS //////////////////////////////////////////////////////////////
 
-	// Draws a tooltip to the screen.
-	void draw(std::string_view text);
+	// Adds the tooltip to the renderer.
+	void add_to_renderer(std::string_view text);
 
   private:
 	// Texture unit used for tooltip rendering.

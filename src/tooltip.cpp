@@ -1,25 +1,25 @@
-#include "../include/tooltip_renderer.hpp"
 #include "../include/engine.hpp"
 #include "../include/font_manager.hpp"
+#include "../include/tooltip.hpp"
 
-void tooltip_renderer::render(std::string_view text)
+void tooltip::render(std::string_view text)
 {
-	const tr::bitmap render{font_manager.render_text(text, font_manager.determine_font(text), 18 * engine::render_scale(), 0)};
+	const tr::bitmap render{font_manager.render_text(text, font_manager.determine_font(text), 24 * engine::render_scale(), 0, 800)};
 	_last_text = text;
 	_last_size = render.size();
 
 	if (_texture.size().x < _last_size.x || _texture.size().y < _last_size.y) {
 		std::exchange(_texture, {{std::bit_ceil<std::uint32_t>(_last_size.x), std::bit_ceil<std::uint32_t>(_last_size.y)}});
-		engine::layered_renderer().set_layer_texture(layer::TOOLTIP, _texture);
 		_texture.set_region({}, render);
 	}
 	else {
 		_texture.clear({});
 		_texture.set_region({}, render);
 	}
+	engine::layered_renderer().set_layer_texture(layer::TOOLTIP, _texture);
 }
 
-void tooltip_renderer::draw(std::string_view text)
+void tooltip::add_to_renderer(std::string_view text)
 {
 	if (_last_text != text) {
 		render(text);
