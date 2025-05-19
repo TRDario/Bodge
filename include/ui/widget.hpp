@@ -44,6 +44,8 @@ class widget {
 
 	// Updates the widget.
 	virtual void update();
+	// Instructs the widget to release its graphical resources.
+	virtual void release_graphical_resources() noexcept;
 	// Adds the widget to the renderer.
 	virtual void add_to_renderer() = 0;
 

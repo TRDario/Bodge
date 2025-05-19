@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/ui/non_text_widgets.hpp"
+#include "../../include/engine.hpp"
 
 color_preview_widget::color_preview_widget(glm::vec2 pos, tr::align alignment, std::uint16_t& hue_ref) noexcept
 	: widget{{}, pos, alignment}, _hue_ref{hue_ref}

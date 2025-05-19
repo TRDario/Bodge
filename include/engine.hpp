@@ -34,9 +34,13 @@ struct engine {
 	static void handle_events();
 	// Gets the normalized mouse position.
 	static glm::vec2 mouse_pos() noexcept;
+	// Converts window coordinates to gamespace coordinates.
+	static glm::vec2 to_game_coords(glm::vec2 window_coords) noexcept;
 
 	////////////////////////////////////////////////////////////// GRAPHICS ///////////////////////////////////////////////////////////////
 
+	// Gets the batched renderer.
+	static tr::batched_2d_renderer& batched_renderer() noexcept;
 	// Gets the blur renderer.
 	static blur_renderer& blur_renderer() noexcept;
 	// Gets the layered renderer.

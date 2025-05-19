@@ -15,12 +15,10 @@ constexpr tr::dsecs MAX_UPDATE_TIME{1.0s / SECOND_TICKS};
 // Creates the layered renderer.
 tr::layered_2d_renderer create_layered_renderer()
 {
-	const glm::mat4 MAT{tr::ortho(glm::vec2{1000.0f})};
-
 	tr::layered_2d_renderer renderer;
-	renderer.add_color_layer(layer::UI1, MAT);
-	renderer.add_color_layer(layer::TOOLTIP, MAT);
-	renderer.add_color_layer(layer::CURSOR, MAT);
+	renderer.add_color_layer(layer::UI1, TRANSFORM);
+	renderer.add_color_layer(layer::TOOLTIP, TRANSFORM);
+	renderer.add_color_layer(layer::CURSOR, TRANSFORM);
 	return renderer;
 }
 
@@ -106,6 +104,8 @@ struct engine_data {
 	tr::render_target screen;
 	// Layered 2D renderer used for most drawing.
 	tr::layered_2d_renderer layers;
+	// Batched 2D renderer mostly used for UI.
+	tr::batched_2d_renderer batched;
 	// Renderer for drawing blurred and desaturated images.
 	blur_renderer blur;
 	// Tooltip manager.
@@ -157,11 +157,7 @@ void engine::set_main_menu_state()
 		ui_manager ui;
 		std::uint16_t test{0};
 
-		dummy_state()
-		{
-			auto& a{ui.emplace<color_preview_widget>(glm::vec2{500}, tr::align::CENTER, std::ref(test))};
-			a.unhide(1_s);
-		}
+		dummy_state() {}
 
 		std::uint32_t type() const noexcept
 		{
@@ -242,23 +238,32 @@ void engine::handle_events()
 
 glm::vec2 engine::mouse_pos() noexcept
 {
+	return to_game_coords(tr::mouse::pos());
+}
+
+glm::vec2 engine::to_game_coords(glm::vec2 window_coords) noexcept
+{
 	const glm::ivec2 window_size{tr::window::size()};
-	glm::vec2 pos{tr::mouse::pos()};
 	if (window_size.x > window_size.y) {
-		pos.x -= (window_size.x - window_size.y) / 2.0f;
-		pos /= render_scale();
+		window_coords.x -= (window_size.x - window_size.y) / 2.0f;
+		window_coords /= render_scale();
 	}
 	else if (window_size.y > window_size.x) {
-		pos.y -= (window_size.y - window_size.x) / 2.0f;
-		pos /= render_scale();
+		window_coords.y -= (window_size.y - window_size.x) / 2.0f;
+		window_coords /= render_scale();
 	}
 	else {
-		pos /= render_scale();
+		window_coords /= render_scale();
 	}
-	return glm::clamp(pos, {0, 0}, {1000, 1000});
+	return glm::clamp(window_coords, {0, 0}, {1000, 1000});
 }
 
 //////////////////////////////////////////////////////////////// GRAPHICS /////////////////////////////////////////////////////////////////
+
+tr::batched_2d_renderer& engine::batched_renderer() noexcept
+{
+	return engine_data->batched;
+}
 
 blur_renderer& engine::blur_renderer() noexcept
 {

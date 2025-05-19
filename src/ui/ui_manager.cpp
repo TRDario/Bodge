@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/ui/ui_manager.hpp"
+#include "../../include/engine.hpp"
 
 //
 
@@ -107,17 +107,78 @@ void ui_manager::hide_all(ticks time) noexcept
 	}
 }
 
+void ui_manager::release_graphical_resources() noexcept
+{
+	for (auto& p : _objects) {
+		p->release_graphical_resources();
+	}
+}
+
 //
 
 void ui_manager::handle_event(const tr::event& event)
 {
-	auto IS_WRITABLE{[](auto& p) { return dynamic_cast<writable*>(p.get()) != nullptr; }};
-
 	switch (event.type()) {
+	case tr::mouse_motion_event::ID: {
+		const tr::mouse_motion_event mouse_motion{event};
+		const auto old_hovered_it{_hovered};
+
+		for (_hovered = _objects.begin(); _hovered != _objects.end(); ++_hovered) {
+			mousable* mp{dynamic_cast<mousable*>(_hovered->get())};
+			if (mp != nullptr && tr::frect2{(*_hovered)->tl(), (*_hovered)->size()}.contains(engine::to_game_coords(mouse_motion.pos))) {
+				break;
+			}
+		}
+
+		if (old_hovered_it != _hovered) {
+			if (old_hovered_it != _objects.end()) {
+				mousable& old_hovered{*dynamic_cast<mousable*>(old_hovered_it->get())};
+				if (tr::mouse::held(tr::mouse_button::LEFT) && old_hovered.holdable()) {
+					old_hovered.on_hold_transfer_out();
+				}
+				else {
+					old_hovered.on_unhover();
+				}
+			}
+			if (_hovered != _objects.end()) {
+				mousable& hovered{*dynamic_cast<mousable*>(_hovered->get())};
+				if (tr::mouse::held(tr::mouse_button::LEFT) && hovered.holdable()) {
+					hovered.on_hold_transfer_in();
+				}
+				else {
+					hovered.on_hover();
+				}
+			}
+		}
+	} break;
+	case tr::mouse_down_event::ID: {
+		const tr::mouse_down_event mouse_down{event};
+		if (mouse_down.button == tr::mouse_button::LEFT) {
+			clear_input_focus();
+			if (_hovered != _objects.end()) {
+				mousable& hovered_mousable{*dynamic_cast<mousable*>(_hovered->get())};
+				if (hovered_mousable.holdable()) {
+					hovered_mousable.on_hold_begin();
+				}
+			}
+		}
+	} break;
+	case tr::mouse_up_event::ID: {
+		const tr::mouse_up_event mouse_down{event};
+		if (mouse_down.button == tr::mouse_button::LEFT) {
+			if (_hovered != _objects.end()) {
+				mousable& hovered_mousable{*dynamic_cast<mousable*>(_hovered->get())};
+				if (hovered_mousable.holdable()) {
+					hovered_mousable.on_hold_end();
+				}
+			}
+		}
+	} break;
 	case tr::key_down_event::ID: {
 		const tr::key_down_event key_down{event};
 
 		if (_input != _objects.end()) {
+			writable& input{*dynamic_cast<writable*>(_input->get())};
 			if (key_down.key == tr::keycode::ESCAPE) {
 				clear_input_focus();
 			}
@@ -130,17 +191,17 @@ void ui_manager::handle_event(const tr::event& event)
 				}
 			}
 			else if (key_down.mods & tr::keymods::CTRL && key_down.key == tr::keycode::C) {
-				dynamic_cast<writable*>(_input->get())->on_copy();
+				input.on_copy();
 			}
 			else if (key_down.mods & tr::keymods::CTRL && key_down.key == tr::keycode::V) {
-				dynamic_cast<writable*>(_input->get())->on_paste();
+				input.on_paste();
 			}
 			else if (key_down.key == tr::keycode::BACKSPACE || key_down.key == tr::keycode::DELETE) {
 				if (key_down.mods & tr::keymods::SHIFT) {
-					dynamic_cast<writable*>(_input->get())->on_clear();
+					input.on_clear();
 				}
 				else {
-					dynamic_cast<writable*>(_input->get())->on_erase();
+					input.on_erase();
 				}
 			}
 		}
@@ -183,7 +244,7 @@ void ui_manager::add_to_renderer() noexcept
 	}
 	if (_hovered != _objects.end()) {
 		mousable* mp{dynamic_cast<mousable*>(_hovered->get())};
-		if (mp != nullptr) {
+		if (mp != nullptr && !mp->tooltip.empty()) {
 			engine::tooltip().add_to_renderer(mp->tooltip);
 		}
 	}

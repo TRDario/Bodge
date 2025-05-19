@@ -20,7 +20,7 @@ class ui_manager {
 	template <class T> T& get(std::string_view name) noexcept
 	{
 		auto it{std::ranges::find_if(_objects, [=](auto& p) { return p->name == name; })};
-		TR_ASSERT(it != _objects.end(), "Tried to get widget with nonexistant name %.*s.", static_cast<int>(name.size()), name.data());
+		TR_ASSERT(it != _objects.end(), "Tried to get widget with nonexistant name \"{}\".", name);
 		return *static_cast<T*>(it->get());
 	}
 	// Clears the UI.
@@ -39,6 +39,8 @@ class ui_manager {
 
 	// Hides all widgets.
 	void hide_all(ticks time) noexcept;
+	// Instructs all widgets to release their graphical resources in service of a pending engine restart.
+	void release_graphical_resources() noexcept;
 
 	///////////////////////////////////////////////////////////// OPERATIONS //////////////////////////////////////////////////////////////
 

@@ -1,18 +1,18 @@
-[17:09:24] [I] Loaded settings from '/data/Programming/Projects/Bodge/userdir/settings.dat'.
-[17:09:24] [I] Loaded scores from '/data/Programming/Projects/Bodge/userdir/scorefile.dat'.
-[17:09:24] [I] Loaded 'en' localization from '/data/Programming/Projects/Bodge/data/localization/en.loc'.
-[17:09:24] [I] Loaded font 'charge_vector_b.otf'.
-[17:09:24] [I] Loaded font 'linux_biolinum_rb.ttf'.
-[17:09:24] [I] Initialized the audio system.
-[17:09:24] [E] Failed to load audio from '/data/Programming/Projects/Bodge/data/audio/click.ogg': File not found: '/data/Programming/Projects/Bodge/data/audio/click.ogg'.
-[17:09:24] [E] Failed to load audio from '/data/Programming/Projects/Bodge/data/audio/confirm.ogg': File not found: '/data/Programming/Projects/Bodge/data/audio/confirm.ogg'.
-[17:09:24] [E] Failed to load audio from '/data/Programming/Projects/Bodge/data/audio/back.ogg': File not found: '/data/Programming/Projects/Bodge/data/audio/back.ogg'.
-[17:09:24] [E] Failed to load audio from '/data/Programming/Projects/Bodge/data/audio/hit.ogg': File not found: '/data/Programming/Projects/Bodge/data/audio/hit.ogg'.
-[17:09:24] [E] Failed to load audio from '/data/Programming/Projects/Bodge/data/audio/explosion.ogg': File not found: '/data/Programming/Projects/Bodge/data/audio/explosion.ogg'.
-[17:09:24] [E] Failed to load audio from '/data/Programming/Projects/Bodge/data/audio/bounce1.ogg': File not found: '/data/Programming/Projects/Bodge/data/audio/bounce1.ogg'.
-[17:09:25] [I] Initialized the engine.
-[17:09:41] [I] Shut down the engine.
-[17:09:41] [I] Shut down the audio system.
-[17:09:41] [I] Unloaded all fonts.
-[17:09:41] [I] Saved scores to '/data/Programming/Projects/Bodge/userdir/scorefile.dat'.
-[17:09:41] [I] Saved settings to '/data/Programming/Projects/Bodge/userdir/settings.dat'.
+[23:25:00] [I] Loaded settings from '/data/Programming/Bodge/userdir/settings.dat'.
+[23:25:00] [I] Loaded scores from '/data/Programming/Bodge/userdir/scorefile.dat'.
+[23:25:00] [I] Loaded 'en' localization from '/data/Programming/Bodge/data/localization/en.loc'.
+[23:25:00] [I] Loaded font 'charge_vector_b.otf'.
+[23:25:00] [I] Loaded font 'linux_biolinum_rb.ttf'.
+[23:25:00] [I] Initialized the audio system.
+[23:25:00] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/click.ogg': File not found: '/data/Programming/Bodge/data/audio/click.ogg'.
+[23:25:00] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/confirm.ogg': File not found: '/data/Programming/Bodge/data/audio/confirm.ogg'.
+[23:25:00] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/back.ogg': File not found: '/data/Programming/Bodge/data/audio/back.ogg'.
+[23:25:00] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/hit.ogg': File not found: '/data/Programming/Bodge/data/audio/hit.ogg'.
+[23:25:00] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/explosion.ogg': File not found: '/data/Programming/Bodge/data/audio/explosion.ogg'.
+[23:25:00] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/bounce1.ogg': File not found: '/data/Programming/Bodge/data/audio/bounce1.ogg'.
+[23:25:00] [I] Initialized the engine.
+[23:25:01] [I] Shut down the engine.
+[23:25:01] [I] Shut down the audio system.
+[23:25:01] [I] Unloaded all fonts.
+[23:25:01] [I] Saved scores to '/data/Programming/Bodge/userdir/scorefile.dat'.
+[23:25:01] [I] Saved settings to '/data/Programming/Bodge/userdir/settings.dat'.
