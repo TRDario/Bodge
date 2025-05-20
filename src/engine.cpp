@@ -157,7 +157,18 @@ void engine::set_main_menu_state()
 		ui_manager ui;
 		std::uint16_t test{0};
 
-		dummy_state() {}
+		dummy_state()
+		{
+			auto& copyright{ui.emplace<basic_text_widget>("mm_copyright", glm::vec2{4, 1000}, tr::align::TOP_LEFT, 24)};
+			copyright.unhide(1_s);
+			copyright.pos.change({4, 998 - copyright.size().y}, 1_s);
+			auto& version{ui.emplace<basic_text_widget>("mm_version", glm::vec2{996, 1000}, tr::align::TOP_RIGHT, 24)};
+			version.unhide(1_s);
+			version.pos.change({996, 998 - version.size().y}, 1_s);
+
+			auto& a{ui.emplace<tooltippable_text_widget>("test", glm::vec2{500}, tr::align::CENTER, "test_tt", 48)};
+			a.unhide(1_s);
+		}
 
 		std::uint32_t type() const noexcept
 		{
@@ -181,6 +192,7 @@ void engine::set_main_menu_state()
 		{
 			ui.add_to_renderer();
 			engine::layered_renderer().draw(engine::screen());
+			engine::batched_renderer().draw(engine::screen());
 		}
 	};
 	engine_data->state.state = std::make_unique<dummy_state>();

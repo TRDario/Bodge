@@ -1,5 +1,5 @@
-#include "../../include/ui/ui_manager.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/ui/ui_manager.hpp"
 
 //
 
@@ -244,8 +244,8 @@ void ui_manager::add_to_renderer() noexcept
 	}
 	if (_hovered != _objects.end()) {
 		mousable* mp{dynamic_cast<mousable*>(_hovered->get())};
-		if (mp != nullptr && !mp->tooltip.empty()) {
-			engine::tooltip().add_to_renderer(mp->tooltip);
+		if (mp != nullptr && mp->tooltip_cb) {
+			engine::tooltip().add_to_renderer(mp->tooltip_cb());
 		}
 	}
 }
