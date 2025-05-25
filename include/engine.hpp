@@ -5,10 +5,26 @@
 
 // Standard 2D renderer layers.
 enum layer {
-	// First UI layer.
-	UI1,
-	// Player used to draw tooltips.
+	// Layer used to draw ball trails.
+	BALL_TRAILS,
+	// Layer used for the overlay needed for drawing ball trails.
+	BALL_TRAILS_OVERLAY,
+	// Layer used to draw balls.
+	BALLS,
+	// Layer used to draw the player trail.
+	PLAYER_TRAIL,
+	// Layer used to draw the player.
+	PLAYER,
+	// Layer used to draw the border.
+	BORDER,
+	// Layer used to draw game overlays (lives, timer, etc.)
+	GAME_OVERLAY,
+	// Layer used to draw UI elements.
+	UI,
+	// Layer used to draw tooltips.
 	TOOLTIP,
+	// Layer used to draw the fade overlay.
+	FADE_OVERLAY,
 	// Layer used to draw the cursor.
 	CURSOR
 };
@@ -33,9 +49,9 @@ struct engine {
 	// Handles any events.
 	static void handle_events();
 	// Gets the normalized mouse position.
-	static glm::vec2 mouse_pos() noexcept;
+	static vec2 mouse_pos() noexcept;
 	// Converts window coordinates to gamespace coordinates.
-	static glm::vec2 to_game_coords(glm::vec2 window_coords) noexcept;
+	static vec2 to_game_coords(vec2 window_coords) noexcept;
 
 	////////////////////////////////////////////////////////////// GRAPHICS ///////////////////////////////////////////////////////////////
 
@@ -54,5 +70,10 @@ struct engine {
 	// Gets the tooltip manager.
 	static tooltip& tooltip() noexcept;
 	// Gets the vertex scratch space buffer.
-	static std::vector<tr::clrvtx2>& vertex_buffer() noexcept;
+	static vector<clrvtx>& vertex_buffer() noexcept;
 };
+
+///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+
+// Adds a fade overlay to the renderer.
+void add_fade_overlay_to_renderer(float opacity);

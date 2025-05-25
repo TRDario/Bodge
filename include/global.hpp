@@ -3,34 +3,109 @@
 #include <tr/graphics.hpp>
 #include <tr/system.hpp>
 
+///////////////////////////////////////////////////////////////// ALIASES /////////////////////////////////////////////////////////////////
+
 using namespace tr::angle_literals;
+namespace rs = std::ranges;
+namespace vs = std::views;
+namespace ch = std::chrono;
 using enum tr::align;
+using enum tr::ttf_style;
+using enum tr::severity;
+using clrvtx = tr::clrvtx2;
+using tintvtx = tr::tintvtx2;
+using mods = tr::keymods;
+using key = tr::keycode;
+using u8 = std::uint8_t;
+using u16 = std::uint16_t;
+using u32 = std::uint32_t;
+using glm::vec2;
+using std::abs;
+using std::array;
+using std::clamp;
+using std::format;
+using std::function;
+using std::ifstream;
+using std::list;
+using std::make_unique;
+using std::map;
+using std::max;
+using std::min;
+using std::ofstream;
+using std::optional;
+using std::pow;
+using std::size_t;
+using std::string;
+using std::string_view;
+using std::unique_ptr;
+using std::unordered_map;
+using std::vector;
+using std::filesystem::directory_entry;
+using std::filesystem::directory_iterator;
+using std::filesystem::path;
+using tr::align;
+using tr::audio_buffer;
+using tr::audio_source;
+using tr::audio_system;
+using tr::binary_read;
+using tr::binary_write;
+using tr::bitmap;
+using tr::colors;
+using tr::decrypt;
+using tr::encrypt;
+using tr::encrypt_to;
+using tr::event_queue;
+using tr::fangle;
+using tr::fill_poly_idx;
+using tr::fill_poly_outline_idx;
+using tr::fill_rect_outline_vtx;
+using tr::fill_rect_vtx;
+using tr::flush_binary;
+using tr::frect2;
+using tr::keyboard;
+using tr::mouse;
+using tr::norm_cast;
+using tr::open_file_r;
+using tr::open_file_w;
+using tr::poly_idx;
+using tr::poly_outline_idx;
+using tr::positions;
+using tr::range_bytes;
+using tr::rgba8;
+using tr::state;
+using tr::texture;
+using tr::texture_unit;
+using tr::ttf_style;
+using tr::ttfont;
+using tr::UNLIMITED_WIDTH;
+using tr::uvs;
+using tr::window;
 
 //////////////////////////////////////////////////////////// SETTINGS CONSTANTS ///////////////////////////////////////////////////////////
 
 // Sentinel for a fullscreen window.
 constexpr int FULLSCREEN{0};
 // The minimum allowed window size.
-constexpr int MIN_WINDOW_SIZE{250};
+constexpr int MIN_WINDOW_SIZE{500};
 // The maximum supported window size.
 int max_window_size() noexcept;
 
 // Sentinel for a native refresh rate.
-constexpr std::uint16_t NATIVE_REFRESH_RATE{0};
+constexpr u16 NATIVE_REFRESH_RATE{0};
 // The minimum allowed refresh rate.
-constexpr std::uint16_t MIN_REFRESH_RATE{15};
+constexpr u16 MIN_REFRESH_RATE{15};
 // The maximum supported refresh rate.
-std::uint16_t max_refresh_rate() noexcept;
+u16 max_refresh_rate() noexcept;
 
 // Sentinel for disabled multisampled anti-aliasing.
-constexpr std::uint8_t NO_MSAA{0};
+constexpr u8 NO_MSAA{0};
 // The maximum allowed multisampled anti-aliasing.
-std::uint8_t max_msaa() noexcept;
+u8 max_msaa() noexcept;
 
 //////////////////////////////////////////////////////////// TICKRATE CONSTANTS ///////////////////////////////////////////////////////////
 
 // Tick datatype.
-using ticks = std::uint32_t;
+using ticks = u32;
 // Game tickrate.
 inline constexpr ticks SECOND_TICKS{240};
 // Seconds -> Ticks literal.
@@ -43,11 +118,29 @@ constexpr ticks operator""_s(long double seconds) noexcept
 {
 	return 240 * seconds;
 }
+// Seconds -> Ticks literal (float).
+constexpr float operator""_sf(unsigned long long seconds) noexcept
+{
+	return 240 * seconds;
+}
+// Seconds -> Ticks literal (float).
+constexpr float operator""_sf(long double seconds) noexcept
+{
+	return 240 * seconds;
+}
 
 /////////////////////////////////////////////////////////// GRAPHICAL CONSTANTS ///////////////////////////////////////////////////////////
 
 // Transformation matrix used by game elements.
-inline const glm::mat4 TRANSFORM{tr::ortho(glm::vec2{1000.0f})};
+inline const glm::mat4 TRANSFORM{tr::ortho(vec2{1000.0f})};
+
+// Overlay used to dim the game in the main menu.
+constexpr array<clrvtx, 4> MENU_GAME_OVERLAY_QUAD{{
+	{{0, 0}, {0, 0, 0, 160}},
+	{{1000, 0}, {0, 0, 0, 160}},
+	{{1000, 1000}, {0, 0, 0, 160}},
+	{{0, 1000}, {0, 0, 0, 160}},
+}};
 
 ////////////////////////////////////////////////////////////// GAME CONSTANTS /////////////////////////////////////////////////////////////
 
@@ -71,15 +164,3 @@ inline tr::xorshiftr_128p rng;
 inline tr::logger logger;
 // Logging macro.
 #define LOG(...) TR_LOG(logger, __VA_ARGS__)
-
-/////////////////////////////////////////////////////////////// LOCALIZATION //////////////////////////////////////////////////////////////
-
-// Language code datatype.
-using language_code = std::array<char, 2>;
-// Global localization map.
-inline tr::localization_map localization;
-// Loads localization from file.
-void load_localization() noexcept;
-
-// Gets the name of the font preferred by a language.
-std::string get_language_font(language_code code);

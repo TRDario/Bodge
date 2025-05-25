@@ -48,40 +48,40 @@ void scorefile_t::add_score(const gamemode& gamemode, score&& score)
 	if (!scores.contains(gamemode)) {
 		scores.insert({gamemode, {}});
 	}
-	scores.at(gamemode).insert(std::move(score));
+	scores.at(gamemode).insert(std::upper_bound(scores.at(gamemode).begin(), scores.at(gamemode).end(), score), std::move(score));
 }
 
 void scorefile_t::load_from_file() noexcept
 {
 	try {
-		const std::filesystem::path path{cli_settings.userdir / "scorefile.dat"};
-		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
-		std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
+		const path path{cli_settings.userdir / "scorefile.dat"};
+		ifstream file{open_file_r(path, std::ios::binary)};
+		vector<std::byte> raw{decrypt(flush_binary(file))};
 		std::span<const std::byte> data{raw};
-		data = tr::binary_read(data, name);
-		data = tr::binary_read(data, scores);
-		data = tr::binary_read(data, playtime);
-		LOG(tr::severity::INFO, "Loaded scores from '{}'.", path.string());
+		data = binary_read(data, name);
+		data = binary_read(data, scores);
+		data = binary_read(data, playtime);
+		LOG(INFO, "Loaded scores from '{}'.", path.string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load scores from '{}': {}.", (cli_settings.userdir / "scorefile.dat").string(), err.what());
+		LOG(ERROR, "Failed to load scores from '{}': {}.", (cli_settings.userdir / "scorefile.dat").string(), err.what());
 	}
 }
 
 void scorefile_t::save_to_file() noexcept
 {
-	const std::filesystem::path path{cli_settings.userdir / "scorefile.dat"};
+	const path path{cli_settings.userdir / "scorefile.dat"};
 	try {
-		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
+		ofstream file{open_file_w(path, std::ios::binary)};
 		std::ostringstream buffer;
-		tr::binary_write(buffer, name);
-		tr::binary_write(buffer, scores);
-		tr::binary_write(buffer, playtime);
-		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rand<std::uint8_t>(rng))};
-		tr::binary_write(file, std::span{encrypted});
-		LOG(tr::severity::INFO, "Saved scores to '{}'.", path.string());
+		binary_write(buffer, name);
+		binary_write(buffer, scores);
+		binary_write(buffer, playtime);
+		const vector<std::byte> encrypted{encrypt(range_bytes(buffer.view()), rand<u8>(rng))};
+		binary_write(file, std::span{encrypted});
+		LOG(INFO, "Saved scores to '{}'.", path.string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save scores to '{}': {}.", path.string(), err.what());
+		LOG(ERROR, "Failed to save scores to '{}': {}.", path.string(), err.what());
 	}
 }

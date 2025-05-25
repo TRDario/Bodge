@@ -11,6 +11,7 @@ int main(int argc, const char** argv)
 		cli_settings.parse(argc, argv);
 		settings.load_from_file();
 		scorefile.load_from_file();
+		load_languages();
 		load_localization();
 		font_manager.load_fonts();
 		audio::initialize();
@@ -27,7 +28,7 @@ int main(int argc, const char** argv)
 		settings.save_to_file();
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::FATAL, "Fatal exception: {}", err.what());
+		LOG(FATAL, "Fatal exception: {}", err.what());
 		tr::show_message_box(tr::msg_box_type::ERROR, tr::msg_buttons::OK, "Fatal Exception - Bodge", err.what());
 		std::exit(EXIT_FAILURE);
 	}

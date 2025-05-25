@@ -6,9 +6,11 @@
 // The replay header.
 struct replay_header : score {
 	// The name of the replay.
-	std::string name;
+	string name;
 	// The player who created the replay.
-	std::string player;
+	string player;
+	// The game gamemode.
+	gamemode gamemode;
 	// The game seed.
 	std::uint64_t seed;
 };
@@ -33,16 +35,16 @@ class replay {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates an empty replay.
-	replay(std::uint64_t seed) noexcept;
+	replay(const gamemode& gamemode, std::uint64_t seed) noexcept;
 	// Loads a replay from file.
-	replay(const std::string& filename);
+	replay(const string& filename);
 
 	////////////////////////////////////////////////////////////// RECORDING //////////////////////////////////////////////////////////////
 
 	// Appends an input to the replay.
-	void append(glm::vec2 input);
+	void append(vec2 input);
 	// Sets the replay header.
-	void set_header(score&& score, std::string&& name) noexcept;
+	void set_header(score&& score, string&& name) noexcept;
 	// Saves the replay to file.
 	void save_to_file() noexcept;
 
@@ -53,16 +55,18 @@ class replay {
 	// Gets whether the replay is done.
 	bool done() const noexcept;
 	// Gets the next input.
-	glm::vec2 next() noexcept;
+	vec2 next() noexcept;
+	// Gets the current input.
+	vec2 current() const noexcept;
 
   private:
 	// The replay header.
 	replay_header _header;
 	// The inputs of the replay.
-	std::vector<glm::vec2> _inputs;
+	vector<vec2> _inputs;
 	// Iterator to the next input.
-	std::vector<glm::vec2>::iterator _next;
+	vector<vec2>::iterator _next;
 };
 
 // Loads all found replay headers.
-std::map<std::string, replay_header> load_replay_headers() noexcept;
+map<string, replay_header> load_replay_headers() noexcept;

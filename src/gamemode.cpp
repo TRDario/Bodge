@@ -5,15 +5,15 @@
 
 bool player_settings::autoplay() const noexcept
 {
-	return starting_lives == -1;
+	return starting_lives == -1U;
 }
 
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
 
-gamemode::gamemode(const std::filesystem::path& path)
+gamemode::gamemode(const path& path)
 {
-	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
-	tr::binary_read(tr::decrypt(tr::flush_binary(file)), *this);
+	ifstream file{open_file_r(path, std::ios::binary)};
+	binary_read(decrypt(flush_binary(file)), *this);
 }
 
 void tr::binary_reader<gamemode>::read_from_stream(std::istream& is, gamemode& out)
@@ -59,58 +59,62 @@ std::span<std::byte> tr::binary_writer<gamemode>::write_to_span(std::span<std::b
 void gamemode::save_to_file() noexcept
 {
 	try {
-		const std::filesystem::path base_path{cli_settings.userdir / "gamemodes" / (name + ".gmd")};
-		std::ofstream file;
+		const path base_path{cli_settings.userdir / "gamemodes" / (name + ".gmd")};
+		ofstream file;
 		if (!exists(base_path)) {
-			file = tr::open_file_w(base_path, std::ios::binary);
+			file = open_file_w(base_path, std::ios::binary);
 		}
 		else {
 			int index{0};
-			std::filesystem::path path{cli_settings.userdir / "gamemodes" / std::format("{}({}).gmd", name, index++)};
+			path path{cli_settings.userdir / "gamemodes" / format("{}({}).gmd", name, index++)};
 			while (exists(path)) {
-				path = cli_settings.userdir / "gamemodes" / std::format("{}({}).gmd", name, index++);
+				path = cli_settings.userdir / "gamemodes" / format("{}({}).gmd", name, index++);
 			}
+			file = open_file_w(path, std::ios::binary);
 		}
 
-		std::stringstream bufstream;
-		tr::binary_write(bufstream, *this);
-		tr::binary_write(file, tr::encrypt(tr::range_bytes(bufstream.view()), rand<std::uint8_t>(rng)));
+		std::ostringstream bufstream{std::ios::binary};
+		binary_write(bufstream, *this);
+		binary_write(file, encrypt(range_bytes(bufstream.view()), rand<u8>(rng)));
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save gamemode '{}': {}.", name, err.what());
+		LOG(ERROR, "Failed to save gamemode '{}': {}.", name, err.what());
 	}
 }
 
-std::size_t std::hash<gamemode>::operator()(const gamemode& gamemode) const noexcept
+size_t std::hash<gamemode>::operator()(const gamemode& gamemode) const noexcept
 {
-	std::hash<std::string> hasher;
-	std::size_t hash{hasher(gamemode.name)};
+	std::hash<string> hasher;
+	size_t hash{hasher(gamemode.name)};
 	hash = hash ^ hasher(gamemode.author) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 	hash = hash ^ hasher(gamemode.description) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 	return hash;
 }
 
-std::vector<gamemode> load_gamemodes() noexcept
+vector<gamemode> load_gamemodes() noexcept
 {
-	std::vector<gamemode> gamemodes;
+	vector<gamemode> gamemodes;
 	try {
-		const std::filesystem::path gamemode_dir{cli_settings.userdir / "gamemodes"};
-		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{gamemode_dir}) {
-			const std::filesystem::path path{file};
+		for (const gamemode& g : BUILTIN_GAMEMODES) {
+			gamemodes.push_back({string{localization[g.name]}, string{localization[g.description]}, g.player, g.ball});
+		}
+		const path gamemode_dir{cli_settings.userdir / "gamemodes"};
+		for (directory_entry file : directory_iterator{gamemode_dir}) {
+			const path path{file};
 			try {
 				if (!file.is_regular_file() || path.extension() != ".gmd") {
 					continue;
 				}
 				gamemodes.emplace_back(path);
-				LOG(tr::severity::INFO, "Loaded gamemode '{}' from '{}'.", gamemodes.back().name, path.string());
+				LOG(INFO, "Loaded gamemode '{}' from '{}'.", gamemodes.back().name, path.string());
 			}
 			catch (std::exception& err) {
-				LOG(tr::severity::ERROR, "Failed to load gamemode from '{}': {}.", path.string(), err.what());
+				LOG(ERROR, "Failed to load gamemode from '{}': {}.", path.string(), err.what());
 			}
 		}
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::INFO, "Failed to load gamemodes: {}.", err.what());
+		LOG(INFO, "Failed to load gamemodes: {}.", err.what());
 	}
 	return gamemodes;
 }

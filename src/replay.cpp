@@ -8,6 +8,7 @@ void tr::binary_reader<replay_header>::read_from_stream(std::istream& is, replay
 	binary_read<score>(is, out);
 	binary_read(is, out.name);
 	binary_read(is, out.player);
+	binary_read(is, out.gamemode);
 	binary_read(is, out.seed);
 }
 
@@ -16,6 +17,7 @@ std::span<const std::byte> tr::binary_reader<replay_header>::read_from_span(std:
 	span = binary_read<score>(span, out);
 	span = binary_read(span, out.name);
 	span = binary_read(span, out.player);
+	span = binary_read(span, out.gamemode);
 	return binary_read(span, out.seed);
 }
 
@@ -24,6 +26,7 @@ void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const r
 	binary_write<score>(os, in);
 	binary_write(os, in.name);
 	binary_write(os, in.player);
+	binary_write(os, in.gamemode);
 	binary_write(os, in.seed);
 }
 
@@ -32,42 +35,44 @@ std::span<std::byte> tr::binary_writer<replay_header>::write_to_span(std::span<s
 	span = binary_write<score>(span, in);
 	span = binary_write(span, in.name);
 	span = binary_write(span, in.player);
+	span = binary_write(span, in.gamemode);
 	return binary_write(span, in.seed);
 }
 
 ///////////////////////////////////////////////////////////////// REPLAY //////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
-replay::replay(std::uint64_t seed) noexcept
-	: _header{.player = scorefile.name, .seed = seed}
+replay::replay(const gamemode& gamemode, std::uint64_t seed) noexcept
+	: _header{.player = scorefile.name, .gamemode = gamemode, .seed = seed}
 {
 }
 
-replay::replay(const std::string& filename)
+replay::replay(const string& filename)
 {
-	const std::filesystem::path path{cli_settings.userdir / "replays" / filename};
-	std::vector<std::byte> encrypted;
-	std::vector<std::byte> decrypted;
-	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
+	const path path{cli_settings.userdir / "replays" / filename};
+	vector<std::byte> encrypted;
+	vector<std::byte> decrypted;
+	ifstream file{open_file_r(path, std::ios::binary)};
 
-	tr::binary_read(file, encrypted);
+	binary_read(file, encrypted);
 	tr::decrypt_to(encrypted, decrypted);
-	tr::binary_read(decrypted, _header);
+	binary_read(decrypted, _header);
 
-	tr::binary_read(file, encrypted);
+	binary_read(file, encrypted);
 	tr::decrypt_to(encrypted, decrypted);
-	tr::binary_read(decrypted, _inputs);
-	LOG(tr::severity::INFO, "Loaded replay '{}' from '{}'.", _header.name, path.string());
+	binary_read(decrypted, _inputs);
+	_next = _inputs.begin();
+	LOG(INFO, "Loaded replay '{}' from '{}'.", _header.name, path.string());
 }
 
 //////////////////////////////////////////////////////////////// RECORDING ////////////////////////////////////////////////////////////////
 
-void replay::append(glm::vec2 input)
+void replay::append(vec2 input)
 {
 	_inputs.push_back(input);
 }
 
-void replay::set_header(score&& header, std::string&& name) noexcept
+void replay::set_header(score&& header, string&& name) noexcept
 {
 	static_cast<score&>(_header) = std::move(header);
 	_header.name = std::move(name);
@@ -75,35 +80,35 @@ void replay::set_header(score&& header, std::string&& name) noexcept
 
 void replay::save_to_file() noexcept
 {
-	const std::filesystem::path path{cli_settings.userdir / "replays" / (_header.name + ".rpy")};
+	const path base_path{cli_settings.userdir / "replays" / (_header.name + ".rpy")};
 	try {
-		const std::filesystem::path base_path{cli_settings.userdir / "replays" / (_header.name + ".rpy")};
-		std::ofstream file;
+		ofstream file;
 		if (!exists(base_path)) {
-			file = tr::open_file_w(base_path, std::ios::binary);
+			file = open_file_w(base_path, std::ios::binary);
 		}
 		else {
 			int index{0};
-			std::filesystem::path path{cli_settings.userdir / "replays" / std::format("{}({}).rpy", _header.name, index++)};
+			path path{cli_settings.userdir / "replays" / format("{}({}).rpy", _header.name, index++)};
 			while (exists(path)) {
-				path = cli_settings.userdir / "replays" / std::format("{}({}).rpy", _header.name, index++);
+				path = cli_settings.userdir / "replays" / format("{}({}).rpy", _header.name, index++);
 			}
+			file = open_file_w(path, std::ios::binary);
 		}
 
-		std::stringstream bufstream;
-		std::vector<std::byte> buffer;
-		tr::binary_write(bufstream, _header);
-		tr::encrypt_to(tr::range_bytes(bufstream.view()), rand<std::uint8_t>(rng), buffer);
-		tr::binary_write(file, buffer);
+		std::ostringstream bufstream{std::ios::binary};
+		vector<std::byte> buffer;
+		binary_write(bufstream, _header);
+		encrypt_to(range_bytes(bufstream.view()), rand<u8>(rng), buffer);
+		binary_write(file, buffer);
 
-		bufstream.clear();
-		tr::binary_write(bufstream, _inputs);
-		tr::encrypt_to(tr::range_bytes(bufstream.view()), rand<std::uint8_t>(rng), buffer);
-		tr::binary_write(file, buffer);
-		LOG(tr::severity::INFO, "Saved replay '{}' to '{}'.", _header.name, path.string());
+		bufstream.str({});
+		binary_write(bufstream, _inputs);
+		encrypt_to(range_bytes(bufstream.view()), rand<u8>(rng), buffer);
+		binary_write(file, buffer);
+		LOG(INFO, "Saved replay '{}' to '{}'.", _header.name, base_path.string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save replay: {}", path.string(), err.what());
+		LOG(ERROR, "Failed to save replay: {}", base_path.string(), err.what());
 	}
 }
 
@@ -119,35 +124,40 @@ bool replay::done() const noexcept
 	return _next == _inputs.end();
 }
 
-glm::vec2 replay::next() noexcept
+vec2 replay::next() noexcept
 {
 	return *_next++;
 }
 
-std::map<std::string, replay_header> load_replay_headers() noexcept
+vec2 replay::current() const noexcept
 {
-	std::map<std::string, replay_header> replays;
+	return done() ? *std::prev(_next) : *_next;
+}
+
+map<string, replay_header> load_replay_headers() noexcept
+{
+	map<string, replay_header> replays;
 	try {
-		const std::filesystem::path replay_dir{cli_settings.userdir / "replays"};
-		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{replay_dir}) {
-			const std::filesystem::path path{file};
+		const path replay_dir{cli_settings.userdir / "replays"};
+		for (directory_entry file : directory_iterator{replay_dir}) {
+			const path path{file};
 			if (!file.is_regular_file() || path.extension() != ".rpy") {
 				continue;
 			}
 
 			try {
-				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
-				replays.emplace(path.filename(), tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
-				LOG(tr::severity::INFO, "Loaded replay header from '{}'.", path.string());
+				ifstream is{open_file_r(file, std::ios::binary)};
+				replays.emplace(path.filename(), binary_read<replay_header>(decrypt(binary_read<vector<std::byte>>(is))));
+				LOG(INFO, "Loaded replay header from '{}'.", path.string());
 			}
 			catch (std::exception& err) {
-				LOG(tr::severity::ERROR, "Failed to load replay header from '{}': {}.", path.string(), err.what());
+				LOG(ERROR, "Failed to load replay header from '{}': {}.", path.string(), err.what());
 			}
 		}
-		LOG(tr::severity::INFO, "Loaded replay headers.");
+		LOG(INFO, "Loaded replay headers.");
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load replay headers: {}.", err.what());
+		LOG(ERROR, "Failed to load replay headers: {}.", err.what());
 	}
 	return replays;
 }

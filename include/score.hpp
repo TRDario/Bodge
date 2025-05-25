@@ -6,9 +6,9 @@
 // Packed score flags.
 struct score_flags {
 	// Flag for a prematurely-exited game.
-	std::uint32_t exited_prematurely : 1;
+	u32 exited_prematurely : 1;
 	// Flag for a game with a modified game speed.
-	std::uint32_t modified_game_speed : 1;
+	u32 modified_game_speed : 1;
 };
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
@@ -16,9 +16,9 @@ struct score_flags {
 // Scoreboard entry.
 struct score {
 	// The description of the score.
-	std::string description;
-	// The timestamp of the score.
-	tr::time_point timestamp;
+	string description;
+	// The timestamp of the score (seconds since UNIX epoch).
+	std::int64_t timestamp;
 	// The actual score value.
 	ticks result;
 	// Packed score flags.
@@ -44,9 +44,9 @@ template <> struct tr::binary_writer<score> {
 // File containing score information.
 struct scorefile_t {
 	// The name of the player.
-	std::string name;
+	string name;
 	// Score tables.
-	std::unordered_map<gamemode, std::set<score, std::greater<score>>> scores;
+	unordered_map<gamemode, vector<score>> scores;
 	// The total recorded playtime.
 	ticks playtime{0};
 

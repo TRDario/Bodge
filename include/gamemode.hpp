@@ -6,7 +6,7 @@
 // Gamemode player settings.
 struct player_settings {
 	// The number of starting lives.
-	std::int32_t starting_lives{2};
+	u32 starting_lives{2};
 	// The size of the player hitbox.
 	float size{10};
 	// The player's movement inertia (range: [0, 1]).
@@ -19,16 +19,16 @@ struct player_settings {
 };
 
 // Sentinel for an autoplay gamemode.
-constexpr player_settings NO_PLAYER{-1};
+constexpr player_settings NO_PLAYER{-1U};
 
 ////////////////////////////////////////////////////////////// BALL SETTINGS //////////////////////////////////////////////////////////////
 
 // Gamemode ball settings.
 struct ball_settings {
 	// The starting number of balls.
-	std::uint8_t starting_count{10};
+	u8 starting_count{10};
 	// The largest possible number of balls.
-	std::uint8_t max_count{20};
+	u8 max_count{20};
 	// The interval between ball spawns in ticks.
 	ticks spawn_interval{10_s};
 	// The starting size of ball spawns.
@@ -48,13 +48,13 @@ struct ball_settings {
 // Gamemode object.
 struct gamemode {
 	// The name of the gamemode.
-	std::string name{"Untitled"};
+	string name{"Untitled"};
 	// The author of the gamemode.
-	std::string author{"Unknown"};
+	string author{"Unknown"};
 	// The description of the gamemode.
-	std::string description;
+	string description;
 	// The difficulty rating of the gamemode.
-	std::uint8_t difficulty{50};
+	u8 difficulty{50};
 	// Player settings.
 	player_settings player{};
 	// Ball settings.
@@ -64,13 +64,18 @@ struct gamemode {
 
 	// Creates a default gamemode.
 	gamemode() noexcept = default;
+	// Creates a builtin gamemode.
+	constexpr gamemode(string&& name, string&& description, const player_settings& player, const ball_settings& ball) noexcept
+		: name{std::move(name)}, author{"TRDario"}, description{std::move(description)}, player{player}, ball{ball}
+	{
+	}
 	// Creates a menu gamemode.
 	constexpr gamemode(const ball_settings& ball) noexcept
-		: player{NO_PLAYER}, ball{ball}
+		: author{"TRDario"}, player{NO_PLAYER}, ball{ball}
 	{
 	}
 	// Loads a gamemode from file.
-	gamemode(const std::filesystem::path& path);
+	gamemode(const path& path);
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
@@ -94,19 +99,25 @@ template <> struct tr::binary_writer<gamemode> {
 
 // Hashing function for a gamemode.
 template <> struct std::hash<gamemode> {
-	std::size_t operator()(const gamemode& gamemode) const noexcept;
+	size_t operator()(const gamemode& gamemode) const noexcept;
 };
 
 // Loads all found gamemodes.
-std::vector<gamemode> load_gamemodes() noexcept;
+vector<gamemode> load_gamemodes() noexcept;
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // The gamemodes that can appear in the main menu background.
-constexpr std::array<gamemode, 5> MENU_GAMEMODES{{
+const array<gamemode, 2> BUILTIN_GAMEMODES{
+	gamemode{"gamemode_test", "gamemode_test_desc", player_settings{}, ball_settings{10, 10, 10_s, 50, 0, 400, 0}},
+	gamemode{"gamemode_test2", "gamemode_test2_desc", player_settings{}, ball_settings{10, 10, 10_s, 50, 0, 400, 0}},
+};
+
+// The gamemodes that can appear in the main menu background.
+constexpr array<gamemode, 5> MENU_GAMEMODES{
 	ball_settings{},
 	ball_settings{1, 20, 1_s, 10, 2, 250, 10},
 	ball_settings{10, 10, 10_s, 50, 0, 400, 0},
 	ball_settings{50, 50, 10_s, 10, 0, 400, 0},
 	ball_settings{25, 25, 10_s, 20, 0, 350, 0},
-}};
+};

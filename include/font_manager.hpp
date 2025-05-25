@@ -2,7 +2,7 @@
 #include "settings.hpp"
 
 // Font slots. Multiple may actually point to the same font.
-enum class font : std::uint8_t {
+enum class font : u8 {
 	// The default font.
 	DEFAULT,
 	// A fallback font with wider unicode support.
@@ -35,23 +35,23 @@ class font_manager_t {
 	///////////////////////////////////////////////////////////// OPERATIONS //////////////////////////////////////////////////////////////
 
 	// Tries to determine if a string can be drawn with the language font, or if it should be delegated to the fallback font.
-	font determine_font(std::string_view text) noexcept;
+	font determine_font(string_view text) noexcept;
 	// Gets the size of a text string in window coordinates.
-	glm::vec2 text_size(std::string_view text, font font, float size, float outline, float max_w = tr::UNLIMITED_WIDTH);
+	vec2 text_size(string_view text, font font, ttf_style style, float size, float outline, float max_w = UNLIMITED_WIDTH);
 	// Renders text.
-	tr::bitmap render_text(std::string_view text, font font, float size, float outline, float max_w = tr::UNLIMITED_WIDTH,
-						   tr::halign align = tr::halign::LEFT);
+	bitmap render_text(string_view text, font font, ttf_style style, float size, float outline, float max_w = UNLIMITED_WIDTH,
+					   tr::halign align = tr::halign::LEFT);
 	// Renders gradient text.
-	tr::bitmap render_gradient_text(std::string_view text, font font, float size, float outline, float max_w = tr::UNLIMITED_WIDTH,
-									tr::halign align = tr::halign::LEFT);
+	bitmap render_gradient_text(string_view text, font font, ttf_style style, float size, float outline, float max_w = UNLIMITED_WIDTH,
+								tr::halign align = tr::halign::LEFT);
 
   private:
 	// Structure containing the standard fonts.
 	struct standard_fonts {
 		// The default font.
-		tr::ttfont default_font;
+		ttfont default_font;
 		// The fallback font.
-		tr::ttfont fallback_font;
+		ttfont fallback_font;
 	};
 
 	enum class optional_font_state {
@@ -63,11 +63,11 @@ class font_manager_t {
 	// Custom font used by a specific language.
 	struct optional_font_base {
 		// The actual font.
-		tr::ttfont font;
+		ttfont font;
 		// The name of the font.
-		std::string name;
+		string name;
 	};
-	// Janky std::optional-esque thing for fonts.
+	// Janky optional-esque thing for fonts.
 	struct optional_font {
 		// Storage for the actual font.
 		alignas(optional_font_base) std::byte data[sizeof(optional_font_base)];
@@ -79,7 +79,7 @@ class font_manager_t {
 	};
 
 	// Standard fonts.
-	std::optional<standard_fonts> _standard_fonts;
+	optional<standard_fonts> _standard_fonts;
 	// Optional additional language-specific font.
 	optional_font _language_font;
 	// Optional additional language name preview font.
@@ -88,7 +88,7 @@ class font_manager_t {
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Turns a font name into an actual font reference.
-	tr::ttfont& find_font(font font) noexcept;
+	ttfont& find_font(font font) noexcept;
 };
 // The global font manager.
 inline font_manager_t font_manager;

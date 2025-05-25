@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/ui/ui_manager.hpp"
+#include "../../include/engine.hpp"
 
 //
 
@@ -15,10 +15,10 @@ void ui_manager::clear() noexcept
 void ui_manager::move_input_focus_forward() noexcept
 {
 	if (_input == _objects.end()) {
-		for (auto it = _objects.begin(); it != _objects.end(); ++it) {
+		for (list<unique_ptr<widget>>::iterator it = _objects.begin(); it != _objects.end(); ++it) {
 			writable* wp{dynamic_cast<writable*>(it->get())};
 			if (wp != nullptr) {
-				tr::event_queue().send_text_input_events(true);
+				event_queue::send_text_input_events(true);
 				wp->on_gain_focus();
 				_input = it;
 				return;
@@ -27,7 +27,7 @@ void ui_manager::move_input_focus_forward() noexcept
 	}
 	else {
 		// Search to the end of the vector.
-		for (auto it = std::next(_input); it != _objects.end(); ++it) {
+		for (list<unique_ptr<widget>>::iterator it = std::next(_input); it != _objects.end(); ++it) {
 			writable* wp{dynamic_cast<writable*>(it->get())};
 			if (wp != nullptr) {
 				wp->on_gain_focus();
@@ -37,7 +37,7 @@ void ui_manager::move_input_focus_forward() noexcept
 			}
 		}
 		// Loop back and search up to the original.
-		for (auto it = _objects.begin(); it != _input; ++it) {
+		for (list<unique_ptr<widget>>::iterator it = _objects.begin(); it != _input; ++it) {
 			writable* wp{dynamic_cast<writable*>(it->get())};
 			if (wp != nullptr) {
 				wp->on_gain_focus();
@@ -94,7 +94,7 @@ void ui_manager::clear_input_focus() noexcept
 	if (_input != _objects.end()) {
 		dynamic_cast<writable*>(_input->get())->on_lose_focus();
 		_input = _objects.end();
-		tr::event_queue().send_text_input_events(false);
+		event_queue::send_text_input_events(false);
 	}
 }
 
@@ -102,14 +102,14 @@ void ui_manager::clear_input_focus() noexcept
 
 void ui_manager::hide_all(ticks time) noexcept
 {
-	for (auto& p : _objects) {
+	for (unique_ptr<widget>& p : _objects) {
 		p->hide(time);
 	}
 }
 
 void ui_manager::release_graphical_resources() noexcept
 {
-	for (auto& p : _objects) {
+	for (unique_ptr<widget>& p : _objects) {
 		p->release_graphical_resources();
 	}
 }
@@ -121,19 +121,22 @@ void ui_manager::handle_event(const tr::event& event)
 	switch (event.type()) {
 	case tr::mouse_motion_event::ID: {
 		const tr::mouse_motion_event mouse_motion{event};
-		const auto old_hovered_it{_hovered};
+		const list<unique_ptr<widget>>::iterator old_hovered_it{_hovered};
 
-		for (_hovered = _objects.begin(); _hovered != _objects.end(); ++_hovered) {
-			mousable* mp{dynamic_cast<mousable*>(_hovered->get())};
-			if (mp != nullptr && tr::frect2{(*_hovered)->tl(), (*_hovered)->size()}.contains(engine::to_game_coords(mouse_motion.pos))) {
-				break;
+		_hovered = _objects.end();
+		for (list<unique_ptr<widget>>::iterator it = _objects.begin(); it != _objects.end(); ++it) {
+			mousable* mp{dynamic_cast<mousable*>(it->get())};
+			if (mp != nullptr && frect2{(*it)->tl(), (*it)->size()}.contains(engine::to_game_coords(mouse_motion.pos))) {
+				if (_hovered == _objects.end() || !dynamic_cast<mousable*>(_hovered->get())->holdable()) {
+					_hovered = it;
+				}
 			}
 		}
 
 		if (old_hovered_it != _hovered) {
 			if (old_hovered_it != _objects.end()) {
 				mousable& old_hovered{*dynamic_cast<mousable*>(old_hovered_it->get())};
-				if (tr::mouse::held(tr::mouse_button::LEFT) && old_hovered.holdable()) {
+				if (mouse::held(tr::mouse_button::LEFT) && old_hovered.holdable()) {
 					old_hovered.on_hold_transfer_out();
 				}
 				else {
@@ -142,7 +145,7 @@ void ui_manager::handle_event(const tr::event& event)
 			}
 			if (_hovered != _objects.end()) {
 				mousable& hovered{*dynamic_cast<mousable*>(_hovered->get())};
-				if (tr::mouse::held(tr::mouse_button::LEFT) && hovered.holdable()) {
+				if (mouse::held(tr::mouse_button::LEFT) && hovered.holdable()) {
 					hovered.on_hold_transfer_in();
 				}
 				else {
@@ -155,6 +158,29 @@ void ui_manager::handle_event(const tr::event& event)
 		const tr::mouse_down_event mouse_down{event};
 		if (mouse_down.button == tr::mouse_button::LEFT) {
 			clear_input_focus();
+
+			const list<unique_ptr<widget>>::iterator old_hovered_it{_hovered};
+			_hovered = _objects.end();
+			for (list<unique_ptr<widget>>::iterator it = _objects.begin(); it != _objects.end(); ++it) {
+				mousable* mp{dynamic_cast<mousable*>(it->get())};
+				if (mp != nullptr && frect2{(*it)->tl(), (*it)->size()}.contains(engine::to_game_coords(mouse_down.pos))) {
+					if (_hovered == _objects.end() || !dynamic_cast<mousable*>(_hovered->get())->holdable()) {
+						_hovered = it;
+					}
+				}
+			}
+
+			if (old_hovered_it != _hovered) {
+				if (old_hovered_it != _objects.end()) {
+					mousable& old_hovered{*dynamic_cast<mousable*>(old_hovered_it->get())};
+					old_hovered.on_unhover();
+				}
+				if (_hovered != _objects.end()) {
+					mousable& hovered{*dynamic_cast<mousable*>(_hovered->get())};
+					hovered.on_hover();
+				}
+			}
+
 			if (_hovered != _objects.end()) {
 				mousable& hovered_mousable{*dynamic_cast<mousable*>(_hovered->get())};
 				if (hovered_mousable.holdable()) {
@@ -179,25 +205,25 @@ void ui_manager::handle_event(const tr::event& event)
 
 		if (_input != _objects.end()) {
 			writable& input{*dynamic_cast<writable*>(_input->get())};
-			if (key_down.key == tr::keycode::ESCAPE) {
+			if (key_down.key == key::ESCAPE) {
 				clear_input_focus();
 			}
-			else if (key_down.key == tr::keycode::TAB) {
-				if (key_down.mods & tr::keymods::SHIFT) {
+			else if (key_down.key == key::TAB) {
+				if (key_down.mods & mods::SHIFT) {
 					move_input_focus_backward();
 				}
 				else {
 					move_input_focus_forward();
 				}
 			}
-			else if (key_down.mods & tr::keymods::CTRL && key_down.key == tr::keycode::C) {
+			else if (key_down.mods & mods::CTRL && key_down.key == key::C) {
 				input.on_copy();
 			}
-			else if (key_down.mods & tr::keymods::CTRL && key_down.key == tr::keycode::V) {
+			else if (key_down.mods & mods::CTRL && key_down.key == key::V) {
 				input.on_paste();
 			}
-			else if (key_down.key == tr::keycode::BACKSPACE || key_down.key == tr::keycode::DELETE) {
-				if (key_down.mods & tr::keymods::SHIFT) {
+			else if (key_down.key == key::BACKSPACE || key_down.key == key::DELETE) {
+				if (key_down.mods & mods::SHIFT) {
 					input.on_clear();
 				}
 				else {
@@ -206,8 +232,8 @@ void ui_manager::handle_event(const tr::event& event)
 			}
 		}
 		else {
-			if (key_down.key == tr::keycode::TAB) {
-				if (key_down.mods & tr::keymods::SHIFT) {
+			if (key_down.key == key::TAB) {
+				if (key_down.mods & mods::SHIFT) {
 					move_input_focus_backward();
 				}
 				else {
@@ -215,10 +241,14 @@ void ui_manager::handle_event(const tr::event& event)
 				}
 			}
 			else {
-				for (auto& p : _objects) {
+				for (unique_ptr<widget>& p : _objects) {
 					shortcutable* sp{dynamic_cast<shortcutable*>(p.get())};
-					if (sp != nullptr && sp->chord_key == key_down.key && sp->chord_mods == key_down.mods) {
-						sp->on_shortcut();
+					if (sp != nullptr) {
+						for (const key_chord& chord : sp->chords) {
+							if (chord.key == key_down.key && chord.mods == key_down.mods) {
+								sp->on_shortcut();
+							}
+						}
 					}
 				}
 			}
@@ -232,14 +262,14 @@ void ui_manager::handle_event(const tr::event& event)
 
 void ui_manager::update() noexcept
 {
-	for (auto& p : _objects) {
+	for (unique_ptr<widget>& p : _objects) {
 		p->update();
 	}
 }
 
 void ui_manager::add_to_renderer() noexcept
 {
-	for (auto& p : _objects) {
+	for (unique_ptr<widget>& p : _objects) {
 		p->add_to_renderer();
 	}
 	if (_hovered != _objects.end()) {
