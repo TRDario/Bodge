@@ -1,5 +1,5 @@
-#include "../../include/ui/widget.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -334,12 +334,13 @@ void clickable_text_widget::on_shortcut() noexcept
 
 ////////////////////////////////////////////////////////// TEXT_LINE_INPUT_WIDGET /////////////////////////////////////////////////////////
 
-text_line_input_widget::text_line_input_widget(string&& name, vec2 pos, align alignment, float font_size, action_callback enter_cb,
-											   u8 max_size, string&& starting_text)
+text_line_input_widget::text_line_input_widget(string&& name, vec2 pos, align alignment, float font_size, status_callback status_cb,
+											   action_callback enter_cb, u8 max_size, string&& starting_text)
 	: basic_text_widget{std::move(name), pos,
 						alignment,       font::LANGUAGE,
 						font_size,       [this](const string&) { return buffer.empty() ? std::string{localization["empty"]} : buffer; }}
 	, buffer{std::move(starting_text)}
+	, _status_cb{std::move(status_cb)}
 	, _enter_cb{std::move(enter_cb)}
 	, _max_size{max_size}
 {
@@ -348,7 +349,10 @@ text_line_input_widget::text_line_input_widget(string&& name, vec2 pos, align al
 void text_line_input_widget::add_to_renderer()
 {
 	interpolated_rgba8 real_color{color};
-	if (buffer.empty()) {
+	if (!holdable()) {
+		color = {80, 80, 80, 160};
+	}
+	else if (buffer.empty()) {
 		rgba8 real{real_color};
 		color = {static_cast<u8>(real.r / 2), static_cast<u8>(real.g / 2), static_cast<u8>(real.b / 2), real.a};
 	}
@@ -358,7 +362,7 @@ void text_line_input_widget::add_to_renderer()
 
 bool text_line_input_widget::holdable() const noexcept
 {
-	return true;
+	return _status_cb();
 }
 
 void text_line_input_widget::on_hover() noexcept

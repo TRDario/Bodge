@@ -1,6 +1,6 @@
-#include "../../include/state/replays_state.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/replay_state.hpp"
+#include "../../include/state/replays_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
@@ -138,8 +138,7 @@ void replays_state::set_up_ui()
 	for (int i = 0; i < 5; ++i) {
 		const optional<map<string, replay_header>::iterator> opt_it{it != _replays.end() ? optional{it++} : std::nullopt};
 		replay_widget& widget{_ui.emplace<replay_widget>(format("replay{}", i), vec2{i % 2 == 0 ? 250 : 750, 179 + 150 * i}, CENTER,
-														 STATUS_CB, REPLAY_ACTION_CB, opt_it,
-														 static_cast<key::enum_t>(static_cast<int>(key::TOP_ROW_1) + i))};
+														 STATUS_CB, REPLAY_ACTION_CB, opt_it, tr::make_top_row_keycode(i + 1))};
 		widget.pos.change({500, 179 + 150 * i}, 0.5_s);
 		widget.unhide(0.5_s);
 	}

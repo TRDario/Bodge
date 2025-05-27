@@ -1,5 +1,5 @@
-#include "../../include/ui/ui_manager.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/ui/ui_manager.hpp"
 
 //
 
@@ -215,21 +215,21 @@ void ui_manager::handle_event(const tr::event& event)
 				clear_input_focus();
 			}
 			else if (key_down.key == key::TAB) {
-				if (key_down.mods & mods::SHIFT) {
+				if (key_down.mods == mods::SHIFT) {
 					move_input_focus_backward();
 				}
 				else {
 					move_input_focus_forward();
 				}
 			}
-			else if (key_down.mods & mods::CTRL && key_down.key == key::C) {
+			else if (key_down.mods == mods::CTRL && key_down.key == key::C) {
 				input.on_copy();
 			}
-			else if (key_down.mods & mods::CTRL && key_down.key == key::V) {
+			else if (key_down.mods == mods::CTRL && key_down.key == key::V) {
 				input.on_paste();
 			}
 			else if (key_down.key == key::BACKSPACE || key_down.key == key::DELETE) {
-				if (key_down.mods & mods::SHIFT) {
+				if (key_down.mods == mods::SHIFT) {
 					input.on_clear();
 				}
 				else {
@@ -242,7 +242,7 @@ void ui_manager::handle_event(const tr::event& event)
 		}
 		else {
 			if (key_down.key == key::TAB) {
-				if (key_down.mods & mods::SHIFT) {
+				if (key_down.mods == mods::SHIFT) {
 					move_input_focus_backward();
 				}
 				else {

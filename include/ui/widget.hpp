@@ -268,8 +268,8 @@ class text_line_input_widget : public basic_text_widget, public mousable, public
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a text line input wiget.
-	text_line_input_widget(string&& name, vec2 pos, align alignment, float font_size, action_callback enter_cb, u8 max_size,
-						   string&& starting_text = {});
+	text_line_input_widget(string&& name, vec2 pos, align alignment, float font_size, status_callback status_cb, action_callback enter_cb,
+						   u8 max_size, string&& starting_text = {});
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
@@ -298,6 +298,8 @@ class text_line_input_widget : public basic_text_widget, public mousable, public
 	void on_paste() override;
 
   private:
+	// Callback used to determine the status of the widget.
+	status_callback _status_cb;
 	// Callback called when enter is pressed.
 	action_callback _enter_cb;
 	// Maximum allowed size of the buffer.

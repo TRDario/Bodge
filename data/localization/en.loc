@@ -3,7 +3,9 @@ language_name = "English"
 copyright = "©2025 TRDario"
 version   = "a0.1.0"
 
+enter_your_name = "ENTER YOUR NAME"
 empty = "(EMPTY...)"
+confirm = "CONFIRM"
 
 start_game = "START GAME"
 replays    = "REPLAYS"

@@ -1,5 +1,5 @@
-#include "../../include/state/game_state.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/state/game_state.hpp"
 // #include "../../include/game/game_over_state.hpp"
 #include "../../include/state/pause_state.hpp"
 
@@ -27,16 +27,16 @@ unique_ptr<state> game_state::handle_event(const tr::event& event)
 
 unique_ptr<state> game_state::update(tr::duration)
 {
+	++_timer;
 	switch (_substate) {
 	case substate::PLAYING:
-		++_timer;
 		_game.update();
 		if (_game.game_over()) {
 			// return make_unique<game_over_state>(std::move(_game));
 		}
 		break;
 	case substate::STARTING:
-		if (++_timer >= 0.5_s) {
+		if (_timer >= 0.5_s) {
 			_substate = substate::PLAYING;
 			_timer = 0;
 		}

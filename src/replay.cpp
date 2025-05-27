@@ -55,11 +55,11 @@ replay::replay(const string& filename)
 	ifstream file{open_file_r(path, std::ios::binary)};
 
 	binary_read(file, encrypted);
-	tr::decrypt_to(encrypted, decrypted);
+	tr::decrypt_to(decrypted, encrypted);
 	binary_read(decrypted, _header);
 
 	binary_read(file, encrypted);
-	tr::decrypt_to(encrypted, decrypted);
+	tr::decrypt_to(decrypted, encrypted);
 	binary_read(decrypted, _inputs);
 	_next = _inputs.begin();
 	LOG(INFO, "Loaded replay '{}' from '{}'.", _header.name, path.string());
@@ -98,12 +98,12 @@ void replay::save_to_file() noexcept
 		std::ostringstream bufstream{std::ios::binary};
 		vector<std::byte> buffer;
 		binary_write(bufstream, _header);
-		encrypt_to(range_bytes(bufstream.view()), rand<u8>(rng), buffer);
+		encrypt_to(buffer, range_bytes(bufstream.view()), rand<u8>(rng));
 		binary_write(file, buffer);
 
 		bufstream.str({});
 		binary_write(bufstream, _inputs);
-		encrypt_to(range_bytes(bufstream.view()), rand<u8>(rng), buffer);
+		encrypt_to(buffer, range_bytes(bufstream.view()), rand<u8>(rng));
 		binary_write(file, buffer);
 		LOG(INFO, "Saved replay '{}' to '{}'.", _header.name, base_path.string());
 	}

@@ -1,5 +1,6 @@
 #include "../include/engine.hpp"
 #include "../include/settings.hpp"
+#include "../include/state/name_entry_state.hpp"
 #include "../include/state/title_state.hpp"
 
 using namespace std::chrono_literals;
@@ -183,7 +184,12 @@ void engine::initialize()
 
 void engine::set_main_menu_state()
 {
-	engine_data->state.state = make_unique<title_state>();
+	if (scorefile.name.empty()) {
+		engine_data->state.state = make_unique<name_entry_state>();
+	}
+	else {
+		engine_data->state.state = make_unique<title_state>();
+	}
 }
 
 void engine::apply_settings(const settings_t& old_settings)

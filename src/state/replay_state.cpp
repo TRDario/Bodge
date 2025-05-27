@@ -1,5 +1,5 @@
-#include "../../include/state/replay_state.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/state/replay_state.hpp"
 #include "../../include/state/replays_state.hpp"
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
@@ -30,10 +30,9 @@ unique_ptr<replay_state::state> replay_state::handle_event(const tr::event& even
 
 unique_ptr<replay_state::state> replay_state::update(tr::duration)
 {
+	++_timer;
 	switch (_substate) {
 	case substate::WATCHING:
-		++_timer;
-
 		if (keyboard::held_mods() & mods::SHIFT) {
 			if (_timer % 4 == 0) {
 				_game.update();
@@ -63,13 +62,13 @@ unique_ptr<replay_state::state> replay_state::update(tr::duration)
 		}
 		return nullptr;
 	case substate::STARTING:
-		if (++_timer >= 0.5_s) {
+		if (_timer >= 0.5_s) {
 			_substate = substate::WATCHING;
 			_timer = 0;
 		}
 		return nullptr;
 	case substate::EXITING:
-		return ++_timer >= 1_s ? make_unique<replays_state>() : nullptr;
+		return _timer >= 1_s ? make_unique<replays_state>() : nullptr;
 	}
 }
 
