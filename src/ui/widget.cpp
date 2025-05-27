@@ -332,6 +332,124 @@ void clickable_text_widget::on_shortcut() noexcept
 	}
 }
 
+////////////////////////////////////////////////////////// TEXT_LINE_INPUT_WIDGET /////////////////////////////////////////////////////////
+
+text_line_input_widget::text_line_input_widget(string&& name, vec2 pos, align alignment, float font_size, action_callback enter_cb,
+											   u8 max_size, string&& starting_text)
+	: basic_text_widget{std::move(name), pos,
+						alignment,       font::LANGUAGE,
+						font_size,       [this](const string&) { return buffer.empty() ? std::string{localization["empty"]} : buffer; }}
+	, buffer{std::move(starting_text)}
+	, _enter_cb{std::move(enter_cb)}
+	, _max_size{max_size}
+{
+}
+
+void text_line_input_widget::add_to_renderer()
+{
+	interpolated_rgba8 real_color{color};
+	if (buffer.empty()) {
+		rgba8 real{real_color};
+		color = {static_cast<u8>(real.r / 2), static_cast<u8>(real.g / 2), static_cast<u8>(real.b / 2), real.a};
+	}
+	basic_text_widget::add_to_renderer();
+	color = real_color;
+}
+
+bool text_line_input_widget::holdable() const noexcept
+{
+	return true;
+}
+
+void text_line_input_widget::on_hover() noexcept
+{
+	if (!_has_focus) {
+		color.change({220, 220, 220, 220}, 0.2_s);
+	}
+}
+
+void text_line_input_widget::on_unhover() noexcept
+{
+	if (!_has_focus) {
+		color.change({160, 160, 160, 160}, 0.2_s);
+	}
+}
+
+void text_line_input_widget::on_hold_begin() noexcept
+{
+	color = {32, 32, 32, 255};
+}
+
+void text_line_input_widget::on_hold_transfer_in() noexcept
+{
+	color = {32, 32, 32, 255};
+}
+
+void text_line_input_widget::on_hold_transfer_out() noexcept
+{
+	color = rgba8{160, 160, 160, 160};
+}
+
+void text_line_input_widget::on_hold_end() noexcept
+{
+	_has_focus = true;
+	color = {255, 255, 255, 255};
+}
+
+void text_line_input_widget::on_gain_focus()
+{
+	_has_focus = true;
+	color.change({255, 255, 255, 255}, 0.2_s);
+}
+
+void text_line_input_widget::on_lose_focus()
+{
+	_has_focus = false;
+	color.change({160, 160, 160, 160}, 0.2_s);
+}
+
+void text_line_input_widget::on_write(string_view input)
+{
+	buffer += input;
+	size_t length{tr::utf8::length(buffer)};
+	while (length-- > _max_size) {
+		tr::utf8::pop_back(buffer);
+	}
+}
+
+void text_line_input_widget::on_enter()
+{
+	_enter_cb();
+}
+
+void text_line_input_widget::on_erase()
+{
+	if (!buffer.empty()) {
+		tr::utf8::pop_back(buffer);
+	}
+}
+
+void text_line_input_widget::on_clear()
+{
+	buffer.clear();
+}
+
+void text_line_input_widget::on_copy()
+{
+	keyboard::set_clipboard_text(buffer);
+}
+
+void text_line_input_widget::on_paste()
+{
+	if (keyboard::clipboard_has_text()) {
+		buffer += keyboard::clipboard_text();
+		size_t length{tr::utf8::length(buffer)};
+		while (length-- > _max_size) {
+			tr::utf8::pop_back(buffer);
+		}
+	}
+}
+
 /////////////////////////////////////////////////////////// COLOR_PREVIEW_WIDGET //////////////////////////////////////////////////////////
 
 color_preview_widget::color_preview_widget(string&& name, vec2 pos, align alignment, u16& hue_ref) noexcept

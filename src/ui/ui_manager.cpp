@@ -190,12 +190,18 @@ void ui_manager::handle_event(const tr::event& event)
 		}
 	} break;
 	case tr::mouse_up_event::ID: {
-		const tr::mouse_up_event mouse_down{event};
-		if (mouse_down.button == tr::mouse_button::LEFT) {
+		const tr::mouse_up_event mouse_up{event};
+		if (mouse_up.button == tr::mouse_button::LEFT) {
 			if (_hovered != _objects.end()) {
 				mousable& hovered_mousable{*dynamic_cast<mousable*>(_hovered->get())};
 				if (hovered_mousable.holdable()) {
 					hovered_mousable.on_hold_end();
+					writable* hovered_writable{dynamic_cast<writable*>(_hovered->get())};
+					if (hovered_writable) {
+						event_queue::send_text_input_events(true);
+						_input = _hovered;
+						hovered_writable->on_gain_focus();
+					}
 				}
 			}
 		}
@@ -229,6 +235,9 @@ void ui_manager::handle_event(const tr::event& event)
 				else {
 					input.on_erase();
 				}
+			}
+			else if (key_down.key == key::ENTER) {
+				input.on_enter();
 			}
 		}
 		else {

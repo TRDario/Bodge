@@ -1,32 +1,19 @@
-[16:46:43] [I] Loaded settings from '/data/Programming/Bodge/userdir/settings.dat'.
-[16:46:43] [I] Loaded scores from '/data/Programming/Bodge/userdir/scorefile.dat'.
-[16:46:43] [I] Found 2 language(s).
-[16:46:43] [I] Loaded English localization from '/data/Programming/Bodge/data/localization/en.loc'.
-[16:46:43] [I] Loaded font 'charge_vector_b.otf'.
-[16:46:43] [I] Loaded font 'linux_biolinum_rb.ttf'.
-[16:46:43] [I] Initialized the audio system.
-[16:46:43] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/click.ogg': File not found: '/data/Programming/Bodge/data/audio/click.ogg'.
-[16:46:43] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/confirm.ogg': File not found: '/data/Programming/Bodge/data/audio/confirm.ogg'.
-[16:46:43] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/back.ogg': File not found: '/data/Programming/Bodge/data/audio/back.ogg'.
-[16:46:43] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/hit.ogg': File not found: '/data/Programming/Bodge/data/audio/hit.ogg'.
-[16:46:43] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/explosion.ogg': File not found: '/data/Programming/Bodge/data/audio/explosion.ogg'.
-[16:46:43] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/bounce1.ogg': File not found: '/data/Programming/Bodge/data/audio/bounce1.ogg'.
-[16:46:43] [I] Initialized the engine.
-[16:46:44] [I] Loaded replay header from '/data/Programming/Bodge/userdir/replays/replay(0).rpy'.
-[16:46:44] [I] Loaded replay header from '/data/Programming/Bodge/userdir/replays/replay(1).rpy'.
-[16:46:44] [I] Loaded replay header from '/data/Programming/Bodge/userdir/replays/replay.rpy'.
-[16:46:44] [I] Loaded replay headers.
-[16:46:46] [I] Loaded replay header from '/data/Programming/Bodge/userdir/replays/replay(0).rpy'.
-[16:46:46] [I] Loaded replay header from '/data/Programming/Bodge/userdir/replays/replay(1).rpy'.
-[16:46:46] [I] Loaded replay header from '/data/Programming/Bodge/userdir/replays/replay.rpy'.
-[16:46:46] [I] Loaded replay headers.
-[16:46:52] [I] Loaded replay 'replay' from '/data/Programming/Bodge/userdir/replays/replay(1).rpy'.
-[16:47:13] [I] Loaded replay header from '/data/Programming/Bodge/userdir/replays/replay(0).rpy'.
-[16:47:13] [I] Loaded replay header from '/data/Programming/Bodge/userdir/replays/replay(1).rpy'.
-[16:47:13] [I] Loaded replay header from '/data/Programming/Bodge/userdir/replays/replay.rpy'.
-[16:47:13] [I] Loaded replay headers.
-[16:47:36] [I] Shut down the engine.
-[16:47:36] [I] Shut down the audio system.
-[16:47:36] [I] Unloaded all fonts.
-[16:47:36] [I] Saved scores to '/data/Programming/Bodge/userdir/scorefile.dat'.
-[16:47:36] [I] Saved settings to '/data/Programming/Bodge/userdir/settings.dat'.
+[12:42:01] [I] Loaded settings from '/data/Programming/Bodge/userdir/settings.dat'.
+[12:42:01] [I] Loaded scores from '/data/Programming/Bodge/userdir/scorefile.dat'.
+[12:42:01] [I] Found 2 language(s).
+[12:42:01] [I] Loaded English localization from '/data/Programming/Bodge/data/localization/en.loc'.
+[12:42:01] [I] Loaded font 'charge_vector_b.otf'.
+[12:42:01] [I] Loaded font 'linux_biolinum_rb.ttf'.
+[12:42:01] [I] Initialized the audio system.
+[12:42:01] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/click.ogg': File not found: '/data/Programming/Bodge/data/audio/click.ogg'.
+[12:42:01] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/confirm.ogg': File not found: '/data/Programming/Bodge/data/audio/confirm.ogg'.
+[12:42:01] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/back.ogg': File not found: '/data/Programming/Bodge/data/audio/back.ogg'.
+[12:42:01] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/hit.ogg': File not found: '/data/Programming/Bodge/data/audio/hit.ogg'.
+[12:42:01] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/explosion.ogg': File not found: '/data/Programming/Bodge/data/audio/explosion.ogg'.
+[12:42:01] [E] Failed to load audio from '/data/Programming/Bodge/data/audio/bounce1.ogg': File not found: '/data/Programming/Bodge/data/audio/bounce1.ogg'.
+[12:42:01] [I] Initialized the engine.
+[12:42:15] [I] Shut down the engine.
+[12:42:15] [I] Shut down the audio system.
+[12:42:15] [I] Unloaded all fonts.
+[12:42:15] [I] Saved scores to '/data/Programming/Bodge/userdir/scorefile.dat'.
+[12:42:15] [I] Saved settings to '/data/Programming/Bodge/userdir/settings.dat'.

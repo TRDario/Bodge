@@ -2,17 +2,17 @@
 #include "../game/game.hpp"
 #include "../ui/ui_manager.hpp"
 
-// Settings screen state.
-class settings_state : public state {
+// Scores screen state.
+class scores_state : public state {
   public:
 	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
 
-	constexpr static u32 ID{4};
+	constexpr static u32 ID{3};
 
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	// Creates a settings screen state.
-	settings_state(game&& game);
+	// Creates a scores screen state with an ongoing game.
+	scores_state(game&& game);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -22,27 +22,28 @@ class settings_state : public state {
 	void draw() override;
 
   private:
-	// Substates within the main menu state.
+	// Substates within the scores screen state.
 	enum class substate : u8 {
-		// In the settings screen.
-		IN_SETTINGS,
-		// Exiting the settings screen.
-		ENTERING_TITLE
+		// In the scores screen.
+		IN_SCORES,
+		// Switching the gamemode.
+		SWITCHING_GAMEMODE,
+		// Switching the page.
+		SWITCHING_PAGE,
+		// Exiting the scores screen.
+		EXITING_TO_TITLE
 	};
 
-	// The current menu substate.
+	// The current screen substate.
 	substate _substate;
+	// The current score page.
+	u16 _page;
 	// Internal timer.
 	ticks _timer;
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
 	game _game;
-	// The pending settings.
-	settings_t _pending;
-
-	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
-
-	// Sets up the exit animation.
-	void set_up_exit_animation() noexcept;
+	// Iterator to the currently selected gamemode.
+	unordered_map<gamemode, vector<score>>::iterator _current;
 };

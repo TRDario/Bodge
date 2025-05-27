@@ -42,7 +42,7 @@ void tooltip::add_to_renderer(string_view text)
 
 	array<tintvtx, 4> texbuf;
 	fill_rect_vtx(positions(texbuf), {tl + OUTLINE / 2 + PADDING, _last_size});
-	fill_rect_vtx(uvs(texbuf), {{}, clamp(_last_size * engine::render_scale() / vec2{_texture.size()}, {}, {1, 1})});
+	fill_rect_vtx(uvs(texbuf), {{}, _last_size * engine::render_scale() / vec2{_texture.size()}});
 	rs::fill(colors(texbuf), rgba8{255, 255, 255, 255});
 	engine::layered_renderer().add_tex_quad(layer::TOOLTIP, texbuf);
 }

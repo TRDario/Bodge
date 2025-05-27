@@ -3,6 +3,8 @@ language_name = "English"
 copyright = "©2025 TRDario"
 version   = "a0.1.0"
 
+empty = "(EMPTY...)"
+
 start_game = "START GAME"
 replays    = "REPLAYS"
 scores     = "SCORES"

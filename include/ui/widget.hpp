@@ -129,6 +129,8 @@ struct writable {
 	virtual void on_lose_focus() = 0;
 	// Callback for character insertion.
 	virtual void on_write(string_view input) = 0;
+	// Callback for when enter is pressed.
+	virtual void on_enter() = 0;
 	// Callback for character deletion.
 	virtual void on_erase() = 0;
 	// Callback for input clearing.
@@ -258,6 +260,50 @@ class clickable_text_widget : public basic_text_widget, public mousable, public 
 	status_callback _status_cb;
 	// Callback called when the widget is interacted with.
 	action_callback _action_cb;
+};
+
+// Widget for inputting a line of text.
+class text_line_input_widget : public basic_text_widget, public mousable, public writable {
+  public:
+	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
+
+	// Creates a text line input wiget.
+	text_line_input_widget(string&& name, vec2 pos, align alignment, float font_size, action_callback enter_cb, u8 max_size,
+						   string&& starting_text = {});
+
+	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
+
+	// The input buffer.
+	string buffer;
+
+	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
+
+	void add_to_renderer() override;
+
+	bool holdable() const noexcept override;
+	void on_hover() noexcept override;
+	void on_unhover() noexcept override;
+	void on_hold_begin() noexcept override;
+	void on_hold_transfer_in() noexcept override;
+	void on_hold_transfer_out() noexcept override;
+	void on_hold_end() noexcept override;
+
+	void on_gain_focus() override;
+	void on_lose_focus() override;
+	void on_write(string_view input) override;
+	void on_enter() override;
+	void on_erase() override;
+	void on_clear() override;
+	void on_copy() override;
+	void on_paste() override;
+
+  private:
+	// Callback called when enter is pressed.
+	action_callback _enter_cb;
+	// Maximum allowed size of the buffer.
+	u8 _max_size;
+	// Keeps track of whether the widget has input focus.
+	bool _has_focus;
 };
 
 ///////////////////////////////////////////////////////////// NON-TEXT WIDGETS ////////////////////////////////////////////////////////////

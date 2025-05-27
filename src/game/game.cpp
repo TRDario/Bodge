@@ -123,12 +123,6 @@ void active_game::update()
 	const vec2 input{engine::mouse_pos()};
 	update(input);
 	_replay.append(input);
-	if (timestamp() == 15_s) {
-		_replay.set_header(
-			{"test", ch::duration_cast<ch::seconds>(ch::system_clock::now().time_since_epoch()).count(), timestamp(), {true, false}},
-			"replay");
-		_replay.save_to_file();
-	}
 }
 
 ////////////////////////////////////////////////////////////// REPLAY_GAME ////////////////////////////////////////////////////////////////

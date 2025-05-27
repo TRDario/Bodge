@@ -183,18 +183,19 @@ font font_manager_t::determine_font(string_view text) noexcept
 
 vec2 font_manager_t::text_size(string_view text, font font, ttf_style style, float size, float outline, float max_w)
 {
-	outline = max(static_cast<int>(outline * engine::render_scale()), 1);
+	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
 	if (max_w != UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * engine::render_scale();
 	}
+	const float outline_max_w{max_w != UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : UNLIMITED_WIDTH};
 
 	ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	glm::ivec2 text_size{0, font_ref.text_size(text, max_w, style, outline).y};
+	glm::ivec2 text_size{0, font_ref.text_size(text, outline_max_w, style, scaled_outline).y};
 	for (string_view line : split_into_lines(text)) {
-		tr::ttf_measure_result result{font_ref.measure_text(line, max_w, style, outline)};
+		tr::ttf_measure_result result{font_ref.measure_text(line, outline_max_w, style, scaled_outline)};
 		if (result.text != line) {
-			text_size.x = max_w;
+			text_size.x = outline_max_w;
 			break;
 		}
 		else {
