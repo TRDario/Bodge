@@ -16,7 +16,7 @@ gamemode::gamemode(const path& path)
 	binary_read(decrypt(flush_binary(file)), *this);
 }
 
-void tr::binary_reader<gamemode>::read_from_stream(std::istream& is, gamemode& out)
+void tr::binary_reader<gamemode>::read_from_stream(istream& is, gamemode& out)
 {
 	binary_read(is, out.name);
 	binary_read(is, out.author);
@@ -26,7 +26,7 @@ void tr::binary_reader<gamemode>::read_from_stream(std::istream& is, gamemode& o
 	binary_read(is, out.ball);
 }
 
-std::span<const std::byte> tr::binary_reader<gamemode>::read_from_span(std::span<const std::byte> span, gamemode& out)
+span<const byte> tr::binary_reader<gamemode>::read_from_span(span<const byte> span, gamemode& out)
 {
 	span = binary_read(span, out.name);
 	span = binary_read(span, out.author);
@@ -36,7 +36,7 @@ std::span<const std::byte> tr::binary_reader<gamemode>::read_from_span(std::span
 	return binary_read(span, out.ball);
 }
 
-void tr::binary_writer<gamemode>::write_to_stream(std::ostream& os, const gamemode& in)
+void tr::binary_writer<gamemode>::write_to_stream(ostream& os, const gamemode& in)
 {
 	binary_write(os, in.name);
 	binary_write(os, in.author);
@@ -46,7 +46,7 @@ void tr::binary_writer<gamemode>::write_to_stream(std::ostream& os, const gamemo
 	binary_write(os, in.ball);
 }
 
-std::span<std::byte> tr::binary_writer<gamemode>::write_to_span(std::span<std::byte> span, const gamemode& in)
+span<byte> tr::binary_writer<gamemode>::write_to_span(span<byte> span, const gamemode& in)
 {
 	span = binary_write(span, in.name);
 	span = binary_write(span, in.author);

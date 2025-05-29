@@ -62,8 +62,8 @@ void settings_t::raw_load_from_file() noexcept
 	try {
 		const path path{cli_settings.userdir / "settings.dat"};
 		ifstream file{open_file_r(path, std::ios::binary)};
-		const vector<std::byte> raw{decrypt(flush_binary(file))};
-		std::span<const std::byte> data{raw};
+		const vector<byte> raw{decrypt(flush_binary(file))};
+		span<const byte> data{raw};
 		if (binary_read<u8>(data) != SETTINGS_VERSION) {
 			LOG(ERROR, "Failed to load settings from '{}': Wrong settings file version.", path.string());
 			return;
@@ -131,8 +131,8 @@ void settings_t::save_to_file() noexcept
 		std::ostringstream buffer;
 		binary_write(buffer, SETTINGS_VERSION);
 		binary_write(buffer, *this);
-		const vector<std::byte> encrypted{encrypt(range_bytes(buffer.view()), rand<u8>(rng))};
-		binary_write(file, std::span{encrypted});
+		const vector<byte> encrypted{encrypt(range_bytes(buffer.view()), rand<u8>(rng))};
+		binary_write(file, span{encrypted});
 		LOG(INFO, "Saved settings to '{}'.", path.string());
 	}
 	catch (std::exception& err) {

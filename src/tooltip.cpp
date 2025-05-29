@@ -38,7 +38,7 @@ void tooltip::add_to_renderer(string_view text)
 	engine::layered_renderer().add_color_mesh(layer::TOOLTIP, clrbuf, std::move(indices));
 	fill_rect_vtx(positions(clrbuf), {tl + OUTLINE, _last_size + 2 * PADDING});
 	rs::fill(colors(clrbuf), rgba8{0, 0, 0, 255});
-	engine::layered_renderer().add_color_quad(layer::TOOLTIP, std::span<clrvtx, 4>{clrbuf.begin(), clrbuf.begin() + 4});
+	engine::layered_renderer().add_color_quad(layer::TOOLTIP, span<clrvtx, 4>{clrbuf.begin(), clrbuf.begin() + 4});
 
 	array<tintvtx, 4> texbuf;
 	fill_rect_vtx(positions(texbuf), {tl + OUTLINE / 2 + PADDING, _last_size});

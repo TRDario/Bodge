@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/ui/widget.hpp"
+#include "../../include/engine.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -163,6 +163,11 @@ void widget::update()
 	_opacity.update();
 }
 
+bool widget::active() const noexcept
+{
+	return false;
+}
+
 void widget::release_graphical_resources() noexcept {}
 
 //////////////////////////////////////////////////////////////// MOUSABLE /////////////////////////////////////////////////////////////////
@@ -251,11 +256,6 @@ tooltippable_text_widget::tooltippable_text_widget(string&& name, vec2 pos, alig
 {
 }
 
-bool tooltippable_text_widget::holdable() const noexcept
-{
-	return false;
-}
-
 ////////////////////////////////////////////////////////// CLICKABLE_TEXT_WIDGET //////////////////////////////////////////////////////////
 
 clickable_text_widget::clickable_text_widget(string&& name, vec2 pos, align alignment, float font_size, status_callback status_cb,
@@ -282,14 +282,14 @@ clickable_text_widget::clickable_text_widget(string&& name, vec2 pos, align alig
 void clickable_text_widget::add_to_renderer()
 {
 	interpolated_rgba8 real_color{color};
-	if (!holdable()) {
+	if (!active()) {
 		color = {80, 80, 80, 160};
 	}
 	basic_text_widget::add_to_renderer();
 	color = real_color;
 }
 
-bool clickable_text_widget::holdable() const noexcept
+bool clickable_text_widget::active() const noexcept
 {
 	return _status_cb();
 }
@@ -327,7 +327,7 @@ void clickable_text_widget::on_hold_end() noexcept
 
 void clickable_text_widget::on_shortcut() noexcept
 {
-	if (holdable()) {
+	if (active()) {
 		_action_cb();
 	}
 }
@@ -349,7 +349,7 @@ text_line_input_widget::text_line_input_widget(string&& name, vec2 pos, align al
 void text_line_input_widget::add_to_renderer()
 {
 	interpolated_rgba8 real_color{color};
-	if (!holdable()) {
+	if (!active()) {
 		color = {80, 80, 80, 160};
 	}
 	else if (buffer.empty()) {
@@ -360,7 +360,7 @@ void text_line_input_widget::add_to_renderer()
 	color = real_color;
 }
 
-bool text_line_input_widget::holdable() const noexcept
+bool text_line_input_widget::active() const noexcept
 {
 	return _status_cb();
 }
@@ -503,7 +503,7 @@ vec2 arrow_widget::size() const noexcept
 
 void arrow_widget::add_to_renderer()
 {
-	const rgba8 color{holdable() ? rgba8{_color} : rgba8{80, 80, 80, 160}};
+	const rgba8 color{active() ? rgba8{_color} : rgba8{80, 80, 80, 160}};
 	array<clrvtx, 15> buffer{_right ? RIGHT_ARROW_MESH : LEFT_ARROW_MESH};
 	for (clrvtx& vtx : buffer) {
 		vtx.pos += tl();
@@ -524,7 +524,7 @@ void arrow_widget::update() noexcept
 	widget::update();
 }
 
-bool arrow_widget::holdable() const noexcept
+bool arrow_widget::active() const noexcept
 {
 	return _status_cb();
 }
@@ -562,9 +562,7 @@ void arrow_widget::on_hold_end() noexcept
 
 void arrow_widget::on_shortcut() noexcept
 {
-	if (holdable()) {
-		_action_cb();
-	}
+	_action_cb();
 }
 
 ////////////////////////////////////////////////////// REPLAY_PLAYBACK_INDICATOR_WIDGET ///////////////////////////////////////////////////
@@ -652,7 +650,7 @@ void replay_widget::add_to_renderer()
 		clickable_text_widget::add_to_renderer();
 
 		const vec2 text_size{clickable_text_widget::size()};
-		const rgba8 color{holdable() ? rgba8{this->color} : rgba8{128, 128, 128, 128}};
+		const rgba8 color{active() ? rgba8{this->color} : rgba8{128, 128, 128, 128}};
 		int icons{(*_it)->second.flags.exited_prematurely + (*_it)->second.flags.modified_game_speed};
 		int i = 0;
 

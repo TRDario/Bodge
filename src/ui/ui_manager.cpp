@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/ui/ui_manager.hpp"
+#include "../../include/engine.hpp"
 
 //
 
@@ -127,7 +127,7 @@ void ui_manager::handle_event(const tr::event& event)
 		for (list<unique_ptr<widget>>::iterator it = _objects.begin(); it != _objects.end(); ++it) {
 			mousable* mp{dynamic_cast<mousable*>(it->get())};
 			if (mp != nullptr && frect2{(*it)->tl(), (*it)->size()}.contains(engine::to_game_coords(mouse_motion.pos))) {
-				if (_hovered == _objects.end() || !dynamic_cast<mousable*>(_hovered->get())->holdable()) {
+				if (_hovered == _objects.end() || !(*_hovered)->active()) {
 					_hovered = it;
 				}
 			}
@@ -136,7 +136,7 @@ void ui_manager::handle_event(const tr::event& event)
 		if (old_hovered_it != _hovered) {
 			if (old_hovered_it != _objects.end()) {
 				mousable& old_hovered{*dynamic_cast<mousable*>(old_hovered_it->get())};
-				if (mouse::held(tr::mouse_button::LEFT) && old_hovered.holdable()) {
+				if (mouse::held(tr::mouse_button::LEFT) && old_hovered_it->get()->active()) {
 					old_hovered.on_hold_transfer_out();
 				}
 				else {
@@ -145,7 +145,7 @@ void ui_manager::handle_event(const tr::event& event)
 			}
 			if (_hovered != _objects.end()) {
 				mousable& hovered{*dynamic_cast<mousable*>(_hovered->get())};
-				if (mouse::held(tr::mouse_button::LEFT) && hovered.holdable()) {
+				if (mouse::held(tr::mouse_button::LEFT) && (*_hovered)->active()) {
 					hovered.on_hold_transfer_in();
 				}
 				else {
@@ -162,9 +162,9 @@ void ui_manager::handle_event(const tr::event& event)
 			const list<unique_ptr<widget>>::iterator old_hovered_it{_hovered};
 			_hovered = _objects.end();
 			for (list<unique_ptr<widget>>::iterator it = _objects.begin(); it != _objects.end(); ++it) {
-				mousable* mp{dynamic_cast<mousable*>(it->get())};
-				if (mp != nullptr && frect2{(*it)->tl(), (*it)->size()}.contains(engine::to_game_coords(mouse_down.pos))) {
-					if (_hovered == _objects.end() || !dynamic_cast<mousable*>(_hovered->get())->holdable()) {
+				if (dynamic_cast<mousable*>(it->get()) != nullptr &&
+					frect2{(*it)->tl(), (*it)->size()}.contains(engine::to_game_coords(mouse_down.pos))) {
+					if (_hovered == _objects.end() || !(*_hovered)->active()) {
 						_hovered = it;
 					}
 				}
@@ -181,27 +181,21 @@ void ui_manager::handle_event(const tr::event& event)
 				}
 			}
 
-			if (_hovered != _objects.end()) {
-				mousable& hovered_mousable{*dynamic_cast<mousable*>(_hovered->get())};
-				if (hovered_mousable.holdable()) {
-					hovered_mousable.on_hold_begin();
-				}
+			if (_hovered != _objects.end() && (*_hovered)->active()) {
+				dynamic_cast<mousable*>(_hovered->get())->on_hold_begin();
 			}
 		}
 	} break;
 	case tr::mouse_up_event::ID: {
 		const tr::mouse_up_event mouse_up{event};
 		if (mouse_up.button == tr::mouse_button::LEFT) {
-			if (_hovered != _objects.end()) {
-				mousable& hovered_mousable{*dynamic_cast<mousable*>(_hovered->get())};
-				if (hovered_mousable.holdable()) {
-					hovered_mousable.on_hold_end();
-					writable* hovered_writable{dynamic_cast<writable*>(_hovered->get())};
-					if (hovered_writable) {
-						event_queue::send_text_input_events(true);
-						_input = _hovered;
-						hovered_writable->on_gain_focus();
-					}
+			if (_hovered != _objects.end() && (*_hovered)->active()) {
+				dynamic_cast<mousable*>(_hovered->get())->on_hold_end();
+				writable* hovered_writable{dynamic_cast<writable*>(_hovered->get())};
+				if (hovered_writable) {
+					event_queue::send_text_input_events(true);
+					_input = _hovered;
+					hovered_writable->on_gain_focus();
 				}
 			}
 		}
@@ -222,22 +216,24 @@ void ui_manager::handle_event(const tr::event& event)
 					move_input_focus_forward();
 				}
 			}
-			else if (key_down.mods == mods::CTRL && key_down.key == key::C) {
-				input.on_copy();
-			}
-			else if (key_down.mods == mods::CTRL && key_down.key == key::V) {
-				input.on_paste();
-			}
-			else if (key_down.key == key::BACKSPACE || key_down.key == key::DELETE) {
-				if (key_down.mods == mods::SHIFT) {
-					input.on_clear();
+			else if ((*_input)->active()) {
+				if (key_down.mods == mods::CTRL && key_down.key == key::C) {
+					input.on_copy();
 				}
-				else {
-					input.on_erase();
+				else if (key_down.mods == mods::CTRL && key_down.key == key::V) {
+					input.on_paste();
 				}
-			}
-			else if (key_down.key == key::ENTER) {
-				input.on_enter();
+				else if (key_down.key == key::BACKSPACE || key_down.key == key::DELETE) {
+					if (key_down.mods == mods::SHIFT) {
+						input.on_clear();
+					}
+					else {
+						input.on_erase();
+					}
+				}
+				else if (key_down.key == key::ENTER) {
+					input.on_enter();
+				}
 			}
 		}
 		else {
@@ -252,7 +248,7 @@ void ui_manager::handle_event(const tr::event& event)
 			else {
 				for (unique_ptr<widget>& p : _objects) {
 					shortcutable* sp{dynamic_cast<shortcutable*>(p.get())};
-					if (sp != nullptr) {
+					if (sp != nullptr && p->active()) {
 						for (const key_chord& chord : sp->chords) {
 							if (chord.key == key_down.key && chord.mods == key_down.mods) {
 								sp->on_shortcut();
@@ -264,7 +260,9 @@ void ui_manager::handle_event(const tr::event& event)
 		}
 	} break;
 	case tr::text_input_event::ID:
-		dynamic_cast<writable*>(_input->get())->on_write(tr::text_input_event{event}.text);
+		if (_input != _objects.end() && (*_input)->active()) {
+			dynamic_cast<writable*>(_input->get())->on_write(tr::text_input_event{event}.text);
+		}
 		break;
 	}
 }
@@ -273,6 +271,10 @@ void ui_manager::update() noexcept
 {
 	for (unique_ptr<widget>& p : _objects) {
 		p->update();
+	}
+
+	if (_input != _objects.end() && !(*_input)->active()) {
+		clear_input_focus();
 	}
 }
 

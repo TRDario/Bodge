@@ -17,14 +17,14 @@ struct replay_header : score {
 
 // Replay header binary reader.
 template <> struct tr::binary_reader<replay_header> {
-	static void read_from_stream(std::istream& is, replay_header& out);
-	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, replay_header& out);
+	static void read_from_stream(istream& is, replay_header& out);
+	static span<const byte> read_from_span(span<const byte> span, replay_header& out);
 };
 
 // Replay header binary writer.
 template <> struct tr::binary_writer<replay_header> {
-	static void write_to_stream(std::ostream& os, const replay_header& in);
-	static std::span<std::byte> write_to_span(std::span<std::byte> span, const replay_header& in);
+	static void write_to_stream(ostream& os, const replay_header& in);
+	static span<byte> write_to_span(span<byte> span, const replay_header& in);
 };
 
 ////////////////////////////////////////////////////////////////// REPLAY /////////////////////////////////////////////////////////////////

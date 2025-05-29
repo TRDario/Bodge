@@ -87,14 +87,14 @@ struct gamemode {
 
 // Gamemode binary reader.
 template <> struct tr::binary_reader<gamemode> {
-	static void read_from_stream(std::istream& is, gamemode& out);
-	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, gamemode& out);
+	static void read_from_stream(istream& is, gamemode& out);
+	static span<const byte> read_from_span(span<const byte> span, gamemode& out);
 };
 
 // Gamemode binary writer.
 template <> struct tr::binary_writer<gamemode> {
-	static void write_to_stream(std::ostream& os, const gamemode& in);
-	static std::span<std::byte> write_to_span(std::span<std::byte> span, const gamemode& in);
+	static void write_to_stream(ostream& os, const gamemode& in);
+	static span<byte> write_to_span(span<byte> span, const gamemode& in);
 };
 
 // Hashing function for a gamemode.

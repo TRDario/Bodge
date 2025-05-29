@@ -42,6 +42,11 @@ class widget {
 	// Unhides the widget gradually.
 	void unhide(u16 time) noexcept;
 
+	/////////////////////////////////////////////////////////////// STATUS ////////////////////////////////////////////////////////////////
+
+	// Gets whether the widget is active.
+	virtual bool active() const noexcept;
+
 	////////////////////////////////////////////////////////////// UPDATING ///////////////////////////////////////////////////////////////
 
 	// Updates the widget.
@@ -72,11 +77,6 @@ struct mousable {
 
 	// The tooptip callback (optional).
 	tooltip_callback tooltip_cb;
-
-	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
-
-	// Gets whether the widget is holdable.
-	virtual bool holdable() const noexcept = 0;
 
 	////////////////////////////////////////////////////////////// CALLBACKS //////////////////////////////////////////////////////////////
 
@@ -111,6 +111,7 @@ struct shortcutable {
 
 	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
 
+	// The list of key chords of the shortcuts of the widget.
 	vector<key_chord> chords;
 
 	////////////////////////////////////////////////////////////// CALLBACKS //////////////////////////////////////////////////////////////
@@ -214,7 +215,6 @@ class tooltippable_text_widget : public basic_text_widget, public mousable {
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	bool holdable() const noexcept override;
 	void on_hover() noexcept override {}
 	void on_unhover() noexcept override {}
 	void on_hold_begin() noexcept override {};
@@ -245,7 +245,7 @@ class clickable_text_widget : public basic_text_widget, public mousable, public 
 
 	void add_to_renderer() override;
 
-	bool holdable() const noexcept override;
+	bool active() const noexcept override;
 	void on_hover() noexcept override;
 	void on_unhover() noexcept override;
 	void on_hold_begin() noexcept override;
@@ -280,7 +280,7 @@ class text_line_input_widget : public basic_text_widget, public mousable, public
 
 	void add_to_renderer() override;
 
-	bool holdable() const noexcept override;
+	bool active() const noexcept override;
 	void on_hover() noexcept override;
 	void on_unhover() noexcept override;
 	void on_hold_begin() noexcept override;
@@ -343,7 +343,7 @@ class arrow_widget : public widget, public mousable, public shortcutable {
 	void add_to_renderer() override;
 	void update() noexcept override;
 
-	bool holdable() const noexcept override;
+	bool active() const noexcept override;
 	void on_hover() noexcept override;
 	void on_unhover() noexcept override;
 	void on_hold_begin() noexcept override;

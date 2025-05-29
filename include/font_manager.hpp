@@ -70,7 +70,7 @@ class font_manager_t {
 	// Janky optional-esque thing for fonts.
 	struct optional_font {
 		// Storage for the actual font.
-		alignas(optional_font_base) std::byte data[sizeof(optional_font_base)];
+		alignas(optional_font_base) byte data[sizeof(optional_font_base)];
 		// The state of the font object.
 		optional_font_state state{optional_font_state::USE_DEFAULT};
 

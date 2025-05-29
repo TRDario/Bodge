@@ -3,7 +3,7 @@
 
 ////////////////////////////////////////////////////////////// REPLAY HEADER //////////////////////////////////////////////////////////////
 
-void tr::binary_reader<replay_header>::read_from_stream(std::istream& is, replay_header& out)
+void tr::binary_reader<replay_header>::read_from_stream(istream& is, replay_header& out)
 {
 	binary_read<score>(is, out);
 	binary_read(is, out.name);
@@ -12,7 +12,7 @@ void tr::binary_reader<replay_header>::read_from_stream(std::istream& is, replay
 	binary_read(is, out.seed);
 }
 
-std::span<const std::byte> tr::binary_reader<replay_header>::read_from_span(std::span<const std::byte> span, replay_header& out)
+span<const byte> tr::binary_reader<replay_header>::read_from_span(span<const byte> span, replay_header& out)
 {
 	span = binary_read<score>(span, out);
 	span = binary_read(span, out.name);
@@ -21,7 +21,7 @@ std::span<const std::byte> tr::binary_reader<replay_header>::read_from_span(std:
 	return binary_read(span, out.seed);
 }
 
-void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const replay_header& in)
+void tr::binary_writer<replay_header>::write_to_stream(ostream& os, const replay_header& in)
 {
 	binary_write<score>(os, in);
 	binary_write(os, in.name);
@@ -30,7 +30,7 @@ void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const r
 	binary_write(os, in.seed);
 }
 
-std::span<std::byte> tr::binary_writer<replay_header>::write_to_span(std::span<std::byte> span, const replay_header& in)
+span<byte> tr::binary_writer<replay_header>::write_to_span(span<byte> span, const replay_header& in)
 {
 	span = binary_write<score>(span, in);
 	span = binary_write(span, in.name);
@@ -50,8 +50,8 @@ replay::replay(const gamemode& gamemode, std::uint64_t seed) noexcept
 replay::replay(const string& filename)
 {
 	const path path{cli_settings.userdir / "replays" / filename};
-	vector<std::byte> encrypted;
-	vector<std::byte> decrypted;
+	vector<byte> encrypted;
+	vector<byte> decrypted;
 	ifstream file{open_file_r(path, std::ios::binary)};
 
 	binary_read(file, encrypted);
@@ -96,7 +96,7 @@ void replay::save_to_file() noexcept
 		}
 
 		std::ostringstream bufstream{std::ios::binary};
-		vector<std::byte> buffer;
+		vector<byte> buffer;
 		binary_write(bufstream, _header);
 		encrypt_to(buffer, range_bytes(bufstream.view()), rand<u8>(rng));
 		binary_write(file, buffer);
@@ -147,7 +147,7 @@ map<string, replay_header> load_replay_headers() noexcept
 
 			try {
 				ifstream is{open_file_r(file, std::ios::binary)};
-				replays.emplace(path.filename(), binary_read<replay_header>(decrypt(binary_read<vector<std::byte>>(is))));
+				replays.emplace(path.filename(), binary_read<replay_header>(decrypt(binary_read<vector<byte>>(is))));
 				LOG(INFO, "Loaded replay header from '{}'.", path.string());
 			}
 			catch (std::exception& err) {

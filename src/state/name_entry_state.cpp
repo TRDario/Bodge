@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/state/name_entry_state.hpp"
+#include "../../include/engine.hpp"
 #include "../../include/state/title_state.hpp"
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
@@ -32,6 +32,8 @@ name_entry_state::name_entry_state()
 		_ui.emplace<clickable_text_widget>("confirm", vec2{500, 1050}, BOTTOM_CENTER, 48, confirm_status_cb, action_cb)};
 	confirm.pos.change({500, 1000}, 1.0_s);
 	confirm.unhide(1.0_s);
+
+	_ui.move_input_focus_forward();
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

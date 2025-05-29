@@ -29,14 +29,14 @@ struct score {
 
 // Score binary reader.
 template <> struct tr::binary_reader<score> {
-	static void read_from_stream(std::istream& is, score& out);
-	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, score& out);
+	static void read_from_stream(istream& is, score& out);
+	static span<const byte> read_from_span(span<const byte> span, score& out);
 };
 
 // Score binary writer.
 template <> struct tr::binary_writer<score> {
-	static void write_to_stream(std::ostream& os, const score& in);
-	static std::span<std::byte> write_to_span(std::span<std::byte> span, const score& in);
+	static void write_to_stream(ostream& os, const score& in);
+	static span<byte> write_to_span(span<byte> span, const score& in);
 };
 
 //////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
