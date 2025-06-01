@@ -14,7 +14,7 @@ class replays_state : public state {
 	// Creates a replay screen state with a randomly chosen background gamemode.
 	replays_state();
 	// Creates a replay screen state with an ongoing game.
-	replays_state(game&& game);
+	replays_state(unique_ptr<game>&& game);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -47,7 +47,7 @@ class replays_state : public state {
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
-	game _game;
+	unique_ptr<game> _game;
 	// List of replays.
 	map<string, replay_header> _replays;
 	// The selected replay.

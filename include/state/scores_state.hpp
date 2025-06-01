@@ -12,7 +12,7 @@ class scores_state : public state {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a scores screen state with an ongoing game.
-	scores_state(game&& game);
+	scores_state(unique_ptr<game>&& game);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -26,8 +26,6 @@ class scores_state : public state {
 	enum class substate : u8 {
 		// In the scores screen.
 		IN_SCORES,
-		// Switching the gamemode.
-		SWITCHING_GAMEMODE,
 		// Switching the page.
 		SWITCHING_PAGE,
 		// Exiting the scores screen.
@@ -43,7 +41,14 @@ class scores_state : public state {
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
-	game _game;
+	unique_ptr<game> _game;
 	// Iterator to the currently selected gamemode.
-	unordered_map<gamemode, vector<score>>::iterator _current;
+	vector<pair<gamemode, vector<score>>>::iterator _current;
+
+	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
+
+	// Sets up the page switching animation.
+	void set_up_page_switch_animation() noexcept;
+	// Sets up the exit animation.
+	void set_up_exit_animation() noexcept;
 };

@@ -4,7 +4,7 @@
 void load_language(const path& entry)
 {
 	const string stem{path{entry}.stem()};
-	if (is_regular_file(entry) && entry.extension() == ".loc" && stem.size() == 2) {
+	if (is_regular_file(entry) && entry.extension() == ".txt" && stem.size() == 2) {
 		language_code code{stem[0], stem[1]};
 		tr::localization_map localization;
 		localization.load(entry);
@@ -37,7 +37,7 @@ void load_localization() noexcept
 	const string_view name{settings.language};
 	tr::localization_map old{std::move(localization)};
 	try {
-		string filename{format("localization/{}.loc", name)};
+		string filename{format("localization/{}.txt", name)};
 		path path{cli_settings.datadir / filename};
 		if (!exists(path)) {
 			path = cli_settings.userdir / filename;

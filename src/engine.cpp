@@ -155,10 +155,10 @@ optional<engine_data> engine_data;
 engine_data::engine_data()
 	: tick_timer{tr::create_tick_timer(cli_settings.game_speed * 240, 0)}
 	, draw_timer{create_draw_timer()}
-	, redraw{true}
 	, screen{setup_screen()}
 	, layers{create_layered_renderer()}
 	, blur{screen.size().x}
+	, redraw{true}
 {
 }
 

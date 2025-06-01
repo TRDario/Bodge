@@ -1,5 +1,5 @@
-#include "../../include/ui/widget.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -122,8 +122,16 @@ array<clrvtx, 32> generate_modified_game_speed_icon(vec2 pos, rgba8 color, float
 
 ///////////////////////////////////////////////////////////////// WIDGET //////////////////////////////////////////////////////////////////
 
-widget::widget(string&& name, vec2 pos, align alignment) noexcept
-	: name{std::move(name)}, pos{pos}, alignment{alignment}, _opacity{0}
+widget::widget(string_view name, vec2 pos, align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
+			   vector<key_chord>&& shortcuts) noexcept
+	: name{name}
+	, alignment{alignment}
+	, pos{pos}
+	, tooltip_cb{std::move(tooltip_cb)}
+	, _opacity{0}
+	, _hoverable{hoverable}
+	, _writable{writable}
+	, _shortcuts{std::move(shortcuts)}
 {
 }
 
@@ -157,10 +165,14 @@ void widget::unhide(u16 time) noexcept
 	_opacity.change(1, time);
 }
 
-void widget::update()
+bool widget::hoverable() const noexcept
 {
-	pos.update();
-	_opacity.update();
+	return _hoverable;
+}
+
+bool widget::writable() const noexcept
+{
+	return _writable;
 }
 
 bool widget::active() const noexcept
@@ -168,52 +180,77 @@ bool widget::active() const noexcept
 	return false;
 }
 
-void widget::release_graphical_resources() noexcept {}
+bool widget::is_shortcut(const key_chord& chord) const noexcept
+{
+	vector<key_chord>::const_iterator it{rs::find(_shortcuts, chord)};
+	return it != _shortcuts.end();
+}
 
-//////////////////////////////////////////////////////////////// MOUSABLE /////////////////////////////////////////////////////////////////
+void widget::update()
+{
+	pos.update();
+	_opacity.update();
+}
 
-mousable::mousable(tooltip_callback tooltip_cb) noexcept
-	: tooltip_cb{std::move(tooltip_cb)}
+/////////////////////////////////////////////////////////////// TEXT_WIDGET ///////////////////////////////////////////////////////////////
+
+text_widget::text_widget(string_view name, vec2 pos, align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
+						 vector<key_chord>&& shortcuts, font font, ttf_style style, halign text_alignment, float font_size, int max_width,
+						 rgba8 color, text_callback text_cb)
+	: widget{name, pos, alignment, hoverable, std::move(tooltip_cb), writable, std::move(shortcuts)}
+	, color{color}
+	, text_cb{std::move(text_cb)}
+	, _font{font}
+	, _style{style}
+	, _text_alignment{text_alignment}
+	, _font_size{font_size}
+	, _max_width{max_width}
 {
 }
 
-////////////////////////////////////////////////////////////// SHORTCUTABLE ///////////////////////////////////////////////////////////////
-
-shortcutable::shortcutable(vector<key_chord>&& chords) noexcept
-	: chords{std::move(chords)}
+text_widget::text_widget(string_view name, vec2 pos, align alignment, font font, ttf_style style, float font_size, text_callback text_cb,
+						 rgba8 color)
+	: text_widget{name, pos,   alignment,      false,     NO_TOOLTIP,      false, {},
+				  font, style, halign::CENTER, font_size, UNLIMITED_WIDTH, color, std::move(text_cb)}
 {
 }
 
-//////////////////////////////////////////////////////////// BASIC_TEXT_WIDGET ////////////////////////////////////////////////////////////
-
-basic_text_widget::basic_text_widget(string&& name, vec2 pos, align alignment, font font, float font_size, text_callback text_cb,
-									 rgba8 color, ttf_style style) noexcept
-	: widget{std::move(name), pos, alignment}, color{color}, _font{font}, _style{style}, _font_size{font_size}, _text_cb{std::move(text_cb)}
+text_widget::text_widget(string_view name, vec2 pos, align alignment, string_view tooltip_key, font font, ttf_style style, float font_size,
+						 text_callback text_cb)
+	: text_widget{name,
+				  pos,
+				  alignment,
+				  true,
+				  [=] { return string{localization[tooltip_key]}; },
+				  false,
+				  {},
+				  font,
+				  style,
+				  halign::CENTER,
+				  font_size,
+				  UNLIMITED_WIDTH,
+				  {160, 160, 160, 160},
+				  std::move(text_cb)}
 {
 }
 
-void basic_text_widget::set_text_callback(text_callback text_cb) noexcept
-{
-	_text_cb = std::move(text_cb);
-}
-
-vec2 basic_text_widget::size() const noexcept
+vec2 text_widget::size() const noexcept
 {
 	return _cached.has_value() ? _cached->size / engine::render_scale() : vec2{0};
 }
 
-void basic_text_widget::update() noexcept
+void text_widget::update() noexcept
 {
 	widget::update();
 	color.update();
 }
 
-void basic_text_widget::release_graphical_resources() noexcept
+void text_widget::release_graphical_resources() noexcept
 {
 	_cached.reset();
 }
 
-void basic_text_widget::add_to_renderer()
+void text_widget::add_to_renderer()
 {
 	update_cache();
 
@@ -221,17 +258,17 @@ void basic_text_widget::add_to_renderer()
 	color.a = static_cast<u8>(color.a * opacity());
 
 	array<tintvtx, 4> quad;
-	fill_rect_vtx(positions(quad), {tl(), basic_text_widget::size()});
+	fill_rect_vtx(positions(quad), {tl(), text_widget::size()});
 	fill_rect_vtx(uvs(quad), {{}, _cached->size / vec2{_cached->texture.size()}});
 	rs::fill(colors(quad), rgba8{color});
 	engine::batched_renderer().add_tex_quad(quad, 0, _cached->texture, TRANSFORM);
 }
 
-void basic_text_widget::update_cache()
+void text_widget::update_cache()
 {
-	string text{_text_cb(name)};
+	string text{text_cb(name)};
 	if (!_cached.has_value() || _cached->text != text) {
-		bitmap render{font_manager.render_text(text, _font, _style, _font_size, _font_size / 12, UNLIMITED_WIDTH, tr::halign::CENTER)};
+		bitmap render{font_manager.render_text(text, _font, _style, _font_size, _font_size / 12, _max_width, _text_alignment)};
 		if (!_cached || _cached->texture.size().x < render.size().x || _cached->texture.size().y < render.size().y) {
 			_cached.emplace(texture{render}, render.size(), std::move(text));
 			if (cli_settings.debug_mode) {
@@ -247,33 +284,25 @@ void basic_text_widget::update_cache()
 	}
 }
 
-//////////////////////////////////////////////////////// TOOLTIPPABLE_TEXT_WIDGET /////////////////////////////////////////////////////////
-
-tooltippable_text_widget::tooltippable_text_widget(string&& name, vec2 pos, align alignment, string_view tooltip_key,
-												   float font_size) noexcept
-	: basic_text_widget{std::move(name), pos, alignment, font::LANGUAGE, font_size}
-	, mousable{[=] { return string{localization[tooltip_key]}; }}
-{
-}
-
 ////////////////////////////////////////////////////////// CLICKABLE_TEXT_WIDGET //////////////////////////////////////////////////////////
 
-clickable_text_widget::clickable_text_widget(string&& name, vec2 pos, align alignment, float font_size, status_callback status_cb,
-											 action_callback action_cb, vector<key_chord>&& chords, tooltip_callback tooltip_cb) noexcept
-	: basic_text_widget{std::move(name), pos, alignment, font::LANGUAGE, font_size}
-	, mousable{std::move(tooltip_cb)}
-	, shortcutable{std::move(chords)}
-	, _status_cb{std::move(status_cb)}
-	, _action_cb{std::move(action_cb)}
-{
-}
-
-clickable_text_widget::clickable_text_widget(string&& name, vec2 pos, align alignment, font font, float font_size,
-											 status_callback status_cb, action_callback action_cb, text_callback text_cb,
-											 vector<key_chord>&& chords, tooltip_callback tooltip_cb) noexcept
-	: basic_text_widget{std::move(name), pos, alignment, font, font_size, std::move(text_cb)}
-	, mousable{std::move(tooltip_cb)}
-	, shortcutable{std::move(chords)}
+clickable_text_widget::clickable_text_widget(string_view name, vec2 pos, align alignment, font font, float font_size, text_callback text_cb,
+											 status_callback status_cb, action_callback action_cb, tooltip_callback tooltip_cb,
+											 vector<key_chord>&& shortcuts) noexcept
+	: text_widget{name,
+				  pos,
+				  alignment,
+				  true,
+				  std::move(tooltip_cb),
+				  false,
+				  std::move(shortcuts),
+				  font,
+				  ttf_style::NORMAL,
+				  halign::CENTER,
+				  font_size,
+				  UNLIMITED_WIDTH,
+				  {160, 160, 160, 160},
+				  std::move(text_cb)}
 	, _status_cb{std::move(status_cb)}
 	, _action_cb{std::move(action_cb)}
 {
@@ -285,7 +314,7 @@ void clickable_text_widget::add_to_renderer()
 	if (!active()) {
 		color = {80, 80, 80, 160};
 	}
-	basic_text_widget::add_to_renderer();
+	text_widget::add_to_renderer();
 	color = real_color;
 }
 
@@ -332,132 +361,10 @@ void clickable_text_widget::on_shortcut() noexcept
 	}
 }
 
-////////////////////////////////////////////////////////// TEXT_LINE_INPUT_WIDGET /////////////////////////////////////////////////////////
-
-text_line_input_widget::text_line_input_widget(string&& name, vec2 pos, align alignment, float font_size, status_callback status_cb,
-											   action_callback enter_cb, u8 max_size, string&& starting_text)
-	: basic_text_widget{std::move(name), pos,
-						alignment,       font::LANGUAGE,
-						font_size,       [this](const string&) { return buffer.empty() ? std::string{localization["empty"]} : buffer; }}
-	, buffer{std::move(starting_text)}
-	, _status_cb{std::move(status_cb)}
-	, _enter_cb{std::move(enter_cb)}
-	, _max_size{max_size}
-{
-}
-
-void text_line_input_widget::add_to_renderer()
-{
-	interpolated_rgba8 real_color{color};
-	if (!active()) {
-		color = {80, 80, 80, 160};
-	}
-	else if (buffer.empty()) {
-		rgba8 real{real_color};
-		color = {static_cast<u8>(real.r / 2), static_cast<u8>(real.g / 2), static_cast<u8>(real.b / 2), real.a};
-	}
-	basic_text_widget::add_to_renderer();
-	color = real_color;
-}
-
-bool text_line_input_widget::active() const noexcept
-{
-	return _status_cb();
-}
-
-void text_line_input_widget::on_hover() noexcept
-{
-	if (!_has_focus) {
-		color.change({220, 220, 220, 220}, 0.2_s);
-	}
-}
-
-void text_line_input_widget::on_unhover() noexcept
-{
-	if (!_has_focus) {
-		color.change({160, 160, 160, 160}, 0.2_s);
-	}
-}
-
-void text_line_input_widget::on_hold_begin() noexcept
-{
-	color = {32, 32, 32, 255};
-}
-
-void text_line_input_widget::on_hold_transfer_in() noexcept
-{
-	color = {32, 32, 32, 255};
-}
-
-void text_line_input_widget::on_hold_transfer_out() noexcept
-{
-	color = rgba8{160, 160, 160, 160};
-}
-
-void text_line_input_widget::on_hold_end() noexcept
-{
-	_has_focus = true;
-	color = {255, 255, 255, 255};
-}
-
-void text_line_input_widget::on_gain_focus()
-{
-	_has_focus = true;
-	color.change({255, 255, 255, 255}, 0.2_s);
-}
-
-void text_line_input_widget::on_lose_focus()
-{
-	_has_focus = false;
-	color.change({160, 160, 160, 160}, 0.2_s);
-}
-
-void text_line_input_widget::on_write(string_view input)
-{
-	buffer += input;
-	size_t length{tr::utf8::length(buffer)};
-	while (length-- > _max_size) {
-		tr::utf8::pop_back(buffer);
-	}
-}
-
-void text_line_input_widget::on_enter()
-{
-	_enter_cb();
-}
-
-void text_line_input_widget::on_erase()
-{
-	if (!buffer.empty()) {
-		tr::utf8::pop_back(buffer);
-	}
-}
-
-void text_line_input_widget::on_clear()
-{
-	buffer.clear();
-}
-
-void text_line_input_widget::on_copy()
-{
-	keyboard::set_clipboard_text(buffer);
-}
-
-void text_line_input_widget::on_paste()
-{
-	if (keyboard::clipboard_has_text()) {
-		buffer += keyboard::clipboard_text();
-		size_t length{tr::utf8::length(buffer)};
-		while (length-- > _max_size) {
-			tr::utf8::pop_back(buffer);
-		}
-	}
-}
-
 /////////////////////////////////////////////////////////// COLOR_PREVIEW_WIDGET //////////////////////////////////////////////////////////
 
-color_preview_widget::color_preview_widget(string&& name, vec2 pos, align alignment, u16& hue_ref) noexcept
-	: widget{std::move(name), pos, alignment}, _hue_ref{hue_ref}
+color_preview_widget::color_preview_widget(string_view name, vec2 pos, align alignment, u16& hue_ref) noexcept
+	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, _hue_ref{hue_ref}
 {
 }
 
@@ -485,10 +392,9 @@ void color_preview_widget::add_to_renderer()
 
 /////////////////////////////////////////////////////////////// ARROW_WIDGET //////////////////////////////////////////////////////////////
 
-arrow_widget::arrow_widget(string&& name, vec2 pos, align alignment, bool right_arrow, status_callback status_cb, action_callback action_cb,
-						   vector<key_chord>&& chords) noexcept
-	: widget{std::move(name), pos, alignment}
-	, shortcutable{std::move(chords)}
+arrow_widget::arrow_widget(string_view name, vec2 pos, align alignment, bool right_arrow, status_callback status_cb,
+						   action_callback action_cb, vector<key_chord>&& chords) noexcept
+	: widget{name, pos, alignment, true, NO_TOOLTIP, false, std::move(chords)}
 	, _right{right_arrow}
 	, _color{{160, 160, 160, 160}}
 	, _status_cb{std::move(status_cb)}
@@ -568,8 +474,8 @@ void arrow_widget::on_shortcut() noexcept
 ////////////////////////////////////////////////////// REPLAY_PLAYBACK_INDICATOR_WIDGET ///////////////////////////////////////////////////
 
 // Creates a replay playback indicator widget.
-replay_playback_indicator_widget::replay_playback_indicator_widget(string&& name, vec2 pos, align alignment) noexcept
-	: widget{std::move(name), pos, alignment}
+replay_playback_indicator_widget::replay_playback_indicator_widget(string_view name, vec2 pos, align alignment) noexcept
+	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}
 {
 }
 
@@ -610,6 +516,104 @@ void replay_playback_indicator_widget::add_to_renderer()
 	}
 }
 
+////////////////////////////////////////////////////////////// SCORE WIDGET ///////////////////////////////////////////////////////////////
+
+score_widget::score_widget(string_view name, vec2 pos, align alignment, size_t rank, ::score* score) noexcept
+	: text_widget{name,
+				  pos,
+				  alignment,
+				  true,
+				  [this] { return this->score != nullptr ? this->score->description : string{}; },
+				  false,
+				  {},
+				  font::LANGUAGE,
+				  ttf_style::NORMAL,
+				  halign::CENTER,
+				  48,
+				  UNLIMITED_WIDTH,
+				  {160, 160, 160, 160},
+				  [this](const static_string<30>&) {
+					  if (this->score == nullptr) {
+						  return string{"----------------------------------"};
+					  }
+
+					  const ticks result{this->score->result};
+					  const ch::system_clock::time_point utc_tp{ch::seconds{this->score->timestamp}};
+					  const auto tp{std::chrono::current_zone()->ch::time_zone::to_local(utc_tp)};
+					  const ch::hh_mm_ss hhmmss{tp - ch::floor<ch::days>(tp)};
+					  const ch::year_month_day ymd{ch::floor<ch::days>(tp)};
+					  return format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result / 60_s, (result % 60_s) / 1_s,
+									(result % 1_s) * 100 / 1_s, static_cast<int>(ymd.year()), static_cast<unsigned int>(ymd.month()),
+									static_cast<unsigned int>(ymd.day()), hhmmss.hours().count(), hhmmss.minutes().count());
+				  }}
+	, rank{rank}
+	, score{score}
+{
+}
+
+vec2 score_widget::size() const noexcept
+{
+	if (score != nullptr) {
+		const int icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
+		if (icons != 0) {
+			return text_widget::size() + vec2{0, 20};
+		}
+	}
+	return text_widget::size();
+}
+
+vec2 score_widget::tl() const noexcept
+{
+	if (score != nullptr) {
+		const int icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
+		if (icons == 0) {
+			return text_widget::tl() + vec2{0, 10};
+		}
+	}
+	return text_widget::tl();
+}
+
+void score_widget::add_to_renderer()
+{
+	interpolated_rgba8 real_color{color};
+	if (score == nullptr) {
+		color = {80, 80, 80, 160};
+	}
+	text_widget::add_to_renderer();
+	color = real_color;
+
+	if (score != nullptr) {
+		const vec2 text_size{text_widget::size()};
+		int icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
+		int i = 0;
+
+		if (score->flags.exited_prematurely) {
+			vector<u16> indices;
+			fill_poly_idx(back_inserter(indices), 4, 0);
+			fill_poly_outline_idx(back_inserter(indices), 4, 4);
+			fill_poly_idx(back_inserter(indices), 4, 12);
+			fill_poly_idx(back_inserter(indices), 4, 16);
+			engine::layered_renderer().add_color_mesh(
+				layer::UI,
+				generate_exited_prematurely_icon(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity()),
+				std::move(indices));
+			++i;
+		}
+		if (score->flags.modified_game_speed) {
+			vector<u16> indices;
+			fill_poly_idx(back_inserter(indices), 4, 0);
+			fill_poly_outline_idx(back_inserter(indices), 4, 4);
+			fill_poly_outline_idx(back_inserter(indices), 8, 12);
+			fill_poly_idx(back_inserter(indices), 4, 28);
+			engine::layered_renderer().add_color_mesh(
+				layer::UI,
+				generate_modified_game_speed_icon(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity()),
+				std::move(indices));
+			++i;
+		}
+	}
+}
+
 ////////////////////////////////////////////////////////////// REPLAY_WIDGET //////////////////////////////////////////////////////////////
 
 void replay_widget::set_iterator(optional<map<string, replay_header>::iterator> it) noexcept
@@ -624,13 +628,8 @@ vec2 replay_widget::size() const noexcept
 		if (icons != 0) {
 			return clickable_text_widget::size() + vec2{0, 20};
 		}
-		else {
-			return clickable_text_widget::size();
-		}
 	}
-	else {
-		return {};
-	}
+	return clickable_text_widget::size();
 }
 
 vec2 replay_widget::tl() const noexcept
@@ -646,9 +645,14 @@ vec2 replay_widget::tl() const noexcept
 
 void replay_widget::add_to_renderer()
 {
-	if (_it.has_value()) {
-		clickable_text_widget::add_to_renderer();
+	interpolated_rgba8 real_color{color};
+	if (!_it.has_value()) {
+		color = {80, 80, 80, 160};
+	}
+	text_widget::add_to_renderer();
+	color = real_color;
 
+	if (_it.has_value()) {
 		const vec2 text_size{clickable_text_widget::size()};
 		const rgba8 color{active() ? rgba8{this->color} : rgba8{128, 128, 128, 128}};
 		int icons{(*_it)->second.flags.exited_prematurely + (*_it)->second.flags.modified_game_speed};
@@ -662,7 +666,7 @@ void replay_widget::add_to_renderer()
 			fill_poly_idx(back_inserter(indices), 4, 16);
 			engine::layered_renderer().add_color_mesh(
 				layer::UI,
-				generate_exited_prematurely_icon(tl() + vec2{text_size.x / 2 - 10 * icons + 20 * i, text_size.y}, color, opacity()),
+				generate_exited_prematurely_icon(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity()),
 				std::move(indices));
 			++i;
 		}
@@ -674,7 +678,7 @@ void replay_widget::add_to_renderer()
 			fill_poly_idx(back_inserter(indices), 4, 28);
 			engine::layered_renderer().add_color_mesh(
 				layer::UI,
-				generate_modified_game_speed_icon(tl() + vec2{text_size.x / 2 - 10 * icons + 20 * i, text_size.y}, color, opacity()),
+				generate_modified_game_speed_icon(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity()),
 				std::move(indices));
 			++i;
 		}

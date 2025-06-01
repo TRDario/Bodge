@@ -1,0 +1,64 @@
+language_name = "English"
+
+# Name entry screen
+    enter_your_name = "ENTER YOUR NAME"
+    empty = "(EMPTY...)"
+    confirm = "CONFIRM"
+
+# Title screen
+    copyright = "©2025 TRDario"
+    version   = "a0.1.0"
+    start_game = "START GAME"
+    replays    = "REPLAYS"
+    scores     = "SCORES"
+    settings   = "SETTINGS"
+    exit 	   = "EXIT"
+
+# Start game screen
+    by = "BY"
+    no_description = "(NO DESCRIPTION...)"
+    pb = "PERSONAL BEST"
+    start = "START"
+
+# Scores screen
+    no_scores_found = "(NO SCORES FOUND...)"
+
+# Replays screen
+    no_replays_found = "(NO REPLAYS FOUND...)"
+    exited_prematurely = "(GAME WAS EXITED PREMATURELY)"
+    modified_game_speed = "(GAME WAS PLAYED WITH MODIFIED GAME SPEED)"
+
+# Settings screen
+    window_size		 = "WINDOW SIZE:"
+    window_size_tt   = "SETTING 'FULLSCREEN' WILL CREATE A BORDERLESS FULLSCREEN WINDOW.\nSETTING A SPECIFIC VALUE WILL FORCE A SQUARE WINDOW OF THAT SIZE."
+    fullscreen		 = "FULLSCREEN"
+    refresh_rate	 = "REFRESH RATE:"
+    refresh_rate_tt  = "SETTING 'NATIVE' WILL USE THE NATIVE REFRESH RATE OF YOUR MONITOR.\nSETTING A SPECIFIC VALUE WILL FORCE THAT REFRESH RATE IN HERTZ."
+    native			 = "NATIVE"
+    msaa			 = "MSAA:"
+    msaa_tt          = "MULTISAMPLING ANTI-ALIASING.\nSETTING A HIGHER VALUE MAY LOOK BETTER, BUT PERFORM WORSE."
+    primary_hue		 = "PRIMARY HUE:"
+    primary_hue_tt   = "HUE USED BY THE PLAYER CHARACTER."
+    secondary_hue    = "SECONDARY HUE:"
+    secondary_hue_tt = "HUE USED BY NON-PLAYER ENTITIES."
+    sfx_volume       = "SFX VOLUME:"
+    music_volume     = "MUSIC VOLUME:"
+    language         = "LANGUAGE:"
+    revert 			 = "REVERT"
+    apply 			 = "APPLY"
+
+# Pause screen
+    unpause = "UNPAUSE"
+    restart = "RESTART"
+    save_and_quit = "SAVE AND QUIT"
+    quit = "QUIT"
+
+# Replay screens
+    replay = "REPLAY"
+    replay_paused = "REPLAY PAUSED"
+
+# Built-in gamemodes
+    gm_test = "TEST"
+    gm_test_d = "COOL TEST DESCRIPTION HERE"
+    gm_test2 = "TEST2"
+    gm_test2_d = "COOLER TEST DESCRIPTION HERE"

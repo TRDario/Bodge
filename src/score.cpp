@@ -1,5 +1,5 @@
-#include "../include/score.hpp"
 #include "../include/gamemode.hpp"
+#include "../include/score.hpp"
 #include "../include/settings.hpp"
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
@@ -45,10 +45,12 @@ span<byte> tr::binary_writer<score>::write_to_span(span<byte> span, const score&
 
 void scorefile_t::add_score(const gamemode& gamemode, score&& score)
 {
-	if (!scores.contains(gamemode)) {
-		scores.insert({gamemode, {}});
+	vector<pair<::gamemode, vector<::score>>>::iterator it{
+		rs::find_if(scores, [&](const pair<::gamemode, vector<::score>>& pair) { return pair.first == gamemode; })};
+	if (it == scores.end()) {
+		it = scores.insert(it, {gamemode, {}});
 	}
-	scores.at(gamemode).insert(std::upper_bound(scores.at(gamemode).begin(), scores.at(gamemode).end(), score), std::move(score));
+	it->second.insert(std::upper_bound(it->second.begin(), it->second.end(), score), std::move(score));
 }
 
 void scorefile_t::load_from_file() noexcept

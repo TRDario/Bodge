@@ -21,7 +21,7 @@ constexpr const char* FRAGMENT_SHADER_SRC{
 // The renderer ID of the pause menu background renderer.
 const u32 RENDERER_ID{tr::alloc_renderer_id()};
 // The mesh used for drawing the pause menu background.
-constexpr array<clrvtx, 4> MESH{{{{-1, 1}}, {{1, 1}}, {{1, -1}}, {{-1, -1}}}};
+constexpr array<clrvtx, 4> MESH{{{{-1, 1}, {}}, {{1, 1}, {}}, {{1, -1}, {}}, {{-1, -1}, {}}}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 

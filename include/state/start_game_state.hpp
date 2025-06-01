@@ -12,7 +12,7 @@ class start_game_state : public state {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates the start game state.
-	start_game_state(game&& game) noexcept;
+	start_game_state(unique_ptr<game>&& game) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -41,7 +41,7 @@ class start_game_state : public state {
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
-	game _game;
+	unique_ptr<game> _game;
 	// The list of available gamemodes.
 	vector<gamemode> _gamemodes;
 	// The currently-selected gamemode.

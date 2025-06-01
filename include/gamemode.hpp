@@ -47,14 +47,14 @@ struct ball_settings {
 
 // Gamemode object.
 struct gamemode {
+	// Flag marking the gamemode as a special, built-in gamemode.
+	bool builtin{false};
 	// The name of the gamemode.
-	string name{"Untitled"};
+	static_string<12> name{"Untitled"};
 	// The author of the gamemode.
-	string author{"Unknown"};
+	static_string<20> author{"Unknown"};
 	// The description of the gamemode.
-	string description;
-	// The difficulty rating of the gamemode.
-	u8 difficulty{50};
+	static_string<40> description;
 	// Player settings.
 	player_settings player{};
 	// Ball settings.
@@ -65,8 +65,8 @@ struct gamemode {
 	// Creates a default gamemode.
 	gamemode() noexcept = default;
 	// Creates a builtin gamemode.
-	constexpr gamemode(string&& name, string&& description, const player_settings& player, const ball_settings& ball) noexcept
-		: name{std::move(name)}, author{"TRDario"}, description{std::move(description)}, player{player}, ball{ball}
+	constexpr gamemode(string_view name, string_view description, const player_settings& player, const ball_settings& ball) noexcept
+		: builtin{true}, name{name}, author{"TRDario"}, description{description}, player{player}, ball{ball}
 	{
 	}
 	// Creates a menu gamemode.
@@ -97,11 +97,6 @@ template <> struct tr::binary_writer<gamemode> {
 	static span<byte> write_to_span(span<byte> span, const gamemode& in);
 };
 
-// Hashing function for a gamemode.
-template <> struct std::hash<gamemode> {
-	size_t operator()(const gamemode& gamemode) const noexcept;
-};
-
 // Loads all found gamemodes.
 vector<gamemode> load_gamemodes() noexcept;
 
@@ -109,8 +104,8 @@ vector<gamemode> load_gamemodes() noexcept;
 
 // The gamemodes that can appear in the main menu background.
 const array<gamemode, 2> BUILTIN_GAMEMODES{
-	gamemode{"gamemode_test", "gamemode_test_desc", player_settings{}, ball_settings{10, 10, 10_s, 50, 0, 400, 0}},
-	gamemode{"gamemode_test2", "gamemode_test2_desc", player_settings{}, ball_settings{10, 10, 10_s, 50, 0, 400, 0}},
+	gamemode{"gm_test", "gm_test_d", player_settings{}, ball_settings{10, 10, 10_s, 50, 0, 400, 0}},
+	gamemode{"gm_test2", "gm_test2_d", player_settings{}, ball_settings{10, 10, 10_s, 50, 0, 400, 0}},
 };
 
 // The gamemodes that can appear in the main menu background.

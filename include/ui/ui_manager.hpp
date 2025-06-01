@@ -21,7 +21,7 @@ class ui_manager {
 	{
 		list<unique_ptr<widget>>::iterator it{rs::find_if(_objects, [=](unique_ptr<widget>& p) { return p->name == name; })};
 		TR_ASSERT(it != _objects.end(), "Tried to get widget with nonexistant name \"{}\".", name);
-		return *dynamic_cast<T*>(it->get());
+		return *static_cast<T*>(it->get());
 	}
 	// Clears the UI.
 	void clear() noexcept;

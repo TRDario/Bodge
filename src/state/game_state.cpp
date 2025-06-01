@@ -5,7 +5,7 @@
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
-game_state::game_state(active_game&& game, bool fade_in) noexcept
+game_state::game_state(unique_ptr<active_game>&& game, bool fade_in) noexcept
 	: _substate{fade_in ? substate::STARTING : substate::PLAYING}, _timer{0}, _game{std::move(game)}
 {
 }
@@ -30,8 +30,8 @@ unique_ptr<state> game_state::update(tr::duration)
 	++_timer;
 	switch (_substate) {
 	case substate::PLAYING:
-		_game.update();
-		if (_game.game_over()) {
+		_game->update();
+		if (_game->game_over()) {
 			// return make_unique<game_over_state>(std::move(_game));
 		}
 		break;
@@ -46,7 +46,7 @@ unique_ptr<state> game_state::update(tr::duration)
 
 void game_state::draw()
 {
-	_game.add_to_renderer();
+	_game->add_to_renderer();
 	add_fade_overlay_to_renderer(_substate == substate::STARTING ? 1 - (_timer / static_cast<float>(0.5_s)) : 0);
 	engine::layered_renderer().draw(engine::screen());
 }

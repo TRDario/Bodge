@@ -43,7 +43,7 @@ span<byte> tr::binary_writer<replay_header>::write_to_span(span<byte> span, cons
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 replay::replay(const gamemode& gamemode, std::uint64_t seed) noexcept
-	: _header{.player = scorefile.name, .gamemode = gamemode, .seed = seed}
+	: _header{.name = {}, .player = scorefile.name, .gamemode = gamemode, .seed = seed}
 {
 }
 
@@ -65,6 +65,11 @@ replay::replay(const string& filename)
 	LOG(INFO, "Loaded replay '{}' from '{}'.", _header.name, path.string());
 }
 
+replay::replay(const replay& r)
+	: _header{r._header}, _inputs{r._inputs}, _next{_inputs.begin()}
+{
+}
+
 //////////////////////////////////////////////////////////////// RECORDING ////////////////////////////////////////////////////////////////
 
 void replay::append(vec2 input)
@@ -72,7 +77,7 @@ void replay::append(vec2 input)
 	_inputs.push_back(input);
 }
 
-void replay::set_header(score&& header, string&& name) noexcept
+void replay::set_header(score&& header, string_view name) noexcept
 {
 	static_cast<score&>(_header) = std::move(header);
 	_header.name = std::move(name);
@@ -80,7 +85,7 @@ void replay::set_header(score&& header, string&& name) noexcept
 
 void replay::save_to_file() noexcept
 {
-	const path base_path{cli_settings.userdir / "replays" / (_header.name + ".rpy")};
+	const path base_path{cli_settings.userdir / "replays" / (_header.name + ".dat")};
 	try {
 		ofstream file;
 		if (!exists(base_path)) {
@@ -88,9 +93,9 @@ void replay::save_to_file() noexcept
 		}
 		else {
 			int index{0};
-			path path{cli_settings.userdir / "replays" / format("{}({}).rpy", _header.name, index++)};
+			path path{cli_settings.userdir / "replays" / format("{}({}).dat", _header.name, index++)};
 			while (exists(path)) {
-				path = cli_settings.userdir / "replays" / format("{}({}).rpy", _header.name, index++);
+				path = cli_settings.userdir / "replays" / format("{}({}).dat", _header.name, index++);
 			}
 			file = open_file_w(path, std::ios::binary);
 		}
@@ -141,7 +146,7 @@ map<string, replay_header> load_replay_headers() noexcept
 		const path replay_dir{cli_settings.userdir / "replays"};
 		for (directory_entry file : directory_iterator{replay_dir}) {
 			const path path{file};
-			if (!file.is_regular_file() || path.extension() != ".rpy") {
+			if (!file.is_regular_file() || path.extension() != ".dat") {
 				continue;
 			}
 

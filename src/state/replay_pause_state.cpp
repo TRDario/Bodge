@@ -1,15 +1,15 @@
 #include "../../include/engine.hpp"
-#include "../../include/state/game_state.hpp"
-#include "../../include/state/pause_state.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/replay_pause_state.hpp"
+#include "../../include/state/replay_state.hpp"
+#include "../../include/state/replays_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr array<const char*, 4> BUTTONS{"unpause", "restart", "save_and_quit", "quit"};
+constexpr array<const char*, 3> BUTTONS{"unpause", "restart", "quit"};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
-pause_state::pause_state(unique_ptr<active_game>&& game, bool blur_in) noexcept
+replay_pause_state::replay_pause_state(unique_ptr<replay_game>&& game, bool blur_in) noexcept
 	: _substate{blur_in ? substate::PAUSING : substate::PAUSED}, _timer{0}, _game{std::move(game)}
 {
 	if (blur_in) {
@@ -17,7 +17,7 @@ pause_state::pause_state(unique_ptr<active_game>&& game, bool blur_in) noexcept
 		engine::layered_renderer().draw(engine::blur_renderer().input());
 	}
 
-	widget& title{_ui.emplace<text_widget>("paused", vec2{500, -50}, CENTER, font::LANGUAGE, ttf_style::NORMAL, 64)};
+	widget& title{_ui.emplace<text_widget>("replay_paused", vec2{500, -50}, CENTER, font::LANGUAGE, ttf_style::NORMAL, 64)};
 	title.pos.change({500, 500 - (BUTTONS.size() + 1) * 30}, 0.5_s);
 	title.unhide(0.5_s);
 
@@ -35,11 +35,6 @@ pause_state::pause_state(unique_ptr<active_game>&& game, bool blur_in) noexcept
 		},
 		[this] {
 			_timer = 0;
-			_substate = substate::SAVING_AND_QUITTING;
-			set_up_exit_animation();
-		},
-		[this] {
-			_timer = 0;
 			_substate = substate::QUITTING;
 			set_up_exit_animation();
 		},
@@ -47,8 +42,7 @@ pause_state::pause_state(unique_ptr<active_game>&& game, bool blur_in) noexcept
 	array<vector<key_chord>, BUTTONS.size()> chords{{
 		{{key::ESCAPE}, {key::TOP_ROW_1}},
 		{{key::R}, {key::TOP_ROW_2}},
-		{{key::S}, {key::TOP_ROW_3}},
-		{{key::Q}, {key::E}, {key::TOP_ROW_4}},
+		{{key::Q}, {key::E}, {key::TOP_ROW_3}},
 	}};
 	for (size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * rand(rng, 250.0f, 400.0f)};
@@ -62,18 +56,18 @@ pause_state::pause_state(unique_ptr<active_game>&& game, bool blur_in) noexcept
 
 ///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
 
-u32 pause_state::type() const noexcept
+u32 replay_pause_state::type() const noexcept
 {
 	return ID;
 }
 
-unique_ptr<state> pause_state::handle_event(const tr::event& event)
+unique_ptr<state> replay_pause_state::handle_event(const tr::event& event)
 {
 	_ui.handle_event(event);
 	return nullptr;
 }
 
-unique_ptr<state> pause_state::update(tr::duration)
+unique_ptr<state> replay_pause_state::update(tr::duration)
 {
 	++_timer;
 	_ui.update();
@@ -88,17 +82,15 @@ unique_ptr<state> pause_state::update(tr::duration)
 	case substate::PAUSED:
 		return nullptr;
 	case substate::UNPAUSING:
-		return _timer >= 0.5_s ? make_unique<game_state>(std::move(_game), false) : nullptr;
+		return _timer >= 0.5_s ? make_unique<replay_state>(std::move(_game), false) : nullptr;
 	case substate::RESTARTING:
-		return _timer >= 0.5_s ? make_unique<game_state>(make_unique<active_game>(_game->gamemode()), true) : nullptr;
-	case substate::SAVING_AND_QUITTING:
-		return _timer >= 0.5_s ? make_unique<title_state>() : nullptr;
+		return _timer >= 0.5_s ? make_unique<replay_state>(make_unique<replay_game>(*_game), true) : nullptr;
 	case substate::QUITTING:
-		return _timer >= 0.5_s ? make_unique<title_state>() : nullptr;
+		return _timer >= 0.5_s ? make_unique<replays_state>() : nullptr;
 	}
 }
 
-void pause_state::draw()
+void replay_pause_state::draw()
 {
 	engine::blur_renderer().draw(saturation_factor(), blur_strength());
 	_ui.add_to_renderer();
@@ -111,12 +103,11 @@ void pause_state::draw()
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-float pause_state::saturation_factor() const noexcept
+float replay_pause_state::saturation_factor() const noexcept
 {
 	switch (_substate) {
 	case substate::PAUSED:
 	case substate::RESTARTING:
-	case substate::SAVING_AND_QUITTING:
 	case substate::QUITTING:
 		return 0.35f;
 	case substate::PAUSING:
@@ -126,12 +117,11 @@ float pause_state::saturation_factor() const noexcept
 	}
 }
 
-float pause_state::blur_strength() const noexcept
+float replay_pause_state::blur_strength() const noexcept
 {
 	switch (_substate) {
 	case substate::PAUSED:
 	case substate::RESTARTING:
-	case substate::SAVING_AND_QUITTING:
 	case substate::QUITTING:
 		return 10;
 	case substate::PAUSING:
@@ -141,9 +131,9 @@ float pause_state::blur_strength() const noexcept
 	}
 }
 
-void pause_state::set_up_exit_animation() noexcept
+void replay_pause_state::set_up_exit_animation() noexcept
 {
-	_ui.get("paused").pos.change({500, -50}, 0.5_s);
+	_ui.get("replay_paused").pos.change({500, -50}, 0.5_s);
 	for (size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * rand(rng, 250.0f, 400.0f)};
 		widget& widget{_ui.get(BUTTONS[i])};

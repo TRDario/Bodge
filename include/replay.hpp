@@ -8,7 +8,7 @@ struct replay_header : score {
 	// The name of the replay.
 	string name;
 	// The player who created the replay.
-	string player;
+	static_string<20> player;
 	// The game gamemode.
 	gamemode gamemode;
 	// The game seed.
@@ -38,13 +38,17 @@ class replay {
 	replay(const gamemode& gamemode, std::uint64_t seed) noexcept;
 	// Loads a replay from file.
 	replay(const string& filename);
+	// Copies a replay.
+	replay(const replay& r);
+	// Moves a replay.
+	replay(replay&&) noexcept = default;
 
 	////////////////////////////////////////////////////////////// RECORDING //////////////////////////////////////////////////////////////
 
 	// Appends an input to the replay.
 	void append(vec2 input);
 	// Sets the replay header.
-	void set_header(score&& score, string&& name) noexcept;
+	void set_header(score&& score, string_view name) noexcept;
 	// Saves the replay to file.
 	void save_to_file() noexcept;
 

@@ -1,6 +1,6 @@
-#include "../../include/state/settings_state.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/state/settings_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -44,18 +44,18 @@ constexpr array<const char*, 3> BOTTOM_BUTTONS{"exit", "apply", "revert"};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
-settings_state::settings_state(game&& game)
+settings_state::settings_state(unique_ptr<game>&& game)
 	: _substate{substate::IN_SETTINGS}, _timer{0}, _game{std::move(game)}, _pending{settings}
 {
-	basic_text_widget& title{_ui.emplace<basic_text_widget>("settings", vec2{500, -50}, TOP_CENTER, font::LANGUAGE, 64)};
+	widget& title{_ui.emplace<text_widget>("settings", vec2{500, -50}, TOP_CENTER, font::LANGUAGE, ttf_style::NORMAL, 64)};
 	title.pos.change({500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
-	for (int i = 0; i < LABELS.size(); ++i) {
-		widget& widget{
-			LABELS[i].second != nullptr
-				? _ui.emplace<tooltippable_text_widget>(LABELS[i].first, vec2{-200, 196 + i * 75}, CENTER_LEFT, LABELS[i].second, 48)
-				: _ui.emplace<basic_text_widget>(LABELS[i].first, vec2{-200, 196 + i * 75}, CENTER_LEFT, font::LANGUAGE, 48)};
+	for (size_t i = 0; i < LABELS.size(); ++i) {
+		widget& widget{LABELS[i].second != nullptr ? _ui.emplace<text_widget>(LABELS[i].first, vec2{-200, 196 + i * 75}, CENTER_LEFT,
+																			  LABELS[i].second, font::LANGUAGE, ttf_style::NORMAL, 48)
+												   : _ui.emplace<text_widget>(LABELS[i].first, vec2{-200, 196 + i * 75}, CENTER_LEFT,
+																			  font::LANGUAGE, ttf_style::NORMAL, 48)};
 		widget.pos.change({15, 196 + i * 75}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -114,7 +114,7 @@ settings_state::settings_state(game&& game)
 			_ui.get("window_size_inc").hide();
 		}
 	}};
-	text_callback current_window_size_text_cb{[this](const string&) {
+	text_callback current_window_size_text_cb{[this](const static_string<30>&) {
 		if (_pending.window_size == FULLSCREEN) {
 			return string{localization["fullscreen"]};
 		}
@@ -122,9 +122,9 @@ settings_state::settings_state(game&& game)
 			return std::to_string(_pending.window_size);
 		}
 	}};
-	clickable_text_widget& current_window_size{_ui.emplace<clickable_text_widget>(
+	widget& current_window_size{_ui.emplace<clickable_text_widget>(
 		"current_window_size", vec2{1200, h}, settings.window_size == FULLSCREEN ? CENTER_RIGHT : CENTER, font::LANGUAGE, 48,
-		current_window_size_status_cb, current_window_size_action_cb, current_window_size_text_cb)};
+		current_window_size_text_cb, current_window_size_status_cb, current_window_size_action_cb)};
 	current_window_size.pos.change({settings.window_size == FULLSCREEN ? 985 : 875, h}, 0.5_s);
 	current_window_size.unhide(0.5_s);
 
@@ -176,7 +176,7 @@ settings_state::settings_state(game&& game)
 			_ui.get("refresh_rate_inc").hide();
 		}
 	}};
-	text_callback current_refresh_rate_text_cb{[this](const string&) {
+	text_callback current_refresh_rate_text_cb{[this](const static_string<30>&) {
 		if (_pending.refresh_rate == NATIVE_REFRESH_RATE) {
 			return string{localization["native"]};
 		}
@@ -184,9 +184,9 @@ settings_state::settings_state(game&& game)
 			return std::to_string(_pending.refresh_rate);
 		}
 	}};
-	clickable_text_widget& current_refresh_rate{_ui.emplace<clickable_text_widget>(
+	widget& current_refresh_rate{_ui.emplace<clickable_text_widget>(
 		"current_refresh_rate", vec2{1200, h}, settings.refresh_rate == NATIVE_REFRESH_RATE ? CENTER_RIGHT : CENTER, font::LANGUAGE, 48,
-		current_refresh_rate_status_cb, current_refresh_rate_action_cb, current_refresh_rate_text_cb)};
+		current_refresh_rate_text_cb, current_refresh_rate_status_cb, current_refresh_rate_action_cb)};
 	current_refresh_rate.pos.change({settings.refresh_rate == NATIVE_REFRESH_RATE ? 985 : 892.5, h}, 0.5_s);
 	current_refresh_rate.unhide(0.5_s);
 
@@ -194,19 +194,17 @@ settings_state::settings_state(game&& game)
 
 	status_callback msaa_dec_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.msaa != NO_MSAA; }};
 	action_callback msaa_dec_action_cb{[this] { _pending.msaa = _pending.msaa == 2 ? NO_MSAA : _pending.msaa / 2; }};
-	arrow_widget& msaa_dec{
-		_ui.emplace<arrow_widget>("msaa_dec", vec2{1200, h}, CENTER_LEFT, false, msaa_dec_status_cb, msaa_dec_action_cb)};
+	widget& msaa_dec{_ui.emplace<arrow_widget>("msaa_dec", vec2{1200, h}, CENTER_LEFT, false, msaa_dec_status_cb, msaa_dec_action_cb)};
 	msaa_dec.pos.change({830, h}, 0.5_s);
 	msaa_dec.unhide(0.5_s);
 
 	status_callback msaa_inc_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.msaa != max_msaa(); }};
 	action_callback msaa_inc_action_cb{[this] { _pending.msaa = _pending.msaa == NO_MSAA ? 2 : _pending.msaa * 2; }};
-	arrow_widget& msaa_inc{
-		_ui.emplace<arrow_widget>("msaa_inc", vec2{1200, h}, CENTER_RIGHT, true, msaa_inc_status_cb, msaa_inc_action_cb)};
+	widget& msaa_inc{_ui.emplace<arrow_widget>("msaa_inc", vec2{1200, h}, CENTER_RIGHT, true, msaa_inc_status_cb, msaa_inc_action_cb)};
 	msaa_inc.pos.change({985, h}, 0.5_s);
 	msaa_inc.unhide(0.5_s);
 
-	text_callback current_msaa_text_cb{[this](const string&) {
+	text_callback current_msaa_text_cb{[this](const static_string<30>&) {
 		if (_pending.msaa == NO_MSAA) {
 			return string{"--"};
 		}
@@ -214,8 +212,8 @@ settings_state::settings_state(game&& game)
 			return format("x{}", _pending.msaa);
 		}
 	}};
-	basic_text_widget& current_msaa{
-		_ui.emplace<basic_text_widget>("current_msaa", vec2{1200, h}, CENTER, font::LANGUAGE, 48, current_msaa_text_cb)};
+	widget& current_msaa{
+		_ui.emplace<text_widget>("current_msaa", vec2{1200, h}, CENTER, font::LANGUAGE, ttf_style::NORMAL, 48, current_msaa_text_cb)};
 	current_msaa.pos.change({907.5, h}, 0.5_s);
 	current_msaa.unhide(0.5_s);
 
@@ -226,7 +224,7 @@ settings_state::settings_state(game&& game)
 		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.primary_hue = (_pending.primary_hue - delta + 360) % 360;
 	}};
-	arrow_widget& primary_hue_dec{
+	widget& primary_hue_dec{
 		_ui.emplace<arrow_widget>("primary_hue_dec", vec2{1200, h}, CENTER_LEFT, false, hue_arrow_status_cb, primary_hue_dec_action_cb)};
 	primary_hue_dec.pos.change({745, h}, 0.5_s);
 	primary_hue_dec.unhide(0.5_s);
@@ -235,18 +233,18 @@ settings_state::settings_state(game&& game)
 		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.primary_hue = (_pending.primary_hue + delta) % 360;
 	}};
-	arrow_widget& primary_hue_inc{
+	widget& primary_hue_inc{
 		_ui.emplace<arrow_widget>("primary_hue_inc", vec2{1200, h}, CENTER_RIGHT, true, hue_arrow_status_cb, primary_hue_inc_action_cb)};
 	primary_hue_inc.pos.change({930, h}, 0.5_s);
 	primary_hue_inc.unhide(0.5_s);
 
-	text_callback current_primary_hue_text_cb{[this](const string&) { return std::to_string(_pending.primary_hue); }};
-	basic_text_widget& current_primary_hue{
-		_ui.emplace<basic_text_widget>("current_primary_hue", vec2{1200, h}, CENTER, font::LANGUAGE, 48, current_primary_hue_text_cb)};
+	text_callback current_primary_hue_text_cb{[this](const static_string<30>&) { return std::to_string(_pending.primary_hue); }};
+	widget& current_primary_hue{_ui.emplace<text_widget>("current_primary_hue", vec2{1200, h}, CENTER, font::LANGUAGE, ttf_style::NORMAL,
+														 48, current_primary_hue_text_cb)};
 	current_primary_hue.pos.change({837.5, h}, 0.5_s);
 	current_primary_hue.unhide(0.5_s);
 
-	color_preview_widget& primary_hue_preview{
+	widget& primary_hue_preview{
 		_ui.emplace<color_preview_widget>("primary_hue_preview", vec2{1200, h}, CENTER_RIGHT, _pending.primary_hue)};
 	primary_hue_preview.pos.change({985, h}, 0.5_s);
 	primary_hue_preview.unhide(0.5_s);
@@ -257,8 +255,8 @@ settings_state::settings_state(game&& game)
 		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.secondary_hue = (_pending.secondary_hue - delta + 360) % 360;
 	}};
-	arrow_widget& secondary_hue_dec{_ui.emplace<arrow_widget>("secondary_hue_dec", vec2{1200, h}, CENTER_LEFT, false, hue_arrow_status_cb,
-															  secondary_hue_dec_action_cb)};
+	widget& secondary_hue_dec{_ui.emplace<arrow_widget>("secondary_hue_dec", vec2{1200, h}, CENTER_LEFT, false, hue_arrow_status_cb,
+														secondary_hue_dec_action_cb)};
 	secondary_hue_dec.pos.change({745, h}, 0.5_s);
 	secondary_hue_dec.unhide(0.5_s);
 
@@ -266,18 +264,18 @@ settings_state::settings_state(game&& game)
 		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.secondary_hue = (_pending.secondary_hue + delta) % 360;
 	}};
-	arrow_widget& secondary_hue_inc{_ui.emplace<arrow_widget>("secondary_hue_inc", vec2{1200, h}, CENTER_RIGHT, true, hue_arrow_status_cb,
-															  secondary_hue_inc_action_cb)};
+	widget& secondary_hue_inc{_ui.emplace<arrow_widget>("secondary_hue_inc", vec2{1200, h}, CENTER_RIGHT, true, hue_arrow_status_cb,
+														secondary_hue_inc_action_cb)};
 	secondary_hue_inc.pos.change({930, h}, 0.5_s);
 	secondary_hue_inc.unhide(0.5_s);
 
-	text_callback current_secondary_hue_text_cb{[this](const string&) { return std::to_string(_pending.secondary_hue); }};
-	basic_text_widget& current_secondary_hue{
-		_ui.emplace<basic_text_widget>("current_secondary_hue", vec2{1200, h}, CENTER, font::LANGUAGE, 48, current_secondary_hue_text_cb)};
+	text_callback current_secondary_hue_text_cb{[this](const static_string<30>&) { return std::to_string(_pending.secondary_hue); }};
+	widget& current_secondary_hue{_ui.emplace<text_widget>("current_secondary_hue", vec2{1200, h}, CENTER, font::LANGUAGE,
+														   ttf_style::NORMAL, 48, current_secondary_hue_text_cb)};
 	current_secondary_hue.pos.change({837.5, h}, 0.5_s);
 	current_secondary_hue.unhide(0.5_s);
 
-	color_preview_widget& secondary_hue_preview{
+	widget& secondary_hue_preview{
 		_ui.emplace<color_preview_widget>("secondary_hue_preview", vec2{1200, h}, CENTER_RIGHT, _pending.secondary_hue)};
 	secondary_hue_preview.pos.change({985, h}, 0.5_s);
 	secondary_hue_preview.unhide(0.5_s);
@@ -289,7 +287,7 @@ settings_state::settings_state(game&& game)
 		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.sfx_volume = max(_pending.sfx_volume - delta, 0);
 	}};
-	arrow_widget& sfx_volume_dec{
+	widget& sfx_volume_dec{
 		_ui.emplace<arrow_widget>("sfx_volume_dec", vec2{1200, h}, CENTER_LEFT, false, sfx_volume_dec_status_cb, sfx_volume_dec_action_cb)};
 	sfx_volume_dec.pos.change({765, h}, 0.5_s);
 	sfx_volume_dec.unhide(0.5_s);
@@ -299,14 +297,14 @@ settings_state::settings_state(game&& game)
 		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.sfx_volume = min(_pending.sfx_volume + delta, 100);
 	}};
-	arrow_widget& sfx_volume_inc{
+	widget& sfx_volume_inc{
 		_ui.emplace<arrow_widget>("sfx_volume_inc", vec2{1200, h}, CENTER_RIGHT, true, sfx_volume_inc_status_cb, sfx_volume_inc_action_cb)};
 	sfx_volume_inc.pos.change({985, h}, 0.5_s);
 	sfx_volume_inc.unhide(0.5_s);
 
-	text_callback current_sfx_volume_text_cb{[this](const string&) { return format("{}%", _pending.sfx_volume); }};
-	basic_text_widget& current_sfx_volume{
-		_ui.emplace<basic_text_widget>("current_sfx_volume", vec2{1200, h}, CENTER, font::LANGUAGE, 48, current_sfx_volume_text_cb)};
+	text_callback current_sfx_volume_text_cb{[this](const static_string<30>&) { return format("{}%", _pending.sfx_volume); }};
+	widget& current_sfx_volume{_ui.emplace<text_widget>("current_sfx_volume", vec2{1200, h}, CENTER, font::LANGUAGE, ttf_style::NORMAL, 48,
+														current_sfx_volume_text_cb)};
 	current_sfx_volume.pos.change({875, h}, 0.5_s);
 	current_sfx_volume.unhide(0.5_s);
 
@@ -317,8 +315,8 @@ settings_state::settings_state(game&& game)
 		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.music_volume = min(_pending.music_volume - delta, 100);
 	}};
-	arrow_widget& music_volume_dec{_ui.emplace<arrow_widget>("music_volume_dec", vec2{1200, h}, CENTER_LEFT, false,
-															 music_volume_dec_status_cb, music_volume_dec_action_cb)};
+	widget& music_volume_dec{_ui.emplace<arrow_widget>("music_volume_dec", vec2{1200, h}, CENTER_LEFT, false, music_volume_dec_status_cb,
+													   music_volume_dec_action_cb)};
 	music_volume_dec.pos.change({765, h}, 0.5_s);
 	music_volume_dec.unhide(0.5_s);
 
@@ -327,14 +325,14 @@ settings_state::settings_state(game&& game)
 		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.music_volume = min(_pending.music_volume + delta, 100);
 	}};
-	arrow_widget& music_volume_inc{_ui.emplace<arrow_widget>("music_volume_inc", vec2{1200, h}, CENTER_RIGHT, true,
-															 music_volume_inc_status_cb, music_volume_inc_action_cb)};
+	widget& music_volume_inc{_ui.emplace<arrow_widget>("music_volume_inc", vec2{1200, h}, CENTER_RIGHT, true, music_volume_inc_status_cb,
+													   music_volume_inc_action_cb)};
 	music_volume_inc.pos.change({985, h}, 0.5_s);
 	music_volume_inc.unhide(0.5_s);
 
-	text_callback current_music_volume_text_cb{[this](const string&) { return format("{}%", _pending.music_volume); }};
-	basic_text_widget& current_music_volume{
-		_ui.emplace<basic_text_widget>("current_music_volume", vec2{1200, h}, CENTER, font::LANGUAGE, 48, current_music_volume_text_cb)};
+	text_callback current_music_volume_text_cb{[this](const static_string<30>&) { return format("{}%", _pending.music_volume); }};
+	widget& current_music_volume{_ui.emplace<text_widget>("current_music_volume", vec2{1200, h}, CENTER, font::LANGUAGE, ttf_style::NORMAL,
+														  48, current_music_volume_text_cb)};
 	current_music_volume.pos.change({875, h}, 0.5_s);
 	current_music_volume.unhide(0.5_s);
 
@@ -350,10 +348,10 @@ settings_state::settings_state(game&& game)
 		font_manager.reload_language_preview_font(_pending);
 	}};
 	text_callback current_language_text_cb{
-		[this](const string&) { return languages.contains(_pending.language) ? languages[_pending.language].name : "???"; }};
-	clickable_text_widget& current_language{_ui.emplace<clickable_text_widget>("current_language", vec2{1200, h}, CENTER_RIGHT,
-																			   font::LANGUAGE_PREVIEW, 48, current_language_status_cb,
-																			   current_language_action_cb, current_language_text_cb)};
+		[this](const static_string<30>&) { return languages.contains(_pending.language) ? languages[_pending.language].name : "???"; }};
+	widget& current_language{_ui.emplace<clickable_text_widget>("current_language", vec2{1200, h}, CENTER_RIGHT, font::LANGUAGE_PREVIEW, 48,
+																current_language_text_cb, current_language_status_cb,
+																current_language_action_cb)};
 	current_language.pos.change({985, h}, 0.5_s);
 	current_language.unhide(0.5_s);
 
@@ -397,10 +395,10 @@ settings_state::settings_state(game&& game)
 		},
 	};
 
-	for (int i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
-		clickable_text_widget& widget{_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], vec2{500, 1050}, BOTTOM_CENTER, 48,
-																		 bottom_status_cbs[i], bottom_action_cbs[i],
-																		 std::move(bottom_chords[i]))};
+	for (size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
+		widget& widget{_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], vec2{500, 1050}, BOTTOM_CENTER, font::LANGUAGE, 48,
+														  DEFAULT_TEXT_CALLBACK, bottom_status_cbs[i], bottom_action_cbs[i], NO_TOOLTIP,
+														  std::move(bottom_chords[i]))};
 		widget.pos.change({500, 1000 - i * 50}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -422,7 +420,7 @@ unique_ptr<state> settings_state::handle_event(const tr::event& event)
 unique_ptr<state> settings_state::update(tr::duration)
 {
 	++_timer;
-	_game.update({});
+	_game->update({});
 	_ui.update();
 
 	switch (_substate) {
@@ -435,7 +433,7 @@ unique_ptr<state> settings_state::update(tr::duration)
 
 void settings_state::draw()
 {
-	_game.add_to_renderer();
+	_game->add_to_renderer();
 	engine::layered_renderer().add_color_quad(layer::GAME_OVERLAY, MENU_GAME_OVERLAY_QUAD);
 	_ui.add_to_renderer();
 
@@ -448,7 +446,7 @@ void settings_state::draw()
 
 void settings_state::set_up_exit_animation() noexcept
 {
-	_ui.get<basic_text_widget>("settings").pos.change({500, -50}, 0.5_s);
+	_ui.get("settings").pos.change({500, -50}, 0.5_s);
 	for (const char* tag : BOTTOM_BUTTONS) {
 		_ui.get(tag).pos.change({500, 1050}, 0.5_s);
 	}

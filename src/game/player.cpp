@@ -1,8 +1,8 @@
-#include "../../include/game/player.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/font_manager.hpp"
 #include "../../include/game/ball.hpp"
+#include "../../include/game/player.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -57,7 +57,7 @@ vec2 player::timer_text_size(const string& text, float scale) const noexcept
 
 void player::set_up_death_fragments() noexcept
 {
-	for (int i = 0; i < _fragments.size(); ++i) {
+	for (size_t i = 0; i < _fragments.size(); ++i) {
 		const fangle th{60_degf * i + 30_degf};
 		_fragments[i] = {_hitbox.c + magth(_hitbox.r, th), magth(rand(rng, 200.0f, 400.0f), rand(rng, th - 30_degf, th + 30_degf)),
 						 th + 90_degf, rand(rng, 360_degf, 720_degf) * (rand<bool>(rng) ? 1 : -1)};

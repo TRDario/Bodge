@@ -3,24 +3,40 @@
 #include "../replay.hpp"
 #include "interpolated.hpp"
 
-// Base UI widget template.
+// Shortcut key chord.
+struct key_chord {
+	// Shortcut chord key.
+	key key;
+	// Shortcut chord modifiers.
+	mods mods{mods::NONE};
+
+	bool operator==(const key_chord&) const = default;
+};
+
+// Alias for the type of a tooltip callback.
+using tooltip_callback = function<string()>;
+// Sentinel for a mousable to not have a tooltip.
+inline const tooltip_callback NO_TOOLTIP{};
+
+// Base widget class.
 class widget {
   public:
-	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
-
 	// Creates a widget.
-	widget(string&& name, vec2 pos, align alignment) noexcept;
+	widget(string_view name, vec2 pos, align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
+		   vector<key_chord>&& shortcuts) noexcept;
 	// Virtual destructor.
 	virtual ~widget() noexcept = default;
 
 	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
 
 	// The name of the widget.
-	string name;
-	// The position of the widget.
-	interpolated_vec2 pos;
+	static_string<30> name;
 	// The alignment of the widget.
 	align alignment;
+	// The position of the widget.
+	interpolated_vec2 pos;
+	// An optional tooltip callback (the widget must be hoverable for it to be used).
+	tooltip_callback tooltip_cb;
 
 	///////////////////////////////////////////////////////////////// SIZE ////////////////////////////////////////////////////////////////
 
@@ -44,130 +60,105 @@ class widget {
 
 	/////////////////////////////////////////////////////////////// STATUS ////////////////////////////////////////////////////////////////
 
+	// Gets whether the widget is hoverable.
+	bool hoverable() const noexcept;
+	// Gets whether the widget is writable.
+	bool writable() const noexcept;
 	// Gets whether the widget is active.
 	virtual bool active() const noexcept;
+
+	////////////////////////////////////////////////////////// MOUSE INTERACTION //////////////////////////////////////////////////////////
+
+	// Callback for the widget being hovered.
+	virtual void on_hover() {}
+	// Callback for the widget being unhovered.
+	virtual void on_unhover() {}
+	// Callback for the widget being clicked and starting to be held.
+	virtual void on_hold_begin() {}
+	// Callback for the widget being held via hold transfer.
+	virtual void on_hold_transfer_in() {}
+	// Callback for the widget being unheld via hold transfer.
+	virtual void on_hold_transfer_out() {}
+	// Callback for the widget being unheld via click release.
+	virtual void on_hold_end() {}
+
+	//////////////////////////////////////////////////////// SHORTCUT INTERACTION /////////////////////////////////////////////////////////
+
+	// Gets whether a chord is a valid shortcut for this widget.
+	bool is_shortcut(const key_chord& chord) const noexcept;
+	// Callback for one of the widget's shortcuts being pressed.
+	virtual void on_shortcut() {}
+
+	//////////////////////////////////////////////////////// KEYBOARD INTERACTION /////////////////////////////////////////////////////////
+
+	// Callback for gaining input focus.
+	virtual void on_gain_focus() {};
+	// Callback for losing input focus.
+	virtual void on_lose_focus() {};
+	// Callback for character insertion.
+	virtual void on_write(string_view){};
+	// Callback for when enter is pressed.
+	virtual void on_enter() {};
+	// Callback for character deletion.
+	virtual void on_erase() {};
+	// Callback for input clearing.
+	virtual void on_clear() {};
+	// Callback for text copying.
+	virtual void on_copy() {};
+	// Callback for text pasting.
+	virtual void on_paste() {};
 
 	////////////////////////////////////////////////////////////// UPDATING ///////////////////////////////////////////////////////////////
 
 	// Updates the widget.
 	virtual void update();
 	// Instructs the widget to release its graphical resources.
-	virtual void release_graphical_resources() noexcept;
+	virtual void release_graphical_resources() noexcept {}
 	// Adds the widget to the renderer.
 	virtual void add_to_renderer() = 0;
 
   private:
 	// The opacity of the widget.
 	interpolated_float _opacity;
-};
-
-// Alias for the type of a tooltip callback.
-using tooltip_callback = function<string()>;
-// Sentinel for a mousable to not have a tooltip.
-inline const tooltip_callback NO_TOOLTIP{};
-
-// Interface for a mousable widget.
-struct mousable {
-	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
-
-	// Creates a mousable.
-	mousable(tooltip_callback tooltip_cb = NO_TOOLTIP) noexcept;
-
-	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
-
-	// The tooptip callback (optional).
-	tooltip_callback tooltip_cb;
-
-	////////////////////////////////////////////////////////////// CALLBACKS //////////////////////////////////////////////////////////////
-
-	// Callback for the widget being hovered.
-	virtual void on_hover() = 0;
-	// Callback for the widget being unhovered.
-	virtual void on_unhover() = 0;
-	// Callback for the widget being clicked and starting to be held.
-	virtual void on_hold_begin() = 0;
-	// Callback for the widget being held via hold transfer.
-	virtual void on_hold_transfer_in() = 0;
-	// Callback for the widget being unheld via hold transfer.
-	virtual void on_hold_transfer_out() = 0;
-	// Callback for the widget being unheld via click release.
-	virtual void on_hold_end() = 0;
-};
-
-// Shortcut key chord.
-struct key_chord {
-	// Shortcut chord key.
-	key key;
-	// Shortcut chord modifiers.
-	mods mods{mods::NONE};
-};
-
-// Interface for a shortcutable widget.
-struct shortcutable {
-	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
-
-	// Creates a shortcutable.
-	shortcutable(vector<key_chord>&& chords) noexcept;
-
-	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
-
-	// The list of key chords of the shortcuts of the widget.
-	vector<key_chord> chords;
-
-	////////////////////////////////////////////////////////////// CALLBACKS //////////////////////////////////////////////////////////////
-
-	// Callback for the shortcut being inputted.
-	virtual void on_shortcut() = 0;
-};
-
-// Interface for a writable widget.
-struct writable {
-	////////////////////////////////////////////////////////////// CALLBACKS //////////////////////////////////////////////////////////////
-
-	// Callback for gaining input focus.
-	virtual void on_gain_focus() = 0;
-	// Callback for losing input focus.
-	virtual void on_lose_focus() = 0;
-	// Callback for character insertion.
-	virtual void on_write(string_view input) = 0;
-	// Callback for when enter is pressed.
-	virtual void on_enter() = 0;
-	// Callback for character deletion.
-	virtual void on_erase() = 0;
-	// Callback for input clearing.
-	virtual void on_clear() = 0;
-	// Callback for text copying.
-	virtual void on_copy() = 0;
-	// Callback for text pasting.
-	virtual void on_paste() = 0;
+	// Whether the widget is hoverable.
+	bool _hoverable;
+	// Whether the widget is writable.
+	bool _writable;
+	// The shortcuts of the widget.
+	vector<key_chord> _shortcuts;
 };
 
 /////////////////////////////////////////////////////////////// TEXT WIDGETS //////////////////////////////////////////////////////////////
 
 // Alias for a text widget text callback.
-using text_callback = function<string(const string&)>;
+using text_callback = function<string(const static_string<30>&)>;
 // Default callback for text widgets: gettnig a localization string using the widget name as the key.
-inline const text_callback DEFAULT_TEXT_CALLBACK{[](const string& name) { return string{localization[name]}; }};
+inline const text_callback DEFAULT_TEXT_CALLBACK{[](const static_string<30>& name) { return string{localization[name]}; }};
 
-// Widget for basic, non-interactable text.
-class basic_text_widget : public widget {
+// Base text widget class.
+class text_widget : public widget {
   public:
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
-	// Creates a basic text widget.
-	// The callback is a function object that takes in the name of the object and returns a string.
-	basic_text_widget(string&& name, vec2 pos, align alignment, font font, float font_size, text_callback text_cb = DEFAULT_TEXT_CALLBACK,
-					  rgba8 color = {160, 160, 160, 160}, ttf_style style = NORMAL) noexcept;
+	// Creates a text widget.
+	text_widget(string_view name, vec2 pos, align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
+				vector<key_chord>&& shortcuts, font font, ttf_style style, halign text_alignment, float font_size, int max_width,
+				rgba8 color, text_callback text_cb);
+
+	// Creates a common type of text widget: non-interactible, single-line.
+	text_widget(string_view name, vec2 pos, align alignment, font font, ttf_style style, float font_size,
+				text_callback text_cb = DEFAULT_TEXT_CALLBACK, rgba8 color = {160, 160, 160, 160});
+
+	// Creates a common type of text widget: non-interactible, tooltippable, single-line.
+	text_widget(string_view name, vec2 pos, align alignment, string_view tooltip_key, font font, ttf_style style, float font_size,
+				text_callback text_cb = DEFAULT_TEXT_CALLBACK);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
 	// The text tint color.
 	interpolated_rgba8 color;
-
-	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
-
-	// Sets the text callback of the widget.
-	void set_text_callback(text_callback text_cb) noexcept;
+	// The callback used to get the text.
+	text_callback text_cb;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -194,10 +185,12 @@ class basic_text_widget : public widget {
 	font _font;
 	// The style used when drawing the font.
 	ttf_style _style;
+	// The alignment the text is drawn with.
+	halign _text_alignment;
 	// The font size used when drawing the text.
 	float _font_size;
-	// The callback used to get the text.
-	text_callback _text_cb;
+	// The maximum allowed width of the widget's text.
+	int _max_width;
 	// Cached texture and string.
 	optional<cached> _cached;
 
@@ -205,41 +198,20 @@ class basic_text_widget : public widget {
 	void update_cache();
 };
 
-// Widget for tooltippable, but otherwise non-interactable text.
-class tooltippable_text_widget : public basic_text_widget, public mousable {
-  public:
-	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
-
-	// Creates a tooltippable text widget.
-	tooltippable_text_widget(string&& name, vec2 pos, align alignment, string_view tooltip_key, float font_size) noexcept;
-
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
-
-	void on_hover() noexcept override {}
-	void on_unhover() noexcept override {}
-	void on_hold_begin() noexcept override {};
-	void on_hold_transfer_in() noexcept override {};
-	void on_hold_transfer_out() noexcept override {};
-	void on_hold_end() noexcept override {};
-};
-
 // Alias for a clickable widget status callback.
 using status_callback = function<bool()>;
 // Alias for a clickable widget action callback.
 using action_callback = function<void()>;
 
-// Widget for clickable text.
-class clickable_text_widget : public basic_text_widget, public mousable, public shortcutable {
+// Clickable text widget class.
+class clickable_text_widget : public text_widget {
   public:
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a clickable text widget.
-	clickable_text_widget(string&& name, vec2 pos, align alignment, float font_size, status_callback status_cb, action_callback action_cb,
-						  vector<key_chord>&& chords = {}, tooltip_callback tooltip_cb = NO_TOOLTIP) noexcept;
-	// Creates a clickable text widget.
-	clickable_text_widget(string&& name, vec2 pos, align alignment, font font, float font_size, status_callback status_cb,
-						  action_callback action_cb, text_callback text_cb = DEFAULT_TEXT_CALLBACK, vector<key_chord>&& chords = {},
-						  tooltip_callback tooltip_cb = NO_TOOLTIP) noexcept;
+	clickable_text_widget(string_view name, vec2 pos, align alignment, font font, float font_size, text_callback text_cb,
+						  status_callback status_cb, action_callback action_cb, tooltip_callback tooltip_cb = NO_TOOLTIP,
+						  vector<key_chord>&& shortcuts = {}) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -263,47 +235,146 @@ class clickable_text_widget : public basic_text_widget, public mousable, public 
 };
 
 // Widget for inputting a line of text.
-class text_line_input_widget : public basic_text_widget, public mousable, public writable {
+template <size_t S> class line_input_widget : public text_widget {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a text line input wiget.
-	text_line_input_widget(string&& name, vec2 pos, align alignment, float font_size, status_callback status_cb, action_callback enter_cb,
-						   u8 max_size, string&& starting_text = {});
+	line_input_widget(string_view name, vec2 pos, align alignment, float font_size, status_callback status_cb, action_callback enter_cb,
+					  string_view starting_text = {}) noexcept
+		: text_widget{name,
+					  pos,
+					  alignment,
+					  true,
+					  NO_TOOLTIP,
+					  true,
+					  {},
+					  font::LANGUAGE,
+					  ttf_style::NORMAL,
+					  halign::CENTER,
+					  font_size,
+					  UNLIMITED_WIDTH,
+					  {160, 160, 160, 160},
+					  [this](const static_string<30>&) { return buffer.empty() ? string{localization["empty"]} : string{buffer}; }}
+		, buffer{std::move(starting_text)}
+		, _status_cb{std::move(status_cb)}
+		, _enter_cb{std::move(enter_cb)}
+	{
+	}
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
 	// The input buffer.
-	string buffer;
+	static_string<S> buffer;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	void add_to_renderer() override;
+	void add_to_renderer() override
+	{
+		interpolated_rgba8 real_color{color};
+		if (!active()) {
+			color = {80, 80, 80, 160};
+		}
+		else if (buffer.empty()) {
+			rgba8 real{real_color};
+			color = {static_cast<u8>(real.r / 2), static_cast<u8>(real.g / 2), static_cast<u8>(real.b / 2), real.a};
+		}
+		text_widget::add_to_renderer();
+		color = real_color;
+	}
 
-	bool active() const noexcept override;
-	void on_hover() noexcept override;
-	void on_unhover() noexcept override;
-	void on_hold_begin() noexcept override;
-	void on_hold_transfer_in() noexcept override;
-	void on_hold_transfer_out() noexcept override;
-	void on_hold_end() noexcept override;
+	bool active() const noexcept override
+	{
+		return _status_cb();
+	}
 
-	void on_gain_focus() override;
-	void on_lose_focus() override;
-	void on_write(string_view input) override;
-	void on_enter() override;
-	void on_erase() override;
-	void on_clear() override;
-	void on_copy() override;
-	void on_paste() override;
+	void on_hover() noexcept override
+	{
+		if (!_has_focus) {
+			color.change({220, 220, 220, 220}, 0.2_s);
+		}
+	}
+
+	void on_unhover() noexcept override
+	{
+		if (!_has_focus) {
+			color.change({160, 160, 160, 160}, 0.2_s);
+		}
+	}
+
+	void on_hold_begin() noexcept override
+	{
+		color = {32, 32, 32, 255};
+	}
+
+	void on_hold_transfer_in() noexcept override
+	{
+		color = {32, 32, 32, 255};
+	}
+
+	void on_hold_transfer_out() noexcept override
+	{
+		color = rgba8{160, 160, 160, 160};
+	}
+
+	void on_hold_end() noexcept override
+	{
+		_has_focus = true;
+		color = {255, 255, 255, 255};
+	}
+
+	void on_gain_focus() override
+	{
+		_has_focus = true;
+		color.change({255, 255, 255, 255}, 0.2_s);
+	}
+
+	void on_lose_focus() override
+	{
+		_has_focus = false;
+		color.change({160, 160, 160, 160}, 0.2_s);
+	}
+
+	void on_write(string_view input) override
+	{
+		if (buffer.size() + input.size() <= S) {
+			buffer.append(input);
+		}
+	}
+
+	void on_enter() override
+	{
+		_enter_cb();
+	}
+
+	void on_erase() override
+	{
+		buffer.pop_back();
+	}
+
+	void on_clear() override
+	{
+		buffer.clear();
+	}
+
+	void on_copy() override
+	{
+		keyboard::set_clipboard_text(string{buffer}.c_str());
+	}
+
+	void on_paste() override
+	{
+		if (keyboard::clipboard_has_text()) {
+			string pasted{keyboard::clipboard_text()};
+			buffer += (buffer.size() + pasted.size() > S) ? string_view{pasted}.substr(0, S - buffer.size()) : pasted;
+		}
+	}
 
   private:
 	// Callback used to determine the status of the widget.
 	status_callback _status_cb;
 	// Callback called when enter is pressed.
 	action_callback _enter_cb;
-	// Maximum allowed size of the buffer.
-	u8 _max_size;
 	// Keeps track of whether the widget has input focus.
 	bool _has_focus;
 };
@@ -316,7 +387,7 @@ class color_preview_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a color preview widget.
-	color_preview_widget(string&& name, vec2 pos, align alignment, u16& hue_ref) noexcept;
+	color_preview_widget(string_view name, vec2 pos, align alignment, u16& hue_ref) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -329,12 +400,12 @@ class color_preview_widget : public widget {
 };
 
 // Clickable arrow widget.
-class arrow_widget : public widget, public mousable, public shortcutable {
+class arrow_widget : public widget {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates an arrow widget.
-	arrow_widget(string&& name, vec2 pos, align alignment, bool right_arrow, status_callback status_cb, action_callback action_cb,
+	arrow_widget(string_view name, vec2 pos, align alignment, bool right_arrow, status_callback status_cb, action_callback action_cb,
 				 vector<key_chord>&& chords = {}) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
@@ -370,7 +441,7 @@ class replay_playback_indicator_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a replay playback indicator widget.
-	replay_playback_indicator_widget(string&& name, vec2 pos, align alignment) noexcept;
+	replay_playback_indicator_widget(string_view name, vec2 pos, align alignment) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -380,25 +451,43 @@ class replay_playback_indicator_widget : public widget {
 
 ////////////////////////////////////////////////////////////// MIXED WIDGETS //////////////////////////////////////////////////////////////
 
+// Score widget.
+class score_widget : public text_widget {
+  public:
+	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
+
+	// Creates a score widget.
+	score_widget(string_view name, vec2 pos, align alignment, size_t rank, score* score) noexcept;
+
+	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
+
+	// The rank of the score.
+	size_t rank;
+	// Pointer to the score this widget is displaying information for.
+	score* score;
+
+	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
+
+	vec2 size() const noexcept override;
+	vec2 tl() const noexcept override;
+	void add_to_renderer() override;
+};
+
 // Replay widget.
 class replay_widget : public clickable_text_widget {
   public:
-	replay_widget(string&& name, vec2 pos, align alignment, auto base_status_cb, auto base_action_cb,
+	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
+
+	replay_widget(string_view name, vec2 pos, align alignment, auto base_status_cb, auto base_action_cb,
 				  optional<map<string, replay_header>::iterator> it, key shortcut)
-		: clickable_text_widget{std::move(name),
+		: clickable_text_widget{name,
 								pos,
 								alignment,
 								font::LANGUAGE,
 								40,
-								[=, this] { return base_status_cb() && _it.has_value(); },
-								[=, this] {
-									if (_it.has_value()) {
-										base_action_cb(*_it);
-									}
-								},
-								[this](const string&) {
+								[this](const static_string<30>&) {
 									if (!_it.has_value()) {
-										return string{"."};
+										return string{"----------------------------------"};
 									}
 
 									replay_header& rpy{(*_it)->second};
@@ -408,12 +497,18 @@ class replay_widget : public clickable_text_widget {
 									const ch::hh_mm_ss hhmmss{tp - ch::floor<ch::days>(tp)};
 									const ch::year_month_day ymd{ch::floor<ch::days>(tp)};
 									return format("{} ({}{})\n{} | {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", rpy.name,
-												  localization["by"], rpy.player, rpy.gamemode.name, result / 60_s, (result % 60_s) / 1_s,
-												  (result % 1_s) * 100 / 1_s, static_cast<int>(ymd.year()),
-												  static_cast<unsigned int>(ymd.month()), static_cast<unsigned int>(ymd.day()),
-												  hhmmss.hours().count(), hhmmss.minutes().count());
+												  localization["by"], rpy.player,
+												  rpy.gamemode.builtin ? localization[rpy.gamemode.name] : string_view{rpy.gamemode.name},
+												  result / 60_s, (result % 60_s) / 1_s, (result % 1_s) * 100 / 1_s,
+												  static_cast<int>(ymd.year()), static_cast<unsigned int>(ymd.month()),
+												  static_cast<unsigned int>(ymd.day()), hhmmss.hours().count(), hhmmss.minutes().count());
 								},
-								{{shortcut}},
+								[=, this] { return base_status_cb() && _it.has_value(); },
+								[=, this] {
+									if (_it.has_value()) {
+										base_action_cb(*_it);
+									}
+								},
 								[this] {
 									if (!_it.has_value()) {
 										return string{};
@@ -434,7 +529,8 @@ class replay_widget : public clickable_text_widget {
 										}
 										return str;
 									}
-								}}
+								},
+								{{shortcut}}}
 		, _it{it}
 	{
 	}

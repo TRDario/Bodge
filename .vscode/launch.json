@@ -28,7 +28,7 @@
 			"program": "${workspaceFolder}/build/Release/Bodge",
 			"args": [
 				"--debug",
-				"--savedir",
+				"--userdir",
 				"${workspaceFolder}/userdir",
 				"--datadir",
 				"${workspaceFolder}/data"

@@ -1,5 +1,5 @@
-#include "../../include/game/game.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/game/game.hpp"
 #include "../../include/score.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -22,7 +22,9 @@ game::game(const ::gamemode& gamemode, std::uint64_t rng_seed)
 	, _last_spawn{0}
 {
 	if (!_gamemode.player.autoplay()) {
-		const ticks pb{scorefile.scores.contains(gamemode) ? scorefile.scores.at(gamemode).front().result : 0};
+		const vector<pair<::gamemode, vector<score>>>::iterator scorefile_gamemode_it{
+			rs::find_if(scorefile.scores, [&](const pair<::gamemode, vector<score>>& pair) { return pair.first == gamemode; })};
+		const ticks pb{scorefile_gamemode_it != scorefile.scores.end() ? scorefile_gamemode_it->second.front().result : 0};
 		_player.emplace(gamemode.player, pb);
 	}
 
@@ -129,6 +131,11 @@ void active_game::update()
 
 replay_game::replay_game(const ::gamemode& gamemode, replay&& replay)
 	: game{gamemode, replay.header().seed}, _replay{std::move(replay)}
+{
+}
+
+replay_game::replay_game(const replay_game& r)
+	: replay_game{r.gamemode(), replay{r._replay}}
 {
 }
 

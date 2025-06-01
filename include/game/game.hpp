@@ -84,6 +84,10 @@ class replay_game : public game {
 
 	// Creates a replay game.
 	replay_game(const ::gamemode& gamemode, replay&& replay);
+	// Copies a replay game.
+	replay_game(const replay_game& r);
+	// Moves a replay game.
+	replay_game(replay_game&&) noexcept = default;
 
 	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
 

@@ -2,17 +2,17 @@
 #include "../game/game.hpp"
 #include "../ui/ui_manager.hpp"
 
-// Replay game state.
-class replay_state : public state {
+// Paused replay state.
+class replay_pause_state : public state {
   public:
 	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
 
-	constexpr static u32 ID{7};
+	constexpr static u32 ID{8};
 
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	// Constructs a replay state.
-	replay_state(unique_ptr<replay_game>&& game, bool fade_in) noexcept;
+	// Constructs a pause state.
+	replay_pause_state(unique_ptr<replay_game>&& game, bool blur_in) noexcept;
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
@@ -28,27 +28,34 @@ class replay_state : public state {
   private:
 	// Substates within the main menu state.
 	enum class substate : u8 {
-		// Transitioning into the game state from the menu.
-		STARTING,
-		// Regular operation.
-		WATCHING,
-		// Exiting into the replay screen.
-		EXITING
+		// Pausing the replay.
+		PAUSING,
+		// The replay is paused.
+		PAUSED,
+		// Unpausing the replay.
+		UNPAUSING,
+		// Restarting the replay.
+		RESTARTING,
+		// Quitting the replay to the replays screen.
+		QUITTING
 	};
 
-	// The current game substate.
+	// The current substate.
 	substate _substate;
-	// The current tick timestamp.
+	// Internal timer.
 	ticks _timer;
-	// The gamestate.
-	unique_ptr<replay_game> _game;
 	// The UI manager.
 	ui_manager _ui;
+	// The paused replay.
+	unique_ptr<replay_game> _game;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
-	// Calculates the fade overlay opacity.
-	float fade_overlay_opacity() const noexcept;
-	// Adds the replay cursor to the renderer.
-	void add_cursor_to_renderer(glm::vec2 pos) const;
+	// Gets the saturation factor to pass to the background shader.
+	float saturation_factor() const noexcept;
+	// Gets the blur strength to pass to the background shader.
+	float blur_strength() const noexcept;
+
+	// Sets up the exit animation.
+	void set_up_exit_animation() noexcept;
 };

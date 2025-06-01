@@ -18,40 +18,40 @@ gamemode::gamemode(const path& path)
 
 void tr::binary_reader<gamemode>::read_from_stream(istream& is, gamemode& out)
 {
+	binary_read(is, out.builtin);
 	binary_read(is, out.name);
 	binary_read(is, out.author);
 	binary_read(is, out.description);
-	binary_read(is, out.difficulty);
 	binary_read(is, out.player);
 	binary_read(is, out.ball);
 }
 
 span<const byte> tr::binary_reader<gamemode>::read_from_span(span<const byte> span, gamemode& out)
 {
+	span = binary_read(span, out.builtin);
 	span = binary_read(span, out.name);
 	span = binary_read(span, out.author);
 	span = binary_read(span, out.description);
-	span = binary_read(span, out.difficulty);
 	span = binary_read(span, out.player);
 	return binary_read(span, out.ball);
 }
 
 void tr::binary_writer<gamemode>::write_to_stream(ostream& os, const gamemode& in)
 {
+	binary_write(os, in.builtin);
 	binary_write(os, in.name);
 	binary_write(os, in.author);
 	binary_write(os, in.description);
-	binary_write(os, in.difficulty);
 	binary_write(os, in.player);
 	binary_write(os, in.ball);
 }
 
 span<byte> tr::binary_writer<gamemode>::write_to_span(span<byte> span, const gamemode& in)
 {
+	span = binary_write(span, in.builtin);
 	span = binary_write(span, in.name);
 	span = binary_write(span, in.author);
 	span = binary_write(span, in.description);
-	span = binary_write(span, in.difficulty);
 	span = binary_write(span, in.player);
 	return binary_write(span, in.ball);
 }
@@ -59,7 +59,7 @@ span<byte> tr::binary_writer<gamemode>::write_to_span(span<byte> span, const gam
 void gamemode::save_to_file() noexcept
 {
 	try {
-		const path base_path{cli_settings.userdir / "gamemodes" / (name + ".gmd")};
+		const path base_path{cli_settings.userdir / "gamemodes" / format("{}.gmd", name)};
 		ofstream file;
 		if (!exists(base_path)) {
 			file = open_file_w(base_path, std::ios::binary);
@@ -82,22 +82,11 @@ void gamemode::save_to_file() noexcept
 	}
 }
 
-size_t std::hash<gamemode>::operator()(const gamemode& gamemode) const noexcept
-{
-	std::hash<string> hasher;
-	size_t hash{hasher(gamemode.name)};
-	hash = hash ^ hasher(gamemode.author) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-	hash = hash ^ hasher(gamemode.description) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-	return hash;
-}
-
 vector<gamemode> load_gamemodes() noexcept
 {
 	vector<gamemode> gamemodes;
 	try {
-		for (const gamemode& g : BUILTIN_GAMEMODES) {
-			gamemodes.push_back({string{localization[g.name]}, string{localization[g.description]}, g.player, g.ball});
-		}
+		gamemodes.append_range(BUILTIN_GAMEMODES);
 		const path gamemode_dir{cli_settings.userdir / "gamemodes"};
 		for (directory_entry file : directory_iterator{gamemode_dir}) {
 			const path path{file};

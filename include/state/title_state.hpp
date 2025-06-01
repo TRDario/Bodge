@@ -14,7 +14,7 @@ class title_state : public state {
 	// Creates a title state with a randomly chosen background gamemode.
 	title_state();
 	// Creates a title state with an ongoing game.
-	title_state(game&& game);
+	title_state(unique_ptr<game>&& game);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -34,6 +34,8 @@ class title_state : public state {
 		ENTERING_START_GAME,
 		// Entering the replays screen.
 		ENTERING_REPLAYS,
+		// Entering the scores screen.
+		ENTERING_SCORES,
 		// Entering the settings screen.
 		ENTERING_SETTINGS,
 		// Exiting the game.
@@ -47,7 +49,7 @@ class title_state : public state {
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
-	game _game;
+	unique_ptr<game> _game;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 

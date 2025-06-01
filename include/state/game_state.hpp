@@ -11,7 +11,7 @@ class game_state : public state {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Constructs a game state.
-	game_state(active_game&& game, bool fade_in) noexcept;
+	game_state(unique_ptr<active_game>&& game, bool fade_in) noexcept;
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
@@ -38,5 +38,5 @@ class game_state : public state {
 	// The current tick timestamp.
 	ticks _timer;
 	// The gamestate.
-	active_game _game;
+	unique_ptr<active_game> _game;
 };

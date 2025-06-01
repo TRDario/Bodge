@@ -1,13 +1,14 @@
 #include "../../include/engine.hpp"
+#include "../../include/state/replay_pause_state.hpp"
 #include "../../include/state/replay_state.hpp"
 #include "../../include/state/replays_state.hpp"
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
-replay_state::replay_state(replay_game&& game, bool fade_in) noexcept
+replay_state::replay_state(unique_ptr<replay_game>&& game, bool fade_in) noexcept
 	: _substate{fade_in ? substate::STARTING : substate::WATCHING}, _timer{0}, _game{std::move(game)}
 {
-	basic_text_widget& replay{_ui.emplace<basic_text_widget>("replay", vec2{4, 1000}, BOTTOM_LEFT, font::LANGUAGE, 48)};
+	widget& replay{_ui.emplace<text_widget>("replay", vec2{4, 1000}, BOTTOM_LEFT, font::LANGUAGE, ttf_style::NORMAL, 48)};
 	replay.unhide();
 	replay_playback_indicator_widget& indicator{_ui.emplace<replay_playback_indicator_widget>("indicator", vec2{992, 994}, BOTTOM_RIGHT)};
 	indicator.unhide();
@@ -23,7 +24,7 @@ u32 replay_state::type() const noexcept
 unique_ptr<replay_state::state> replay_state::handle_event(const tr::event& event)
 {
 	if (event.type() == tr::key_down_event::ID && tr::key_down_event{event}.key == key::ESCAPE) {
-		// return make_unique<pause_state>(std::move(_game), true);
+		return make_unique<replay_pause_state>(std::move(_game), true);
 	}
 	return nullptr;
 }
@@ -35,22 +36,22 @@ unique_ptr<replay_state::state> replay_state::update(tr::duration)
 	case substate::WATCHING:
 		if (keyboard::held_mods() & mods::SHIFT) {
 			if (_timer % 4 == 0) {
-				_game.update();
+				_game->update();
 			}
 		}
 		else if (keyboard::held_mods() & mods::CTRL) {
 			for (int i = 0; i < 4; ++i) {
-				_game.update();
-				if (_game.done()) {
+				_game->update();
+				if (_game->done()) {
 					break;
 				}
 			}
 		}
 		else {
-			_game.update();
+			_game->update();
 		}
 
-		if (_game.done()) {
+		if (_game->done()) {
 			_substate = substate::EXITING;
 			_timer = 0;
 		}
@@ -74,9 +75,9 @@ unique_ptr<replay_state::state> replay_state::update(tr::duration)
 
 void replay_state::draw()
 {
-	_game.add_to_renderer();
+	_game->add_to_renderer();
 	_ui.add_to_renderer();
-	add_cursor_to_renderer(_game.cursor_pos());
+	add_cursor_to_renderer(_game->cursor_pos());
 	add_fade_overlay_to_renderer(fade_overlay_opacity());
 
 	engine::layered_renderer().draw_up_to_layer(layer::UI, engine::screen());

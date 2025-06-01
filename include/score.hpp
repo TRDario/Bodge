@@ -44,9 +44,9 @@ template <> struct tr::binary_writer<score> {
 // File containing score information.
 struct scorefile_t {
 	// The name of the player.
-	string name;
+	static_string<20> name;
 	// Score tables.
-	unordered_map<gamemode, vector<score>> scores;
+	vector<pair<gamemode, vector<score>>> scores;
 	// The total recorded playtime.
 	ticks playtime{0};
 

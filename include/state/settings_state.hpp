@@ -12,7 +12,7 @@ class settings_state : public state {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a settings screen state.
-	settings_state(game&& game);
+	settings_state(unique_ptr<game>&& game);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -37,7 +37,7 @@ class settings_state : public state {
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
-	game _game;
+	unique_ptr<game> _game;
 	// The pending settings.
 	settings_t _pending;
 
