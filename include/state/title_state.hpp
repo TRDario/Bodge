@@ -35,7 +35,7 @@ class title_state : public state {
 		// Entering the replays screen.
 		ENTERING_REPLAYS,
 		// Entering the scores screen.
-		ENTERING_SCORES,
+		ENTERING_SCOREBOARDS,
 		// Entering the settings screen.
 		ENTERING_SETTINGS,
 		// Exiting the game.

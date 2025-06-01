@@ -234,9 +234,12 @@ text_widget::text_widget(string_view name, vec2 pos, align alignment, string_vie
 {
 }
 
-vec2 text_widget::size() const noexcept
+vec2 text_widget::size() const
 {
-	return _cached.has_value() ? _cached->size / engine::render_scale() : vec2{0};
+	if (!_cached.has_value()) {
+		update_cache();
+	}
+	return _cached->size;
 }
 
 void text_widget::update() noexcept
@@ -264,7 +267,7 @@ void text_widget::add_to_renderer()
 	engine::batched_renderer().add_tex_quad(quad, 0, _cached->texture, TRANSFORM);
 }
 
-void text_widget::update_cache()
+void text_widget::update_cache() const
 {
 	string text{text_cb(name)};
 	if (!_cached.has_value() || _cached->text != text) {
@@ -616,15 +619,10 @@ void score_widget::add_to_renderer()
 
 ////////////////////////////////////////////////////////////// REPLAY_WIDGET //////////////////////////////////////////////////////////////
 
-void replay_widget::set_iterator(optional<map<string, replay_header>::iterator> it) noexcept
-{
-	_it = it;
-}
-
 vec2 replay_widget::size() const noexcept
 {
-	if (_it.has_value()) {
-		const int icons{(*_it)->second.flags.exited_prematurely + (*_it)->second.flags.modified_game_speed};
+	if (it.has_value()) {
+		const int icons{(*it)->second.flags.exited_prematurely + (*it)->second.flags.modified_game_speed};
 		if (icons != 0) {
 			return clickable_text_widget::size() + vec2{0, 20};
 		}
@@ -634,8 +632,8 @@ vec2 replay_widget::size() const noexcept
 
 vec2 replay_widget::tl() const noexcept
 {
-	if (_it.has_value()) {
-		const int icons{(*_it)->second.flags.exited_prematurely + (*_it)->second.flags.modified_game_speed};
+	if (it.has_value()) {
+		const int icons{(*it)->second.flags.exited_prematurely + (*it)->second.flags.modified_game_speed};
 		if (icons == 0) {
 			return clickable_text_widget::tl() + vec2{0, 10};
 		}
@@ -646,19 +644,19 @@ vec2 replay_widget::tl() const noexcept
 void replay_widget::add_to_renderer()
 {
 	interpolated_rgba8 real_color{color};
-	if (!_it.has_value()) {
+	if (!it.has_value()) {
 		color = {80, 80, 80, 160};
 	}
 	text_widget::add_to_renderer();
 	color = real_color;
 
-	if (_it.has_value()) {
+	if (it.has_value()) {
 		const vec2 text_size{clickable_text_widget::size()};
 		const rgba8 color{active() ? rgba8{this->color} : rgba8{128, 128, 128, 128}};
-		int icons{(*_it)->second.flags.exited_prematurely + (*_it)->second.flags.modified_game_speed};
+		int icons{(*it)->second.flags.exited_prematurely + (*it)->second.flags.modified_game_speed};
 		int i = 0;
 
-		if ((*_it)->second.flags.exited_prematurely) {
+		if ((*it)->second.flags.exited_prematurely) {
 			vector<u16> indices;
 			fill_poly_idx(back_inserter(indices), 4, 0);
 			fill_poly_outline_idx(back_inserter(indices), 4, 4);
@@ -670,7 +668,7 @@ void replay_widget::add_to_renderer()
 				std::move(indices));
 			++i;
 		}
-		if ((*_it)->second.flags.modified_game_speed) {
+		if ((*it)->second.flags.modified_game_speed) {
 			vector<u16> indices;
 			fill_poly_idx(back_inserter(indices), 4, 0);
 			fill_poly_outline_idx(back_inserter(indices), 4, 4);

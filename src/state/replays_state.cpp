@@ -3,6 +3,11 @@
 #include "../../include/state/replays_state.hpp"
 #include "../../include/state/title_state.hpp"
 
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+
+// The number of replays per page.
+constexpr size_t REPLAYS_PER_PAGE{5};
+
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 replays_state::replays_state()
@@ -55,11 +60,10 @@ unique_ptr<state> replays_state::update(tr::duration)
 			_substate = substate::IN_REPLAYS;
 		}
 		else if (_timer == 0.25_s) {
-			map<string, replay_header>::iterator it{std::next(_replays.begin(), 5 * _page)};
-			for (int i = 0; i < 5; ++i) {
-				const optional<map<string, replay_header>::iterator> opt_it{it != _replays.end() ? optional{it++} : std::nullopt};
+			map<string, replay_header>::iterator it{std::next(_replays.begin(), REPLAYS_PER_PAGE * _page)};
+			for (size_t i = 0; i < REPLAYS_PER_PAGE; ++i) {
 				replay_widget& widget{_ui.get<replay_widget>(format("replay{}", i))};
-				widget.set_iterator(opt_it);
+				widget.it = it != _replays.end() ? optional{it++} : std::nullopt;
 				widget.pos = {i % 2 == 0 ? 750 : 250, vec2{widget.pos}.y};
 				widget.pos.change({500, vec2{widget.pos}.y}, 0.25_s);
 				widget.unhide(0.25_s);
@@ -137,7 +141,7 @@ void replays_state::set_up_ui()
 	}
 
 	map<string, replay_header>::iterator it{_replays.begin()};
-	for (int i = 0; i < 5; ++i) {
+	for (size_t i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		const optional<map<string, replay_header>::iterator> opt_it{it != _replays.end() ? optional{it++} : std::nullopt};
 		widget& widget{_ui.emplace<replay_widget>(format("replay{}", i), vec2{i % 2 == 0 ? 250 : 750, 179 + 150 * i}, CENTER, STATUS_CB,
 												  REPLAY_ACTION_CB, opt_it, tr::make_top_row_keycode(i + 1))};
@@ -146,7 +150,7 @@ void replays_state::set_up_ui()
 	}
 
 	const text_callback current_page_text_cb{
-		[this](const static_string<30>&) { return format("{}/{}", _page + 1, max(_replays.size() - 1, 0uz) / 5 + 1); }};
+		[this](const static_string<30>&) { return format("{}/{}", _page + 1, max(_replays.size() - 1, 0uz) / REPLAYS_PER_PAGE + 1); }};
 	widget& current_page{_ui.emplace<text_widget>("current_page", vec2{500, 1050}, BOTTOM_CENTER, font::LANGUAGE, ttf_style::NORMAL, 48,
 												  current_page_text_cb)};
 	current_page.pos.change({500, 950}, 0.5_s);
@@ -165,7 +169,7 @@ void replays_state::set_up_ui()
 	page_dec.unhide(0.5_s);
 
 	const status_callback page_inc_status_cb{
-		[this] { return _substate == substate::IN_REPLAYS && _page < (max(_replays.size() - 1, 0uz) / 5); }};
+		[this] { return _substate == substate::IN_REPLAYS && _page < (max(_replays.size() - 1, 0uz) / REPLAYS_PER_PAGE); }};
 	const action_callback page_inc_action_cb{[this] {
 		_substate = substate::SWITCHING_PAGE;
 		_timer = 0;
@@ -180,7 +184,7 @@ void replays_state::set_up_ui()
 
 void replays_state::set_up_page_switch_animation() noexcept
 {
-	for (int i = 0; i < 5; i++) {
+	for (size_t i = 0; i < REPLAYS_PER_PAGE; i++) {
 		widget& widget{_ui.get(format("replay{}", i))};
 		widget.pos.change({i % 2 == 0 ? 750 : 250, vec2{widget.pos}.y}, 0.25_s);
 		widget.hide(0.25_s);
@@ -195,7 +199,7 @@ void replays_state::set_up_exit_animation() noexcept
 		_ui.get("no_replays_found").pos.change({400, 467}, 0.5_s);
 	}
 	else {
-		for (int i = 0; i < 5; i++) {
+		for (size_t i = 0; i < REPLAYS_PER_PAGE; i++) {
 			widget& widget{_ui.get(format("replay{}", i))};
 			widget.pos.change({i % 2 == 0 ? 750 : 250, vec2{widget.pos}.y}, 0.5_s);
 		}

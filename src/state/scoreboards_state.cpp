@@ -1,5 +1,5 @@
 #include "../../include/engine.hpp"
-#include "../../include/state/scores_state.hpp"
+#include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -9,12 +9,22 @@ constexpr size_t SCORES_PER_PAGE{8};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
-scores_state::scores_state(unique_ptr<game>&& game)
+scoreboards_state::scoreboards_state(unique_ptr<game>&& game)
 	: _substate{substate::IN_SCORES}, _page{0}, _timer{0}, _game{std::move(game)}, _current{scorefile.scores.begin()}
 {
-	widget& title{_ui.emplace<text_widget>("scores", vec2{500, -50}, TOP_CENTER, font::LANGUAGE, ttf_style::NORMAL, 64)};
+	widget& title{_ui.emplace<text_widget>("scoreboards", vec2{500, -50}, TOP_CENTER, font::LANGUAGE, ttf_style::NORMAL, 64)};
 	title.pos.change({500, 0}, 0.5_s);
 	title.unhide(0.5_s);
+
+	const text_callback player_info_text_cb{[](const static_string<30>&) {
+		return format("{} {}: {}:{:02}:{:02}", localization["total_playtime"], scorefile.name, scorefile.playtime / (SECOND_TICKS * 3600),
+					  (scorefile.playtime % (SECOND_TICKS * 3600)) / (SECOND_TICKS * 60),
+					  (scorefile.playtime % (SECOND_TICKS * 60) / SECOND_TICKS));
+	}};
+	widget& player_info{
+		_ui.emplace<text_widget>("player_info", vec2{500, -50}, TOP_CENTER, font::LANGUAGE, ttf_style::NORMAL, 32, player_info_text_cb)};
+	player_info.pos.change({500, 64}, 0.5_s);
+	player_info.unhide(0.5_s);
 
 	const status_callback STATUS_CB{[this] { return _substate == substate::IN_SCORES; }};
 
@@ -30,18 +40,18 @@ scores_state::scores_state(unique_ptr<game>&& game)
 	exit.unhide(0.5_s);
 
 	if (scorefile.scores.empty()) {
-		widget& no_scores_found{_ui.emplace<text_widget>("no_scores_found", vec2{600, 467}, TOP_CENTER, font::LANGUAGE, ttf_style::NORMAL,
+		widget& no_scores_found{_ui.emplace<text_widget>("no_scores_found", vec2{600, 483}, TOP_CENTER, font::LANGUAGE, ttf_style::NORMAL,
 														 64, DEFAULT_TEXT_CALLBACK, rgba8{128, 128, 128, 128})};
-		no_scores_found.pos.change({500, 467}, 0.5_s);
+		no_scores_found.pos.change({500, 483}, 0.5_s);
 		no_scores_found.unhide(0.5_s);
 		return;
 	}
 
 	for (size_t i = 0; i < SCORES_PER_PAGE; ++i) {
-		widget& widget{_ui.emplace<score_widget>(format("score{}", i), vec2{i % 2 == 0 ? 250 : 750, 147 + 86 * i}, CENTER,
+		widget& widget{_ui.emplace<score_widget>(format("score{}", i), vec2{i % 2 == 0 ? 250 : 750, 163 + 86 * i}, CENTER,
 												 _page * SCORES_PER_PAGE + i + 1,
 												 _current->second.size() > i ? std::to_address(_current->second.begin() + i) : nullptr)};
-		widget.pos.change({500, 147 + 86 * i}, 0.5_s);
+		widget.pos.change({500, 163 + 86 * i}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
 
@@ -123,18 +133,18 @@ scores_state::scores_state(unique_ptr<game>&& game)
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-u32 scores_state::type() const noexcept
+u32 scoreboards_state::type() const noexcept
 {
 	return ID;
 }
 
-unique_ptr<state> scores_state::handle_event(const tr::event& event)
+unique_ptr<state> scoreboards_state::handle_event(const tr::event& event)
 {
 	_ui.handle_event(event);
 	return nullptr;
 }
 
-unique_ptr<state> scores_state::update(tr::duration)
+unique_ptr<state> scoreboards_state::update(tr::duration)
 {
 	++_timer;
 	_game->update({});
@@ -166,7 +176,7 @@ unique_ptr<state> scores_state::update(tr::duration)
 	}
 }
 
-void scores_state::draw()
+void scoreboards_state::draw()
 {
 	_game->add_to_renderer();
 	engine::layered_renderer().add_color_quad(layer::GAME_OVERLAY, MENU_GAME_OVERLAY_QUAD);
@@ -179,7 +189,7 @@ void scores_state::draw()
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-void scores_state::set_up_page_switch_animation() noexcept
+void scoreboards_state::set_up_page_switch_animation() noexcept
 {
 	for (size_t i = 0; i < SCORES_PER_PAGE; i++) {
 		widget& widget{_ui.get(format("score{}", i))};
@@ -188,12 +198,13 @@ void scores_state::set_up_page_switch_animation() noexcept
 	}
 }
 
-void scores_state::set_up_exit_animation() noexcept
+void scoreboards_state::set_up_exit_animation() noexcept
 {
-	_ui.get("scores").pos.change({500, -50}, 0.5_s);
+	_ui.get("scoreboards").pos.change({500, -50}, 0.5_s);
+	_ui.get("player_info").pos.change({500, -50}, 0.5_s);
 	_ui.get("exit").pos.change({500, 1050}, 0.5_s);
 	if (scorefile.scores.empty()) {
-		_ui.get("no_scores_found").pos.change({400, 467}, 0.5_s);
+		_ui.get("no_scores_found").pos.change({400, 483}, 0.5_s);
 	}
 	else {
 		for (size_t i = 0; i < SCORES_PER_PAGE; i++) {

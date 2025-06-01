@@ -1,6 +1,6 @@
 #include "../../include/engine.hpp"
 #include "../../include/state/replays_state.hpp"
-#include "../../include/state/scores_state.hpp"
+#include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/settings_state.hpp"
 #include "../../include/state/start_game_state.hpp"
 #include "../../include/state/title_state.hpp"
@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Title screen buttons.
-constexpr array<const char*, 5> BUTTONS{"start_game", "replays", "scores", "settings", "exit"};
+constexpr array<const char*, 7> BUTTONS{"start_game", "gamemode_editor", "scoreboards", "replays", "settings", "credits", "exit"};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
@@ -56,10 +56,10 @@ unique_ptr<state> title_state::update(tr::duration)
 		return nullptr;
 	case substate::ENTERING_START_GAME:
 		return _timer >= 0.5_s ? make_unique<start_game_state>(std::move(_game)) : nullptr;
+	case substate::ENTERING_SCOREBOARDS:
+		return _timer >= 0.5_s ? make_unique<scoreboards_state>(std::move(_game)) : nullptr;
 	case substate::ENTERING_REPLAYS:
 		return _timer >= 0.5_s ? make_unique<replays_state>(std::move(_game)) : nullptr;
-	case substate::ENTERING_SCORES:
-		return _timer >= 0.5_s ? make_unique<scores_state>(std::move(_game)) : nullptr;
 	case substate::ENTERING_SETTINGS:
 		return _timer >= 0.5_s ? make_unique<settings_state>(std::move(_game)) : nullptr;
 	case substate::EXITING_GAME:
@@ -87,7 +87,7 @@ float title_state::fade_overlay_opacity() const noexcept
 	case substate::ENTERING_GAME:
 		return 1 - _timer / 1_sf;
 	case substate::IN_TITLE:
-	case substate::ENTERING_SCORES:
+	case substate::ENTERING_SCOREBOARDS:
 	case substate::ENTERING_SETTINGS:
 	case substate::ENTERING_START_GAME:
 	case substate::ENTERING_REPLAYS:
@@ -108,15 +108,23 @@ void title_state::set_up_ui()
 
 	array<vector<key_chord>, BUTTONS.size()> CHORDS{
 		vector<key_chord>{{key::ENTER}, {key::TOP_ROW_1}},
-		vector<key_chord>{{key::R}, {key::TOP_ROW_2}},
-		vector<key_chord>{{key::S}, {key::TOP_ROW_3}},
-		vector<key_chord>{{key::C}, {key::TOP_ROW_4}},
-		vector<key_chord>{{key::ESCAPE}, {key::Q}, {key::E}, {key::TOP_ROW_5}},
+		vector<key_chord>{{key::G}, {key::TOP_ROW_2}},
+		vector<key_chord>{{key::B}, {key::TOP_ROW_3}},
+		vector<key_chord>{{key::R}, {key::TOP_ROW_4}},
+		vector<key_chord>{{key::S}, {key::TOP_ROW_5}},
+		vector<key_chord>{{key::C}, {key::TOP_ROW_6}},
+		vector<key_chord>{{key::ESCAPE}, {key::Q}, {key::E}, {key::TOP_ROW_7}},
 	};
 	const status_callback STATUS_CB{[this] { return _substate == substate::IN_TITLE || _substate == substate::ENTERING_GAME; }};
 	array<action_callback, BUTTONS.size()> ACTION_CBS{
 		[this] {
 			_substate = substate::ENTERING_START_GAME;
+			_timer = 0;
+			set_up_exit_animation();
+		},
+		[] {},
+		[this] {
+			_substate = substate::ENTERING_SCOREBOARDS;
 			_timer = 0;
 			set_up_exit_animation();
 		},
@@ -126,15 +134,11 @@ void title_state::set_up_ui()
 			set_up_exit_animation();
 		},
 		[this] {
-			_substate = substate::ENTERING_SCORES;
-			_timer = 0;
-			set_up_exit_animation();
-		},
-		[this] {
 			_substate = substate::ENTERING_SETTINGS;
 			_timer = 0;
 			set_up_exit_animation();
 		},
+		[] {},
 		[this] {
 			_substate = substate::EXITING_GAME;
 			_timer = 0;

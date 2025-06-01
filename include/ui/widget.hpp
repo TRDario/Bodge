@@ -163,7 +163,7 @@ class text_widget : public widget {
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
 	// Gets the size of the widget.
-	vec2 size() const noexcept override;
+	vec2 size() const override;
 	// Updates the widget.
 	void update() noexcept override;
 	// Instructs the widget to release its graphical resources.
@@ -192,10 +192,10 @@ class text_widget : public widget {
 	// The maximum allowed width of the widget's text.
 	int _max_width;
 	// Cached texture and string.
-	optional<cached> _cached;
+	mutable optional<cached> _cached;
 
 	// Updates the cache.
-	void update_cache();
+	void update_cache() const;
 };
 
 // Alias for a clickable widget status callback.
@@ -486,11 +486,11 @@ class replay_widget : public clickable_text_widget {
 								font::LANGUAGE,
 								40,
 								[this](const static_string<30>&) {
-									if (!_it.has_value()) {
+									if (!this->it.has_value()) {
 										return string{"----------------------------------"};
 									}
 
-									replay_header& rpy{(*_it)->second};
+									replay_header& rpy{(*this->it)->second};
 									const ticks result{rpy.result};
 									const ch::system_clock::time_point utc_tp{ch::seconds{rpy.timestamp}};
 									const auto tp{std::chrono::current_zone()->ch::time_zone::to_local(utc_tp)};
@@ -503,18 +503,18 @@ class replay_widget : public clickable_text_widget {
 												  static_cast<int>(ymd.year()), static_cast<unsigned int>(ymd.month()),
 												  static_cast<unsigned int>(ymd.day()), hhmmss.hours().count(), hhmmss.minutes().count());
 								},
-								[=, this] { return base_status_cb() && _it.has_value(); },
+								[=, this] { return base_status_cb() && this->it.has_value(); },
 								[=, this] {
-									if (_it.has_value()) {
-										base_action_cb(*_it);
+									if (this->it.has_value()) {
+										base_action_cb(*this->it);
 									}
 								},
 								[this] {
-									if (!_it.has_value()) {
+									if (!this->it.has_value()) {
 										return string{};
 									}
 									else {
-										const replay_header& header{(*_it)->second};
+										const replay_header& header{(*this->it)->second};
 										string str{header.description};
 										if (header.flags.exited_prematurely || header.flags.modified_game_speed) {
 											str.push_back('\n');
@@ -531,14 +531,14 @@ class replay_widget : public clickable_text_widget {
 									}
 								},
 								{{shortcut}}}
-		, _it{it}
+		, it{it}
 	{
 	}
 
-	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
-	// Sets the iterator of the widget.
-	void set_iterator(optional<map<string, replay_header>::iterator> it) noexcept;
+	// The replay header.
+	optional<map<string, replay_header>::iterator> it;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -547,6 +547,4 @@ class replay_widget : public clickable_text_widget {
 	void add_to_renderer() override;
 
   private:
-	// The replay header.
-	optional<map<string, replay_header>::iterator> _it;
 };

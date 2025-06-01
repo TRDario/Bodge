@@ -6,13 +6,15 @@ language_name = "English"
     confirm = "CONFIRM"
 
 # Title screen
-    copyright = "©2025 TRDario"
-    version   = "a0.1.0"
-    start_game = "START GAME"
-    replays    = "REPLAYS"
-    scores     = "SCORES"
-    settings   = "SETTINGS"
-    exit 	   = "EXIT"
+    copyright       = "©2025 TRDario"
+    version         = "a0.1.0"
+    start_game      = "START GAME"
+    gamemode_editor = "GAMEMODE EDITOR"
+    replays         = "REPLAYS"
+    scoreboards     = "SCOREBOARDS"
+    settings        = "SETTINGS"
+    credits         = "CREDITS"
+    exit            = "EXIT"
 
 # Start game screen
     by = "BY"
@@ -21,6 +23,7 @@ language_name = "English"
     start = "START"
 
 # Scores screen
+    total_playtime  = "TOTAL PLAYTIME FOR"
     no_scores_found = "(NO SCORES FOUND...)"
 
 # Replays screen
