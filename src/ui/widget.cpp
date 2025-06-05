@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/ui/widget.hpp"
+#include "../../include/engine.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -239,7 +239,7 @@ vec2 text_widget::size() const
 	if (!_cached.has_value()) {
 		update_cache();
 	}
-	return _cached->size;
+	return _cached->size / engine::render_scale();
 }
 
 void text_widget::update() noexcept

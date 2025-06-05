@@ -1,8 +1,8 @@
+#include "../../include/game/player.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/font_manager.hpp"
 #include "../../include/game/ball.hpp"
-#include "../../include/game/player.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -238,7 +238,7 @@ ticks player::time_since_game_over() const noexcept
 	return _game_over_timer;
 }
 
-bool colliding(const player& player, const vector<ball>& balls) noexcept
+bool colliding(const player& player, const static_vector<ball, 255>& balls) noexcept
 {
 	return player._iframes == 0 &&
 		   rs::any_of(balls, [&](const ball& b) { return b.tangible() && intersecting(b.hitbox(), player._hitbox); });

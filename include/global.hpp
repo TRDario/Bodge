@@ -79,6 +79,7 @@ using tr::range_bytes;
 using tr::rgba8;
 using tr::state;
 using tr::static_string;
+using tr::static_vector;
 using tr::texture;
 using tr::texture_unit;
 using tr::ttf_style;

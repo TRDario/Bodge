@@ -19,7 +19,7 @@ class player {
 	// Gets the amount of time that passed since game over.
 	ticks time_since_game_over() const noexcept;
 	// Checks whether a player and any balls are colliding.
-	friend bool colliding(const player& player, const vector<ball>& balls) noexcept;
+	friend bool colliding(const player& player, const static_vector<ball, 255>& balls) noexcept;
 
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 

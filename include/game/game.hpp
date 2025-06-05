@@ -39,7 +39,7 @@ class game {
 	// An optional player object.
 	optional<::player> _player;
 	// A vector of ball objects.
-	vector<ball> _balls;
+	static_vector<ball, 255> _balls;
 	// The size of the next spawned ball.
 	float _ball_size;
 	// The velocity of the next spawned ball.
