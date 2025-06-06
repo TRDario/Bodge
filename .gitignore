@@ -1,3 +1,4 @@
 /.cache
 /build
 /src/graphics/resources/debug_font.bmp.hpp
+/userdir
