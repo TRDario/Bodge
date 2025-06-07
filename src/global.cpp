@@ -21,8 +21,8 @@ u8 max_msaa() noexcept
 		while (true) {
 			try {
 				const u8 trying{static_cast<u8>(max == 0 ? 2 : max * 2)};
-				window::open_windowed("", {250, 250}, tr::window_flag::DEFAULT, {.multisamples = trying});
-				window::close();
+				tr::window::open_windowed("", {250, 250}, tr::window_flag::DEFAULT, {.multisamples = trying});
+				tr::window::close();
 				max = trying;
 			}
 			catch (tr::window_open_error& err) {

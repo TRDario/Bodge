@@ -17,7 +17,7 @@ void ui_manager::move_input_focus_forward() noexcept
 	if (_input == _objects.end()) {
 		for (list<unique_ptr<widget>>::iterator it = _objects.begin(); it != _objects.end(); ++it) {
 			if ((*it)->writable()) {
-				event_queue::send_text_input_events(true);
+				tr::event_queue::send_text_input_events(true);
 				(*it)->on_gain_focus();
 				_input = it;
 				return;
@@ -86,7 +86,7 @@ void ui_manager::move_input_focus_backward() noexcept
 void ui_manager::clear_input_focus() noexcept
 {
 	if (_input != _objects.end()) {
-		event_queue::send_text_input_events(false);
+		tr::event_queue::send_text_input_events(false);
 		(*_input)->on_lose_focus();
 		_input = _objects.end();
 	}
@@ -128,7 +128,7 @@ void ui_manager::handle_event(const tr::event& event)
 
 		if (old_hovered_it != _hovered) {
 			if (old_hovered_it != _objects.end()) {
-				if (mouse::held(tr::mouse_button::LEFT) && (*old_hovered_it)->active()) {
+				if (tr::mouse::held(tr::mouse_button::LEFT) && (*old_hovered_it)->active()) {
 					(*old_hovered_it)->on_hold_transfer_out();
 				}
 				else {
@@ -136,7 +136,7 @@ void ui_manager::handle_event(const tr::event& event)
 				}
 			}
 			if (_hovered != _objects.end()) {
-				if (mouse::held(tr::mouse_button::LEFT) && (*_hovered)->active()) {
+				if (tr::mouse::held(tr::mouse_button::LEFT) && (*_hovered)->active()) {
 					(*_hovered)->on_hold_transfer_in();
 				}
 				else {
@@ -180,7 +180,7 @@ void ui_manager::handle_event(const tr::event& event)
 			if (_hovered != _objects.end() && (*_hovered)->active()) {
 				(*_hovered)->on_hold_end();
 				if ((*_hovered)->writable()) {
-					event_queue::send_text_input_events(true);
+					tr::event_queue::send_text_input_events(true);
 					_input = _hovered;
 					(*_hovered)->on_gain_focus();
 				}

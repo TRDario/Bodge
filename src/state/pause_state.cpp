@@ -14,7 +14,7 @@ pause_state::pause_state(unique_ptr<active_game>&& game, bool blur_in) noexcept
 {
 	if (blur_in) {
 		_game->add_to_renderer();
-		engine::layered_renderer().draw(engine::blur_renderer().input());
+		tr::renderer_2d::draw(engine::blur_renderer().input());
 	}
 
 	widget& title{_ui.emplace<text_widget>("paused", vec2{500, -50}, CENTER, font::LANGUAGE, ttf_style::NORMAL, 64)};
@@ -103,10 +103,7 @@ void pause_state::draw()
 	engine::blur_renderer().draw(saturation_factor(), blur_strength());
 	_ui.add_to_renderer();
 	add_fade_overlay_to_renderer(_substate == substate::RESTARTING || _substate == substate::QUITTING ? _timer / 0.5_sf : 0);
-
-	engine::layered_renderer().draw_up_to_layer(layer::UI, engine::screen());
-	engine::batched_renderer().draw(engine::screen());
-	engine::layered_renderer().draw(engine::screen());
+	tr::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

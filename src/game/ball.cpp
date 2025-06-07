@@ -1,6 +1,6 @@
-#include "../../include/game/ball.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/game/ball.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -121,43 +121,48 @@ void ball::add_to_renderer() const
 	const float thickness{3 + 4 * max((static_cast<float>(BALL_COLLISION_TIME) - _last_collision) / BALL_COLLISION_TIME, 0.0f)};
 
 	// Add the ball.
-	engine::vertex_buffer().resize(vertices * 2);
-	vector<u16> indices(poly_outline_idx(vertices));
-	tr::fill_poly_outline_vtx(positions(engine::vertex_buffer()), vertices, {_hitbox.c, size}, 0_degf, thickness);
-	fill_poly_outline_idx(indices, vertices, 0);
-	rs::fill(colors(engine::vertex_buffer()) | vs::take(vertices), rgba8{BALL_FILL_COLOR, opacity});
-	engine::layered_renderer().add_color_fan(layer::BALLS, engine::vertex_buffer() | vs::take(vertices));
-	rs::fill(colors(engine::vertex_buffer()), rgba8{tint, opacity});
-	engine::layered_renderer().add_color_mesh(layer::BALLS, engine::vertex_buffer(), std::move(indices));
+	const color_alloc fill{tr::renderer_2d::new_color_fan(layer::BALLS, vertices)};
+	tr::fill_poly_vtx(fill.positions, vertices, {_hitbox.c - thickness / 2, size});
+	rs::fill(fill.colors, rgba8{BALL_FILL_COLOR, opacity});
+	const color_alloc outline{tr::renderer_2d::new_color_outline(layer::BALLS, vertices)};
+	tr::fill_poly_outline_vtx(outline.positions, vertices, {_hitbox.c, size}, 0_degf, thickness);
+	rs::fill(outline.colors, rgba8{tint, opacity});
 
 	// Add the trail.
 	if (_age > BALL_SPAWN_TIME) {
-		engine::vertex_buffer().resize(vertices);
-		tr::fill_poly_vtx(positions(engine::vertex_buffer()), vertices, _hitbox);
-		rs::fill(colors(engine::vertex_buffer()), rgba8{tint, norm_cast<u8>(0.4f)});
+		size_t trail_vertices{vertices};
+		for (size_t i = 0; i < _trail.SIZE; ++i) {
+			if (!(i == 0 && tr::collinear(_hitbox.c, _trail[0], _trail[1])) &&
+				!(i > 0 && i < _trail.SIZE - 1 && tr::collinear(_trail[i - 1], _trail[i], _trail[i + 1]))) {
+				trail_vertices += vertices;
+			}
+		}
+		const size_t trail_indices{6 * (trail_vertices - 1)};
+
+		color_mesh_alloc trail{tr::renderer_2d::new_color_mesh(layer::BALL_TRAILS, trail_vertices, trail_indices)};
+		tr::fill_poly_vtx(trail.positions | vs::take(vertices), vertices, _hitbox);
+		rs::fill(trail.colors | vs::take(vertices), rgba8{tint, norm_cast<u8>(0.4f)});
 		size_t drawn_trails{1};
+		std::vector<u16>::iterator indices_it{trail.indices.begin()};
 		for (size_t i = 0; i < _trail.SIZE; ++i) {
 			// Cull unnecessary trail vertices.
-			if (((i == 0 && tr::collinear(_hitbox.c, _trail[0], _trail[1])) ||
-				 (i > 0 && i < _trail.SIZE - 1 && tr::collinear(_trail[i - 1], _trail[i], _trail[i + 1])))) {
+			if ((i == 0 && tr::collinear(_hitbox.c, _trail[0], _trail[1])) ||
+				(i > 0 && i < _trail.SIZE - 1 && tr::collinear(_trail[i - 1], _trail[i], _trail[i + 1]))) {
 				continue;
 			}
 
-			const size_t offset{drawn_trails * vertices};
 			const u8 opacity{norm_cast<u8>((_trail.SIZE - i - 1) * 0.4f / _trail.SIZE)};
-			engine::vertex_buffer().resize(offset + vertices);
-			tr::fill_poly_vtx(positions(engine::vertex_buffer()).begin() + offset, vertices, {_trail[i], _hitbox.r});
-			rs::fill(colors(engine::vertex_buffer()) | vs::drop(offset), rgba8{tint, opacity});
+			tr::fill_poly_vtx(trail.positions | vs::drop(drawn_trails * vertices) | vs::take(vertices), vertices, {_trail[i], _hitbox.r});
+			rs::fill(trail.colors | vs::drop(drawn_trails * vertices) | vs::take(vertices), rgba8{tint, opacity});
 			for (size_t j = 0; j < vertices; ++j) {
-				indices.push_back(vertices * drawn_trails + j);
-				indices.push_back(vertices * drawn_trails + ((j + 1) % vertices));
-				indices.push_back(vertices * drawn_trails + ((j + 1) % vertices) - vertices);
-				indices.push_back(vertices * drawn_trails + j);
-				indices.push_back(vertices * drawn_trails + ((j + 1) % vertices) - vertices);
-				indices.push_back(vertices * drawn_trails + j - vertices);
+				*indices_it++ = trail.base_index + drawn_trails * vertices + j;
+				*indices_it++ = trail.base_index + drawn_trails * vertices + (j + 1) % vertices;
+				*indices_it++ = trail.base_index + (drawn_trails - 1) * vertices + (j + 1) % vertices;
+				*indices_it++ = trail.base_index + drawn_trails * vertices + j;
+				*indices_it++ = trail.base_index + (drawn_trails - 1) * vertices + (j + 1) % vertices;
+				*indices_it++ = trail.base_index + (drawn_trails - 1) * vertices + j;
 			}
 			++drawn_trails;
 		}
-		engine::layered_renderer().add_color_mesh(layer::BALL_TRAILS, engine::vertex_buffer(), std::move(indices));
 	}
 }

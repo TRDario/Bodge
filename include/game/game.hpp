@@ -54,7 +54,9 @@ class game {
 	// Adds a new ball to the game field.
 	void add_new_ball() noexcept;
 	// Adds the border mesh to the renderer.
-	void add_border_mesh() const;
+	void add_overlay_to_renderer() const;
+	// Adds the border mesh to the renderer.
+	void add_border_to_renderer() const;
 };
 
 // Game that is currently being played.
@@ -94,7 +96,7 @@ class replay_game : public game {
 	// Gets whether the replay is done.
 	bool done() const noexcept;
 	// Gets the current position of the replay cursor.
-	glm::vec2 cursor_pos() const noexcept;
+	vec2 cursor_pos() const noexcept;
 
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 

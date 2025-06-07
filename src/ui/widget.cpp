@@ -1,124 +1,164 @@
-#include "../../include/ui/widget.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-// Mesh used for left arrows.
-constexpr array<clrvtx, 15> LEFT_ARROW_MESH{{
-	{{30, 0}, {127, 127, 127, 127}},
-	{{16, 0}, {127, 127, 127, 127}},
-	{{0, 24}, {127, 127, 127, 127}},
-	{{16, 48}, {127, 127, 127, 127}},
-	{{30, 48}, {127, 127, 127, 127}},
-	{{26, 4}, {127, 127, 127, 127}},
-	{{18.30940108, 4}, {127, 127, 127, 127}},
-	{{4.61880215, 24}, {127, 127, 127, 127}},
-	{{18.30940108, 44}, {127, 127, 127, 127}},
-	{{26, 44}, {127, 127, 127, 127}},
-	{{26, 4}, {255, 255, 255, 255}},
-	{{18.30940108, 4}, {255, 255, 255, 255}},
-	{{4.61880215, 24}, {213, 213, 213, 255}},
-	{{18.30940108, 44}, {192, 192, 192, 255}},
-	{{26, 44}, {192, 192, 192, 255}},
+// Positions of the left arrow mesh.
+constexpr array<vec2, 15> LEFT_ARROW_POSITIONS{{
+	{30, 0},
+	{16, 0},
+	{0, 24},
+	{16, 48},
+	{30, 48},
+	{26, 4},
+	{18.30940108, 4},
+	{4.61880215, 24},
+	{18.30940108, 44},
+	{26, 44},
+	{26, 4},
+	{18.30940108, 4},
+	{4.61880215, 24},
+	{18.30940108, 44},
+	{26, 44},
 }};
 
-// Mesh used for right arrows.
-constexpr array<clrvtx, 15> RIGHT_ARROW_MESH{{
-	{{0, 0}, {127, 127, 127, 127}},
-	{{14, 0}, {127, 127, 127, 127}},
-	{{30, 24}, {127, 127, 127, 127}},
-	{{14, 48}, {127, 127, 127, 127}},
-	{{0, 48}, {127, 127, 127, 127}},
-	{{4, 4}, {127, 127, 127, 127}},
-	{{11.69059892, 4}, {127, 127, 127, 127}},
-	{{25.38119785, 24}, {127, 127, 127, 127}},
-	{{11.69059892, 44}, {127, 127, 127, 127}},
-	{{4, 44}, {127, 127, 127, 127}},
-	{{4, 4}, {255, 255, 255, 255}},
-	{{11.69059892, 4}, {255, 255, 255, 255}},
-	{{25.38119785, 24}, {213, 213, 213, 255}},
-	{{11.69059892, 44}, {192, 192, 192, 255}},
-	{{4, 44}, {192, 192, 192, 255}},
+// Positions of the right arrow mesh.
+constexpr array<vec2, 15> RIGHT_ARROW_POSITIONS{{
+	{0, 0},
+	{14, 0},
+	{30, 24},
+	{14, 48},
+	{0, 48},
+	{4, 4},
+	{11.69059892, 4},
+	{25.38119785, 24},
+	{11.69059892, 44},
+	{4, 44},
+	{4, 4},
+	{11.69059892, 4},
+	{25.38119785, 24},
+	{11.69059892, 44},
+	{4, 44},
 }};
 
-constexpr array<clrvtx, 9> NORMAL_SPEED_MESH{{
-	{{12, 0}, {95, 95, 95, 95}},
-	{{48, 24}, {95, 95, 95, 95}},
-	{{12, 48}, {95, 95, 95, 95}},
-	{{16, 7.47406836}, {95, 95, 95, 95}},
-	{{40.78889744, 24}, {95, 95, 95, 95}},
-	{{16, 40.52593164}, {95, 95, 95, 95}},
-	{{16, 7.47406836}, {192, 192, 192, 192}},
-	{{40.78889744, 24}, {168, 168, 168, 192}},
-	{{16, 40.52593164}, {144, 144, 144, 192}},
+// Colors used by the arrow meshes.
+constexpr array<rgba8, 15> ARROW_COLORS{{
+	{127, 127, 127, 127},
+	{127, 127, 127, 127},
+	{127, 127, 127, 127},
+	{127, 127, 127, 127},
+	{127, 127, 127, 127},
+	{127, 127, 127, 127},
+	{127, 127, 127, 127},
+	{127, 127, 127, 127},
+	{127, 127, 127, 127},
+	{127, 127, 127, 127},
+	{255, 255, 255, 255},
+	{255, 255, 255, 255},
+	{213, 213, 213, 255},
+	{192, 192, 192, 255},
+	{192, 192, 192, 255},
 }};
 
-constexpr array<clrvtx, 9> SLOW_SPEED_MESH{{
-	{{48, 0}, {95, 95, 95, 95}},
-	{{12, 24}, {95, 95, 95, 95}},
-	{{48, 48}, {95, 95, 95, 95}},
-	{{44, 7.47406836}, {95, 95, 95, 95}},
-	{{19.21110256, 24}, {95, 95, 95, 95}},
-	{{44, 40.52593164}, {95, 95, 95, 95}},
-	{{44, 7.47406836}, {192, 192, 192, 192}},
-	{{19.21110256, 24}, {168, 168, 168, 192}},
-	{{44, 40.52593164}, {144, 144, 144, 192}},
+// Positions of the normal replay speed indicator mesh.
+constexpr array<vec2, 9> NORMAL_SPEED_POSITIONS{{
+	{12, 0},
+	{48, 24},
+	{12, 48},
+	{16, 7.47406836},
+	{40.78889744, 24},
+	{16, 40.52593164},
+	{16, 7.47406836},
+	{40.78889744, 24},
+	{16, 40.52593164},
 }};
 
-constexpr array<clrvtx, 19> FAST_SPEED_MESH{{
-	{{0, 0}, {95, 95, 95, 95}},
-	{{20, 14.5364}, {95, 95, 95, 95}},
-	{{20, 0}, {95, 95, 95, 95}},
-	{{48, 24}, {95, 95, 95, 95}},
-	{{20, 48}, {95, 95, 95, 95}},
-	{{20, 33.4636}, {95, 95, 95, 95}},
-	{{0, 48}, {95, 95, 95, 95}},
-	{{4, 9.5409}, {95, 95, 95, 95}},
-	{{24, 24}, {95, 95, 95, 95}},
-	{{24, 9.5409}, {95, 95, 95, 95}},
-	{{41.5364, 24}, {95, 95, 95, 95}},
-	{{24, 38.4591}, {95, 95, 95, 95}},
-	{{4, 38.4591}, {95, 95, 95, 95}},
-	{{4, 9.5409}, {192, 192, 192, 192}},
-	{{24, 24}, {168, 168, 168, 168}},
-	{{4, 38.4591}, {144, 144, 144, 144}},
-	{{24, 9.5409}, {192, 192, 192, 192}},
-	{{41.5364, 24}, {168, 168, 168, 168}},
-	{{24, 38.4591}, {144, 144, 144, 144}},
+// Positions of the slow replay speed indicator mesh.
+constexpr array<vec2, 9> SLOW_SPEED_POSITIONS{{
+	{48, 0},
+	{12, 24},
+	{48, 48},
+	{44, 7.47406836},
+	{19.21110256, 24},
+	{44, 40.52593164},
+	{44, 7.47406836},
+	{19.21110256, 24},
+	{44, 40.52593164},
 }};
 
-constexpr array<u16, 48> FAST_SPEED_MESH_INDICES{
+// Colors used by the slow and normal speed replay indicator meshes.
+constexpr array<rgba8, 9> SLOW_NORMAL_SPEED_COLORS{{
+	{95, 95, 95, 95},
+	{95, 95, 95, 95},
+	{95, 95, 95, 95},
+	{95, 95, 95, 95},
+	{95, 95, 95, 95},
+	{95, 95, 95, 95},
+	{192, 192, 192, 192},
+	{168, 168, 168, 192},
+	{144, 144, 144, 192},
+}};
+
+// Positions of the fast replay speed indocator mesh.
+constexpr array<vec2, 19> FAST_SPEED_POSITIONS{{
+	{0, 0},      {20, 14.5364}, {20, 0},      {48, 24},      {20, 48},      {20, 33.4636}, {0, 48},
+	{4, 9.5409}, {24, 24},      {24, 9.5409}, {41.5364, 24}, {24, 38.4591}, {4, 38.4591},  {4, 9.5409},
+	{24, 24},    {4, 38.4591},  {24, 9.5409}, {41.5364, 24}, {24, 38.4591},
+}};
+
+// Colors used by the fast replay speed indicator mesh.
+constexpr array<rgba8, 19> FAST_SPEED_COLORS{{
+	{95, 95, 95, 95},     {95, 95, 95, 95},     {95, 95, 95, 95},     {95, 95, 95, 95},     {95, 95, 95, 95},
+	{95, 95, 95, 95},     {95, 95, 95, 95},     {95, 95, 95, 95},     {95, 95, 95, 95},     {95, 95, 95, 95},
+	{95, 95, 95, 95},     {95, 95, 95, 95},     {95, 95, 95, 95},     {192, 192, 192, 192}, {168, 168, 168, 168},
+	{144, 144, 144, 144}, {192, 192, 192, 192}, {168, 168, 168, 168}, {144, 144, 144, 144},
+}};
+
+// Indices of the fast replay speed indicator mesh.
+constexpr array<u16, 48> FAST_SPEED_INDICES{
 	0, 1,  7, 1, 7,  8, 1, 8,  9, 1, 9,  2, 2, 3,  9, 3, 10, 9, 3,  10, 4,  10, 11, 4,
 	4, 11, 5, 5, 11, 8, 8, 12, 5, 5, 12, 6, 6, 12, 0, 0, 12, 7, 13, 14, 15, 16, 17, 18,
 };
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-// Generates the "exited prematurely" icon.
-array<clrvtx, 20> generate_exited_prematurely_icon(vec2 pos, rgba8 color, float opacity)
+// Adds an instance of the "Exited prematurely" icon to the renderer.
+void add_exited_prematurely_icon_to_renderer(vec2 pos, rgba8 color, float opacity)
 {
-	array<clrvtx, 20> mesh{};
-	fill_rect_vtx(positions(mesh), {pos + vec2{2, 2}, {16, 16}});
-	fill_rect_outline_vtx(positions(mesh) | vs::drop(4), {pos + vec2{1, 1}, {18, 18}}, 2.0f);
-	tr::fill_rotated_rect_vtx(positions(mesh) | vs::drop(12), pos + vec2{10, 10}, {7, 1}, {14, 2}, 45_degf);
-	tr::fill_rotated_rect_vtx(positions(mesh) | vs::drop(16), pos + vec2{10, 10}, {7, 1}, {14, 2}, -45_degf);
-	rs::fill(colors(mesh) | vs::take(4), rgba8{0, 0, 0, norm_cast<u8>(opacity)});
-	rs::fill(colors(mesh) | vs::drop(4), rgba8{color.r, color.g, color.b, static_cast<u8>(color.a * opacity)});
-	return mesh;
-};
+	color = {color.r, color.g, color.b, static_cast<u8>(color.a * opacity)};
 
-// Generates the "modified game speed" icon.
-array<clrvtx, 32> generate_modified_game_speed_icon(vec2 pos, rgba8 color, float opacity)
+	color_alloc mesh{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	fill_rect_vtx(mesh.positions, {pos + vec2{2, 2}, {16, 16}});
+	rs::fill(mesh.colors, rgba8{0, 0, 0, norm_cast<u8>(opacity)});
+	mesh = tr::renderer_2d::new_color_outline(layer::UI, 4);
+	fill_rect_outline_vtx(mesh.positions, {pos + vec2{1, 1}, {18, 18}}, 2.0f);
+	rs::fill(mesh.colors, color);
+	mesh = tr::renderer_2d::new_color_fan(layer::UI, 4);
+	fill_rotated_rect_vtx(mesh.positions, pos + vec2{10, 10}, {7, 1}, {14, 2}, 45_degf);
+	rs::fill(mesh.colors, color);
+	mesh = tr::renderer_2d::new_color_fan(layer::UI, 4);
+	fill_rotated_rect_vtx(mesh.positions, pos + vec2{10, 10}, {7, 1}, {14, 2}, -45_degf);
+	rs::fill(mesh.colors, color);
+}
+
+// Adds an instance of the "Modified ame speed" icon to the renderer.
+void add_modified_game_speed_icon_to_renderer(vec2 pos, rgba8 color, float opacity)
 {
-	array<clrvtx, 32> mesh{};
-	fill_rect_vtx(positions(mesh), {pos + vec2{2, 2}, {16, 16}});
-	fill_rect_outline_vtx(positions(mesh) | vs::drop(4), {pos + vec2{1, 1}, {18, 18}}, 2.0f);
-	tr::fill_poly_outline_vtx(positions(mesh) | vs::drop(12), 8, {pos + vec2{10, 10}, 7}, 25_degf, 2);
-	fill_rect_vtx(positions(mesh) | vs::drop(28), {pos + vec2{9, 5}, {2, 5}});
-	rs::fill(colors(mesh) | vs::take(4), rgba8{0, 0, 0, static_cast<u8>(color.a * opacity)});
-	rs::fill(colors(mesh) | vs::drop(4), rgba8{color.r, color.g, color.b, static_cast<u8>(color.a * opacity)});
-	return mesh;
-};
+	color = {color.r, color.g, color.b, static_cast<u8>(color.a * opacity)};
+
+	color_alloc mesh{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	fill_rect_vtx(mesh.positions, {pos + vec2{2, 2}, {16, 16}});
+	rs::fill(mesh.colors, rgba8{0, 0, 0, norm_cast<u8>(opacity)});
+	mesh = tr::renderer_2d::new_color_outline(layer::UI, 4);
+	fill_rect_outline_vtx(mesh.positions, {pos + vec2{1, 1}, {18, 18}}, 2);
+	rs::fill(mesh.colors, color);
+	mesh = tr::renderer_2d::new_color_outline(layer::UI, 8);
+	fill_poly_outline_vtx(mesh.positions, 8, {pos + vec2{10, 10}, 7}, 25_degf, 2);
+	rs::fill(mesh.colors, color);
+	mesh = tr::renderer_2d::new_color_fan(layer::UI, 4);
+	fill_rect_vtx(mesh.positions, {pos + vec2{9, 5}, {2, 5}});
+	rs::fill(mesh.colors, color);
+}
 
 ///////////////////////////////////////////////////////////////// WIDGET //////////////////////////////////////////////////////////////////
 
@@ -260,11 +300,10 @@ void text_widget::add_to_renderer()
 	rgba8 color{this->color};
 	color.a = static_cast<u8>(color.a * opacity());
 
-	array<tintvtx, 4> quad;
-	fill_rect_vtx(positions(quad), {tl(), text_widget::size()});
-	fill_rect_vtx(uvs(quad), {{}, _cached->size / vec2{_cached->texture.size()}});
-	rs::fill(colors(quad), rgba8{color});
-	engine::batched_renderer().add_tex_quad(quad, 0, _cached->texture, TRANSFORM);
+	tex_alloc quad{tr::renderer_2d::new_tex_fan(layer::UI, 4, _cached->texture)};
+	fill_rect_vtx(quad.positions, {tl(), text_widget::size()});
+	fill_rect_vtx(quad.uvs, {{}, _cached->size / vec2{_cached->texture.size()}});
+	rs::fill(quad.tints, rgba8{color});
 }
 
 void text_widget::update_cache() const
@@ -382,15 +421,12 @@ void color_preview_widget::add_to_renderer()
 	const rgba8 outline_color{static_cast<u8>(color.r / 2), static_cast<u8>(color.g / 2), static_cast<u8>(color.b / 2),
 							  static_cast<u8>(color.a / 2)};
 
-	array<clrvtx, 12> buffer;
-	vector<u16> indices(poly_outline_idx(4) + poly_idx(4));
-	fill_rect_outline_vtx(positions(buffer).begin(), {tl() + 2.0f, size() - 4.0f}, 4.0f);
-	fill_rect_vtx(positions(buffer).begin() + 8, {tl() + 4.0f, size() - 8.0f});
-	rs::fill(vs::take(colors(buffer), 8), outline_color);
-	rs::fill(vs::drop(colors(buffer), 8), color);
-	fill_poly_outline_idx(indices.begin(), 4, 0);
-	fill_poly_idx(indices.begin() + poly_outline_idx(4), 4, 8);
-	engine::layered_renderer().add_color_mesh(layer::UI, buffer, std::move(indices));
+	const color_alloc outline{tr::renderer_2d::new_color_outline(layer::UI, 4)};
+	fill_rect_outline_vtx(outline.positions, {tl() + 2.0f, size() - 4.0f}, 4.0f);
+	rs::fill(outline.colors, outline_color);
+	const color_alloc fill{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	fill_rect_vtx(fill.positions, {tl() + 4.0f, size() - 8.0f});
+	rs::fill(fill.colors, color);
 }
 
 /////////////////////////////////////////////////////////////// ARROW_WIDGET //////////////////////////////////////////////////////////////
@@ -412,19 +448,18 @@ vec2 arrow_widget::size() const noexcept
 
 void arrow_widget::add_to_renderer()
 {
+	const vec2 tl{this->tl()};
 	const rgba8 color{active() ? rgba8{_color} : rgba8{80, 80, 80, 160}};
-	array<clrvtx, 15> buffer{_right ? RIGHT_ARROW_MESH : LEFT_ARROW_MESH};
-	for (clrvtx& vtx : buffer) {
-		vtx.pos += tl();
-		vtx.color.r = (vtx.color.r / 255.0f) * color.r;
-		vtx.color.g = (vtx.color.g / 255.0f) * color.g;
-		vtx.color.b = (vtx.color.b / 255.0f) * color.b;
-		vtx.color.a = (vtx.color.a / 255.0f) * color.a * opacity();
-	}
-	vector<u16> indices(poly_outline_idx(5) + poly_idx(5));
-	fill_poly_outline_idx(indices.begin(), 5, 0);
-	fill_poly_idx(indices.begin() + poly_outline_idx(5), 5, 10);
-	engine::layered_renderer().add_color_mesh(layer::UI, buffer, std::move(indices));
+	const array<vec2, 15>& positions{_right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
+	const color_mesh_alloc arrow{tr::renderer_2d::new_color_mesh(layer::UI, 15, poly_outline_idx(5) + poly_idx(5))};
+	fill_poly_outline_idx(arrow.indices.begin(), 5, arrow.base_index);
+	fill_poly_idx(arrow.indices.begin() + poly_outline_idx(5), 5, arrow.base_index + 10);
+	rs::copy(positions | vs::transform([&](vec2 p) { return p + tl; }), arrow.positions.begin());
+	rs::copy(ARROW_COLORS | vs::transform([&](rgba8 c) -> rgba8 {
+				 return {static_cast<u8>(c.r * norm_cast<float>(color.r)), static_cast<u8>(c.g * norm_cast<float>(color.g)),
+						 static_cast<u8>(c.b * norm_cast<float>(color.b)), static_cast<u8>(c.a * norm_cast<float>(color.a))};
+			 }),
+			 arrow.colors.begin());
 }
 
 void arrow_widget::update() noexcept
@@ -489,66 +524,62 @@ vec2 replay_playback_indicator_widget::size() const noexcept
 
 void replay_playback_indicator_widget::add_to_renderer()
 {
-	if (keyboard::held_mods() & mods::SHIFT) {
-		array<clrvtx, 9> mesh{SLOW_SPEED_MESH};
-		for (clrvtx& vtx : mesh) {
-			vtx.pos += tl();
-		}
-		vector<u16> indices(poly_outline_idx(3) + poly_idx(3));
-		fill_poly_outline_idx(indices.begin(), 3, 0);
-		fill_poly_idx(indices.begin() + poly_outline_idx(3), 3, 6);
-		engine::layered_renderer().add_color_mesh(layer::UI, mesh, std::move(indices));
+	const vec2 tl{this->tl()};
+
+	if (tr::keyboard::held_mods() & mods::SHIFT) {
+		color_mesh_alloc mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, poly_outline_idx(3) + poly_idx(3))};
+		fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
+		fill_poly_idx(mesh.indices.begin() + poly_outline_idx(3), 3, mesh.base_index + 6);
+		rs::copy(SLOW_SPEED_POSITIONS | vs::transform([=](vec2 p) -> vec2 { return p + tl; }), mesh.positions.begin());
+		rs::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 	}
-	else if (keyboard::held_mods() & mods::CTRL) {
-		array<clrvtx, 19> mesh{FAST_SPEED_MESH};
-		for (clrvtx& vtx : mesh) {
-			vtx.pos += tl();
-		}
-		engine::layered_renderer().add_color_mesh(layer::UI, mesh,
-												  vector<u16>{FAST_SPEED_MESH_INDICES.begin(), FAST_SPEED_MESH_INDICES.end()});
+	else if (tr::keyboard::held_mods() & mods::CTRL) {
+		color_mesh_alloc mesh{tr::renderer_2d::new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
+		rs::copy(FAST_SPEED_POSITIONS | vs::transform([=](vec2 p) -> vec2 { return p + tl; }), mesh.positions.begin());
+		rs::copy(FAST_SPEED_COLORS, mesh.colors.begin());
+		rs::copy(FAST_SPEED_INDICES | vs::transform([=](u16 i) -> u16 { return i + mesh.base_index; }), mesh.indices.begin());
 	}
 	else {
-		array<clrvtx, 9> mesh{NORMAL_SPEED_MESH};
-		for (clrvtx& vtx : mesh) {
-			vtx.pos += tl();
-		}
-		vector<u16> indices(poly_outline_idx(3) + poly_idx(3));
-		fill_poly_outline_idx(indices.begin(), 3, 0);
-		fill_poly_idx(indices.begin() + poly_outline_idx(3), 3, 6);
-		engine::layered_renderer().add_color_mesh(layer::UI, mesh, std::move(indices));
+		color_mesh_alloc mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, poly_outline_idx(3) + poly_idx(3))};
+		fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
+		fill_poly_idx(mesh.indices.begin() + poly_outline_idx(3), 3, mesh.base_index + 6);
+		rs::copy(NORMAL_SPEED_POSITIONS | vs::transform([=](vec2 p) -> vec2 { return p + tl; }), mesh.positions.begin());
+		rs::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 	}
 }
 
 ////////////////////////////////////////////////////////////// SCORE WIDGET ///////////////////////////////////////////////////////////////
 
 score_widget::score_widget(string_view name, vec2 pos, align alignment, size_t rank, ::score* score) noexcept
-	: text_widget{name,
-				  pos,
-				  alignment,
-				  true,
-				  [this] { return this->score != nullptr ? this->score->description : string{}; },
-				  false,
-				  {},
-				  font::LANGUAGE,
-				  ttf_style::NORMAL,
-				  halign::CENTER,
-				  48,
-				  UNLIMITED_WIDTH,
-				  {160, 160, 160, 160},
-				  [this](const static_string<30>&) {
-					  if (this->score == nullptr) {
-						  return string{"----------------------------------"};
-					  }
+	: text_widget{
+		  name,
+		  pos,
+		  alignment,
+		  true,
+		  [this] { return this->score != nullptr ? this->score->description : string{}; },
+		  false,
+		  {},
+		  font::LANGUAGE,
+		  ttf_style::NORMAL,
+		  halign::CENTER,
+		  48,
+		  UNLIMITED_WIDTH,
+		  {160, 160, 160, 160},
+		  [this](const static_string<30>&) {
+			  if (this->score == nullptr) {
+				  return string{"----------------------------------"};
+			  }
 
-					  const ticks result{this->score->result};
-					  const ch::system_clock::time_point utc_tp{ch::seconds{this->score->timestamp}};
-					  const auto tp{std::chrono::current_zone()->ch::time_zone::to_local(utc_tp)};
-					  const ch::hh_mm_ss hhmmss{tp - ch::floor<ch::days>(tp)};
-					  const ch::year_month_day ymd{ch::floor<ch::days>(tp)};
-					  return format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result / 60_s, (result % 60_s) / 1_s,
-									(result % 1_s) * 100 / 1_s, static_cast<int>(ymd.year()), static_cast<unsigned int>(ymd.month()),
-									static_cast<unsigned int>(ymd.day()), hhmmss.hours().count(), hhmmss.minutes().count());
-				  }}
+			  const ticks result{this->score->result};
+			  const ch::system_clock::time_point utc_tp{ch::seconds{this->score->timestamp}};
+			  const auto tp{std::chrono::current_zone()->ch::time_zone::to_local(utc_tp)};
+			  const ch::hh_mm_ss hhmmss{tp - ch::floor<ch::days>(tp)};
+			  const ch::year_month_day ymd{ch::floor<ch::days>(tp)};
+			  return format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result / 60_s, (result % 60_s) / 1_s,
+							(result % 1_s) * 100 / 1_s, static_cast<int>(ymd.year()), static_cast<unsigned int>(ymd.month()),
+							static_cast<unsigned int>(ymd.day()), hhmmss.hours().count(), hhmmss.minutes().count());
+		  },
+	  }
 	, rank{rank}
 	, score{score}
 {
@@ -591,27 +622,11 @@ void score_widget::add_to_renderer()
 		int i = 0;
 
 		if (score->flags.exited_prematurely) {
-			vector<u16> indices;
-			fill_poly_idx(back_inserter(indices), 4, 0);
-			fill_poly_outline_idx(back_inserter(indices), 4, 4);
-			fill_poly_idx(back_inserter(indices), 4, 12);
-			fill_poly_idx(back_inserter(indices), 4, 16);
-			engine::layered_renderer().add_color_mesh(
-				layer::UI,
-				generate_exited_prematurely_icon(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity()),
-				std::move(indices));
+			add_exited_prematurely_icon_to_renderer(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity());
 			++i;
 		}
 		if (score->flags.modified_game_speed) {
-			vector<u16> indices;
-			fill_poly_idx(back_inserter(indices), 4, 0);
-			fill_poly_outline_idx(back_inserter(indices), 4, 4);
-			fill_poly_outline_idx(back_inserter(indices), 8, 12);
-			fill_poly_idx(back_inserter(indices), 4, 28);
-			engine::layered_renderer().add_color_mesh(
-				layer::UI,
-				generate_modified_game_speed_icon(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity()),
-				std::move(indices));
+			add_modified_game_speed_icon_to_renderer(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity());
 			++i;
 		}
 	}
@@ -657,27 +672,11 @@ void replay_widget::add_to_renderer()
 		int i = 0;
 
 		if ((*it)->second.flags.exited_prematurely) {
-			vector<u16> indices;
-			fill_poly_idx(back_inserter(indices), 4, 0);
-			fill_poly_outline_idx(back_inserter(indices), 4, 4);
-			fill_poly_idx(back_inserter(indices), 4, 12);
-			fill_poly_idx(back_inserter(indices), 4, 16);
-			engine::layered_renderer().add_color_mesh(
-				layer::UI,
-				generate_exited_prematurely_icon(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity()),
-				std::move(indices));
+			add_exited_prematurely_icon_to_renderer(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity());
 			++i;
 		}
 		if ((*it)->second.flags.modified_game_speed) {
-			vector<u16> indices;
-			fill_poly_idx(back_inserter(indices), 4, 0);
-			fill_poly_outline_idx(back_inserter(indices), 4, 4);
-			fill_poly_outline_idx(back_inserter(indices), 8, 12);
-			fill_poly_idx(back_inserter(indices), 4, 28);
-			engine::layered_renderer().add_color_mesh(
-				layer::UI,
-				generate_modified_game_speed_icon(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity()),
-				std::move(indices));
+			add_modified_game_speed_icon_to_renderer(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity());
 			++i;
 		}
 	}

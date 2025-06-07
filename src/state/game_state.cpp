@@ -48,5 +48,5 @@ void game_state::draw()
 {
 	_game->add_to_renderer();
 	add_fade_overlay_to_renderer(_substate == substate::STARTING ? 1 - (_timer / static_cast<float>(0.5_s)) : 0);
-	engine::layered_renderer().draw(engine::screen());
+	tr::renderer_2d::draw(engine::screen());
 }

@@ -1,6 +1,6 @@
-#include "../include/tooltip.hpp"
 #include "../include/engine.hpp"
 #include "../include/font_manager.hpp"
+#include "../include/tooltip.hpp"
 
 void tooltip::render(string_view text)
 {
@@ -17,7 +17,7 @@ void tooltip::render(string_view text)
 		_texture.clear({});
 		_texture.set_region({}, render.sub({{}, scaled_last_size}));
 	}
-	engine::layered_renderer().set_layer_texture(layer::TOOLTIP, _texture);
+	tr::renderer_2d::set_default_layer_texture(layer::TOOLTIP, _texture);
 }
 
 void tooltip::add_to_renderer(string_view text)
@@ -30,19 +30,14 @@ void tooltip::add_to_renderer(string_view text)
 	constexpr float PADDING{4};
 	const vec2 tl{min(engine::mouse_pos(), 1000.0f - _last_size - 2 * OUTLINE - 2 * PADDING)};
 
-	array<clrvtx, 8> clrbuf;
-	vector<u16> indices(poly_outline_idx(4));
-	fill_poly_outline_idx(indices, 4, 0);
-	fill_rect_outline_vtx(positions(clrbuf), {tl + OUTLINE / 2, _last_size + OUTLINE + 2 * PADDING}, OUTLINE);
-	rs::fill(colors(clrbuf), rgba8{127, 127, 127, 255});
-	engine::layered_renderer().add_color_mesh(layer::TOOLTIP, clrbuf, std::move(indices));
-	fill_rect_vtx(positions(clrbuf), {tl + OUTLINE, _last_size + 2 * PADDING});
-	rs::fill(colors(clrbuf), rgba8{0, 0, 0, 255});
-	engine::layered_renderer().add_color_quad(layer::TOOLTIP, span<clrvtx, 4>{clrbuf.begin(), clrbuf.begin() + 4});
-
-	array<tintvtx, 4> texbuf;
-	fill_rect_vtx(positions(texbuf), {tl + OUTLINE / 2 + PADDING, _last_size});
-	fill_rect_vtx(uvs(texbuf), {{}, _last_size * engine::render_scale() / vec2{_texture.size()}});
-	rs::fill(colors(texbuf), rgba8{255, 255, 255, 255});
-	engine::layered_renderer().add_tex_quad(layer::TOOLTIP, texbuf);
+	const color_alloc outline{tr::renderer_2d::new_color_outline(layer::TOOLTIP, 4)};
+	fill_rect_outline_vtx(outline.positions, {tl + OUTLINE / 2, _last_size + OUTLINE + 2 * PADDING}, OUTLINE);
+	rs::fill(outline.colors, rgba8{127, 127, 127, 255});
+	const color_alloc fill{tr::renderer_2d::new_color_fan(layer::TOOLTIP, 4)};
+	fill_rect_vtx(fill.positions, {tl + OUTLINE, _last_size + 2 * PADDING});
+	rs::fill(fill.colors, rgba8{0, 0, 0, 255});
+	const tex_alloc texture{tr::renderer_2d::new_tex_fan(layer::TOOLTIP, 4)};
+	fill_rect_vtx(texture.positions, {tl + OUTLINE / 2 + PADDING, _last_size});
+	fill_rect_vtx(texture.uvs, {{}, _last_size * engine::render_scale() / vec2{_texture.size()}});
+	rs::fill(texture.tints, rgba8{255, 255, 255, 255});
 }

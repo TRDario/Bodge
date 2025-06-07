@@ -12,8 +12,6 @@ namespace ch = std::chrono;
 using enum tr::align;
 using enum tr::ttf_style;
 using enum tr::severity;
-using clrvtx = tr::clrvtx2;
-using tintvtx = tr::tintvtx2;
 using mods = tr::keymods;
 using key = tr::keycode;
 using u8 = std::uint8_t;
@@ -50,15 +48,14 @@ using std::filesystem::path;
 using tr::align;
 using tr::audio_buffer;
 using tr::audio_source;
-using tr::audio_system;
 using tr::binary_read;
 using tr::binary_write;
 using tr::bitmap;
-using tr::colors;
+using tr::color_alloc;
+using tr::color_mesh_alloc;
 using tr::decrypt;
 using tr::encrypt;
 using tr::encrypt_to;
-using tr::event_queue;
 using tr::fangle;
 using tr::fill_poly_idx;
 using tr::fill_poly_outline_idx;
@@ -67,26 +64,23 @@ using tr::fill_rect_vtx;
 using tr::flush_binary;
 using tr::frect2;
 using tr::halign;
-using tr::keyboard;
-using tr::mouse;
 using tr::norm_cast;
 using tr::open_file_r;
 using tr::open_file_w;
 using tr::poly_idx;
 using tr::poly_outline_idx;
-using tr::positions;
 using tr::range_bytes;
 using tr::rgba8;
 using tr::state;
 using tr::static_string;
 using tr::static_vector;
+using tr::tex_alloc;
+using tr::tex_mesh_alloc;
 using tr::texture;
 using tr::texture_unit;
 using tr::ttf_style;
 using tr::ttfont;
 using tr::UNLIMITED_WIDTH;
-using tr::uvs;
-using tr::window;
 
 //////////////////////////////////////////////////////////// SETTINGS CONSTANTS ///////////////////////////////////////////////////////////
 
@@ -142,12 +136,9 @@ constexpr float operator""_sf(long double seconds) noexcept
 inline const glm::mat4 TRANSFORM{tr::ortho(vec2{1000.0f})};
 
 // Overlay used to dim the game in the main menu.
-constexpr array<clrvtx, 4> MENU_GAME_OVERLAY_QUAD{{
-	{{0, 0}, {0, 0, 0, 160}},
-	{{1000, 0}, {0, 0, 0, 160}},
-	{{1000, 1000}, {0, 0, 0, 160}},
-	{{0, 1000}, {0, 0, 0, 160}},
-}};
+constexpr array<vec2, 4> OVERLAY_POSITIONS{{{0, 0}, {1000, 0}, {1000, 1000}, {0, 1000}}};
+// Tint used for the menu game overlay.
+constexpr rgba8 MENU_GAME_OVERLAY_TINT{0, 0, 0, 160};
 
 ////////////////////////////////////////////////////////////// GAME CONSTANTS /////////////////////////////////////////////////////////////
 

@@ -34,12 +34,12 @@ unique_ptr<replay_state::state> replay_state::update(tr::duration)
 	++_timer;
 	switch (_substate) {
 	case substate::WATCHING:
-		if (keyboard::held_mods() & mods::SHIFT) {
+		if (tr::keyboard::held_mods() & mods::SHIFT) {
 			if (_timer % 4 == 0) {
 				_game->update();
 			}
 		}
-		else if (keyboard::held_mods() & mods::CTRL) {
+		else if (tr::keyboard::held_mods() & mods::CTRL) {
 			for (int i = 0; i < 4; ++i) {
 				_game->update();
 				if (_game->done()) {
@@ -79,10 +79,7 @@ void replay_state::draw()
 	_ui.add_to_renderer();
 	add_cursor_to_renderer(_game->cursor_pos());
 	add_fade_overlay_to_renderer(fade_overlay_opacity());
-
-	engine::layered_renderer().draw_up_to_layer(layer::UI, engine::screen());
-	engine::batched_renderer().draw(engine::screen());
-	engine::layered_renderer().draw(engine::screen());
+	tr::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
@@ -99,16 +96,12 @@ float replay_state::fade_overlay_opacity() const noexcept
 	}
 }
 
-void replay_state::add_cursor_to_renderer(glm::vec2 pos) const
+void replay_state::add_cursor_to_renderer(vec2 pos) const
 {
-	vector<u16> indices(2 * poly_idx(4));
-	fill_poly_idx(indices.begin(), 4, 0);
-	fill_poly_idx(indices.begin() + poly_idx(4), 4, 4);
-
-	array<clrvtx, 8> vtx;
-	rs::fill(colors(vtx), color_cast<rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
-	tr::fill_rotated_rect_vtx(positions(vtx).begin(), pos, {6, 1}, {12, 2}, 45_degf);
-	tr::fill_rotated_rect_vtx(positions(vtx).begin() + 4, pos, {6, 1}, {12, 2}, -45_degf);
-	engine::layered_renderer().add_color_mesh(layer::CURSOR, vtx, std::move(indices));
-	engine::layered_renderer().draw(engine::screen());
+	color_alloc quad{tr::renderer_2d::new_color_fan(layer::CURSOR, 4)};
+	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, 45_degf);
+	rs::fill(quad.colors, color_cast<rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
+	quad = tr::renderer_2d::new_color_fan(layer::CURSOR, 4);
+	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, -45_degf);
+	rs::fill(quad.colors, color_cast<rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
 }

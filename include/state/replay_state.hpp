@@ -50,5 +50,5 @@ class replay_state : public state {
 	// Calculates the fade overlay opacity.
 	float fade_overlay_opacity() const noexcept;
 	// Adds the replay cursor to the renderer.
-	void add_cursor_to_renderer(glm::vec2 pos) const;
+	void add_cursor_to_renderer(vec2 pos) const;
 };

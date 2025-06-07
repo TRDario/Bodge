@@ -66,7 +66,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 		return _substate != substate::ENTERING_TITLE && _pending.window_size != FULLSCREEN && _pending.window_size > MIN_WINDOW_SIZE;
 	}};
 	action_callback window_size_dec_action_cb{[this] {
-		if (keyboard::held_mods() & mods::SHIFT) {
+		if (tr::keyboard::held_mods() & mods::SHIFT) {
 			_pending.window_size = max(MIN_WINDOW_SIZE, _pending.window_size - 100);
 		}
 		else {
@@ -81,7 +81,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 		return _substate != substate::ENTERING_TITLE && _pending.window_size != FULLSCREEN && _pending.window_size < max_window_size();
 	}};
 	action_callback window_size_inc_action_cb{[this] {
-		if (keyboard::held_mods() & mods::SHIFT) {
+		if (tr::keyboard::held_mods() & mods::SHIFT) {
 			_pending.window_size = min(max_window_size(), _pending.window_size + 100);
 		}
 		else {
@@ -135,7 +135,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 			   _pending.refresh_rate > MIN_REFRESH_RATE;
 	}};
 	action_callback refresh_rate_dec_action_cb{[this] {
-		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
+		int delta{(tr::keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.refresh_rate = max(15, _pending.refresh_rate - delta);
 	}};
 	arrow_widget& refresh_rate_dec{_ui.emplace<arrow_widget>("refresh_rate_dec", vec2{1200, h}, CENTER_LEFT, false,
@@ -147,7 +147,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 			   _pending.refresh_rate < max_refresh_rate();
 	}};
 	action_callback refresh_rate_inc_action_cb{[this] {
-		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
+		int delta{(tr::keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.refresh_rate = min<int>(max_refresh_rate(), _pending.refresh_rate + delta);
 	}};
 	arrow_widget& refresh_rate_inc{_ui.emplace<arrow_widget>("refresh_rate_inc", vec2{1200, h}, CENTER_RIGHT, true,
@@ -221,7 +221,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 
 	status_callback hue_arrow_status_cb{[this] { return _substate != substate::ENTERING_TITLE; }};
 	action_callback primary_hue_dec_action_cb{[this] {
-		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
+		int delta{(tr::keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.primary_hue = (_pending.primary_hue - delta + 360) % 360;
 	}};
 	widget& primary_hue_dec{
@@ -230,7 +230,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 	primary_hue_dec.unhide(0.5_s);
 
 	action_callback primary_hue_inc_action_cb{[this] {
-		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
+		int delta{(tr::keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.primary_hue = (_pending.primary_hue + delta) % 360;
 	}};
 	widget& primary_hue_inc{
@@ -252,7 +252,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 	h += 75;
 
 	action_callback secondary_hue_dec_action_cb{[this] {
-		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
+		int delta{(tr::keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.secondary_hue = (_pending.secondary_hue - delta + 360) % 360;
 	}};
 	widget& secondary_hue_dec{_ui.emplace<arrow_widget>("secondary_hue_dec", vec2{1200, h}, CENTER_LEFT, false, hue_arrow_status_cb,
@@ -261,7 +261,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 	secondary_hue_dec.unhide(0.5_s);
 
 	action_callback secondary_hue_inc_action_cb{[this] {
-		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
+		int delta{(tr::keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.secondary_hue = (_pending.secondary_hue + delta) % 360;
 	}};
 	widget& secondary_hue_inc{_ui.emplace<arrow_widget>("secondary_hue_inc", vec2{1200, h}, CENTER_RIGHT, true, hue_arrow_status_cb,
@@ -284,7 +284,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 
 	status_callback sfx_volume_dec_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.sfx_volume > 0; }};
 	action_callback sfx_volume_dec_action_cb{[this] {
-		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
+		int delta{(tr::keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.sfx_volume = max(_pending.sfx_volume - delta, 0);
 	}};
 	widget& sfx_volume_dec{
@@ -294,7 +294,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 
 	status_callback sfx_volume_inc_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.sfx_volume < 100; }};
 	action_callback sfx_volume_inc_action_cb{[this] {
-		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
+		int delta{(tr::keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.sfx_volume = min(_pending.sfx_volume + delta, 100);
 	}};
 	widget& sfx_volume_inc{
@@ -312,7 +312,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 
 	status_callback music_volume_dec_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.music_volume > 0; }};
 	action_callback music_volume_dec_action_cb{[this] {
-		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
+		int delta{(tr::keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.music_volume = min(_pending.music_volume - delta, 100);
 	}};
 	widget& music_volume_dec{_ui.emplace<arrow_widget>("music_volume_dec", vec2{1200, h}, CENTER_LEFT, false, music_volume_dec_status_cb,
@@ -322,7 +322,7 @@ settings_state::settings_state(unique_ptr<game>&& game)
 
 	status_callback music_volume_inc_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.music_volume < 100; }};
 	action_callback music_volume_inc_action_cb{[this] {
-		int delta{(keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
+		int delta{(tr::keyboard::held_mods() & mods::SHIFT) ? 10 : 1};
 		_pending.music_volume = min(_pending.music_volume + delta, 100);
 	}};
 	widget& music_volume_inc{_ui.emplace<arrow_widget>("music_volume_inc", vec2{1200, h}, CENTER_RIGHT, true, music_volume_inc_status_cb,
@@ -434,12 +434,9 @@ unique_ptr<state> settings_state::update(tr::duration)
 void settings_state::draw()
 {
 	_game->add_to_renderer();
-	engine::layered_renderer().add_color_quad(layer::GAME_OVERLAY, MENU_GAME_OVERLAY_QUAD);
+	add_menu_game_overlay_to_renderer();
 	_ui.add_to_renderer();
-
-	engine::layered_renderer().draw_up_to_layer(layer::UI, engine::screen());
-	engine::batched_renderer().draw(engine::screen());
-	engine::layered_renderer().draw(engine::screen());
+	tr::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

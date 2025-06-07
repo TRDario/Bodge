@@ -82,13 +82,10 @@ unique_ptr<state> replays_state::update(tr::duration)
 void replays_state::draw()
 {
 	_game->add_to_renderer();
-	engine::layered_renderer().add_color_quad(layer::GAME_OVERLAY, MENU_GAME_OVERLAY_QUAD);
+	add_menu_game_overlay_to_renderer();
 	_ui.add_to_renderer();
 	add_fade_overlay_to_renderer(fade_overlay_opacity());
-
-	engine::layered_renderer().draw_up_to_layer(layer::UI, engine::screen());
-	engine::batched_renderer().draw(engine::screen());
-	engine::layered_renderer().draw(engine::screen());
+	tr::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

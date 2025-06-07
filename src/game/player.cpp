@@ -1,8 +1,8 @@
-#include "../../include/game/player.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/font_manager.hpp"
 #include "../../include/game/ball.hpp"
+#include "../../include/game/player.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -72,49 +72,42 @@ void player::death_fragment::update() noexcept
 
 void player::add_fill_to_renderer(u8 opacity, fangle rotation, float size) const
 {
-	engine::vertex_buffer().resize(6);
-
-	tr::fill_poly_vtx(positions(engine::vertex_buffer()), 6, {_hitbox.c, size}, rotation);
-	rs::fill(colors(engine::vertex_buffer()), rgba8{0, 0, 0, opacity});
-	engine::layered_renderer().add_color_fan(layer::PLAYER, engine::vertex_buffer());
+	const color_alloc fill{tr::renderer_2d::new_color_fan(layer::PLAYER, 6)};
+	tr::fill_poly_vtx(fill.positions, 6, {_hitbox.c, size}, rotation);
+	rs::fill(fill.colors, rgba8{0, 0, 0, opacity});
 }
 
 void player::add_outline_to_renderer(tr::rgb8 tint, u8 opacity, fangle rotation, float size) const
 {
-	engine::vertex_buffer().resize(12);
-	vector<u16> indices(poly_outline_idx(6));
-
-	fill_poly_outline_idx(indices.begin(), 6, 0);
-	tr::fill_poly_outline_vtx(positions(engine::vertex_buffer()), 6, {_hitbox.c, size}, rotation, 4.0f);
-	rs::fill(colors(engine::vertex_buffer()) | vs::take(6), rgba8{tint, opacity});
-	rs::fill(colors(engine::vertex_buffer()) | vs::drop(6), rgba8{0, 0, 0, opacity});
-	engine::layered_renderer().add_color_mesh(layer::PLAYER, engine::vertex_buffer(), std::move(indices));
+	const color_alloc outline{tr::renderer_2d::new_color_outline(layer::PLAYER, 6)};
+	tr::fill_poly_outline_vtx(outline.positions, 6, {_hitbox.c, size}, rotation, 4.0f);
+	rs::fill(outline.colors | vs::take(6), rgba8{tint, opacity});
+	rs::fill(outline.colors | vs::drop(6), rgba8{0, 0, 0, opacity});
 }
 
 void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, fangle rotation, float size) const
 {
-	engine::vertex_buffer().resize(6 * (trail::SIZE + 1));
-	vector<u16> indices(poly_outline_idx(6) * _trail.SIZE);
+	color_mesh_alloc trail{tr::renderer_2d::new_color_mesh(layer::PLAYER_TRAIL, 6 * (trail::SIZE + 1), poly_outline_idx(6) * _trail.SIZE)};
+	fill_poly_vtx(trail.positions | vs::take(6), 6, {_hitbox.c, size}, rotation);
+	rs::fill(trail.colors, rgba8{tint, opacity});
 
-	tr::fill_poly_vtx(positions(engine::vertex_buffer()), 6, {_hitbox.c, size}, rotation);
-	rs::fill(colors(engine::vertex_buffer()), rgba8{tint, opacity});
+	std::vector<u16>::iterator indices_it{trail.indices.begin()};
 	for (size_t i = 0; i < _trail.SIZE; ++i) {
 		const float trail_fade{static_cast<float>(_trail.SIZE - i) / _trail.SIZE};
 		const float trail_size{size * trail_fade};
 		const u8 trail_opacity{static_cast<u8>(opacity / 3.0f * trail_fade)};
 
-		tr::fill_poly_vtx(positions(engine::vertex_buffer()).begin() + 6 * (i + 1), 6, {_trail[i], trail_size}, rotation);
+		tr::fill_poly_vtx(trail.positions | vs::drop(6 * (i + 1)), 6, {_trail[i], trail_size}, rotation);
 		for (int j = 0; j < 6; ++j) {
-			engine::vertex_buffer()[6 * (i + 1) + j].color.a = trail_opacity;
-			indices.push_back(6 * (i + 1) + j);
-			indices.push_back(6 * (i + 1) + ((j + 1) % 6));
-			indices.push_back(6 * i + ((j + 1) % 6));
-			indices.push_back(6 * (i + 1) + j);
-			indices.push_back(6 * i + ((j + 1) % 6));
-			indices.push_back(6 * i + j);
+			trail.colors[6 * (i + 1) + j].a = trail_opacity;
+			*indices_it++ = trail.base_index + 6 * (i + 1) + j;
+			*indices_it++ = trail.base_index + 6 * (i + 1) + ((j + 1) % 6);
+			*indices_it++ = trail.base_index + 6 * i + ((j + 1) % 6);
+			*indices_it++ = trail.base_index + 6 * (i + 1) + j;
+			*indices_it++ = trail.base_index + 6 * i + ((j + 1) % 6);
+			*indices_it++ = trail.base_index + 6 * i + j;
 		}
 	}
-	engine::layered_renderer().add_color_mesh(layer::PLAYER_TRAIL, engine::vertex_buffer(), std::move(indices));
 }
 
 void player::add_lives_to_renderer() const
@@ -124,18 +117,15 @@ void player::add_lives_to_renderer() const
 	const u8 opacity{static_cast<u8>(255 - 180 * min(_lives_hover_time, HOVER_TIME) / HOVER_TIME)};
 	const fangle rotation{tr::degs(120.0f * _timer / SECOND_TICKS)};
 
-	vector<u16> indices(_lives * poly_outline_idx(6));
-	engine::vertex_buffer().resize(_lives * 12);
 	for (int i = 0; i < _lives; ++i) {
 		const glm::ivec2 grid_pos{i % LIVES_PER_LINE, i / LIVES_PER_LINE};
 		const vec2 pos{(static_cast<vec2>(grid_pos) + 0.5f) * 2.5f * life_size + 8.0f};
 
-		fill_poly_outline_idx(indices.begin() + 36 * i, 6, 12 * i);
-		tr::fill_poly_outline_vtx(positions(engine::vertex_buffer()).begin() + 12 * i, 6, {pos, life_size}, rotation, 4.0f);
-		rs::fill(colors(engine::vertex_buffer()) | vs::drop(i * 12) | vs::take(6), rgba8{color, opacity});
-		rs::fill(colors(engine::vertex_buffer()) | vs::drop(i * 12 + 6) | vs::take(6), rgba8{0, 0, 0, opacity});
+		const color_alloc outline{tr::renderer_2d::new_color_outline(layer::GAME_OVERLAY, 6)};
+		tr::fill_poly_outline_vtx(outline.positions, 6, {pos, life_size}, rotation, 4.0f);
+		rs::fill(outline.colors | vs::take(6), rgba8{color, opacity});
+		rs::fill(outline.colors | vs::drop(6), rgba8{0, 0, 0, opacity});
 	}
-	engine::layered_renderer().add_color_mesh(layer::GAME_OVERLAY, engine::vertex_buffer(), std::move(indices));
 }
 
 void player::add_timer_to_renderer() const
@@ -158,11 +148,10 @@ void player::add_timer_to_renderer() const
 
 	vec2 tl{TIMER_TEXT_POS - timer_text_size(text, scale) / 2.0f};
 	for (char chr : text) {
-		array<tintvtx, 4> quad;
-		fill_rect_vtx(positions(quad), {tl, _atlas[{&chr, 1}].size * vec2{_atlas.size()} * scale});
-		fill_rect_vtx(uvs(quad), _atlas[{&chr, 1}]);
-		rs::fill(colors(quad), tint);
-		engine::layered_renderer().add_tex_quad(layer::GAME_OVERLAY, quad);
+		tex_alloc character{tr::renderer_2d::new_tex_fan(layer::GAME_OVERLAY, 4)};
+		fill_rect_vtx(character.positions, {tl, _atlas[{&chr, 1}].size * vec2{_atlas.size()} * scale});
+		fill_rect_vtx(character.uvs, _atlas[{&chr, 1}]);
+		rs::fill(character.tints, tint);
 		tl.x += _atlas[{&chr, 1}].size.x * _atlas.size().x * scale - 5;
 	}
 }
@@ -172,9 +161,7 @@ void player::set_screen_shake() const
 	const int screen_shake_left{static_cast<int>(_iframes - PLAYER_INVULN_TIME + SCREEN_SHAKE_TIME)};
 	if (screen_shake_left >= 0) {
 		const glm::mat4 mat{ortho(frect2{magth(40.0f * screen_shake_left / SCREEN_SHAKE_TIME, rand<fangle>(rng)), vec2{1000}})};
-		for (int i = layer::BALL_TRAILS; i <= layer::BORDER; ++i) {
-			engine::layered_renderer().set_layer_transform(i, mat);
-		}
+		tr::renderer_2d::set_default_transform(mat);
 	}
 }
 
@@ -185,12 +172,12 @@ void player::add_death_wave_to_renderer() const
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
 	const u8 opacity{norm_cast<u8>(0.5f * std::sqrt(1 - t))};
 
-	vector<clrvtx> fan{tr::smooth_poly_vtx(scale, engine::render_scale()) + 2};
-	fan[0] = {_hitbox.c, {color, 0}};
-	tr::fill_poly_vtx(positions(vs::drop(fan, 1)), fan.size() - 2, {_hitbox.c, scale});
-	fan.back().pos = fan[1].pos;
-	rs::fill(colors(vs::drop(fan, 1)), rgba8{color, opacity});
-	engine::layered_renderer().add_color_fan(layer::PLAYER_TRAIL, fan);
+	const color_alloc fan{tr::renderer_2d::new_color_fan(layer::PLAYER_TRAIL, tr::smooth_poly_vtx(scale, engine::render_scale()) + 2)};
+	fan.positions[0] = _hitbox.c;
+	fan.colors[0] = {color, 0};
+	tr::fill_poly_vtx(fan.positions | vs::drop(1), fan.positions.size() - 2, {_hitbox.c, scale});
+	fan.positions.back() = fan.positions[1];
+	rs::fill(fan.colors | vs::drop(1), rgba8{color, opacity});
 }
 
 void player::add_death_fragments_to_renderer() const
@@ -200,11 +187,10 @@ void player::add_death_fragments_to_renderer() const
 	const u8 opacity{norm_cast<u8>(std::sqrt(1 - t))};
 	const float length{2 * _hitbox.r * tr::degs(30.0f).tan()};
 
-	array<clrvtx, 4> quad;
-	rs::fill(colors(quad), rgba8{color, opacity});
 	for (const death_fragment& fragment : _fragments) {
-		tr::fill_rotated_rect_vtx(positions(quad), fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
-		engine::layered_renderer().add_color_quad(layer::PLAYER, quad);
+		const color_alloc mesh{tr::renderer_2d::new_color_fan(layer::PLAYER, 4)};
+		tr::fill_rotated_rect_vtx(mesh.positions, fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
+		rs::fill(mesh.colors, rgba8{color, opacity});
 	}
 }
 
@@ -223,7 +209,7 @@ player::player(const player_settings& settings, ticks pb) noexcept
 	, _atlas{create_timer_atlas()}
 	, _pb{pb}
 {
-	engine::layered_renderer().set_layer_texture(layer::GAME_OVERLAY, _atlas);
+	tr::renderer_2d::set_default_layer_texture(layer::GAME_OVERLAY, _atlas);
 }
 
 ///////////////////////////////////////////////////////////////// GETTERS /////////////////////////////////////////////////////////////////

@@ -40,7 +40,7 @@ struct engine {
 	// Applies new settings to the engine.
 	static void apply_settings(const settings_t& old_settings);
 	// Shuts the engine down.
-	static void shutdown() noexcept;
+	static void shut_down() noexcept;
 
 	//////////////////////////////////////////////////////////////// INPUT ////////////////////////////////////////////////////////////////
 
@@ -55,12 +55,8 @@ struct engine {
 
 	////////////////////////////////////////////////////////////// GRAPHICS ///////////////////////////////////////////////////////////////
 
-	// Gets the batched renderer.
-	static tr::batched_2d_renderer& batched_renderer() noexcept;
 	// Gets the blur renderer.
 	static blur_renderer& blur_renderer() noexcept;
-	// Gets the layered renderer.
-	static tr::layered_2d_renderer& layered_renderer() noexcept;
 	// Redraws the screen if needed.
 	static void redraw_if_needed();
 	// Gets the rendering scale factor.
@@ -69,11 +65,11 @@ struct engine {
 	static const tr::render_target& screen() noexcept;
 	// Gets the tooltip manager.
 	static tooltip& tooltip() noexcept;
-	// Gets the vertex scratch space buffer.
-	static vector<clrvtx>& vertex_buffer() noexcept;
 };
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
+// Adds the menu game overlay to the renderer.
+void add_menu_game_overlay_to_renderer();
 // Adds a fade overlay to the renderer.
 void add_fade_overlay_to_renderer(float opacity);

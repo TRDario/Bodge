@@ -359,13 +359,13 @@ template <size_t S> class line_input_widget : public text_widget {
 
 	void on_copy() override
 	{
-		keyboard::set_clipboard_text(string{buffer}.c_str());
+		tr::keyboard::set_clipboard_text(string{buffer}.c_str());
 	}
 
 	void on_paste() override
 	{
-		if (keyboard::clipboard_has_text()) {
-			string pasted{keyboard::clipboard_text()};
+		if (tr::keyboard::clipboard_has_text()) {
+			string pasted{tr::keyboard::clipboard_text()};
 			buffer += (buffer.size() + pasted.size() > S) ? string_view{pasted}.substr(0, S - buffer.size()) : pasted;
 		}
 	}

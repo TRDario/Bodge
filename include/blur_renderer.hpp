@@ -24,6 +24,8 @@ struct blur_renderer {
 	texture_unit _tex_unit;
 	// Shader pipeline used for blur rendering.
 	tr::owning_shader_pipeline _pipeline;
+	// The vertex foramt used for blur rendering.
+	tr::vertex_format _vformat;
 	// Vertex buffer used for blur rendering.
-	tr::static_vertex_buffer<clrvtx> _vbuffer;
+	tr::static_vertex_buffer<glm::i8vec2> _vbuffer;
 };

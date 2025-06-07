@@ -23,22 +23,17 @@ inline constexpr tr::blend_mode REVERSE_ALPHA_BLENDING{
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-// Creates the layered renderer.
-tr::layered_2d_renderer create_layered_renderer()
+// Initializes the 2D renderer.
+void initialize_2d_renderer()
 {
-	tr::layered_2d_renderer renderer;
-	renderer.add_color_layer(layer::BALL_TRAILS, TRANSFORM, MAX_ALPHA_BLENDING);
-	renderer.add_color_layer(layer::BALL_TRAILS_OVERLAY, TRANSFORM, REVERSE_ALPHA_BLENDING);
-	renderer.add_color_layer(layer::BALLS, TRANSFORM);
-	renderer.add_color_layer(layer::PLAYER_TRAIL, TRANSFORM);
-	renderer.add_color_layer(layer::PLAYER, TRANSFORM);
-	renderer.add_color_layer(layer::BORDER, TRANSFORM);
-	renderer.add_color_layer(layer::GAME_OVERLAY, TRANSFORM);
-	renderer.add_color_layer(layer::UI, TRANSFORM);
-	renderer.add_color_layer(layer::TOOLTIP, TRANSFORM);
-	renderer.add_color_layer(layer::FADE_OVERLAY, TRANSFORM);
-	renderer.add_color_layer(layer::CURSOR, TRANSFORM);
-	return renderer;
+	tr::renderer_2d::initialize();
+	tr::renderer_2d::set_default_transform(TRANSFORM);
+	tr::renderer_2d::set_default_layer_blend_mode(layer::BALL_TRAILS, MAX_ALPHA_BLENDING);
+	tr::renderer_2d::set_default_layer_blend_mode(layer::BALL_TRAILS_OVERLAY, REVERSE_ALPHA_BLENDING);
+	for (int layer = layer::GAME_OVERLAY; layer <= layer::CURSOR; ++layer) {
+		// Explicitly set default transform for these because the global default is modified by screenshake.
+		tr::renderer_2d::set_default_layer_transform(layer, TRANSFORM);
+	}
 }
 
 // Creates a draw timer according to the active settings.
@@ -52,25 +47,24 @@ tr::timer create_draw_timer()
 	}
 }
 
-// Draws the cursor crosshairs.
-void draw_cursor()
+// Adds the cursor crosshairs to the renderer.
+void add_cursor_to_renderer()
 {
 	const vec2 mouse_pos{engine::mouse_pos()};
+	const rgba8 color{color_cast<rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
 
-	vector<u16> indices(4 * poly_idx(4));
-	fill_poly_idx(indices.begin(), 4, 0);
-	fill_poly_idx(indices.begin() + poly_idx(4), 4, 4);
-	fill_poly_idx(indices.begin() + poly_idx(4) * 2, 4, 8);
-	fill_poly_idx(indices.begin() + poly_idx(4) * 3, 4, 12);
-
-	array<clrvtx, 16> vtx;
-	rs::fill(colors(vtx), color_cast<rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
-	fill_rect_vtx(positions(vtx).begin(), {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
-	fill_rect_vtx(positions(vtx).begin() + 4, {{mouse_pos.x + 4, mouse_pos.y - 1}, {8, 2}});
-	fill_rect_vtx(positions(vtx).begin() + 8, {{mouse_pos.x - 1, mouse_pos.y - 12}, {2, 8}});
-	fill_rect_vtx(positions(vtx).begin() + 12, {{mouse_pos.x - 1, mouse_pos.y + 4}, {2, 8}});
-	engine::layered_renderer().add_color_mesh(layer::CURSOR, vtx, std::move(indices));
-	engine::layered_renderer().draw(engine::screen());
+	color_alloc quad{tr::renderer_2d::new_color_fan(layer::CURSOR, 4)};
+	fill_rect_vtx(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
+	rs::fill(quad.colors, color);
+	quad = tr::renderer_2d::new_color_fan(layer::CURSOR, 4);
+	fill_rect_vtx(quad.positions, {{mouse_pos.x + 4, mouse_pos.y - 1}, {8, 2}});
+	rs::fill(quad.colors, color);
+	quad = tr::renderer_2d::new_color_fan(layer::CURSOR, 4);
+	fill_rect_vtx(quad.positions, {{mouse_pos.x - 1, mouse_pos.y - 12}, {2, 8}});
+	rs::fill(quad.colors, color);
+	quad = tr::renderer_2d::new_color_fan(layer::CURSOR, 4);
+	fill_rect_vtx(quad.positions, {{mouse_pos.x - 1, mouse_pos.y + 4}, {2, 8}});
+	rs::fill(quad.colors, color);
 }
 
 // Determines the upper limit for an acceptable render time.
@@ -93,20 +87,27 @@ bool restart_required(const settings_t& old_settings) noexcept
 // Creates the screen render target.
 tr::render_target setup_screen()
 {
-	const glm::ivec2 size{window::size()};
+	const glm::ivec2 size{tr::window::size()};
 	if (size.x > size.y) {
 		const tr::irect2 screen{{(size.x - size.y) / 2, 0}, glm::ivec2{size.y}};
-		window::set_mouse_bounds(screen);
+		tr::window::set_mouse_bounds(screen);
 		return tr::backbuffer::region_render_target(screen);
 	}
 	else if (size.y > size.x) {
 		const tr::irect2 screen{{0, (size.y - size.x) / 2}, glm::ivec2{size.x}};
-		window::set_mouse_bounds(screen);
+		tr::window::set_mouse_bounds(screen);
 		return tr::backbuffer::region_render_target(screen);
 	}
 	else {
 		return tr::backbuffer::render_target();
 	}
+}
+
+void add_menu_game_overlay_to_renderer()
+{
+	const color_alloc fade_overlay{tr::renderer_2d::new_color_fan(layer::GAME_OVERLAY, 4)};
+	fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
+	rs::fill(fade_overlay.colors, MENU_GAME_OVERLAY_TINT);
 }
 
 void add_fade_overlay_to_renderer(float opacity)
@@ -115,10 +116,9 @@ void add_fade_overlay_to_renderer(float opacity)
 		return;
 	}
 
-	array<clrvtx, 4> quad;
-	fill_rect_vtx(positions(quad), {{}, {1000, 1000}});
-	rs::fill(colors(quad), rgba8{0, 0, 0, norm_cast<u8>(opacity)});
-	engine::layered_renderer().add_color_quad(layer::FADE_OVERLAY, quad);
+	const color_alloc fade_overlay{tr::renderer_2d::new_color_fan(layer::FADE_OVERLAY, 4)};
+	fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
+	rs::fill(fade_overlay.colors, rgba8{0, 0, 0, norm_cast<u8>(opacity)});
 }
 
 /////////////////////////////////////////////////////////////// ENGINE DATA ///////////////////////////////////////////////////////////////
@@ -133,16 +133,10 @@ struct engine_data {
 	tr::state_manager state;
 	// The screen render target.
 	tr::render_target screen;
-	// Layered 2D renderer used for most drawing.
-	tr::layered_2d_renderer layers;
-	// Batched 2D renderer mostly used for UI.
-	tr::batched_2d_renderer batched;
 	// Renderer for drawing blurred and desaturated images.
 	blur_renderer blur;
 	// Tooltip manager.
 	tooltip tooltip;
-	// Shared scratch space for one-off vertex data.
-	vector<clrvtx> clrvtx2_buffer;
 	// Whether the screen should be redrawn. If above 1, ticks will be paused to catch up.
 	int redraw;
 
@@ -156,7 +150,6 @@ engine_data::engine_data()
 	: tick_timer{tr::create_tick_timer(cli_settings.game_speed * 240, 0)}
 	, draw_timer{create_draw_timer()}
 	, screen{setup_screen()}
-	, layers{create_layered_renderer()}
 	, blur{screen.size().x}
 	, redraw{true}
 {
@@ -166,18 +159,24 @@ engine_data::engine_data()
 
 void engine::initialize()
 {
-	const tr::gfx_properties gfx{.multisamples = settings.msaa};
+	const tr::gfx_properties gfx{
+		.debug_context = cli_settings.debug_mode,
+		.double_buffer = false,
+		.multisamples = settings.msaa,
+	};
 	if (settings.window_size == FULLSCREEN) {
-		window::open_fullscreen("Bodge", tr::window_flag::DEFAULT, gfx);
+		tr::window::open_fullscreen("Bodge", tr::window_flag::DEFAULT, gfx);
 	}
 	else {
-		window::open_windowed("Bodge", glm::ivec2{settings.window_size}, tr::window_flag::DEFAULT, gfx);
+		tr::window::open_windowed("Bodge", glm::ivec2{settings.window_size}, tr::window_flag::DEFAULT, gfx);
 	}
-	mouse::show_cursor(false);
+	tr::window::set_vsync(tr::vsync::DISABLED);
+	tr::mouse::show_cursor(false);
+	initialize_2d_renderer();
 	engine_data.emplace();
 
 	if (cli_settings.debug_mode) {
-		tr::debug_renderer::initialize();
+		tr::debug_renderer::initialize(1.0f);
 	}
 	LOG(INFO, "Initialized the engine.");
 }
@@ -196,7 +195,7 @@ void engine::apply_settings(const settings_t& old_settings)
 {
 	if (restart_required(old_settings)) {
 		tr::state_manager state{std::move(engine_data->state)};
-		shutdown();
+		shut_down();
 		initialize();
 		engine_data->state = std::move(state);
 	}
@@ -205,11 +204,12 @@ void engine::apply_settings(const settings_t& old_settings)
 	}
 }
 
-void engine::shutdown() noexcept
+void engine::shut_down() noexcept
 {
-	tr::debug_renderer::shut_down();
 	engine_data.reset();
-	window::close();
+	tr::debug_renderer::shut_down();
+	tr::renderer_2d::shut_down();
+	tr::window::close();
 	LOG(INFO, "Shut down the engine.");
 }
 
@@ -222,7 +222,7 @@ bool engine::active() noexcept
 
 void engine::handle_events()
 {
-	event_queue::handle([&](const tr::event& event) {
+	tr::event_queue::handle([&](const tr::event& event) {
 		switch (event.type()) {
 		case tr::tick_event::ID:
 			if (engine_data->redraw < 2) {
@@ -244,12 +244,12 @@ void engine::handle_events()
 
 vec2 engine::mouse_pos() noexcept
 {
-	return to_game_coords(mouse::pos());
+	return to_game_coords(tr::mouse::pos());
 }
 
 vec2 engine::to_game_coords(vec2 window_coords) noexcept
 {
-	const glm::ivec2 window_size{window::size()};
+	const glm::ivec2 window_size{tr::window::size()};
 	if (window_size.x > window_size.y) {
 		window_coords.x -= (window_size.x - window_size.y) / 2.0f;
 		window_coords /= render_scale();
@@ -266,27 +266,16 @@ vec2 engine::to_game_coords(vec2 window_coords) noexcept
 
 //////////////////////////////////////////////////////////////// GRAPHICS /////////////////////////////////////////////////////////////////
 
-tr::batched_2d_renderer& engine::batched_renderer() noexcept
-{
-	return engine_data->batched;
-}
-
 blur_renderer& engine::blur_renderer() noexcept
 {
 	return engine_data->blur;
 }
 
-tr::layered_2d_renderer& engine::layered_renderer() noexcept
-{
-	return engine_data->layers;
-}
-
 void engine::redraw_if_needed()
 {
 	if (engine_data->redraw) {
-		tr::backbuffer::clear();
+		add_cursor_to_renderer();
 		engine_data->state.draw();
-		draw_cursor();
 		if (tr::debug_renderer::active()) {
 			tr::debug_renderer::write_right(engine_data->state.update_benchmark(), "Update:", MAX_UPDATE_TIME);
 			tr::debug_renderer::newline_right();
@@ -294,6 +283,7 @@ void engine::redraw_if_needed()
 			tr::debug_renderer::draw();
 		}
 		tr::backbuffer::flip();
+		tr::backbuffer::clear();
 		engine_data->redraw = false;
 	}
 }
@@ -311,9 +301,4 @@ const tr::render_target& engine::screen() noexcept
 tooltip& engine::tooltip() noexcept
 {
 	return engine_data->tooltip;
-}
-
-vector<clrvtx>& engine::vertex_buffer() noexcept
-{
-	return engine_data->clrvtx2_buffer;
 }

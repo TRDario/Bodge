@@ -65,11 +65,11 @@ optional<audio_buffer> load_audio_file(const char* filename) noexcept
 void audio::initialize() noexcept
 {
 	try {
-		audio_system::initialize();
+		tr::audio_system::initialize();
 		LOG(INFO, "Initialized the audio system.");
-		audio_system::set_master_gain(2);
-		audio_system::set_class_gain(0, settings.sfx_volume / 100.0f);
-		audio_system::set_class_gain(1, settings.music_volume / 100.0f);
+		tr::audio_system::set_master_gain(2);
+		tr::audio_system::set_class_gain(0, settings.sfx_volume / 100.0f);
+		tr::audio_system::set_class_gain(1, settings.music_volume / 100.0f);
 		for (audio_file i = audio_file::FIRST; i < audio_file::COUNT; i = static_cast<audio_file>(static_cast<int>(i) + 1)) {
 			sounds[i] = load_audio_file(AUDIO_FILENAMES[i]);
 		}
@@ -82,7 +82,7 @@ void audio::initialize() noexcept
 void audio::play(sfx sfx, float volume, float pan, float pitch) noexcept
 {
 	const audio_file file{sfx_to_audio_file(sfx)};
-	if (audio_system::active() && sounds[file].has_value()) {
+	if (tr::audio_system::active() && sounds[file].has_value()) {
 		try {
 			audio_source source{0};
 			source.use(*sounds[file]);
@@ -100,19 +100,19 @@ void audio::play(sfx sfx, float volume, float pan, float pitch) noexcept
 
 void audio::apply_settings() noexcept
 {
-	if (audio_system::active()) {
-		audio_system::set_class_gain(0, settings.sfx_volume / 100.0f);
-		audio_system::set_class_gain(1, settings.music_volume / 100.0f);
+	if (tr::audio_system::active()) {
+		tr::audio_system::set_class_gain(0, settings.sfx_volume / 100.0f);
+		tr::audio_system::set_class_gain(1, settings.music_volume / 100.0f);
 	}
 }
 
 void audio::shut_down() noexcept
 {
-	if (audio_system::active()) {
+	if (tr::audio_system::active()) {
 		for (optional<audio_buffer>& sound : sounds) {
 			sound.reset();
 		}
-		audio_system::shut_down();
+		tr::audio_system::shut_down();
 		LOG(INFO, "Shut down the audio system.");
 	}
 }

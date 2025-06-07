@@ -21,7 +21,7 @@ int main(int argc, const char** argv)
 			engine::handle_events();
 			engine::redraw_if_needed();
 		}
-		engine::shutdown();
+		engine::shut_down();
 		audio::shut_down();
 		font_manager.unload_all();
 		scorefile.save_to_file();

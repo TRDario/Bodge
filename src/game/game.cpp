@@ -2,15 +2,6 @@
 #include "../../include/game/game.hpp"
 #include "../../include/score.hpp"
 
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
-
-constexpr array<clrvtx, 4> BALL_TRAILS_OVERLAY_QUAD{{
-	{{0, 0}, {0, 0, 0, 0}},
-	{{1000, 0}, {0, 0, 0, 0}},
-	{{1000, 1000}, {0, 0, 0, 0}},
-	{{0, 1000}, {0, 0, 0, 0}},
-}};
-
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
 
 game::game(const ::gamemode& gamemode, std::uint64_t rng_seed)
@@ -82,17 +73,18 @@ void game::update(const vec2& input) noexcept
 	}
 }
 
-void game::add_border_mesh() const
+void game::add_overlay_to_renderer() const
 {
-	vector<u16> border_indices;
-	border_indices.resize(poly_outline_idx(4));
-	fill_poly_outline_idx(border_indices, 4, 0);
+	color_alloc overlay{tr::renderer_2d::new_color_fan(layer::BALL_TRAILS_OVERLAY, 4)};
+	rs::copy(OVERLAY_POSITIONS, overlay.positions.begin());
+	rs::fill(overlay.colors, rgba8{0, 0, 0, 0});
+}
 
-	array<clrvtx, 8> border_mesh;
-	fill_rect_outline_vtx(positions(border_mesh), {{2, 2}, {996, 996}}, 4);
-	rs::fill(colors(border_mesh), color_cast<rgba8>(tr::hsv{static_cast<float>(settings.secondary_hue), 1, 1}));
-
-	engine::layered_renderer().add_color_mesh(layer::BORDER, border_mesh, std::move(border_indices));
+void game::add_border_to_renderer() const
+{
+	color_alloc border{tr::renderer_2d::new_color_outline(layer::BORDER, 4)};
+	fill_rect_outline_vtx(border.positions, {{2, 2}, {996, 996}}, 4);
+	rs::fill(border.colors, color_cast<rgba8>(tr::hsv{static_cast<float>(settings.secondary_hue), 1, 1}));
 }
 
 void game::add_to_renderer() const
@@ -101,8 +93,8 @@ void game::add_to_renderer() const
 		_player->add_to_renderer();
 	}
 	rs::for_each(_balls, &ball::add_to_renderer);
-	engine::layered_renderer().add_color_quad(layer::BALL_TRAILS_OVERLAY, BALL_TRAILS_OVERLAY_QUAD);
-	add_border_mesh();
+	add_overlay_to_renderer();
+	add_border_to_renderer();
 }
 
 void game::add_new_ball() noexcept
@@ -144,7 +136,7 @@ bool replay_game::done() const noexcept
 	return _replay.done();
 }
 
-glm::vec2 replay_game::cursor_pos() const noexcept
+vec2 replay_game::cursor_pos() const noexcept
 {
 	return _replay.current();
 }

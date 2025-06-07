@@ -4,8 +4,8 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Minified version of src/shaders/pause_menu_background.vert.
-constexpr const char* VERTEX_SHADER_SRC{"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;L(1)in vec4 c;L(0)out "
-										"vec2 P;void main(){P=p;gl_Position=vec4(p,0,1);}"};
+constexpr const char* VERTEX_SHADER_SRC{
+	"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;L(0)out vec2 P;void main(){P=p;gl_Position=vec4(p,0,1);}"};
 // Minified version of src/shaders/pause_menu_background.frag.
 constexpr const char* FRAGMENT_SHADER_SRC{
 	"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;L(0)out vec4 C;L(0)uniform sampler2D t;L(1)uniform vec2 S;L(2)uniform "
@@ -21,7 +21,7 @@ constexpr const char* FRAGMENT_SHADER_SRC{
 // The renderer ID of the pause menu background renderer.
 const u32 RENDERER_ID{tr::alloc_renderer_id()};
 // The mesh used for drawing the pause menu background.
-constexpr array<clrvtx, 4> MESH{{{{-1, 1}, {}}, {{1, 1}, {}}, {{1, -1}, {}}, {{-1, -1}, {}}}};
+constexpr array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -29,6 +29,7 @@ blur_renderer::blur_renderer(int texture_size)
 	: _input_tex{glm::ivec2{texture_size}}
 	, _aux_tex{glm::ivec2{texture_size}}
 	, _pipeline{tr::vertex_shader{VERTEX_SHADER_SRC}, tr::fragment_shader{FRAGMENT_SHADER_SRC}}
+	, _vformat{tr::vertex_attributef{tr::vertex_attributef::type::SI8, 2, false, 0, 0}}
 	, _vbuffer{MESH}
 {
 	_tex_unit.set_texture(_input_tex);
@@ -41,6 +42,7 @@ blur_renderer::blur_renderer(int texture_size)
 		_pipeline.set_label("(Bodge) Blur Renderer Pipeline");
 		_pipeline.vertex_shader().set_label("(Bodge) Blur Renderer Vertex Shader");
 		_pipeline.fragment_shader().set_label("(Bodge) Blur Renderer Fragment Shader");
+		_vformat.set_label("(Bodge) Blur Renderer Vertex Format");
 		_vbuffer.set_label("(Bodge) Blur Renderer Vertex Buffer");
 	}
 }
@@ -59,7 +61,8 @@ void blur_renderer::draw(float saturation, float strength) noexcept
 
 	tr::gfx_context::set_renderer(RENDERER_ID);
 	tr::gfx_context::set_shader_pipeline(_pipeline);
-	tr::gfx_context::set_vertex_buffer(_vbuffer, 0);
+	tr::gfx_context::set_vertex_format(_vformat);
+	tr::gfx_context::set_vertex_buffer(_vbuffer, 0, 0);
 	tr::gfx_context::set_blend_mode(tr::PREMUL_ALPHA_BLENDING);
 	_tex_unit.set_texture(_input_tex);
 	_pipeline.fragment_shader().set_uniform(2, saturation);
