@@ -30,13 +30,13 @@ void tooltip::add_to_renderer(string_view text)
 	constexpr float PADDING{4};
 	const vec2 tl{min(engine::mouse_pos(), 1000.0f - _last_size - 2 * OUTLINE - 2 * PADDING)};
 
-	const color_alloc outline{tr::renderer_2d::new_color_outline(layer::TOOLTIP, 4)};
+	const simple_color_mesh outline{tr::renderer_2d::new_color_outline(layer::TOOLTIP, 4)};
 	fill_rect_outline_vtx(outline.positions, {tl + OUTLINE / 2, _last_size + OUTLINE + 2 * PADDING}, OUTLINE);
 	rs::fill(outline.colors, rgba8{127, 127, 127, 255});
-	const color_alloc fill{tr::renderer_2d::new_color_fan(layer::TOOLTIP, 4)};
+	const simple_color_mesh fill{tr::renderer_2d::new_color_fan(layer::TOOLTIP, 4)};
 	fill_rect_vtx(fill.positions, {tl + OUTLINE, _last_size + 2 * PADDING});
 	rs::fill(fill.colors, rgba8{0, 0, 0, 255});
-	const tex_alloc texture{tr::renderer_2d::new_tex_fan(layer::TOOLTIP, 4)};
+	const simple_textured_mesh texture{tr::renderer_2d::new_textured_fan(layer::TOOLTIP, 4)};
 	fill_rect_vtx(texture.positions, {tl + OUTLINE / 2 + PADDING, _last_size});
 	fill_rect_vtx(texture.uvs, {{}, _last_size * engine::render_scale() / vec2{_texture.size()}});
 	rs::fill(texture.tints, rgba8{255, 255, 255, 255});

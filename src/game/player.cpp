@@ -72,22 +72,22 @@ void player::death_fragment::update() noexcept
 
 void player::add_fill_to_renderer(u8 opacity, fangle rotation, float size) const
 {
-	const color_alloc fill{tr::renderer_2d::new_color_fan(layer::PLAYER, 6)};
-	tr::fill_poly_vtx(fill.positions, 6, {_hitbox.c, size}, rotation);
+	const simple_color_mesh fill{tr::renderer_2d::new_color_fan(layer::PLAYER, 6)};
+	fill_poly_vtx(fill.positions, 6, {_hitbox.c, size}, rotation);
 	rs::fill(fill.colors, rgba8{0, 0, 0, opacity});
 }
 
 void player::add_outline_to_renderer(tr::rgb8 tint, u8 opacity, fangle rotation, float size) const
 {
-	const color_alloc outline{tr::renderer_2d::new_color_outline(layer::PLAYER, 6)};
-	tr::fill_poly_outline_vtx(outline.positions, 6, {_hitbox.c, size}, rotation, 4.0f);
+	const simple_color_mesh outline{tr::renderer_2d::new_color_outline(layer::PLAYER, 6)};
+	fill_poly_outline_vtx(outline.positions, 6, {_hitbox.c, size}, rotation, 4.0f);
 	rs::fill(outline.colors | vs::take(6), rgba8{tint, opacity});
 	rs::fill(outline.colors | vs::drop(6), rgba8{0, 0, 0, opacity});
 }
 
 void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, fangle rotation, float size) const
 {
-	color_mesh_alloc trail{tr::renderer_2d::new_color_mesh(layer::PLAYER_TRAIL, 6 * (trail::SIZE + 1), poly_outline_idx(6) * _trail.SIZE)};
+	color_mesh trail{tr::renderer_2d::new_color_mesh(layer::PLAYER_TRAIL, 6 * (trail::SIZE + 1), poly_outline_idx(6) * _trail.SIZE)};
 	fill_poly_vtx(trail.positions | vs::take(6), 6, {_hitbox.c, size}, rotation);
 	rs::fill(trail.colors, rgba8{tint, opacity});
 
@@ -97,7 +97,7 @@ void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, fangle rotation, f
 		const float trail_size{size * trail_fade};
 		const u8 trail_opacity{static_cast<u8>(opacity / 3.0f * trail_fade)};
 
-		tr::fill_poly_vtx(trail.positions | vs::drop(6 * (i + 1)), 6, {_trail[i], trail_size}, rotation);
+		fill_poly_vtx(trail.positions | vs::drop(6 * (i + 1)), 6, {_trail[i], trail_size}, rotation);
 		for (int j = 0; j < 6; ++j) {
 			trail.colors[6 * (i + 1) + j].a = trail_opacity;
 			*indices_it++ = trail.base_index + 6 * (i + 1) + j;
@@ -121,8 +121,8 @@ void player::add_lives_to_renderer() const
 		const glm::ivec2 grid_pos{i % LIVES_PER_LINE, i / LIVES_PER_LINE};
 		const vec2 pos{(static_cast<vec2>(grid_pos) + 0.5f) * 2.5f * life_size + 8.0f};
 
-		const color_alloc outline{tr::renderer_2d::new_color_outline(layer::GAME_OVERLAY, 6)};
-		tr::fill_poly_outline_vtx(outline.positions, 6, {pos, life_size}, rotation, 4.0f);
+		const simple_color_mesh outline{tr::renderer_2d::new_color_outline(layer::GAME_OVERLAY, 6)};
+		fill_poly_outline_vtx(outline.positions, 6, {pos, life_size}, rotation, 4.0f);
 		rs::fill(outline.colors | vs::take(6), rgba8{color, opacity});
 		rs::fill(outline.colors | vs::drop(6), rgba8{0, 0, 0, opacity});
 	}
@@ -148,7 +148,7 @@ void player::add_timer_to_renderer() const
 
 	vec2 tl{TIMER_TEXT_POS - timer_text_size(text, scale) / 2.0f};
 	for (char chr : text) {
-		tex_alloc character{tr::renderer_2d::new_tex_fan(layer::GAME_OVERLAY, 4)};
+		simple_textured_mesh character{tr::renderer_2d::new_textured_fan(layer::GAME_OVERLAY, 4)};
 		fill_rect_vtx(character.positions, {tl, _atlas[{&chr, 1}].size * vec2{_atlas.size()} * scale});
 		fill_rect_vtx(character.uvs, _atlas[{&chr, 1}]);
 		rs::fill(character.tints, tint);
@@ -172,10 +172,11 @@ void player::add_death_wave_to_renderer() const
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
 	const u8 opacity{norm_cast<u8>(0.5f * std::sqrt(1 - t))};
 
-	const color_alloc fan{tr::renderer_2d::new_color_fan(layer::PLAYER_TRAIL, tr::smooth_poly_vtx(scale, engine::render_scale()) + 2)};
+	const simple_color_mesh fan{
+		tr::renderer_2d::new_color_fan(layer::PLAYER_TRAIL, tr::smooth_poly_vtx(scale, engine::render_scale()) + 2)};
 	fan.positions[0] = _hitbox.c;
 	fan.colors[0] = {color, 0};
-	tr::fill_poly_vtx(fan.positions | vs::drop(1), fan.positions.size() - 2, {_hitbox.c, scale});
+	fill_poly_vtx(fan.positions | vs::drop(1), fan.positions.size() - 2, {_hitbox.c, scale});
 	fan.positions.back() = fan.positions[1];
 	rs::fill(fan.colors | vs::drop(1), rgba8{color, opacity});
 }
@@ -188,7 +189,7 @@ void player::add_death_fragments_to_renderer() const
 	const float length{2 * _hitbox.r * tr::degs(30.0f).tan()};
 
 	for (const death_fragment& fragment : _fragments) {
-		const color_alloc mesh{tr::renderer_2d::new_color_fan(layer::PLAYER, 4)};
+		const simple_color_mesh mesh{tr::renderer_2d::new_color_fan(layer::PLAYER, 4)};
 		tr::fill_rotated_rect_vtx(mesh.positions, fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
 		rs::fill(mesh.colors, rgba8{color, opacity});
 	}

@@ -53,7 +53,7 @@ void add_cursor_to_renderer()
 	const vec2 mouse_pos{engine::mouse_pos()};
 	const rgba8 color{color_cast<rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
 
-	color_alloc quad{tr::renderer_2d::new_color_fan(layer::CURSOR, 4)};
+	simple_color_mesh quad{tr::renderer_2d::new_color_fan(layer::CURSOR, 4)};
 	fill_rect_vtx(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
 	rs::fill(quad.colors, color);
 	quad = tr::renderer_2d::new_color_fan(layer::CURSOR, 4);
@@ -105,7 +105,7 @@ tr::render_target setup_screen()
 
 void add_menu_game_overlay_to_renderer()
 {
-	const color_alloc fade_overlay{tr::renderer_2d::new_color_fan(layer::GAME_OVERLAY, 4)};
+	const simple_color_mesh fade_overlay{tr::renderer_2d::new_color_fan(layer::GAME_OVERLAY, 4)};
 	fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
 	rs::fill(fade_overlay.colors, MENU_GAME_OVERLAY_TINT);
 }
@@ -116,7 +116,7 @@ void add_fade_overlay_to_renderer(float opacity)
 		return;
 	}
 
-	const color_alloc fade_overlay{tr::renderer_2d::new_color_fan(layer::FADE_OVERLAY, 4)};
+	const simple_color_mesh fade_overlay{tr::renderer_2d::new_color_fan(layer::FADE_OVERLAY, 4)};
 	fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
 	rs::fill(fade_overlay.colors, rgba8{0, 0, 0, norm_cast<u8>(opacity)});
 }

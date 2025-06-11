@@ -75,14 +75,14 @@ void game::update(const vec2& input) noexcept
 
 void game::add_overlay_to_renderer() const
 {
-	color_alloc overlay{tr::renderer_2d::new_color_fan(layer::BALL_TRAILS_OVERLAY, 4)};
+	simple_color_mesh overlay{tr::renderer_2d::new_color_fan(layer::BALL_TRAILS_OVERLAY, 4)};
 	rs::copy(OVERLAY_POSITIONS, overlay.positions.begin());
 	rs::fill(overlay.colors, rgba8{0, 0, 0, 0});
 }
 
 void game::add_border_to_renderer() const
 {
-	color_alloc border{tr::renderer_2d::new_color_outline(layer::BORDER, 4)};
+	simple_color_mesh border{tr::renderer_2d::new_color_outline(layer::BORDER, 4)};
 	fill_rect_outline_vtx(border.positions, {{2, 2}, {996, 996}}, 4);
 	rs::fill(border.colors, color_cast<rgba8>(tr::hsv{static_cast<float>(settings.secondary_hue), 1, 1}));
 }

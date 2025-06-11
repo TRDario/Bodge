@@ -121,11 +121,11 @@ void ball::add_to_renderer() const
 	const float thickness{3 + 4 * max((static_cast<float>(BALL_COLLISION_TIME) - _last_collision) / BALL_COLLISION_TIME, 0.0f)};
 
 	// Add the ball.
-	const color_alloc fill{tr::renderer_2d::new_color_fan(layer::BALLS, vertices)};
-	tr::fill_poly_vtx(fill.positions, vertices, {_hitbox.c - thickness / 2, size});
+	const simple_color_mesh fill{tr::renderer_2d::new_color_fan(layer::BALLS, vertices)};
+	fill_poly_vtx(fill.positions, vertices, {_hitbox.c - thickness / 2, size});
 	rs::fill(fill.colors, rgba8{BALL_FILL_COLOR, opacity});
-	const color_alloc outline{tr::renderer_2d::new_color_outline(layer::BALLS, vertices)};
-	tr::fill_poly_outline_vtx(outline.positions, vertices, {_hitbox.c, size}, 0_degf, thickness);
+	const simple_color_mesh outline{tr::renderer_2d::new_color_outline(layer::BALLS, vertices)};
+	fill_poly_outline_vtx(outline.positions, vertices, {_hitbox.c, size}, 0_degf, thickness);
 	rs::fill(outline.colors, rgba8{tint, opacity});
 
 	// Add the trail.
@@ -139,8 +139,8 @@ void ball::add_to_renderer() const
 		}
 		const size_t trail_indices{6 * (trail_vertices - 1)};
 
-		color_mesh_alloc trail{tr::renderer_2d::new_color_mesh(layer::BALL_TRAILS, trail_vertices, trail_indices)};
-		tr::fill_poly_vtx(trail.positions | vs::take(vertices), vertices, _hitbox);
+		color_mesh trail{tr::renderer_2d::new_color_mesh(layer::BALL_TRAILS, trail_vertices, trail_indices)};
+		fill_poly_vtx(trail.positions | vs::take(vertices), vertices, _hitbox);
 		rs::fill(trail.colors | vs::take(vertices), rgba8{tint, norm_cast<u8>(0.4f)});
 		size_t drawn_trails{1};
 		std::vector<u16>::iterator indices_it{trail.indices.begin()};
@@ -152,7 +152,7 @@ void ball::add_to_renderer() const
 			}
 
 			const u8 opacity{norm_cast<u8>((_trail.SIZE - i - 1) * 0.4f / _trail.SIZE)};
-			tr::fill_poly_vtx(trail.positions | vs::drop(drawn_trails * vertices) | vs::take(vertices), vertices, {_trail[i], _hitbox.r});
+			fill_poly_vtx(trail.positions | vs::drop(drawn_trails * vertices) | vs::take(vertices), vertices, {_trail[i], _hitbox.r});
 			rs::fill(trail.colors | vs::drop(drawn_trails * vertices) | vs::take(vertices), rgba8{tint, opacity});
 			for (size_t j = 0; j < vertices; ++j) {
 				*indices_it++ = trail.base_index + drawn_trails * vertices + j;

@@ -98,7 +98,7 @@ float replay_state::fade_overlay_opacity() const noexcept
 
 void replay_state::add_cursor_to_renderer(vec2 pos) const
 {
-	color_alloc quad{tr::renderer_2d::new_color_fan(layer::CURSOR, 4)};
+	simple_color_mesh quad{tr::renderer_2d::new_color_fan(layer::CURSOR, 4)};
 	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, 45_degf);
 	rs::fill(quad.colors, color_cast<rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
 	quad = tr::renderer_2d::new_color_fan(layer::CURSOR, 4);

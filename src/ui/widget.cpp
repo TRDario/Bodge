@@ -127,7 +127,7 @@ void add_exited_prematurely_icon_to_renderer(vec2 pos, rgba8 color, float opacit
 {
 	color = {color.r, color.g, color.b, static_cast<u8>(color.a * opacity)};
 
-	color_alloc mesh{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	simple_color_mesh mesh{tr::renderer_2d::new_color_fan(layer::UI, 4)};
 	fill_rect_vtx(mesh.positions, {pos + vec2{2, 2}, {16, 16}});
 	rs::fill(mesh.colors, rgba8{0, 0, 0, norm_cast<u8>(opacity)});
 	mesh = tr::renderer_2d::new_color_outline(layer::UI, 4);
@@ -146,7 +146,7 @@ void add_modified_game_speed_icon_to_renderer(vec2 pos, rgba8 color, float opaci
 {
 	color = {color.r, color.g, color.b, static_cast<u8>(color.a * opacity)};
 
-	color_alloc mesh{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	simple_color_mesh mesh{tr::renderer_2d::new_color_fan(layer::UI, 4)};
 	fill_rect_vtx(mesh.positions, {pos + vec2{2, 2}, {16, 16}});
 	rs::fill(mesh.colors, rgba8{0, 0, 0, norm_cast<u8>(opacity)});
 	mesh = tr::renderer_2d::new_color_outline(layer::UI, 4);
@@ -300,7 +300,7 @@ void text_widget::add_to_renderer()
 	rgba8 color{this->color};
 	color.a = static_cast<u8>(color.a * opacity());
 
-	tex_alloc quad{tr::renderer_2d::new_tex_fan(layer::UI, 4, _cached->texture)};
+	simple_textured_mesh quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, _cached->texture)};
 	fill_rect_vtx(quad.positions, {tl(), text_widget::size()});
 	fill_rect_vtx(quad.uvs, {{}, _cached->size / vec2{_cached->texture.size()}});
 	rs::fill(quad.tints, rgba8{color});
@@ -421,10 +421,10 @@ void color_preview_widget::add_to_renderer()
 	const rgba8 outline_color{static_cast<u8>(color.r / 2), static_cast<u8>(color.g / 2), static_cast<u8>(color.b / 2),
 							  static_cast<u8>(color.a / 2)};
 
-	const color_alloc outline{tr::renderer_2d::new_color_outline(layer::UI, 4)};
+	const simple_color_mesh outline{tr::renderer_2d::new_color_outline(layer::UI, 4)};
 	fill_rect_outline_vtx(outline.positions, {tl() + 2.0f, size() - 4.0f}, 4.0f);
 	rs::fill(outline.colors, outline_color);
-	const color_alloc fill{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	const simple_color_mesh fill{tr::renderer_2d::new_color_fan(layer::UI, 4)};
 	fill_rect_vtx(fill.positions, {tl() + 4.0f, size() - 8.0f});
 	rs::fill(fill.colors, color);
 }
@@ -451,7 +451,7 @@ void arrow_widget::add_to_renderer()
 	const vec2 tl{this->tl()};
 	const rgba8 color{active() ? rgba8{_color} : rgba8{80, 80, 80, 160}};
 	const array<vec2, 15>& positions{_right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
-	const color_mesh_alloc arrow{tr::renderer_2d::new_color_mesh(layer::UI, 15, poly_outline_idx(5) + poly_idx(5))};
+	const color_mesh arrow{tr::renderer_2d::new_color_mesh(layer::UI, 15, poly_outline_idx(5) + poly_idx(5))};
 	fill_poly_outline_idx(arrow.indices.begin(), 5, arrow.base_index);
 	fill_poly_idx(arrow.indices.begin() + poly_outline_idx(5), 5, arrow.base_index + 10);
 	rs::copy(positions | vs::transform([&](vec2 p) { return p + tl; }), arrow.positions.begin());
@@ -527,20 +527,20 @@ void replay_playback_indicator_widget::add_to_renderer()
 	const vec2 tl{this->tl()};
 
 	if (tr::keyboard::held_mods() & mods::SHIFT) {
-		color_mesh_alloc mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, poly_outline_idx(3) + poly_idx(3))};
+		color_mesh mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, poly_outline_idx(3) + poly_idx(3))};
 		fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
 		fill_poly_idx(mesh.indices.begin() + poly_outline_idx(3), 3, mesh.base_index + 6);
 		rs::copy(SLOW_SPEED_POSITIONS | vs::transform([=](vec2 p) -> vec2 { return p + tl; }), mesh.positions.begin());
 		rs::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 	}
 	else if (tr::keyboard::held_mods() & mods::CTRL) {
-		color_mesh_alloc mesh{tr::renderer_2d::new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
+		color_mesh mesh{tr::renderer_2d::new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
 		rs::copy(FAST_SPEED_POSITIONS | vs::transform([=](vec2 p) -> vec2 { return p + tl; }), mesh.positions.begin());
 		rs::copy(FAST_SPEED_COLORS, mesh.colors.begin());
 		rs::copy(FAST_SPEED_INDICES | vs::transform([=](u16 i) -> u16 { return i + mesh.base_index; }), mesh.indices.begin());
 	}
 	else {
-		color_mesh_alloc mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, poly_outline_idx(3) + poly_idx(3))};
+		color_mesh mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, poly_outline_idx(3) + poly_idx(3))};
 		fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
 		fill_poly_idx(mesh.indices.begin() + poly_outline_idx(3), 3, mesh.base_index + 6);
 		rs::copy(NORMAL_SPEED_POSITIONS | vs::transform([=](vec2 p) -> vec2 { return p + tl; }), mesh.positions.begin());
