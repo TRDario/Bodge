@@ -83,6 +83,22 @@ vector<string> split_into_lines(string_view text)
 	return lines;
 }
 
+vector<string> split_overlong_lines(vector<string>&& lines, const tr::ttfont& font, ttf_style style, float outline, float max_w)
+{
+	for (vector<string>::iterator it = lines.begin(); it != lines.end(); ++it) {
+		if (it->empty()) {
+			continue;
+		}
+
+		tr::ttf_measure_result measure{font.measure_text(*it, max_w, style, outline)};
+		if (measure.text != string_view{*it}) {
+			it = std::prev(lines.emplace(std::next(it), it->begin() + measure.text.size(), it->end()));
+			it->erase(it->begin() + measure.text.size(), it->end());
+		}
+	}
+	return std::move(lines);
+}
+
 ///////////////////////////////////////////////////////////////// LOADING /////////////////////////////////////////////////////////////////
 
 void font_manager_t::load_fonts()
@@ -181,6 +197,13 @@ font font_manager_t::determine_font(string_view text) noexcept
 	}
 }
 
+float font_manager_t::font_line_skip(font font, float size)
+{
+	ttfont& font_ref{find_font(font)};
+	font_ref.resize(size * engine::render_scale());
+	return font_ref.line_skip() / engine::render_scale();
+}
+
 vec2 font_manager_t::text_size(string_view text, font font, ttf_style style, float size, float outline, float max_w)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
@@ -203,6 +226,19 @@ vec2 font_manager_t::text_size(string_view text, font font, ttf_style style, flo
 		}
 	}
 	return static_cast<vec2>(text_size) / engine::render_scale();
+}
+
+int font_manager_t::count_lines(string_view text, font font, ttf_style style, float size, float outline, float max_w)
+{
+	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
+	if (max_w != UNLIMITED_WIDTH) {
+		max_w = (max_w - 2 * outline) * engine::render_scale();
+	}
+	const float outline_max_w{max_w != UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : UNLIMITED_WIDTH};
+
+	ttfont& font_ref{find_font(font)};
+	font_ref.resize(size * engine::render_scale());
+	return split_overlong_lines(split_into_lines(text), font_ref, style, scaled_outline, outline_max_w).size();
 }
 
 bitmap font_manager_t::render_text(string_view text, font font, ttf_style style, float size, float outline, float max_w, tr::halign align)

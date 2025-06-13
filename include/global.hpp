@@ -53,6 +53,7 @@ using tr::binary_write;
 using tr::bitmap;
 using tr::color_mesh;
 using tr::decrypt;
+using tr::decrypt_to;
 using tr::encrypt;
 using tr::encrypt_to;
 using tr::fangle;
@@ -71,6 +72,7 @@ using tr::open_file_w;
 using tr::poly_idx;
 using tr::poly_outline_idx;
 using tr::range_bytes;
+using tr::rgb8;
 using tr::rgba8;
 using tr::simple_color_mesh;
 using tr::simple_textured_mesh;
@@ -83,6 +85,7 @@ using tr::textured_mesh;
 using tr::ttf_style;
 using tr::ttfont;
 using tr::UNLIMITED_WIDTH;
+using tr::valign;
 
 //////////////////////////////////////////////////////////// SETTINGS CONSTANTS ///////////////////////////////////////////////////////////
 

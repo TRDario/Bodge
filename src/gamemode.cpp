@@ -59,17 +59,16 @@ span<byte> tr::binary_writer<gamemode>::write_to_span(span<byte> span, const gam
 void gamemode::save_to_file() noexcept
 {
 	try {
-		const path base_path{cli_settings.userdir / "gamemodes" / format("{}.gmd", name)};
+		path path{cli_settings.userdir / "gamemodes" / format("{}.gmd", name)};
 		ofstream file;
-		if (!exists(base_path)) {
-			file = open_file_w(base_path, std::ios::binary);
+		if (!exists(path)) {
+			file = open_file_w(path, std::ios::binary);
 		}
 		else {
 			int index{0};
-			path path{cli_settings.userdir / "gamemodes" / format("{}({}).gmd", name, index++)};
-			while (exists(path)) {
+			do {
 				path = cli_settings.userdir / "gamemodes" / format("{}({}).gmd", name, index++);
-			}
+			} while (exists(path));
 			file = open_file_w(path, std::ios::binary);
 		}
 

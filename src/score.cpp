@@ -1,5 +1,5 @@
-#include "../include/gamemode.hpp"
 #include "../include/score.hpp"
+#include "../include/gamemode.hpp"
 #include "../include/settings.hpp"
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
@@ -45,8 +45,7 @@ span<byte> tr::binary_writer<score>::write_to_span(span<byte> span, const score&
 
 void scorefile_t::add_score(const gamemode& gamemode, score&& score)
 {
-	vector<pair<::gamemode, vector<::score>>>::iterator it{
-		rs::find_if(scores, [&](const pair<::gamemode, vector<::score>>& pair) { return pair.first == gamemode; })};
+	vector<pair<::gamemode, vector<::score>>>::iterator it{rs::find_if(scores, [&](const auto& pair) { return pair.first == gamemode; })};
 	if (it == scores.end()) {
 		it = scores.insert(it, {gamemode, {}});
 	}
@@ -58,7 +57,7 @@ void scorefile_t::load_from_file() noexcept
 	try {
 		const path path{cli_settings.userdir / "scorefile.dat"};
 		ifstream file{open_file_r(path, std::ios::binary)};
-		vector<byte> raw{decrypt(flush_binary(file))};
+		const vector<byte> raw{decrypt(flush_binary(file))};
 		span<const byte> data{raw};
 		data = binary_read(data, name);
 		data = binary_read(data, scores);

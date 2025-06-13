@@ -1,6 +1,6 @@
+#include "../include/tooltip.hpp"
 #include "../include/engine.hpp"
 #include "../include/font_manager.hpp"
-#include "../include/tooltip.hpp"
 
 void tooltip::render(string_view text)
 {

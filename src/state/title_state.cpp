@@ -1,9 +1,9 @@
+#include "../../include/state/title_state.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/replays_state.hpp"
 #include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/settings_state.hpp"
 #include "../../include/state/start_game_state.hpp"
-#include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 

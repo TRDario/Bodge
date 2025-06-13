@@ -55,11 +55,11 @@ replay::replay(const string& filename)
 	ifstream file{open_file_r(path, std::ios::binary)};
 
 	binary_read(file, encrypted);
-	tr::decrypt_to(decrypted, encrypted);
+	decrypt_to(decrypted, encrypted);
 	binary_read(decrypted, _header);
 
 	binary_read(file, encrypted);
-	tr::decrypt_to(decrypted, encrypted);
+	decrypt_to(decrypted, encrypted);
 	binary_read(decrypted, _inputs);
 	_next = _inputs.begin();
 	LOG(INFO, "Loaded replay '{}' from '{}'.", _header.name, path.string());
@@ -85,18 +85,17 @@ void replay::set_header(score&& header, string_view name) noexcept
 
 void replay::save_to_file() noexcept
 {
-	const path base_path{cli_settings.userdir / "replays" / (_header.name + ".dat")};
+	path path{cli_settings.userdir / "replays" / (_header.name + ".dat")};
 	try {
 		ofstream file;
-		if (!exists(base_path)) {
-			file = open_file_w(base_path, std::ios::binary);
+		if (!exists(path)) {
+			file = open_file_w(path, std::ios::binary);
 		}
 		else {
 			int index{0};
-			path path{cli_settings.userdir / "replays" / format("{}({}).dat", _header.name, index++)};
-			while (exists(path)) {
+			do {
 				path = cli_settings.userdir / "replays" / format("{}({}).dat", _header.name, index++);
-			}
+			} while (exists(path));
 			file = open_file_w(path, std::ios::binary);
 		}
 
@@ -110,10 +109,10 @@ void replay::save_to_file() noexcept
 		binary_write(bufstream, _inputs);
 		encrypt_to(buffer, range_bytes(bufstream.view()), rand<u8>(rng));
 		binary_write(file, buffer);
-		LOG(INFO, "Saved replay '{}' to '{}'.", _header.name, base_path.string());
+		LOG(INFO, "Saved replay '{}' to '{}'.", _header.name, path.string());
 	}
 	catch (std::exception& err) {
-		LOG(ERROR, "Failed to save replay: {}", base_path.string(), err.what());
+		LOG(ERROR, "Failed to save replay: {}", path.string(), err.what());
 	}
 }
 

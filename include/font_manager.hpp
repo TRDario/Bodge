@@ -36,8 +36,12 @@ class font_manager_t {
 
 	// Tries to determine if a string can be drawn with the language font, or if it should be delegated to the fallback font.
 	font determine_font(string_view text) noexcept;
+	// Gets the height of a line of text.
+	float font_line_skip(font font, float size);
 	// Gets the size of a text string in window coordinates.
 	vec2 text_size(string_view text, font font, ttf_style style, float size, float outline, float max_w = UNLIMITED_WIDTH);
+	// Gets the number of lines in a text string.
+	int count_lines(string_view text, font font, ttf_style style, float size, float outline, float max_w = UNLIMITED_WIDTH);
 	// Renders text.
 	bitmap render_text(string_view text, font font, ttf_style style, float size, float outline, float max_w = UNLIMITED_WIDTH,
 					   tr::halign align = tr::halign::LEFT);

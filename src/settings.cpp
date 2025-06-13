@@ -10,7 +10,7 @@ constexpr u8 SETTINGS_VERSION{0};
 void cli_settings_t::parse(int argc, const char** argv)
 {
 	for (int i = 1; i < argc; ++i) {
-		string_view arg{argv[i]};
+		const string_view arg{argv[i]};
 
 		if (arg == "--datadir" && ++i < argc) {
 			datadir = argv[i];

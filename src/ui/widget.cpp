@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/ui/widget.hpp"
+#include "../../include/engine.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -222,7 +222,7 @@ bool widget::active() const noexcept
 
 bool widget::is_shortcut(const key_chord& chord) const noexcept
 {
-	vector<key_chord>::const_iterator it{rs::find(_shortcuts, chord)};
+	const vector<key_chord>::const_iterator it{rs::find(_shortcuts, chord)};
 	return it != _shortcuts.end();
 }
 
@@ -352,7 +352,7 @@ clickable_text_widget::clickable_text_widget(string_view name, vec2 pos, align a
 
 void clickable_text_widget::add_to_renderer()
 {
-	interpolated_rgba8 real_color{color};
+	const interpolated_rgba8 real_color{color};
 	if (!active()) {
 		color = {80, 80, 80, 160};
 	}
@@ -448,8 +448,10 @@ vec2 arrow_widget::size() const noexcept
 
 void arrow_widget::add_to_renderer()
 {
+	rgba8 color{active() ? rgba8{_color} : rgba8{80, 80, 80, 160}};
+	color.a *= opacity();
+
 	const vec2 tl{this->tl()};
-	const rgba8 color{active() ? rgba8{_color} : rgba8{80, 80, 80, 160}};
 	const array<vec2, 15>& positions{_right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
 	const color_mesh arrow{tr::renderer_2d::new_color_mesh(layer::UI, 15, poly_outline_idx(5) + poly_idx(5))};
 	fill_poly_outline_idx(arrow.indices.begin(), 5, arrow.base_index);
@@ -527,20 +529,20 @@ void replay_playback_indicator_widget::add_to_renderer()
 	const vec2 tl{this->tl()};
 
 	if (tr::keyboard::held_mods() & mods::SHIFT) {
-		color_mesh mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, poly_outline_idx(3) + poly_idx(3))};
+		const color_mesh mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, poly_outline_idx(3) + poly_idx(3))};
 		fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
 		fill_poly_idx(mesh.indices.begin() + poly_outline_idx(3), 3, mesh.base_index + 6);
 		rs::copy(SLOW_SPEED_POSITIONS | vs::transform([=](vec2 p) -> vec2 { return p + tl; }), mesh.positions.begin());
 		rs::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 	}
 	else if (tr::keyboard::held_mods() & mods::CTRL) {
-		color_mesh mesh{tr::renderer_2d::new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
+		const color_mesh mesh{tr::renderer_2d::new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
 		rs::copy(FAST_SPEED_POSITIONS | vs::transform([=](vec2 p) -> vec2 { return p + tl; }), mesh.positions.begin());
 		rs::copy(FAST_SPEED_COLORS, mesh.colors.begin());
 		rs::copy(FAST_SPEED_INDICES | vs::transform([=](u16 i) -> u16 { return i + mesh.base_index; }), mesh.indices.begin());
 	}
 	else {
-		color_mesh mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, poly_outline_idx(3) + poly_idx(3))};
+		const color_mesh mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, poly_outline_idx(3) + poly_idx(3))};
 		fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
 		fill_poly_idx(mesh.indices.begin() + poly_outline_idx(3), 3, mesh.base_index + 6);
 		rs::copy(NORMAL_SPEED_POSITIONS | vs::transform([=](vec2 p) -> vec2 { return p + tl; }), mesh.positions.begin());
@@ -571,13 +573,20 @@ score_widget::score_widget(string_view name, vec2 pos, align alignment, size_t r
 			  }
 
 			  const ticks result{this->score->result};
+			  const ticks result_m{result / 60_s};
+			  const ticks result_s{(result % 60_s) / 1_s};
+			  const ticks result_ms{(result % 1_s) * 100 / 1_s};
 			  const ch::system_clock::time_point utc_tp{ch::seconds{this->score->timestamp}};
 			  const auto tp{std::chrono::current_zone()->ch::time_zone::to_local(utc_tp)};
 			  const ch::hh_mm_ss hhmmss{tp - ch::floor<ch::days>(tp)};
 			  const ch::year_month_day ymd{ch::floor<ch::days>(tp)};
-			  return format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result / 60_s, (result % 60_s) / 1_s,
-							(result % 1_s) * 100 / 1_s, static_cast<int>(ymd.year()), static_cast<unsigned int>(ymd.month()),
-							static_cast<unsigned int>(ymd.day()), hhmmss.hours().count(), hhmmss.minutes().count());
+			  const int year{ymd.year()};
+			  const unsigned int month{ymd.month()};
+			  const unsigned int day{ymd.day()};
+			  const auto hour{hhmmss.hours().count()};
+			  const auto minute{hhmmss.minutes().count()};
+			  return format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result_m, result_s, result_ms, year, month, day,
+							hour, minute);
 		  },
 	  }
 	, rank{rank}
@@ -609,7 +618,7 @@ vec2 score_widget::tl() const noexcept
 
 void score_widget::add_to_renderer()
 {
-	interpolated_rgba8 real_color{color};
+	const interpolated_rgba8 real_color{color};
 	if (score == nullptr) {
 		color = {80, 80, 80, 160};
 	}
@@ -617,15 +626,16 @@ void score_widget::add_to_renderer()
 	color = real_color;
 
 	if (score != nullptr) {
+		const score_flags flags{score->flags};
 		const vec2 text_size{text_widget::size()};
-		int icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
+		const int icons{flags.exited_prematurely + flags.modified_game_speed};
 		int i = 0;
 
-		if (score->flags.exited_prematurely) {
+		if (flags.exited_prematurely) {
 			add_exited_prematurely_icon_to_renderer(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity());
 			++i;
 		}
-		if (score->flags.modified_game_speed) {
+		if (flags.modified_game_speed) {
 			add_modified_game_speed_icon_to_renderer(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity());
 			++i;
 		}
@@ -637,7 +647,8 @@ void score_widget::add_to_renderer()
 vec2 replay_widget::size() const noexcept
 {
 	if (it.has_value()) {
-		const int icons{(*it)->second.flags.exited_prematurely + (*it)->second.flags.modified_game_speed};
+		const score_flags flags{(*it)->second.flags};
+		const int icons{flags.exited_prematurely + flags.modified_game_speed};
 		if (icons != 0) {
 			return clickable_text_widget::size() + vec2{0, 20};
 		}
@@ -648,7 +659,8 @@ vec2 replay_widget::size() const noexcept
 vec2 replay_widget::tl() const noexcept
 {
 	if (it.has_value()) {
-		const int icons{(*it)->second.flags.exited_prematurely + (*it)->second.flags.modified_game_speed};
+		const score_flags flags{(*it)->second.flags};
+		const int icons{flags.exited_prematurely + flags.modified_game_speed};
 		if (icons == 0) {
 			return clickable_text_widget::tl() + vec2{0, 10};
 		}
@@ -658,7 +670,7 @@ vec2 replay_widget::tl() const noexcept
 
 void replay_widget::add_to_renderer()
 {
-	interpolated_rgba8 real_color{color};
+	const interpolated_rgba8 real_color{color};
 	if (!it.has_value()) {
 		color = {80, 80, 80, 160};
 	}
@@ -666,16 +678,17 @@ void replay_widget::add_to_renderer()
 	color = real_color;
 
 	if (it.has_value()) {
+		const score_flags flags{(*it)->second.flags};
 		const vec2 text_size{clickable_text_widget::size()};
 		const rgba8 color{active() ? rgba8{this->color} : rgba8{128, 128, 128, 128}};
-		int icons{(*it)->second.flags.exited_prematurely + (*it)->second.flags.modified_game_speed};
+		const int icons{flags.exited_prematurely + flags.modified_game_speed};
 		int i = 0;
 
-		if ((*it)->second.flags.exited_prematurely) {
+		if (flags.exited_prematurely) {
 			add_exited_prematurely_icon_to_renderer(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity());
 			++i;
 		}
-		if ((*it)->second.flags.modified_game_speed) {
+		if (flags.modified_game_speed) {
 			add_modified_game_speed_icon_to_renderer(tl() + vec2{text_size.x / 2 - 15 * icons + 30 * i, text_size.y}, color, opacity());
 			++i;
 		}

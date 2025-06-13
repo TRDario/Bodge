@@ -37,7 +37,7 @@ void load_localization() noexcept
 	const string_view name{settings.language};
 	tr::localization_map old{std::move(localization)};
 	try {
-		string filename{format("localization/{}.txt", name)};
+		const string filename{format("localization/{}.txt", name)};
 		path path{cli_settings.datadir / filename};
 		if (!exists(path)) {
 			path = cli_settings.userdir / filename;
@@ -49,7 +49,7 @@ void load_localization() noexcept
 		}
 		else {
 			LOG(WARN, "Loaded {} localization from '{}' with {} errors: ", languages[settings.language].name, path.string(), errors.size());
-			for (string& error : errors) {
+			for (const string& error : errors) {
 				LOG(ERROR, "{}", error);
 			}
 		}
