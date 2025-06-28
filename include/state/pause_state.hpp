@@ -3,37 +3,33 @@
 #include "../ui/ui_manager.hpp"
 
 // Paused game state.
-class pause_state : public state {
+class pause_state : public tr::state {
   public:
-	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
-
-	constexpr static u32 ID{6};
-
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Constructs a pause state.
-	pause_state(unique_ptr<active_game>&& game, bool blur_in) noexcept;
+	pause_state(std::unique_ptr<active_game>&& game, glm::vec2 mouse_pos, bool blur_in) noexcept;
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
-	// Gets the state type.
-	u32 type() const noexcept override;
 	// Handles an event.
-	unique_ptr<state> handle_event(const tr::event& event) override;
+	std::unique_ptr<tr::state> handle_event(const tr::event& event) override;
 	// Updates the state.
-	unique_ptr<state> update(tr::duration) override;
+	std::unique_ptr<tr::state> update(tr::duration) override;
 	// Draws the state.
 	void draw() override;
 
   private:
-	// Substates within the main menu state.
-	enum class substate : u8 {
+	// Substates within the pause state.
+	enum class substate : std::uint8_t {
 		// Pausing the game.
 		PAUSING,
 		// The game is paused.
 		PAUSED,
 		// Unpausing the game.
 		UNPAUSING,
+		// Saving and restarting the game.
+		SAVING_AND_RESTARTING,
 		// Restarting the game.
 		RESTARTING,
 		// Saving and quitting the game.
@@ -49,7 +45,11 @@ class pause_state : public state {
 	// The UI manager.
 	ui_manager _ui;
 	// The paused game.
-	unique_ptr<active_game> _game;
+	std::unique_ptr<active_game> _game;
+	// The position of the mouse right before pausing.
+	glm::vec2 _start_mouse_pos;
+	// The position of the mouse right before unpausing.
+	glm::vec2 _end_mouse_pos;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 

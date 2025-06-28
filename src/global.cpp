@@ -5,22 +5,22 @@
 int max_window_size() noexcept
 {
 	const glm::ivec2 display_size{tr::display_size()};
-	return min(display_size.x, display_size.y);
+	return std::min(display_size.x, display_size.y);
 }
 
-u16 max_refresh_rate() noexcept
+std::uint16_t max_refresh_rate() noexcept
 {
-	return tr::round_cast<u16>(tr::refresh_rate());
+	return tr::round_cast<std::uint16_t>(tr::refresh_rate());
 }
 
-u8 max_msaa() noexcept
+std::uint8_t max_msaa() noexcept
 {
-	static u8 max{255};
+	static std::uint8_t max{255};
 	if (max == 255) {
 		max = 0;
 		while (true) {
 			try {
-				const u8 trying{static_cast<u8>(max == 0 ? 2 : max * 2)};
+				const std::uint8_t trying{static_cast<std::uint8_t>(max == 0 ? 2 : max * 2)};
 				tr::window::open_windowed("", {250, 250}, tr::window_flag::DEFAULT, {.multisamples = trying});
 				tr::window::close();
 				max = trying;
@@ -31,4 +31,16 @@ u8 max_msaa() noexcept
 		}
 	}
 	return max;
+}
+
+// Gets the formatted timer text string.
+std::string timer_text(ticks time)
+{
+	return {time >= 60_s ? std::format("{}:{:02}:{:02}", time / 60_s, (time % 60_s) / 1_s, (time % 1_s) * 100 / 1_s)
+						 : std::format("{:02}:{:02}", time / 1_s, (time % 1_s) * 100 / 1_s)};
+}
+
+std::int64_t unix_now() noexcept
+{
+	return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }

@@ -48,23 +48,25 @@ tr::timer create_draw_timer()
 }
 
 // Adds the cursor crosshairs to the renderer.
-void add_cursor_to_renderer()
+void draw_cursor()
 {
-	const vec2 mouse_pos{engine::mouse_pos()};
-	const rgba8 color{color_cast<rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
+	const glm::vec2 mouse_pos{engine::mouse_pos()};
+	const tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
 
-	simple_color_mesh quad{tr::renderer_2d::new_color_fan(layer::CURSOR, 4)};
-	fill_rect_vtx(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
-	rs::fill(quad.colors, color);
+	tr::simple_color_mesh_ref quad{tr::renderer_2d::new_color_fan(layer::CURSOR, 4)};
+	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
+	std::ranges::fill(quad.colors, color);
 	quad = tr::renderer_2d::new_color_fan(layer::CURSOR, 4);
-	fill_rect_vtx(quad.positions, {{mouse_pos.x + 4, mouse_pos.y - 1}, {8, 2}});
-	rs::fill(quad.colors, color);
+	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x + 4, mouse_pos.y - 1}, {8, 2}});
+	std::ranges::fill(quad.colors, color);
 	quad = tr::renderer_2d::new_color_fan(layer::CURSOR, 4);
-	fill_rect_vtx(quad.positions, {{mouse_pos.x - 1, mouse_pos.y - 12}, {2, 8}});
-	rs::fill(quad.colors, color);
+	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x - 1, mouse_pos.y - 12}, {2, 8}});
+	std::ranges::fill(quad.colors, color);
 	quad = tr::renderer_2d::new_color_fan(layer::CURSOR, 4);
-	fill_rect_vtx(quad.positions, {{mouse_pos.x - 1, mouse_pos.y + 4}, {2, 8}});
-	rs::fill(quad.colors, color);
+	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x - 1, mouse_pos.y + 4}, {2, 8}});
+	std::ranges::fill(quad.colors, color);
+
+	tr::renderer_2d::draw(engine::screen());
 }
 
 // Determines the upper limit for an acceptable render time.
@@ -90,12 +92,10 @@ tr::render_target setup_screen()
 	const glm::ivec2 size{tr::window::size()};
 	if (size.x > size.y) {
 		const tr::irect2 screen{{(size.x - size.y) / 2, 0}, glm::ivec2{size.y}};
-		tr::window::set_mouse_bounds(screen);
 		return tr::backbuffer::region_render_target(screen);
 	}
 	else if (size.y > size.x) {
 		const tr::irect2 screen{{0, (size.y - size.x) / 2}, glm::ivec2{size.x}};
-		tr::window::set_mouse_bounds(screen);
 		return tr::backbuffer::region_render_target(screen);
 	}
 	else {
@@ -105,9 +105,9 @@ tr::render_target setup_screen()
 
 void add_menu_game_overlay_to_renderer()
 {
-	const simple_color_mesh fade_overlay{tr::renderer_2d::new_color_fan(layer::GAME_OVERLAY, 4)};
-	fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
-	rs::fill(fade_overlay.colors, MENU_GAME_OVERLAY_TINT);
+	const tr::simple_color_mesh_ref fade_overlay{tr::renderer_2d::new_color_fan(layer::GAME_OVERLAY, 4)};
+	tr::fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
+	std::ranges::fill(fade_overlay.colors, MENU_GAME_OVERLAY_TINT);
 }
 
 void add_fade_overlay_to_renderer(float opacity)
@@ -116,9 +116,9 @@ void add_fade_overlay_to_renderer(float opacity)
 		return;
 	}
 
-	const simple_color_mesh fade_overlay{tr::renderer_2d::new_color_fan(layer::FADE_OVERLAY, 4)};
-	fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
-	rs::fill(fade_overlay.colors, rgba8{0, 0, 0, norm_cast<u8>(opacity)});
+	const tr::simple_color_mesh_ref fade_overlay{tr::renderer_2d::new_color_fan(layer::FADE_OVERLAY, 4)};
+	tr::fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
+	std::ranges::fill(fade_overlay.colors, tr::rgba8{0, 0, 0, tr::norm_cast<std::uint8_t>(opacity)});
 }
 
 /////////////////////////////////////////////////////////////// ENGINE DATA ///////////////////////////////////////////////////////////////
@@ -139,12 +139,14 @@ struct engine_data {
 	tooltip tooltip;
 	// Whether the screen should be redrawn. If above 1, ticks will be paused to catch up.
 	int redraw;
+	// The position of the mouse.
+	glm::vec2 mouse_pos;
 
 	// Initializes the engine data.
 	engine_data();
 };
 // The global engine data instance.
-optional<engine_data> engine_data;
+std::optional<engine_data> engine_data;
 
 engine_data::engine_data()
 	: tick_timer{tr::create_tick_timer(cli_settings.game_speed * 240, 0)}
@@ -152,6 +154,7 @@ engine_data::engine_data()
 	, screen{setup_screen()}
 	, blur{screen.size().x}
 	, redraw{true}
+	, mouse_pos{500, 500}
 {
 }
 
@@ -172,22 +175,23 @@ void engine::initialize()
 	}
 	tr::window::set_vsync(tr::vsync::DISABLED);
 	tr::mouse::show_cursor(false);
+	tr::mouse::set_relative_mode(true);
 	initialize_2d_renderer();
 	engine_data.emplace();
 
 	if (cli_settings.debug_mode) {
-		tr::debug_renderer::initialize(1.0f);
+		tr::debug_renderer::initialize();
 	}
-	LOG(INFO, "Initialized the engine.");
+	LOG(tr::severity::INFO, "Initialized the engine.");
 }
 
 void engine::set_main_menu_state()
 {
 	if (scorefile.name.empty()) {
-		engine_data->state.state = make_unique<name_entry_state>();
+		engine_data->state.state = std::make_unique<name_entry_state>();
 	}
 	else {
-		engine_data->state.state = make_unique<title_state>();
+		engine_data->state.state = std::make_unique<title_state>();
 	}
 }
 
@@ -210,7 +214,7 @@ void engine::shut_down() noexcept
 	tr::debug_renderer::shut_down();
 	tr::renderer_2d::shut_down();
 	tr::window::close();
-	LOG(INFO, "Shut down the engine.");
+	LOG(tr::severity::INFO, "Shut down the engine.");
 }
 
 ////////////////////////////////////////////////////////////////// INPUT //////////////////////////////////////////////////////////////////
@@ -228,40 +232,45 @@ void engine::handle_events()
 			if (engine_data->redraw < 2) {
 				engine_data->state.update(0s);
 			}
-			break;
+			return;
 		case tr::draw_event::ID:
 			++engine_data->redraw;
-			break;
+			return;
 		case tr::quit_event::ID:
 			engine_data->state.state.reset();
-			break;
-		default:
-			engine_data->state.handle_event(event);
+			return;
+		case tr::window_gain_focus_event::ID:
+			tr::mouse::show_cursor(false);
+			tr::mouse::set_relative_mode(true);
+			return;
+		case tr::window_lose_focus_event::ID:
+			tr::mouse::show_cursor(true);
+			tr::mouse::set_relative_mode(false);
+			return;
+		case tr::mouse_motion_event::ID: {
+			if (!tr::mouse::in_relative_mode()) {
+				return;
+			}
+			const glm::vec2 delta{tr::mouse_motion_event{event}.delta / render_scale() * tr::window::pixel_density()};
+			engine_data->mouse_pos = glm::clamp(engine_data->mouse_pos + delta, 0.0f, 1000.0f);
 			break;
 		}
+		default:
+			break;
+		}
+
+		engine_data->state.handle_event(event);
 	});
 }
 
-vec2 engine::mouse_pos() noexcept
+glm::vec2 engine::mouse_pos() noexcept
 {
-	return to_game_coords(tr::mouse::pos());
+	return engine_data->mouse_pos;
 }
 
-vec2 engine::to_game_coords(vec2 window_coords) noexcept
+void engine::set_mouse_pos(glm::vec2 pos) noexcept
 {
-	const glm::ivec2 window_size{tr::window::size()};
-	if (window_size.x > window_size.y) {
-		window_coords.x -= (window_size.x - window_size.y) / 2.0f;
-		window_coords /= render_scale();
-	}
-	else if (window_size.y > window_size.x) {
-		window_coords.y -= (window_size.y - window_size.x) / 2.0f;
-		window_coords /= render_scale();
-	}
-	else {
-		window_coords /= render_scale();
-	}
-	return glm::clamp(window_coords, {0, 0}, {1000, 1000});
+	engine_data->mouse_pos = pos;
 }
 
 //////////////////////////////////////////////////////////////// GRAPHICS /////////////////////////////////////////////////////////////////
@@ -274,8 +283,8 @@ blur_renderer& engine::blur_renderer() noexcept
 void engine::redraw_if_needed()
 {
 	if (engine_data->redraw) {
-		add_cursor_to_renderer();
 		engine_data->state.draw();
+		draw_cursor();
 		if (tr::debug_renderer::active()) {
 			tr::debug_renderer::write_right(engine_data->state.update_benchmark(), "Update:", MAX_UPDATE_TIME);
 			tr::debug_renderer::newline_right();

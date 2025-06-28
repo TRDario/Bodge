@@ -2,13 +2,13 @@
 #include "../game/game.hpp"
 #include "../ui/ui_manager.hpp"
 
-// Paused replay state.
-class replay_pause_state : public tr::state {
+// Game over state.
+class game_over_state : public tr::state {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	// Constructs a pause state.
-	replay_pause_state(std::unique_ptr<replay_game>&& game, bool blur_in) noexcept;
+	// Constructs a game over state.
+	game_over_state(std::unique_ptr<active_game>&& game, bool blur_in) noexcept;
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
@@ -20,28 +20,32 @@ class replay_pause_state : public tr::state {
 	void draw() override;
 
   private:
-	// Substates within the replay pause state.
+	// Substates within the game over state.
 	enum class substate : std::uint8_t {
-		// Pausing the replay.
-		PAUSING,
-		// The replay is paused.
-		PAUSED,
-		// Unpausing the replay.
-		UNPAUSING,
-		// Restarting the replay.
+		// Transitioning into the game over state from the game.
+		BLURRING_IN,
+		// The game is over.
+		GAME_OVER,
+		// Saving and restarting the game.
+		SAVING_AND_RESTARTING,
+		// Restarting the game.
 		RESTARTING,
-		// Quitting the replay to the replays screen.
+		// Saving and quitting the game.
+		SAVING_AND_QUITTING,
+		// Quitting the game to the title screen.
 		QUITTING
 	};
 
-	// The current substate.
+	// The current game substate.
 	substate _substate;
-	// Internal timer.
+	// The current tick timestamp.
 	ticks _timer;
 	// The UI manager.
 	ui_manager _ui;
-	// The paused replay.
-	std::unique_ptr<replay_game> _game;
+	// The gamestate.
+	std::unique_ptr<active_game> _game;
+	// Cached information about if a new pb was reached.
+	bool _pb;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 

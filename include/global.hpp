@@ -3,89 +3,10 @@
 #include <tr/graphics.hpp>
 #include <tr/system.hpp>
 
-///////////////////////////////////////////////////////////////// ALIASES /////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////// USING //////////////////////////////////////////////////////////////////
 
 using namespace tr::angle_literals;
-namespace rs = std::ranges;
-namespace vs = std::views;
-namespace ch = std::chrono;
-using enum tr::align;
-using enum tr::ttf_style;
-using enum tr::severity;
-using mods = tr::keymods;
-using key = tr::keycode;
-using u8 = std::uint8_t;
-using u16 = std::uint16_t;
-using u32 = std::uint32_t;
-using glm::vec2;
-using std::abs;
-using std::array;
-using std::byte;
-using std::clamp;
-using std::format;
-using std::function;
-using std::ifstream;
-using std::istream;
-using std::list;
-using std::make_unique;
-using std::map;
-using std::max;
-using std::min;
-using std::ofstream;
-using std::optional;
-using std::ostream;
-using std::pair;
-using std::pow;
-using std::size_t;
-using std::span;
-using std::string;
-using std::string_view;
-using std::unique_ptr;
-using std::vector;
-using std::filesystem::directory_entry;
-using std::filesystem::directory_iterator;
-using std::filesystem::path;
-using tr::align;
-using tr::audio_buffer;
-using tr::audio_source;
-using tr::binary_read;
-using tr::binary_write;
-using tr::bitmap;
-using tr::color_mesh;
-using tr::decrypt;
-using tr::decrypt_to;
-using tr::encrypt;
-using tr::encrypt_to;
-using tr::fangle;
-using tr::fill_poly_idx;
-using tr::fill_poly_outline_idx;
-using tr::fill_poly_outline_vtx;
-using tr::fill_poly_vtx;
-using tr::fill_rect_outline_vtx;
-using tr::fill_rect_vtx;
-using tr::flush_binary;
-using tr::frect2;
-using tr::halign;
-using tr::norm_cast;
-using tr::open_file_r;
-using tr::open_file_w;
-using tr::poly_idx;
-using tr::poly_outline_idx;
-using tr::range_bytes;
-using tr::rgb8;
-using tr::rgba8;
-using tr::simple_color_mesh;
-using tr::simple_textured_mesh;
-using tr::state;
-using tr::static_string;
-using tr::static_vector;
-using tr::texture;
-using tr::texture_unit;
-using tr::textured_mesh;
-using tr::ttf_style;
-using tr::ttfont;
-using tr::UNLIMITED_WIDTH;
-using tr::valign;
+using namespace tr::color_literals;
 
 //////////////////////////////////////////////////////////// SETTINGS CONSTANTS ///////////////////////////////////////////////////////////
 
@@ -97,21 +18,21 @@ constexpr int MIN_WINDOW_SIZE{500};
 int max_window_size() noexcept;
 
 // Sentinel for a native refresh rate.
-constexpr u16 NATIVE_REFRESH_RATE{0};
+constexpr std::uint16_t NATIVE_REFRESH_RATE{0};
 // The minimum allowed refresh rate.
-constexpr u16 MIN_REFRESH_RATE{15};
+constexpr std::uint16_t MIN_REFRESH_RATE{15};
 // The maximum supported refresh rate.
-u16 max_refresh_rate() noexcept;
+std::uint16_t max_refresh_rate() noexcept;
 
 // Sentinel for disabled multisampled anti-aliasing.
-constexpr u8 NO_MSAA{0};
+constexpr std::uint8_t NO_MSAA{0};
 // The maximum allowed multisampled anti-aliasing.
-u8 max_msaa() noexcept;
+std::uint8_t max_msaa() noexcept;
 
-//////////////////////////////////////////////////////////// TICKRATE CONSTANTS ///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// TICKRATE ////////////////////////////////////////////////////////////////
 
 // Tick datatype.
-using ticks = u32;
+using ticks = std::uint32_t;
 // Game tickrate.
 inline constexpr ticks SECOND_TICKS{240};
 // Seconds -> Ticks literal.
@@ -135,15 +56,18 @@ constexpr float operator""_sf(long double seconds) noexcept
 	return 240 * seconds;
 }
 
+// Formats timer text.
+std::string timer_text(ticks time);
+
 /////////////////////////////////////////////////////////// GRAPHICAL CONSTANTS ///////////////////////////////////////////////////////////
 
 // Transformation matrix used by game elements.
-inline const glm::mat4 TRANSFORM{tr::ortho(vec2{1000.0f})};
+inline const glm::mat4 TRANSFORM{tr::ortho(glm::vec2{1000.0f})};
 
 // Overlay used to dim the game in the main menu.
-constexpr array<vec2, 4> OVERLAY_POSITIONS{{{0, 0}, {1000, 0}, {1000, 1000}, {0, 1000}}};
+constexpr std::array<glm::vec2, 4> OVERLAY_POSITIONS{{{0, 0}, {1000, 0}, {1000, 1000}, {0, 1000}}};
 // Tint used for the menu game overlay.
-constexpr rgba8 MENU_GAME_OVERLAY_TINT{0, 0, 0, 160};
+constexpr tr::rgba8 MENU_GAME_OVERLAY_TINT{0, 0, 0, 160};
 
 ////////////////////////////////////////////////////////////// GAME CONSTANTS /////////////////////////////////////////////////////////////
 
@@ -156,6 +80,16 @@ inline constexpr float FIELD_MAX{1000 - FIELD_BORDER};
 // Invulnerability duration.
 inline constexpr ticks PLAYER_INVULN_TIME{2_s};
 
+/////////////////////////////////////////////////////////////// UI CONSTANTS //////////////////////////////////////////////////////////////
+
+// Starting position for elements on the top of the screen.
+constexpr glm::vec2 TOP_START_POS{500, -50};
+// Starting position for elements on the bottom of the screen.
+constexpr glm::vec2 BOTTOM_START_POS{500, 1050};
+
+// Final position for screen titles.
+constexpr glm::vec2 TITLE_POS{500, 0};
+
 /////////////////////////////////////////////////////////////////// RNG ///////////////////////////////////////////////////////////////////
 
 // Global RNG.
@@ -167,3 +101,8 @@ inline tr::xorshiftr_128p rng;
 inline tr::logger logger;
 // Logging macro.
 #define LOG(...) TR_LOG(logger, __VA_ARGS__)
+
+/////////////////////////////////////////////////////////////////// TIME //////////////////////////////////////////////////////////////////
+
+// Gets the current unix timestamp.
+std::int64_t unix_now() noexcept;

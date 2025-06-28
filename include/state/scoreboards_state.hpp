@@ -3,27 +3,25 @@
 #include "../ui/ui_manager.hpp"
 
 // Scores screen state.
-class scoreboards_state : public state {
+class scoreboards_state : public tr::state {
   public:
-	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
-
-	constexpr static u32 ID{3};
-
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a scores screen state with an ongoing game.
-	scoreboards_state(unique_ptr<game>&& game);
+	scoreboards_state(std::unique_ptr<game>&& game);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	u32 type() const noexcept override;
-	unique_ptr<state> handle_event(const tr::event& event) override;
-	unique_ptr<state> update(tr::duration) override;
+	// Handles an event.
+	std::unique_ptr<tr::state> handle_event(const tr::event& event) override;
+	// Updates the state.
+	std::unique_ptr<tr::state> update(tr::duration) override;
+	// Draws the state.
 	void draw() override;
 
   private:
-	// Substates within the scores screen state.
-	enum class substate : u8 {
+	// Substates within the score screen state.
+	enum class substate : std::uint8_t {
 		// In the scores screen.
 		IN_SCORES,
 		// Switching the page.
@@ -35,15 +33,15 @@ class scoreboards_state : public state {
 	// The current screen substate.
 	substate _substate;
 	// The current score page.
-	u16 _page;
+	std::uint16_t _page;
 	// Internal timer.
 	ticks _timer;
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
-	unique_ptr<game> _game;
+	std::unique_ptr<game> _game;
 	// Iterator to the currently selected gamemode.
-	vector<pair<gamemode, vector<score>>>::iterator _current;
+	std::vector<score_category>::iterator _current;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 

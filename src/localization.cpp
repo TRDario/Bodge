@@ -1,15 +1,15 @@
 #include "../include/localization.hpp"
 #include "../include/settings.hpp"
 
-void load_language(const path& entry)
+void load_language(const std::filesystem::path& entry)
 {
-	const string stem{path{entry}.stem()};
-	if (is_regular_file(entry) && entry.extension() == ".txt" && stem.size() == 2) {
+	const std::string stem{std::filesystem::path{entry}.stem()};
+	if (std::filesystem::is_regular_file(entry) && entry.extension() == ".txt" && stem.size() == 2) {
 		language_code code{stem[0], stem[1]};
 		tr::localization_map localization;
 		localization.load(entry);
-		string name{localization.contains("language_name") ? localization["language_name"] : stem};
-		string font{localization.contains("font") ? localization["font"] : string{}};
+		std::string name{localization.contains("language_name") ? localization["language_name"] : stem};
+		std::string font{localization.contains("font") ? localization["font"] : std::string{}};
 		languages.insert({code, {std::move(name), std::move(font)}});
 	}
 }
@@ -17,45 +17,47 @@ void load_language(const path& entry)
 void load_languages() noexcept
 {
 	try {
-		rs::for_each(directory_iterator{cli_settings.datadir / "localization"}, load_language);
-		rs::for_each(directory_iterator{cli_settings.userdir / "localization"}, load_language);
-		LOG(INFO, "Found {} language(s).", languages.size());
+		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.datadir / "localization"}, load_language);
+		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.userdir / "localization"}, load_language);
+		LOG(tr::severity::INFO, "Found {} language(s).", languages.size());
 	}
 	catch (std::exception& err) {
 		languages.clear();
-		LOG(ERROR, "Failed to load language list: {}", err.what());
+		LOG(tr::severity::ERROR, "Failed to load language list: {}", err.what());
 	}
 }
 
 void load_localization() noexcept
 {
 	if (!languages.contains(settings.language)) {
-		LOG(ERROR, "Settings language with code '{}' was not found in the language list.", string_view{settings.language});
+		LOG(tr::severity::ERROR, "Settings language with code '{}' was not found in the language list.",
+			std::string_view{settings.language});
 		return;
 	}
 
-	const string_view name{settings.language};
+	const std::string_view name{settings.language};
 	tr::localization_map old{std::move(localization)};
 	try {
-		const string filename{format("localization/{}.txt", name)};
-		path path{cli_settings.datadir / filename};
-		if (!exists(path)) {
+		const std::string filename{std::format("localization/{}.txt", name)};
+		std::filesystem::path path{cli_settings.datadir / filename};
+		if (!std::filesystem::exists(path)) {
 			path = cli_settings.userdir / filename;
 		}
 
-		vector<string> errors{localization.load(path)};
+		std::vector<std::string> errors{localization.load(path)};
 		if (errors.empty()) {
-			LOG(INFO, "Loaded {} localization from '{}'.", languages[settings.language].name, path.string());
+			LOG(tr::severity::INFO, "Loaded {} localization from '{}'.", languages[settings.language].name, path.string());
 		}
 		else {
-			LOG(WARN, "Loaded {} localization from '{}' with {} errors: ", languages[settings.language].name, path.string(), errors.size());
-			for (const string& error : errors) {
-				LOG(ERROR, "{}", error);
+			LOG(tr::severity::WARN, "Loaded {} localization from '{}' with {} errors: ", languages[settings.language].name, path.string(),
+				errors.size());
+			for (const std::string& error : errors) {
+				LOG(tr::severity::ERROR, "{}", error);
 			}
 		}
 	}
 	catch (std::exception& err) {
 		localization = std::move(old);
-		LOG(ERROR, "Failed to load '{}' localization: {}", name, err.what());
+		LOG(tr::severity::ERROR, "Failed to load '{}' localization: {}", name, err.what());
 	}
 }

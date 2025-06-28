@@ -3,27 +3,25 @@
 #include "../ui/ui_manager.hpp"
 
 // Settings screen state.
-class settings_state : public state {
+class settings_state : public tr::state {
   public:
-	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
-
-	constexpr static u32 ID{4};
-
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a settings screen state.
-	settings_state(unique_ptr<game>&& game);
+	settings_state(std::unique_ptr<game>&& game);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	u32 type() const noexcept override;
-	unique_ptr<state> handle_event(const tr::event& event) override;
-	unique_ptr<state> update(tr::duration) override;
+	// Handles an event.
+	std::unique_ptr<tr::state> handle_event(const tr::event& event) override;
+	// Updates the state.
+	std::unique_ptr<tr::state> update(tr::duration) override;
+	// Draws the state.
 	void draw() override;
 
   private:
-	// Substates within the main menu state.
-	enum class substate : u8 {
+	// Substates within the settings menu state.
+	enum class substate : std::uint8_t {
 		// In the settings screen.
 		IN_SETTINGS,
 		// Exiting the settings screen.
@@ -37,7 +35,7 @@ class settings_state : public state {
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
-	unique_ptr<game> _game;
+	std::unique_ptr<game> _game;
 	// The pending settings.
 	settings_t _pending;
 

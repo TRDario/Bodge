@@ -28,7 +28,7 @@ int main(int argc, const char** argv)
 		settings.save_to_file();
 	}
 	catch (std::exception& err) {
-		LOG(FATAL, "Fatal exception: {}", err.what());
+		LOG(tr::severity::FATAL, "Fatal exception: {}", err.what());
 		tr::show_message_box(tr::msg_box_type::ERROR, tr::msg_buttons::OK, "Fatal Exception - Bodge", err.what());
 		std::exit(EXIT_FAILURE);
 	}

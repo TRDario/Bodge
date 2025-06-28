@@ -27,8 +27,8 @@ language_name = "English"
     no_scores_found = "(NO SCORES FOUND...)"
 
 # Replays screen
-    no_replays_found = "(NO REPLAYS FOUND...)"
-    exited_prematurely = "(GAME WAS EXITED PREMATURELY)"
+    no_replays_found    = "(NO REPLAYS FOUND...)"
+    exited_prematurely  = "(GAME WAS EXITED PREMATURELY)"
     modified_game_speed = "(GAME WAS PLAYED WITH MODIFIED GAME SPEED)"
 
 # Settings screen
@@ -50,18 +50,34 @@ language_name = "English"
     revert 			 = "REVERT"
     apply 			 = "APPLY"
 
-# Pause screen
-    unpause = "UNPAUSE"
-    restart = "RESTART"
-    save_and_quit = "SAVE AND QUIT"
-    quit = "QUIT"
+# Pause/game over screen
+    unpause          = "UNPAUSE"
+    game_over        = "GAME OVER"
+    new_pb           = "NEW PERSONAL BEST!"
+    save_and_restart = "SAVE AND RESTART"
+    restart          = "RESTART"
+    save_and_quit    = "SAVE AND QUIT"
+    quit             = "QUIT"
+
+# Save score screen
+    save_score  = "SAVE SCORE"
+    preview     = "PREVIEW:"
+    description = "DESCRIPTION:"
+    save        = "SAVE"
+    cancel      = "CANCEL"
+
+# Save replay screen
+    save_replay = "SAVE REPLAY"
+    name = "NAME:"
+    save = "SAVE"
+    dont_save = "DON'T SAVE"
 
 # Replay screens
-    replay = "REPLAY"
+    replay        = "REPLAY"
     replay_paused = "REPLAY PAUSED"
 
 # Built-in gamemodes
-    gm_test = "TEST"
-    gm_test_d = "COOL TEST DESCRIPTION HERE"
-    gm_test2 = "TEST2"
+    gm_test    = "TEST"
+    gm_test_d  = "COOL TEST DESCRIPTION HERE"
+    gm_test2   = "TEST2"
     gm_test2_d = "COOLER TEST DESCRIPTION HERE"

@@ -3,12 +3,8 @@
 #include "../ui/ui_manager.hpp"
 
 // Name entry state.
-class name_entry_state : public state {
+class name_entry_state : public tr::state {
   public:
-	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
-
-	constexpr static u32 ID{9};
-
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a name entry state.
@@ -16,9 +12,11 @@ class name_entry_state : public state {
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	u32 type() const noexcept override;
-	unique_ptr<state> handle_event(const tr::event& event) override;
-	unique_ptr<state> update(tr::duration) override;
+	// Handles an event.
+	std::unique_ptr<tr::state> handle_event(const tr::event& event) override;
+	// Updates the state.
+	std::unique_ptr<tr::state> update(tr::duration) override;
+	// Draws the state.
 	void draw() override;
 
   private:
@@ -39,5 +37,5 @@ class name_entry_state : public state {
 	// The UI manager.
 	ui_manager _ui;
 	// The background game.
-	unique_ptr<game> _game;
+	std::unique_ptr<game> _game;
 };

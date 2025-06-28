@@ -3,35 +3,31 @@
 #include "../ui/ui_manager.hpp"
 
 // Replay game state.
-class replay_state : public state {
+class replay_state : public tr::state {
   public:
-	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
-
-	constexpr static u32 ID{7};
-
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Constructs a replay state.
-	replay_state(unique_ptr<replay_game>&& game, bool fade_in) noexcept;
+	replay_state(std::unique_ptr<replay_game>&& game, bool fade_in) noexcept;
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
-	// Gets the state type.
-	u32 type() const noexcept override;
 	// Handles an event.
-	unique_ptr<state> handle_event(const tr::event& event) override;
+	std::unique_ptr<tr::state> handle_event(const tr::event& event) override;
 	// Updates the state.
-	unique_ptr<state> update(tr::duration) override;
+	std::unique_ptr<tr::state> update(tr::duration) override;
 	// Draws the state.
 	void draw() override;
 
   private:
-	// Substates within the main menu state.
-	enum class substate : u8 {
+	// Substates within the replay state.
+	enum class substate : std::uint8_t {
 		// Transitioning into the game state from the menu.
 		STARTING,
 		// Regular operation.
 		WATCHING,
+		// Watching the game over animation.
+		GAME_OVERING,
 		// Exiting into the replay screen.
 		EXITING
 	};
@@ -41,7 +37,7 @@ class replay_state : public state {
 	// The current tick timestamp.
 	ticks _timer;
 	// The gamestate.
-	unique_ptr<replay_game> _game;
+	std::unique_ptr<replay_game> _game;
 	// The UI manager.
 	ui_manager _ui;
 
@@ -50,5 +46,5 @@ class replay_state : public state {
 	// Calculates the fade overlay opacity.
 	float fade_overlay_opacity() const noexcept;
 	// Adds the replay cursor to the renderer.
-	void add_cursor_to_renderer(vec2 pos) const;
+	void add_cursor_to_renderer(glm::vec2 pos) const;
 };

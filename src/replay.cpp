@@ -3,66 +3,69 @@
 
 ////////////////////////////////////////////////////////////// REPLAY HEADER //////////////////////////////////////////////////////////////
 
-void tr::binary_reader<replay_header>::read_from_stream(istream& is, replay_header& out)
+void tr::binary_reader<replay_header>::read_from_stream(std::istream& is, replay_header& out)
 {
-	binary_read<score>(is, out);
-	binary_read(is, out.name);
-	binary_read(is, out.player);
-	binary_read(is, out.gamemode);
-	binary_read(is, out.seed);
+	tr::binary_read<score>(is, out);
+	tr::binary_read(is, out.name);
+	tr::binary_read(is, out.player);
+	tr::binary_read(is, out.gamemode);
+	tr::binary_read(is, out.seed);
 }
 
-span<const byte> tr::binary_reader<replay_header>::read_from_span(span<const byte> span, replay_header& out)
+std::span<const std::byte> tr::binary_reader<replay_header>::read_from_span(std::span<const std::byte> span, replay_header& out)
 {
-	span = binary_read<score>(span, out);
-	span = binary_read(span, out.name);
-	span = binary_read(span, out.player);
-	span = binary_read(span, out.gamemode);
-	return binary_read(span, out.seed);
+	span = tr::binary_read<score>(span, out);
+	span = tr::binary_read(span, out.name);
+	span = tr::binary_read(span, out.player);
+	span = tr::binary_read(span, out.gamemode);
+	return tr::binary_read(span, out.seed);
 }
 
-void tr::binary_writer<replay_header>::write_to_stream(ostream& os, const replay_header& in)
+void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const replay_header& in)
 {
-	binary_write<score>(os, in);
-	binary_write(os, in.name);
-	binary_write(os, in.player);
-	binary_write(os, in.gamemode);
-	binary_write(os, in.seed);
+	tr::binary_write<score>(os, in);
+	tr::binary_write(os, in.name);
+	tr::binary_write(os, in.player);
+	tr::binary_write(os, in.gamemode);
+	tr::binary_write(os, in.seed);
 }
 
-span<byte> tr::binary_writer<replay_header>::write_to_span(span<byte> span, const replay_header& in)
+std::span<std::byte> tr::binary_writer<replay_header>::write_to_span(std::span<std::byte> span, const replay_header& in)
 {
-	span = binary_write<score>(span, in);
-	span = binary_write(span, in.name);
-	span = binary_write(span, in.player);
-	span = binary_write(span, in.gamemode);
-	return binary_write(span, in.seed);
+	span = tr::binary_write<score>(span, in);
+	span = tr::binary_write(span, in.name);
+	span = tr::binary_write(span, in.player);
+	span = tr::binary_write(span, in.gamemode);
+	return tr::binary_write(span, in.seed);
 }
 
 ///////////////////////////////////////////////////////////////// REPLAY //////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 replay::replay(const gamemode& gamemode, std::uint64_t seed) noexcept
-	: _header{.name = {}, .player = scorefile.name, .gamemode = gamemode, .seed = seed}
+	: _header{}
 {
+	_header.player = scorefile.name;
+	_header.gamemode = gamemode;
+	_header.seed = seed;
 }
 
-replay::replay(const string& filename)
+replay::replay(const std::string& filename)
 {
-	const path path{cli_settings.userdir / "replays" / filename};
-	vector<byte> encrypted;
-	vector<byte> decrypted;
-	ifstream file{open_file_r(path, std::ios::binary)};
+	const std::filesystem::path path{cli_settings.userdir / "replays" / filename};
+	std::vector<std::byte> encrypted;
+	std::vector<std::byte> decrypted;
+	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 
-	binary_read(file, encrypted);
-	decrypt_to(decrypted, encrypted);
-	binary_read(decrypted, _header);
+	tr::binary_read(file, encrypted);
+	tr::decrypt_to(decrypted, encrypted);
+	tr::binary_read(decrypted, _header);
 
-	binary_read(file, encrypted);
-	decrypt_to(decrypted, encrypted);
-	binary_read(decrypted, _inputs);
+	tr::binary_read(file, encrypted);
+	tr::decrypt_to(decrypted, encrypted);
+	tr::binary_read(decrypted, _inputs);
 	_next = _inputs.begin();
-	LOG(INFO, "Loaded replay '{}' from '{}'.", _header.name, path.string());
+	LOG(tr::severity::INFO, "Loaded replay '{}' from '{}'.", _header.name, path.string());
 }
 
 replay::replay(const replay& r)
@@ -72,47 +75,47 @@ replay::replay(const replay& r)
 
 //////////////////////////////////////////////////////////////// RECORDING ////////////////////////////////////////////////////////////////
 
-void replay::append(vec2 input)
+void replay::append(glm::vec2 input)
 {
 	_inputs.push_back(input);
 }
 
-void replay::set_header(score&& header, string_view name) noexcept
+void replay::set_header(const score& header, std::string_view name) noexcept
 {
-	static_cast<score&>(_header) = std::move(header);
-	_header.name = std::move(name);
+	static_cast<score&>(_header) = header;
+	_header.name = name;
 }
 
-void replay::save_to_file() noexcept
+void replay::save_to_file() const noexcept
 {
-	path path{cli_settings.userdir / "replays" / (_header.name + ".dat")};
+	std::filesystem::path path{cli_settings.userdir / "replays" / std::format("{}.dat", _header.name)};
 	try {
-		ofstream file;
-		if (!exists(path)) {
-			file = open_file_w(path, std::ios::binary);
+		std::ofstream file;
+		if (!std::filesystem::exists(path)) {
+			file = tr::open_file_w(path, std::ios::binary);
 		}
 		else {
 			int index{0};
 			do {
-				path = cli_settings.userdir / "replays" / format("{}({}).dat", _header.name, index++);
-			} while (exists(path));
-			file = open_file_w(path, std::ios::binary);
+				path = cli_settings.userdir / "replays" / std::format("{}({}).dat", _header.name, index++);
+			} while (std::filesystem::exists(path));
+			file = tr::open_file_w(path, std::ios::binary);
 		}
 
 		std::ostringstream bufstream{std::ios::binary};
-		vector<byte> buffer;
-		binary_write(bufstream, _header);
-		encrypt_to(buffer, range_bytes(bufstream.view()), rand<u8>(rng));
-		binary_write(file, buffer);
+		std::vector<std::byte> buffer;
+		tr::binary_write(bufstream, _header);
+		tr::encrypt_to(buffer, tr::range_bytes(bufstream.view()), tr::rand<std::uint8_t>(rng));
+		tr::binary_write(file, buffer);
 
 		bufstream.str({});
-		binary_write(bufstream, _inputs);
-		encrypt_to(buffer, range_bytes(bufstream.view()), rand<u8>(rng));
-		binary_write(file, buffer);
-		LOG(INFO, "Saved replay '{}' to '{}'.", _header.name, path.string());
+		tr::binary_write(bufstream, _inputs);
+		tr::encrypt_to(buffer, tr::range_bytes(bufstream.view()), tr::rand<std::uint8_t>(rng));
+		tr::binary_write(file, buffer);
+		LOG(tr::severity::INFO, "Saved replay '{}' to '{}'.", _header.name, path.string());
 	}
 	catch (std::exception& err) {
-		LOG(ERROR, "Failed to save replay: {}", path.string(), err.what());
+		LOG(tr::severity::ERROR, "Failed to save replay: {}", path.string(), err.what());
 	}
 }
 
@@ -128,40 +131,40 @@ bool replay::done() const noexcept
 	return _next == _inputs.end();
 }
 
-vec2 replay::next() noexcept
+glm::vec2 replay::next() noexcept
 {
 	return *_next++;
 }
 
-vec2 replay::current() const noexcept
+glm::vec2 replay::current() const noexcept
 {
 	return done() ? *std::prev(_next) : *_next;
 }
 
-map<string, replay_header> load_replay_headers() noexcept
+std::map<std::string, replay_header> load_replay_headers() noexcept
 {
-	map<string, replay_header> replays;
+	std::map<std::string, replay_header> replays;
 	try {
-		const path replay_dir{cli_settings.userdir / "replays"};
-		for (directory_entry file : directory_iterator{replay_dir}) {
-			const path path{file};
+		const std::filesystem::path replay_dir{cli_settings.userdir / "replays"};
+		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{replay_dir}) {
+			const std::filesystem::path path{file};
 			if (!file.is_regular_file() || path.extension() != ".dat") {
 				continue;
 			}
 
 			try {
-				ifstream is{open_file_r(file, std::ios::binary)};
-				replays.emplace(path.filename(), binary_read<replay_header>(decrypt(binary_read<vector<byte>>(is))));
-				LOG(INFO, "Loaded replay header from '{}'.", path.string());
+				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
+				replays.emplace(path.filename(), tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
+				LOG(tr::severity::INFO, "Loaded replay header from '{}'.", path.string());
 			}
 			catch (std::exception& err) {
-				LOG(ERROR, "Failed to load replay header from '{}': {}.", path.string(), err.what());
+				LOG(tr::severity::ERROR, "Failed to load replay header from '{}': {}.", path.string(), err.what());
 			}
 		}
-		LOG(INFO, "Loaded replay headers.");
+		LOG(tr::severity::INFO, "Loaded replay headers.");
 	}
 	catch (std::exception& err) {
-		LOG(ERROR, "Failed to load replay headers: {}.", err.what());
+		LOG(tr::severity::ERROR, "Failed to load replay headers: {}.", err.what());
 	}
 	return replays;
 }

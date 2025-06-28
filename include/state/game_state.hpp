@@ -2,35 +2,31 @@
 #include "../game/game.hpp"
 
 // Active game state.
-class game_state : public state {
+class game_state : public tr::state {
   public:
-	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
-
-	constexpr static u32 ID{5};
-
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Constructs a game state.
-	game_state(unique_ptr<active_game>&& game, bool fade_in) noexcept;
+	game_state(std::unique_ptr<active_game>&& game, bool fade_in) noexcept;
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
-	// Gets the state type.
-	u32 type() const noexcept override;
 	// Handles an event.
-	unique_ptr<state> handle_event(const tr::event& event) override;
+	std::unique_ptr<tr::state> handle_event(const tr::event& event) override;
 	// Updates the state.
-	unique_ptr<state> update(tr::duration) override;
+	std::unique_ptr<tr::state> update(tr::duration) override;
 	// Draws the state.
 	void draw() override;
 
   private:
-	// Substates within the main menu state.
-	enum class substate : u8 {
+	// Substates within the game state.
+	enum class substate : std::uint8_t {
 		// Transitioning into the game state from the menu.
 		STARTING,
 		// Regular operation.
 		PLAYING,
+		// The game is over.
+		GAME_OVER
 	};
 
 	// The current game substate.
@@ -38,5 +34,5 @@ class game_state : public state {
 	// The current tick timestamp.
 	ticks _timer;
 	// The gamestate.
-	unique_ptr<active_game> _game;
+	std::unique_ptr<active_game> _game;
 };

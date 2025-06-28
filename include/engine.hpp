@@ -49,9 +49,9 @@ struct engine {
 	// Handles any events.
 	static void handle_events();
 	// Gets the normalized mouse position.
-	static vec2 mouse_pos() noexcept;
-	// Converts window coordinates to gamespace coordinates.
-	static vec2 to_game_coords(vec2 window_coords) noexcept;
+	static glm::vec2 mouse_pos() noexcept;
+	// Sets the normalized mouse position.
+	static void set_mouse_pos(glm::vec2 pos) noexcept;
 
 	////////////////////////////////////////////////////////////// GRAPHICS ///////////////////////////////////////////////////////////////
 

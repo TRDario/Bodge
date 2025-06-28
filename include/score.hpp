@@ -6,9 +6,9 @@
 // Packed score flags.
 struct score_flags {
 	// Flag for a prematurely-exited game.
-	u32 exited_prematurely : 1;
+	std::uint32_t exited_prematurely : 1;
 	// Flag for a game with a modified game speed.
-	u32 modified_game_speed : 1;
+	std::uint32_t modified_game_speed : 1;
 };
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@ struct score_flags {
 // Scoreboard entry.
 struct score {
 	// The description of the score.
-	string description;
+	tr::static_string<255> description;
 	// The timestamp of the score (seconds since UNIX epoch).
 	std::int64_t timestamp;
 	// The actual score value.
@@ -29,14 +29,36 @@ struct score {
 
 // Score binary reader.
 template <> struct tr::binary_reader<score> {
-	static void read_from_stream(istream& is, score& out);
-	static span<const byte> read_from_span(span<const byte> span, score& out);
+	static void read_from_stream(std::istream& is, score& out);
+	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, score& out);
 };
 
 // Score binary writer.
 template <> struct tr::binary_writer<score> {
-	static void write_to_stream(ostream& os, const score& in);
-	static span<byte> write_to_span(span<byte> span, const score& in);
+	static void write_to_stream(std::ostream& os, const score& in);
+	static std::span<std::byte> write_to_span(std::span<std::byte> span, const score& in);
+};
+
+///////////////////////////////////////////////////////////// SCORE CATEGORY //////////////////////////////////////////////////////////////
+
+// A score category.
+struct score_category {
+	// The gamemode defining the category.
+	gamemode gamemode;
+	// The scores in the category.
+	std::vector<score> scores;
+};
+
+// Score category binary reader.
+template <> struct tr::binary_reader<score_category> {
+	static void read_from_stream(std::istream& is, score_category& out);
+	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, score_category& out);
+};
+
+// Score category binary writer.
+template <> struct tr::binary_writer<score_category> {
+	static void write_to_stream(std::ostream& os, const score_category& in);
+	static std::span<std::byte> write_to_span(std::span<std::byte> span, const score_category& in);
 };
 
 //////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
@@ -44,14 +66,17 @@ template <> struct tr::binary_writer<score> {
 // File containing score information.
 struct scorefile_t {
 	// The name of the player.
-	static_string<20> name;
+	tr::static_string<20> name;
 	// Score tables.
-	vector<pair<gamemode, vector<score>>> scores;
+	std::vector<score_category> categories;
 	// The total recorded playtime.
 	ticks playtime{0};
 
+	// Finds the personal best result for a given gamemode.
+	ticks pb(const gamemode& gamemode) const noexcept;
+
 	// Adds a new score to the scorefile.
-	void add_score(const gamemode& gamemode, score&& score);
+	void add_score(const gamemode& gamemode, const score& score);
 	// Loads the scorefile from file.
 	void load_from_file() noexcept;
 	// Saves the scorefile to file.

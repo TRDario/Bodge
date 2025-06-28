@@ -12,20 +12,20 @@ class tooltip {
 	///////////////////////////////////////////////////////////// OPERATIONS //////////////////////////////////////////////////////////////
 
 	// Adds the tooltip to the renderer.
-	void add_to_renderer(string_view text);
+	void add_to_renderer(std::string_view text);
 
   private:
 	// Texture unit used for tooltip rendering.
-	texture_unit _tex_unit;
+	tr::texture_unit _tex_unit;
 	// The tooltip text texture.
-	texture _texture{{128, 64}};
+	tr::texture _texture{{128, 64}};
 	// The last drawn text string.
-	string _last_text;
+	std::string _last_text;
 	// The size of the last drawn text string.
-	vec2 _last_size;
+	glm::vec2 _last_size;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Renders the tooltip text.
-	void render(string_view text);
+	void render(std::string_view text);
 };

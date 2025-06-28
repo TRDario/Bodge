@@ -3,27 +3,25 @@
 #include "../ui/ui_manager.hpp"
 
 // "Start Game" screen state.
-class start_game_state : public state {
+class start_game_state : public tr::state {
   public:
-	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
-
-	constexpr static u32 ID{1};
-
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates the start game state.
-	start_game_state(unique_ptr<game>&& game) noexcept;
+	start_game_state(std::unique_ptr<game>&& game) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	u32 type() const noexcept override;
-	unique_ptr<state> handle_event(const tr::event& event) override;
-	unique_ptr<state> update(tr::duration) override;
+	// Handles an event.
+	std::unique_ptr<tr::state> handle_event(const tr::event& event) override;
+	// Updates the state.
+	std::unique_ptr<tr::state> update(tr::duration) override;
+	// Draws the state.
 	void draw() override;
 
   private:
-	// Substates within the main menu state.
-	enum class substate : u8 {
+	// Substates within the start game menu state.
+	enum class substate : std::uint8_t {
 		// In the start game menu.
 		IN_START_GAME,
 		// In the start game menu, switching a gamemode.
@@ -41,11 +39,11 @@ class start_game_state : public state {
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
-	unique_ptr<game> _game;
+	std::unique_ptr<game> _game;
 	// The list of available gamemodes.
-	vector<gamemode> _gamemodes;
+	std::vector<gamemode> _gamemodes;
 	// The currently-selected gamemode.
-	vector<gamemode>::iterator _cur;
+	std::vector<gamemode>::iterator _cur;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 

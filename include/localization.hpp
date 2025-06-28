@@ -4,13 +4,13 @@
 ////////////////////////////////////////////////////////////////// TYPES //////////////////////////////////////////////////////////////////
 
 // Language code datatype.
-using language_code = array<char, 2>;
+using language_code = std::array<char, 2>;
 // Language information.
 struct language {
 	// The name of the language.
-	string name;
+	std::string name;
 	// The name of the font file used by the language.
-	string font;
+	std::string font;
 };
 
 //////////////////////////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////////////////////////
@@ -23,6 +23,6 @@ void load_localization() noexcept;
 ///////////////////////////////////////////////////////////////// GLOBALS /////////////////////////////////////////////////////////////////
 
 // Global language list.
-inline map<language_code, language> languages;
+inline std::map<language_code, language> languages;
 // Global localization map.
 inline tr::localization_map localization;

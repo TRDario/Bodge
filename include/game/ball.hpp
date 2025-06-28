@@ -7,7 +7,7 @@ class ball {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a ball.
-	ball(const tr::fcircle& hitbox, const vec2& velocity) noexcept;
+	ball(const tr::fcircle& hitbox, const glm::vec2& velocity) noexcept;
 	// Randomly generates a ball.
 	ball(tr::xorshiftr_128p& rng, float size, float velocity) noexcept;
 
@@ -38,7 +38,7 @@ class ball {
 	// Control points of the ball's trail.
 	trail _trail;
 	// The ball's movement velocity.
-	vec2 _velocity;
+	glm::vec2 _velocity;
 	// The ball's age in ticks.
 	ticks _age;
 	// The time since the last collision event this ball was part of in ticks.

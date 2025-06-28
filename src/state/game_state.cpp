@@ -1,47 +1,46 @@
 #include "../../include/engine.hpp"
+#include "../../include/state/game_over_state.hpp"
 #include "../../include/state/game_state.hpp"
-// #include "../../include/game/game_over_state.hpp"
 #include "../../include/state/pause_state.hpp"
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
-game_state::game_state(unique_ptr<active_game>&& game, bool fade_in) noexcept
+game_state::game_state(std::unique_ptr<active_game>&& game, bool fade_in) noexcept
 	: _substate{fade_in ? substate::STARTING : substate::PLAYING}, _timer{0}, _game{std::move(game)}
 {
 }
 
 ///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
 
-u32 game_state::type() const noexcept
+std::unique_ptr<tr::state> game_state::handle_event(const tr::event& event)
 {
-	return ID;
-}
-
-unique_ptr<state> game_state::handle_event(const tr::event& event)
-{
-	if (event.type() == tr::key_down_event::ID && tr::key_down_event{event}.key == key::ESCAPE) {
-		return make_unique<pause_state>(std::move(_game), true);
+	if (event.type() == tr::key_down_event::ID && tr::key_down_event{event}.key == tr::keycode::ESCAPE) {
+		return std::make_unique<pause_state>(std::move(_game), engine::mouse_pos(), true);
 	}
 	return nullptr;
 }
 
-unique_ptr<state> game_state::update(tr::duration)
+std::unique_ptr<tr::state> game_state::update(tr::duration)
 {
 	++_timer;
 	switch (_substate) {
-	case substate::PLAYING:
-		_game->update();
-		if (_game->game_over()) {
-			// return make_unique<game_over_state>(std::move(_game));
-		}
-		break;
 	case substate::STARTING:
 		if (_timer >= 0.5_s) {
 			_substate = substate::PLAYING;
 			_timer = 0;
 		}
+		return nullptr;
+	case substate::PLAYING:
+		_game->update();
+		if (_game->game_over()) {
+			_substate = substate::GAME_OVER;
+			_timer = 0;
+		}
+		return nullptr;
+	case substate::GAME_OVER:
+		_game->update();
+		return _timer >= 0.75_s ? std::make_unique<game_over_state>(std::move(_game), true) : nullptr;
 	}
-	return nullptr;
 }
 
 void game_state::draw()

@@ -5,41 +5,37 @@
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
-replay_state::replay_state(unique_ptr<replay_game>&& game, bool fade_in) noexcept
+replay_state::replay_state(std::unique_ptr<replay_game>&& game, bool fade_in) noexcept
 	: _substate{fade_in ? substate::STARTING : substate::WATCHING}, _timer{0}, _game{std::move(game)}
 {
-	widget& replay{_ui.emplace<text_widget>("replay", vec2{4, 1000}, BOTTOM_LEFT, font::LANGUAGE, ttf_style::NORMAL, 48)};
+	widget& replay{
+		_ui.emplace<text_widget>("replay", glm::vec2{4, 1000}, tr::align::BOTTOM_LEFT, font::LANGUAGE, tr::ttf_style::NORMAL, 48)};
 	replay.unhide();
-	replay_playback_indicator_widget& indicator{_ui.emplace<replay_playback_indicator_widget>("indicator", vec2{992, 994}, BOTTOM_RIGHT)};
+	widget& indicator{_ui.emplace<replay_playback_indicator_widget>("indicator", glm::vec2{992, 994}, tr::align::BOTTOM_RIGHT)};
 	indicator.unhide();
 }
 
 ///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
 
-u32 replay_state::type() const noexcept
+std::unique_ptr<replay_state::state> replay_state::handle_event(const tr::event& event)
 {
-	return ID;
-}
-
-unique_ptr<replay_state::state> replay_state::handle_event(const tr::event& event)
-{
-	if (event.type() == tr::key_down_event::ID && tr::key_down_event{event}.key == key::ESCAPE) {
-		return make_unique<replay_pause_state>(std::move(_game), true);
+	if (event.type() == tr::key_down_event::ID && tr::key_down_event{event}.key == tr::keycode::ESCAPE) {
+		return std::make_unique<replay_pause_state>(std::move(_game), true);
 	}
 	return nullptr;
 }
 
-unique_ptr<replay_state::state> replay_state::update(tr::duration)
+std::unique_ptr<replay_state::state> replay_state::update(tr::duration)
 {
 	++_timer;
 	switch (_substate) {
 	case substate::WATCHING:
-		if (tr::keyboard::held_mods() & mods::SHIFT) {
+		if (tr::keyboard::held_mods() & tr::keymods::SHIFT) {
 			if (_timer % 4 == 0) {
 				_game->update();
 			}
 		}
-		else if (tr::keyboard::held_mods() & mods::CTRL) {
+		else if (tr::keyboard::held_mods() & tr::keymods::CTRL) {
 			for (int i = 0; i < 4; ++i) {
 				_game->update();
 				if (_game->done()) {
@@ -52,7 +48,7 @@ unique_ptr<replay_state::state> replay_state::update(tr::duration)
 		}
 
 		if (_game->done()) {
-			_substate = substate::EXITING;
+			_substate = _game->game_over() ? substate::GAME_OVERING : substate::EXITING;
 			_timer = 0;
 		}
 		else if (_timer % 120 == 60) {
@@ -68,8 +64,15 @@ unique_ptr<replay_state::state> replay_state::update(tr::duration)
 			_timer = 0;
 		}
 		return nullptr;
+	case substate::GAME_OVERING:
+		_game->update();
+		if (_timer >= 0.75_s) {
+			_substate = substate::EXITING;
+			_timer = 0;
+		}
+		return nullptr;
 	case substate::EXITING:
-		return _timer >= 1_s ? make_unique<replays_state>() : nullptr;
+		return _timer >= 1_s ? std::make_unique<replays_state>() : nullptr;
 	}
 }
 
@@ -90,18 +93,19 @@ float replay_state::fade_overlay_opacity() const noexcept
 	case substate::STARTING:
 		return 1 - _timer / 0.5_sf;
 	case substate::WATCHING:
+	case substate::GAME_OVERING:
 		return 0;
 	case substate::EXITING:
-		return max(static_cast<int>(_timer - 0.5_s), 0) / 0.5_sf;
+		return std::max(static_cast<int>(_timer - 0.5_s), 0) / 0.5_sf;
 	}
 }
 
-void replay_state::add_cursor_to_renderer(vec2 pos) const
+void replay_state::add_cursor_to_renderer(glm::vec2 pos) const
 {
-	simple_color_mesh quad{tr::renderer_2d::new_color_fan(layer::CURSOR, 4)};
+	tr::simple_color_mesh_ref quad{tr::renderer_2d::new_color_fan(layer::UI, 4)};
 	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, 45_degf);
-	rs::fill(quad.colors, color_cast<rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
-	quad = tr::renderer_2d::new_color_fan(layer::CURSOR, 4);
+	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
+	quad = tr::renderer_2d::new_color_fan(layer::UI, 4);
 	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, -45_degf);
-	rs::fill(quad.colors, color_cast<rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
+	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
 }

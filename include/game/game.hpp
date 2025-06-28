@@ -19,12 +19,12 @@ class game {
 	// Gets whether the game is over.
 	bool game_over() const noexcept;
 	// Gets the elapsed in-game time.
-	ticks timestamp() const noexcept;
+	ticks result() const noexcept;
 
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Updates the game state given an input.
-	void update(const vec2& input) noexcept;
+	void update(const glm::vec2& input) noexcept;
 
 	////////////////////////////////////////////////////////////// GRAPHICS ///////////////////////////////////////////////////////////////
 
@@ -36,10 +36,10 @@ class game {
 	::gamemode _gamemode;
 	// Game RNG.
 	tr::xorshiftr_128p _rng;
-	// An optional player object.
-	optional<::player> _player;
+	// An std::optional player object.
+	std::optional<::player> _player;
 	// A vector of ball objects.
-	static_vector<ball, 255> _balls;
+	tr::static_vector<ball, 255> _balls;
 	// The size of the next spawned ball.
 	float _ball_size;
 	// The velocity of the next spawned ball.
@@ -65,7 +65,12 @@ class active_game : public game {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a new game.
-	active_game(const ::gamemode& gamemode, std::uint64_t seed = rand<std::uint64_t>(rng));
+	active_game(const ::gamemode& gamemode, std::uint64_t seed = tr::rand<std::uint64_t>(rng));
+
+	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
+
+	// Gets the game's replay.
+	replay& replay() noexcept;
 
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
@@ -74,7 +79,7 @@ class active_game : public game {
 
   private:
 	// The replay storing inputs.
-	replay _replay;
+	::replay _replay;
 
 	using game::update;
 };
@@ -96,7 +101,7 @@ class replay_game : public game {
 	// Gets whether the replay is done.
 	bool done() const noexcept;
 	// Gets the current position of the replay cursor.
-	vec2 cursor_pos() const noexcept;
+	glm::vec2 cursor_pos() const noexcept;
 
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 

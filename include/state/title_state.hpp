@@ -3,29 +3,27 @@
 #include "../ui/ui_manager.hpp"
 
 // Title screen state.
-class title_state : public state {
+class title_state : public tr::state {
   public:
-	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
-
-	constexpr static u32 ID{0};
-
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a title state with a randomly chosen background gamemode.
 	title_state();
 	// Creates a title state with an ongoing game.
-	title_state(unique_ptr<game>&& game);
+	title_state(std::unique_ptr<game>&& game);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	u32 type() const noexcept override;
-	unique_ptr<state> handle_event(const tr::event& event) override;
-	unique_ptr<state> update(tr::duration) override;
+	// Handles an event.
+	std::unique_ptr<tr::state> handle_event(const tr::event& event) override;
+	// Updates the state.
+	std::unique_ptr<tr::state> update(tr::duration) override;
+	// Draws the state.
 	void draw() override;
 
   private:
-	// Substates within the main menu state.
-	enum class substate : u8 {
+	// Substates within the title screen state.
+	enum class substate : std::uint8_t {
 		// Entering the game.
 		ENTERING_GAME,
 		// In the main menu.
@@ -49,7 +47,7 @@ class title_state : public state {
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
-	unique_ptr<game> _game;
+	std::unique_ptr<game> _game;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 

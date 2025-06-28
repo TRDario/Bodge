@@ -21,7 +21,7 @@ struct blur_renderer {
 	// Texture used as an auxiliary for blur rendering.
 	tr::render_texture _aux_tex;
 	// Texture unit used for blur rendering.
-	texture_unit _tex_unit;
+	tr::texture_unit _tex_unit;
 	// Shader pipeline used for blur rendering.
 	tr::owning_shader_pipeline _pipeline;
 	// The vertex foramt used for blur rendering.

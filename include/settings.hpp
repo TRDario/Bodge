@@ -4,9 +4,9 @@
 // Settings gotten from command-line arguments.
 struct cli_settings_t {
 	// The path to the data directroy.
-	path datadir;
+	std::filesystem::path datadir;
 	// The path to the save directory.
-	path userdir;
+	std::filesystem::path userdir;
 	// The game speed factor.
 	float game_speed{1.0f};
 #ifndef NDEBUG
@@ -33,21 +33,21 @@ struct settings_t {
 	// The size of the window to use or FULLSCREEN.
 	int window_size{500};
 	// The number of MSAA samples to use.
-	u8 msaa{0};
+	std::uint8_t msaa{0};
 	// The refresh rate to use in Hz or NATIVE_REFRESH_RATE.
-	u16 refresh_rate{NATIVE_REFRESH_RATE};
+	std::uint16_t refresh_rate{NATIVE_REFRESH_RATE};
 	// The language to use.
 	language_code language{'e', 'n'};
 
 	// Hue used primarily for the player and borders.
-	u16 primary_hue{60};
+	std::uint16_t primary_hue{60};
 	// Hue used primarily for the balls.
-	u16 secondary_hue{0};
+	std::uint16_t secondary_hue{0};
 
 	// The volume of the sound effects as a percentage.
-	u8 sfx_volume{100};
+	std::uint8_t sfx_volume{100};
 	// The volume of the music as a percentage.
-	u8 music_volume{100};
+	std::uint8_t music_volume{100};
 
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 

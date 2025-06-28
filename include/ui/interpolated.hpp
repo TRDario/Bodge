@@ -9,7 +9,7 @@ class interpolated_float {
 	// Constructs a float with a value.
 	interpolated_float(float value) noexcept;
 	// Constructs a float with an ongoing interpolation.
-	interpolated_float(float start, float end, u16 time) noexcept;
+	interpolated_float(float start, float end, std::uint16_t time) noexcept;
 
 	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
 
@@ -21,7 +21,7 @@ class interpolated_float {
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Begins an interpolation.
-	void change(float end, u16 time) noexcept;
+	void change(float end, std::uint16_t time) noexcept;
 	// Sets the float.
 	interpolated_float& operator=(float r) noexcept;
 
@@ -31,9 +31,9 @@ class interpolated_float {
 	// The value at the end of the interpolated (or the current value if no interpolation is in progress).
 	float _end;
 	// The length of the interpolation, or 0 to mark no ongoing interpolation.
-	u16 _len{0};
+	std::uint16_t _len{0};
 	// The current position within the interpolation.
-	u16 _pos;
+	std::uint16_t _pos;
 };
 
 // Two-dimensional vector value with support for interpolation.
@@ -42,33 +42,33 @@ class interpolated_vec2 {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Constructs a vec2 with a value.
-	interpolated_vec2(vec2 value) noexcept;
+	interpolated_vec2(glm::vec2 value) noexcept;
 	// Constructs a vec2 with an ongoing interpolation.
-	interpolated_vec2(vec2 start, vec2 end, u16 time) noexcept;
+	interpolated_vec2(glm::vec2 start, glm::vec2 end, std::uint16_t time) noexcept;
 
 	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
 
 	// Updates the interpolation.
 	void update() noexcept;
 	// Gets the current value of the vector.
-	operator vec2() const noexcept;
+	operator glm::vec2() const noexcept;
 
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Begins an interpolation.
-	void change(vec2 end, u16 time) noexcept;
+	void change(glm::vec2 end, std::uint16_t time) noexcept;
 	// Sets the vector.
-	interpolated_vec2& operator=(vec2 r) noexcept;
+	interpolated_vec2& operator=(glm::vec2 r) noexcept;
 
   private:
 	// The value at the start of the interpolation.
-	vec2 _start;
+	glm::vec2 _start;
 	// The value at the end of the interpolated (or the current value if no interpolation is in progress).
-	vec2 _end;
+	glm::vec2 _end;
 	// The length of the interpolation, or 0 to mark no ongoing interpolation.
-	u16 _len{0};
+	std::uint16_t _len{0};
 	// The current position within the interpolation.
-	u16 _pos;
+	std::uint16_t _pos;
 };
 
 // RGBA value with support for interpolation.
@@ -77,31 +77,31 @@ class interpolated_rgba8 {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Constructs a color with a value.
-	interpolated_rgba8(rgba8 value) noexcept;
+	interpolated_rgba8(tr::rgba8 value) noexcept;
 	// Constructs a color with an ongoing interpolation.
-	interpolated_rgba8(rgba8 start, rgba8 end, u16 time) noexcept;
+	interpolated_rgba8(tr::rgba8 start, tr::rgba8 end, std::uint16_t time) noexcept;
 
 	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
 
 	// Updates the interpolation.
 	void update() noexcept;
 	// Gets the current value of the color.
-	operator rgba8() const noexcept;
+	operator tr::rgba8() const noexcept;
 
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Begins an interpolation.
-	void change(rgba8 end, u16 time) noexcept;
+	void change(tr::rgba8 end, std::uint16_t time) noexcept;
 	// Sets the color.
-	interpolated_rgba8& operator=(rgba8 r) noexcept;
+	interpolated_rgba8& operator=(tr::rgba8 r) noexcept;
 
   private:
 	// The value at the start of the interpolation.
-	rgba8 _start;
+	tr::rgba8 _start;
 	// The value at the end of the interpolated (or the current value if no interpolation is in progress).
-	rgba8 _end;
+	tr::rgba8 _end;
 	// The length of the interpolation, or 0 to mark no ongoing interpolation.
-	u16 _len{0};
+	std::uint16_t _len{0};
 	// The current position within the interpolation.
-	u16 _pos;
+	std::uint16_t _pos;
 };

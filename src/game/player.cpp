@@ -9,7 +9,7 @@
 // Damaged player color.
 inline constexpr tr::rgb8 PLAYER_HIT_COLOR{255, 0, 0};
 // Position of the timer text.
-inline constexpr vec2 TIMER_TEXT_POS{500, 50};
+inline constexpr glm::vec2 TIMER_TEXT_POS{500, 50};
 // The amount of time it takes for a full hover fade to occur.
 inline constexpr ticks HOVER_TIME{0.25_s};
 // The size of a small life in the UI.
@@ -27,40 +27,34 @@ inline constexpr ticks SCREEN_SHAKE_TIME{2_s / 3};
 
 tr::static_atlas create_timer_atlas()
 {
-	tr::string_hash_map<bitmap> renders;
-	for (char chr : string_view{"0123456789:"}) {
-		renders.emplace(string{&chr, 1}, font_manager.render_gradient_text({&chr, 1}, font::DEFAULT, NORMAL, 64, 5));
+	tr::string_hash_map<tr::bitmap> renders;
+	for (char chr : std::string_view{"0123456789:"}) {
+		renders.emplace(std::string{&chr, 1}, font_manager.render_gradient_text({&chr, 1}, font::DEFAULT, tr::ttf_style::NORMAL, 64, 5));
 	}
 	tr::static_atlas atlas{renders};
-	if (cli_settings.debug_mode) {
-		atlas.set_label("(Bodge) Timer Atlas");
-	}
+#ifndef NDEBUG
+	atlas.set_label("(Bodge) Timer Atlas");
+#endif
 	return atlas;
 }
 
-// Gets the formatted timer text string.
-string timer_text(ticks time)
+glm::vec2 player::timer_text_size(const std::string& text, float scale) const noexcept
 {
-	return {time >= 60_s ? format("{}:{:02}:{:02}", time / 60_s, (time % 60_s) / 1_s, (time % 1_s) * 100 / 1_s)
-						 : format("{:02}:{:02}", time / 1_s, (time % 1_s) * 100 / 1_s)};
-}
-
-vec2 player::timer_text_size(const string& text, float scale) const noexcept
-{
-	vec2 size{};
+	glm::vec2 size{};
 	for (char chr : text) {
-		const vec2 char_size{_atlas[{&chr, 1}].size * vec2{_atlas.size()} * scale};
-		size = {size.x + char_size.x - 5, max<float>(size.y, char_size.y)};
+		const glm::vec2 char_size{_atlas[{&chr, 1}].size * glm::vec2{_atlas.size()} * scale};
+		size = {size.x + char_size.x - 5, std::max<float>(size.y, char_size.y)};
 	}
 	return size;
 }
 
 void player::set_up_death_fragments() noexcept
 {
-	for (size_t i = 0; i < _fragments.size(); ++i) {
-		const fangle th{60_degf * i + 30_degf};
-		_fragments[i] = {_hitbox.c + magth(_hitbox.r, th), magth(rand(rng, 200.0f, 400.0f), rand(rng, th - 30_degf, th + 30_degf)),
-						 th + 90_degf, rand(rng, 360_degf, 720_degf) * (rand<bool>(rng) ? 1 : -1)};
+	for (std::size_t i = 0; i < _fragments.size(); ++i) {
+		const tr::fangle th{60_degf * i + 30_degf};
+		const glm::vec2 vel{tr::magth(tr::rand(rng, 200.0f, 400.0f), tr::rand(rng, th - 30_degf, th + 30_degf))};
+		const tr::fangle ang_vel{tr::rand(rng, 360_degf, 720_degf) * (tr::rand<bool>(rng) ? 1 : -1)};
+		_fragments[i] = {_hitbox.c + tr::magth(_hitbox.r, th), vel, th + 90_degf, ang_vel};
 	}
 }
 
@@ -70,34 +64,37 @@ void player::death_fragment::update() noexcept
 	rot += rotvel / 1_sf;
 }
 
-void player::add_fill_to_renderer(u8 opacity, fangle rotation, float size) const
+void player::add_fill_to_renderer(std::uint8_t opacity, tr::fangle rotation, float size) const
 {
-	const simple_color_mesh fill{tr::renderer_2d::new_color_fan(layer::PLAYER, 6)};
-	fill_poly_vtx(fill.positions, 6, {_hitbox.c, size}, rotation);
-	rs::fill(fill.colors, rgba8{0, 0, 0, opacity});
+	const tr::simple_color_mesh_ref fill{tr::renderer_2d::new_color_fan(layer::PLAYER, 6)};
+	tr::fill_poly_vtx(fill.positions, 6, {_hitbox.c, size}, rotation);
+	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, opacity});
 }
 
-void player::add_outline_to_renderer(tr::rgb8 tint, u8 opacity, fangle rotation, float size) const
+void player::add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::fangle rotation, float size) const
 {
-	const simple_color_mesh outline{tr::renderer_2d::new_color_outline(layer::PLAYER, 6)};
-	fill_poly_outline_vtx(outline.positions, 6, {_hitbox.c, size}, rotation, 4.0f);
-	rs::fill(outline.colors | vs::take(6), rgba8{tint, opacity});
-	rs::fill(outline.colors | vs::drop(6), rgba8{0, 0, 0, opacity});
+	const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::PLAYER, 6)};
+	tr::fill_poly_outline_vtx(outline.positions, 6, {_hitbox.c, size}, rotation, 4.0f);
+	std::ranges::fill(outline.colors | std::views::take(6), tr::rgba8{tint, opacity});
+	std::ranges::fill(outline.colors | std::views::drop(6), tr::rgba8{0, 0, 0, opacity});
 }
 
-void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, fangle rotation, float size) const
+void player::add_trail_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::fangle rotation, float size) const
 {
-	color_mesh trail{tr::renderer_2d::new_color_mesh(layer::PLAYER_TRAIL, 6 * (trail::SIZE + 1), poly_outline_idx(6) * _trail.SIZE)};
-	fill_poly_vtx(trail.positions | vs::take(6), 6, {_hitbox.c, size}, rotation);
-	rs::fill(trail.colors, rgba8{tint, opacity});
+	constexpr std::size_t VERTICES{6 * (trail::SIZE + 1)};
+	constexpr std::size_t INDICES{tr::poly_outline_idx(6) * trail::SIZE};
 
-	std::vector<u16>::iterator indices_it{trail.indices.begin()};
-	for (size_t i = 0; i < _trail.SIZE; ++i) {
+	tr::color_mesh_ref trail{tr::renderer_2d::new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
+	tr::fill_poly_vtx(trail.positions | std::views::take(6), 6, {_hitbox.c, size}, rotation);
+	std::ranges::fill(trail.colors, tr::rgba8{tint, opacity});
+
+	std::vector<std::uint16_t>::iterator indices_it{trail.indices.begin()};
+	for (std::size_t i = 0; i < _trail.SIZE; ++i) {
 		const float trail_fade{static_cast<float>(_trail.SIZE - i) / _trail.SIZE};
 		const float trail_size{size * trail_fade};
-		const u8 trail_opacity{static_cast<u8>(opacity / 3.0f * trail_fade)};
+		const std::uint8_t trail_opacity{static_cast<std::uint8_t>(opacity / 3.0f * trail_fade)};
 
-		fill_poly_vtx(trail.positions | vs::drop(6 * (i + 1)), 6, {_trail[i], trail_size}, rotation);
+		tr::fill_poly_vtx(trail.positions | std::views::drop(6 * (i + 1)), 6, {_trail[i], trail_size}, rotation);
 		for (int j = 0; j < 6; ++j) {
 			trail.colors[6 * (i + 1) + j].a = trail_opacity;
 			*indices_it++ = trail.base_index + 6 * (i + 1) + j;
@@ -114,44 +111,45 @@ void player::add_lives_to_renderer() const
 {
 	const float life_size{_lives > MAX_LARGE_LIVES ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
-	const u8 opacity{static_cast<u8>(255 - 180 * min(_lives_hover_time, HOVER_TIME) / HOVER_TIME)};
-	const fangle rotation{tr::degs(120.0f * _timer / SECOND_TICKS)};
+	const std::uint8_t opacity{static_cast<std::uint8_t>(255 - 180 * std::min(_lives_hover_time, HOVER_TIME) / HOVER_TIME)};
+	const tr::fangle rotation{tr::degs(120.0f * _timer / SECOND_TICKS)};
 
 	for (int i = 0; i < _lives; ++i) {
 		const glm::ivec2 grid_pos{i % LIVES_PER_LINE, i / LIVES_PER_LINE};
-		const vec2 pos{(static_cast<vec2>(grid_pos) + 0.5f) * 2.5f * life_size + 8.0f};
+		const glm::vec2 pos{(static_cast<glm::vec2>(grid_pos) + 0.5f) * 2.5f * life_size + 8.0f};
 
-		const simple_color_mesh outline{tr::renderer_2d::new_color_outline(layer::GAME_OVERLAY, 6)};
-		fill_poly_outline_vtx(outline.positions, 6, {pos, life_size}, rotation, 4.0f);
-		rs::fill(outline.colors | vs::take(6), rgba8{color, opacity});
-		rs::fill(outline.colors | vs::drop(6), rgba8{0, 0, 0, opacity});
+		const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::GAME_OVERLAY, 6)};
+		tr::fill_poly_outline_vtx(outline.positions, 6, {pos, life_size}, rotation, 4.0f);
+		std::ranges::fill(outline.colors | std::views::take(6), tr::rgba8{color, opacity});
+		std::ranges::fill(outline.colors | std::views::drop(6), tr::rgba8{0, 0, 0, opacity});
 	}
 }
 
 void player::add_timer_to_renderer() const
 {
-	const string text{timer_text(_timer)};
-	rgba8 tint;
+	const std::string text{timer_text(_timer)};
+	tr::rgba8 tint;
 	float scale;
 
 	if (game_over()) {
-		tint = (_timer > _pb) ? rgba8{0, 255, 0, 255} : rgba8{255, 0, 0, 255};
+		tint = (_timer > _pb) ? "00FF00"_rgba8 : "FF0000"_rgba8;
 		scale = 1;
 	}
 	else {
-		const float factor{min(_timer % 1_s, 0.2_s) / static_cast<float>(0.2_s)};
-		const u8 tint_factor{norm_cast<u8>(1 - 0.25f * factor)};
-		const u8 opacity{static_cast<u8>((255 - min(_timer_hover_time, HOVER_TIME) * 180 / HOVER_TIME) * tint_factor / 255)};
+		const float factor{std::min(_timer % 1_s, 0.2_s) / static_cast<float>(0.2_s)};
+		const std::uint8_t tint_factor{tr::norm_cast<std::uint8_t>(1 - 0.25f * factor)};
+		const ticks clamped_hover_time{std::min(_timer_hover_time, HOVER_TIME)};
+		const std::uint8_t opacity{static_cast<std::uint8_t>((255 - clamped_hover_time * 180 / HOVER_TIME) * tint_factor / 255)};
 		tint = {tint_factor, tint_factor, tint_factor, opacity};
 		scale = (1.25f - 0.25f * factor) / engine::render_scale();
 	}
 
-	vec2 tl{TIMER_TEXT_POS - timer_text_size(text, scale) / 2.0f};
+	glm::vec2 tl{TIMER_TEXT_POS - timer_text_size(text, scale) / 2.0f};
 	for (char chr : text) {
-		simple_textured_mesh character{tr::renderer_2d::new_textured_fan(layer::GAME_OVERLAY, 4)};
-		fill_rect_vtx(character.positions, {tl, _atlas[{&chr, 1}].size * vec2{_atlas.size()} * scale});
-		fill_rect_vtx(character.uvs, _atlas[{&chr, 1}]);
-		rs::fill(character.tints, tint);
+		tr::simple_textured_mesh_ref character{tr::renderer_2d::new_textured_fan(layer::GAME_OVERLAY, 4)};
+		tr::fill_rect_vtx(character.positions, {tl, _atlas[{&chr, 1}].size * glm::vec2{_atlas.size()} * scale});
+		tr::fill_rect_vtx(character.uvs, _atlas[{&chr, 1}]);
+		std::ranges::fill(character.tints, tint);
 		tl.x += _atlas[{&chr, 1}].size.x * _atlas.size().x * scale - 5;
 	}
 }
@@ -160,7 +158,8 @@ void player::set_screen_shake() const
 {
 	const int screen_shake_left{static_cast<int>(_iframes - PLAYER_INVULN_TIME + SCREEN_SHAKE_TIME)};
 	if (screen_shake_left >= 0) {
-		const glm::mat4 mat{ortho(frect2{magth(40.0f * screen_shake_left / SCREEN_SHAKE_TIME, rand<fangle>(rng)), vec2{1000}})};
+		const glm::vec2 tl{tr::magth(40.0f * screen_shake_left / SCREEN_SHAKE_TIME, tr::rand<tr::fangle>(rng))};
+		const glm::mat4 mat{tr::ortho(tr::frect2{tl, glm::vec2{1000}})};
 		tr::renderer_2d::set_default_transform(mat);
 	}
 }
@@ -170,28 +169,28 @@ void player::add_death_wave_to_renderer() const
 	const float t{(_game_over_timer + 1) / static_cast<float>(0.5_s)};
 	const float scale{std::sqrt(t) * 200};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
-	const u8 opacity{norm_cast<u8>(0.5f * std::sqrt(1 - t))};
+	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(0.5f * std::sqrt(1 - t))};
 
-	const simple_color_mesh fan{
-		tr::renderer_2d::new_color_fan(layer::PLAYER_TRAIL, tr::smooth_poly_vtx(scale, engine::render_scale()) + 2)};
+	const std::size_t indices{tr::smooth_poly_vtx(scale, engine::render_scale()) + 2};
+	const tr::simple_color_mesh_ref fan{tr::renderer_2d::new_color_fan(layer::PLAYER_TRAIL, indices)};
 	fan.positions[0] = _hitbox.c;
 	fan.colors[0] = {color, 0};
-	fill_poly_vtx(fan.positions | vs::drop(1), fan.positions.size() - 2, {_hitbox.c, scale});
+	tr::fill_poly_vtx(fan.positions | std::views::drop(1), fan.positions.size() - 2, {_hitbox.c, scale});
 	fan.positions.back() = fan.positions[1];
-	rs::fill(fan.colors | vs::drop(1), rgba8{color, opacity});
+	std::ranges::fill(fan.colors | std::views::drop(1), tr::rgba8{color, opacity});
 }
 
 void player::add_death_fragments_to_renderer() const
 {
 	const float t{(_game_over_timer + 1) / static_cast<float>(0.5_s)};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
-	const u8 opacity{norm_cast<u8>(std::sqrt(1 - t))};
+	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(std::sqrt(1 - t))};
 	const float length{2 * _hitbox.r * tr::degs(30.0f).tan()};
 
 	for (const death_fragment& fragment : _fragments) {
-		const simple_color_mesh mesh{tr::renderer_2d::new_color_fan(layer::PLAYER, 4)};
+		const tr::simple_color_mesh_ref mesh{tr::renderer_2d::new_color_fan(layer::PLAYER, 4)};
 		tr::fill_rotated_rect_vtx(mesh.positions, fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
-		rs::fill(mesh.colors, rgba8{color, opacity});
+		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
 }
 
@@ -225,10 +224,10 @@ ticks player::time_since_game_over() const noexcept
 	return _game_over_timer;
 }
 
-bool colliding(const player& player, const static_vector<ball, 255>& balls) noexcept
+bool colliding(const player& player, const tr::static_vector<ball, 255>& balls) noexcept
 {
 	return player._iframes == 0 &&
-		   rs::any_of(balls, [&](const ball& b) { return b.tangible() && intersecting(b.hitbox(), player._hitbox); });
+		   std::ranges::any_of(balls, [&](const ball& b) { return b.tangible() && tr::intersecting(b.hitbox(), player._hitbox); });
 }
 
 ///////////////////////////////////////////////////////////////// SETTERS /////////////////////////////////////////////////////////////////
@@ -257,20 +256,20 @@ void player::update() noexcept
 	if (!game_over()) {
 		++_timer;
 		const float life_size{_lives > MAX_LARGE_LIVES ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
-		const int lives_in_line{min(_lives, LIVES_PER_LINE)};
+		const int lives_in_line{std::min(_lives, LIVES_PER_LINE)};
 		const int lines{_lives / LIVES_PER_LINE + 1};
-		frect2 lives_ui_bounds{{}, {2.5f * life_size * (lives_in_line + 0.5f) + 16, 2.5f * life_size * lines + 16}};
+		tr::frect2 lives_ui_bounds{{}, {2.5f * life_size * (lives_in_line + 0.5f) + 16, 2.5f * life_size * lines + 16}};
 		if (lives_ui_bounds.contains(_hitbox.c)) {
-			_lives_hover_time = min(_lives_hover_time + 1, HOVER_TIME);
+			_lives_hover_time = std::min(_lives_hover_time + 1, HOVER_TIME);
 		}
 		else if (_lives_hover_time > 0) {
 			--_lives_hover_time;
 		}
 
-		const vec2 text_size{timer_text_size(timer_text(_timer), 1 / engine::render_scale())};
-		const frect2 timer_text_bounds{TIMER_TEXT_POS - text_size / 2.0f - 8.0f, text_size + 16.0f};
+		const glm::vec2 text_size{timer_text_size(timer_text(_timer), 1 / engine::render_scale())};
+		const tr::frect2 timer_text_bounds{TIMER_TEXT_POS - text_size / 2.0f - 8.0f, text_size + 16.0f};
 		if (timer_text_bounds.contains(_hitbox.c)) {
-			_timer_hover_time = min(_timer_hover_time + 1, HOVER_TIME);
+			_timer_hover_time = std::min(_timer_hover_time + 1, HOVER_TIME);
 		}
 		else if (_timer_hover_time > 0) {
 			--_timer_hover_time;
@@ -284,7 +283,7 @@ void player::update() noexcept
 	}
 }
 
-void player::update(vec2 target) noexcept
+void player::update(glm::vec2 target) noexcept
 {
 	if (_iframes > 0) {
 		--_iframes;
@@ -293,7 +292,7 @@ void player::update(vec2 target) noexcept
 
 	if (!game_over()) {
 		++_timer;
-		target = clamp(target, vec2{FIELD_MIN + _hitbox.r}, vec2{FIELD_MAX - _hitbox.r});
+		target = glm::clamp(target, glm::vec2{FIELD_MIN + _hitbox.r}, glm::vec2{FIELD_MAX - _hitbox.r});
 
 		_trail.push(_hitbox.c);
 		if (_inertia == 0) {
@@ -304,20 +303,20 @@ void player::update(vec2 target) noexcept
 		}
 
 		const float life_size{_lives > MAX_LARGE_LIVES ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
-		const int lives_in_line{min(_lives, LIVES_PER_LINE)};
+		const int lives_in_line{std::min(_lives, LIVES_PER_LINE)};
 		const int lines{_lives / LIVES_PER_LINE + 1};
-		frect2 lives_ui_bounds{{}, {2.5f * life_size * (lives_in_line + 0.5f) + 16, 2.5f * life_size * lines + 16}};
+		tr::frect2 lives_ui_bounds{{}, {2.5f * life_size * (lives_in_line + 0.5f) + 16, 2.5f * life_size * lines + 16}};
 		if (lives_ui_bounds.contains(target)) {
-			_lives_hover_time = min(_lives_hover_time + 1, HOVER_TIME);
+			_lives_hover_time = std::min(_lives_hover_time + 1, HOVER_TIME);
 		}
 		else if (_lives_hover_time > 0) {
 			--_lives_hover_time;
 		}
 
-		const vec2 text_size{timer_text_size(timer_text(_timer), 1 / engine::render_scale())};
-		const frect2 timer_text_bounds{TIMER_TEXT_POS - text_size / 2.0f - 8.0f, text_size + 16.0f};
+		const glm::vec2 text_size{timer_text_size(timer_text(_timer), 1 / engine::render_scale())};
+		const tr::frect2 timer_text_bounds{TIMER_TEXT_POS - text_size / 2.0f - 8.0f, text_size + 16.0f};
 		if (timer_text_bounds.contains(target)) {
-			_timer_hover_time = min(_timer_hover_time + 1, HOVER_TIME);
+			_timer_hover_time = std::min(_timer_hover_time + 1, HOVER_TIME);
 		}
 		else if (_timer_hover_time > 0) {
 			--_timer_hover_time;
@@ -336,8 +335,8 @@ void player::add_to_renderer() const
 	constexpr float PI{std::numbers::pi_v<float>};
 
 	const tr::rgb8 tint{_iframes ? PLAYER_HIT_COLOR : color_cast<tr::rgb8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
-	const u8 opacity{norm_cast<u8>(abs(std::cos(_iframes * PI * 8 / PLAYER_INVULN_TIME)))};
-	const fangle rotation{tr::degs(270.0f * _timer / SECOND_TICKS)};
+	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(std::abs(std::cos(_iframes * PI * 8 / PLAYER_INVULN_TIME)))};
+	const tr::fangle rotation{tr::degs(270.0f * _timer / SECOND_TICKS)};
 	const float size_offset{3.0f * std::sin(PI * _timer / SECOND_TICKS)};
 	const float size{_hitbox.r + 6 + size_offset};
 

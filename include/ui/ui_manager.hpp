@@ -12,14 +12,17 @@ class ui_manager {
 	///////////////////////////////////////////////////////// INSERTION AND ACCESS ////////////////////////////////////////////////////////
 
 	// Emplaces a new widget into the UI.
-	template <class T, class... Args> T& emplace(Args&&... args)
+	template <class T, class... Args>
+		requires(std::constructible_from<T, Args...>)
+	T& emplace(Args&&... args)
 	{
-		return *static_cast<T*>(_objects.emplace_back(make_unique<T>(std::forward<Args>(args)...)).get());
+		return *static_cast<T*>(_objects.emplace_back(std::make_unique<T>(std::forward<Args>(args)...)).get());
 	}
 	// Gets a widget by name.
-	template <class T = widget> T& get(string_view name) noexcept
+	template <class T = widget> T& get(std::string_view name) noexcept
 	{
-		list<unique_ptr<widget>>::iterator it{rs::find_if(_objects, [=](unique_ptr<widget>& p) { return p->name == name; })};
+		std::list<std::unique_ptr<widget>>::iterator it{
+			std::ranges::find_if(_objects, [=](std::unique_ptr<widget>& p) { return p->name == name; })};
 		TR_ASSERT(it != _objects.end(), "Tried to get widget with nonexistant name \"{}\".", name);
 		return *static_cast<T*>(it->get());
 	}
@@ -53,9 +56,9 @@ class ui_manager {
 
   private:
 	// The list of widgets.
-	list<unique_ptr<widget>> _objects;
+	std::list<std::unique_ptr<widget>> _objects;
 	// Iterator to the widget being hovered over, or end().
-	list<unique_ptr<widget>>::iterator _hovered{_objects.end()};
+	std::list<std::unique_ptr<widget>>::iterator _hovered{_objects.end()};
 	// Pointer to the widget with input focus, or end().
-	list<unique_ptr<widget>>::iterator _input{_objects.end()};
+	std::list<std::unique_ptr<widget>>::iterator _input{_objects.end()};
 };

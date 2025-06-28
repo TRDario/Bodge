@@ -13,10 +13,7 @@ game::game(const ::gamemode& gamemode, std::uint64_t rng_seed)
 	, _last_spawn{0}
 {
 	if (!_gamemode.player.autoplay()) {
-		const vector<pair<::gamemode, vector<score>>>::iterator scorefile_gamemode_it{
-			rs::find_if(scorefile.scores, [&](const pair<::gamemode, vector<score>>& pair) { return pair.first == gamemode; })};
-		const ticks pb{scorefile_gamemode_it != scorefile.scores.end() ? scorefile_gamemode_it->second.front().result : 0};
-		_player.emplace(gamemode.player, pb);
+		_player.emplace(gamemode.player, scorefile.pb(_gamemode));
 	}
 
 	for (int i = 0; i < gamemode.ball.starting_count; ++i) {
@@ -34,12 +31,12 @@ bool game::game_over() const noexcept
 	return _player->game_over();
 }
 
-ticks game::timestamp() const noexcept
+ticks game::result() const noexcept
 {
-	return _age;
+	return _age - _player->time_since_game_over();
 }
 
-void game::update(const vec2& input) noexcept
+void game::update(const glm::vec2& input) noexcept
 {
 	++_age;
 	++_last_spawn;
@@ -48,11 +45,11 @@ void game::update(const vec2& input) noexcept
 		add_new_ball();
 	}
 
-	for (size_t i = 0; i < _balls.size(); ++i) {
+	for (std::size_t i = 0; i < _balls.size(); ++i) {
 		_balls[i].update();
 
 		if (_balls[i].tangible()) {
-			for (size_t j = i + 1; j < _balls.size(); ++j) {
+			for (std::size_t j = i + 1; j < _balls.size(); ++j) {
 				if (_balls[j].tangible() && colliding(_balls[i], _balls[j])) {
 					handle_collision(_balls[i], _balls[j]);
 				}
@@ -75,16 +72,16 @@ void game::update(const vec2& input) noexcept
 
 void game::add_overlay_to_renderer() const
 {
-	simple_color_mesh overlay{tr::renderer_2d::new_color_fan(layer::BALL_TRAILS_OVERLAY, 4)};
-	rs::copy(OVERLAY_POSITIONS, overlay.positions.begin());
-	rs::fill(overlay.colors, rgba8{0, 0, 0, 0});
+	tr::simple_color_mesh_ref overlay{tr::renderer_2d::new_color_fan(layer::BALL_TRAILS_OVERLAY, 4)};
+	std::ranges::copy(OVERLAY_POSITIONS, overlay.positions.begin());
+	std::ranges::fill(overlay.colors, "00000000"_rgba8);
 }
 
 void game::add_border_to_renderer() const
 {
-	simple_color_mesh border{tr::renderer_2d::new_color_outline(layer::BORDER, 4)};
-	fill_rect_outline_vtx(border.positions, {{2, 2}, {996, 996}}, 4);
-	rs::fill(border.colors, color_cast<rgba8>(tr::hsv{static_cast<float>(settings.secondary_hue), 1, 1}));
+	tr::simple_color_mesh_ref border{tr::renderer_2d::new_color_outline(layer::BORDER, 4)};
+	tr::fill_rect_outline_vtx(border.positions, {{2, 2}, {996, 996}}, 4);
+	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(settings.secondary_hue), 1, 1}));
 }
 
 void game::add_to_renderer() const
@@ -92,7 +89,7 @@ void game::add_to_renderer() const
 	if (_player.has_value()) {
 		_player->add_to_renderer();
 	}
-	rs::for_each(_balls, &ball::add_to_renderer);
+	std::ranges::for_each(_balls, &ball::add_to_renderer);
 	add_overlay_to_renderer();
 	add_border_to_renderer();
 }
@@ -101,8 +98,8 @@ void game::add_new_ball() noexcept
 {
 	_last_spawn = 0;
 	_balls.emplace_back(_rng, _ball_size, _ball_velocity);
-	_ball_size = min(_ball_size + _gamemode.ball.size_step, 250.0f);
-	_ball_velocity = min(_ball_velocity + _gamemode.ball.velocity_step, 5000.0f);
+	_ball_size = std::min(_ball_size + _gamemode.ball.size_step, 250.0f);
+	_ball_velocity = std::min(_ball_velocity + _gamemode.ball.velocity_step, 5000.0f);
 }
 
 /////////////////////////////////////////////////////////////// ACTIVE_GAME ///////////////////////////////////////////////////////////////
@@ -112,11 +109,19 @@ active_game::active_game(const ::gamemode& gamemode, std::uint64_t seed)
 {
 }
 
+replay& active_game::replay() noexcept
+{
+	return _replay;
+}
+
 void active_game::update()
 {
-	const vec2 input{engine::mouse_pos()};
+	const bool game_over{this->game_over()};
+	const glm::vec2 input{engine::mouse_pos()};
 	update(input);
-	_replay.append(input);
+	if (!game_over) {
+		_replay.append(input);
+	}
 }
 
 ////////////////////////////////////////////////////////////// REPLAY_GAME ////////////////////////////////////////////////////////////////
@@ -136,12 +141,12 @@ bool replay_game::done() const noexcept
 	return _replay.done();
 }
 
-vec2 replay_game::cursor_pos() const noexcept
+glm::vec2 replay_game::cursor_pos() const noexcept
 {
 	return _replay.current();
 }
 
 void replay_game::update() noexcept
 {
-	update(_replay.next());
+	update(done() ? _replay.current() : _replay.next());
 }

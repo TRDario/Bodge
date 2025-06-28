@@ -1,29 +1,29 @@
-#include "../include/font_manager.hpp"
 #include "../include/engine.hpp"
+#include "../include/font_manager.hpp"
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-ttfont load_font(string_view name)
+tr::ttfont load_font(std::string_view name)
 {
 	try {
-		path path{cli_settings.datadir / "fonts" / name};
-		if (is_regular_file(path)) {
-			ttfont font{tr::load_ttfont_file(path, 48)};
-			LOG(INFO, "Loaded font '{}'.", name);
+		std::filesystem::path path{cli_settings.datadir / "fonts" / name};
+		if (std::filesystem::is_regular_file(path)) {
+			tr::ttfont font{tr::load_ttfont_file(path, 48)};
+			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
 			return font;
 		}
 		path = cli_settings.userdir / "fonts" / name;
-		if (is_regular_file(path)) {
-			ttfont font{tr::load_ttfont_file(path, 48)};
-			LOG(INFO, "Loaded font '{}'.", name);
+		if (std::filesystem::is_regular_file(path)) {
+			tr::ttfont font{tr::load_ttfont_file(path, 48)};
+			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
 			return font;
 		}
-		LOG(ERROR, "Failed to load font '{}': File not found.", name);
-		throw std::runtime_error{format("Failed to load font '{}': File not found", name)};
+		LOG(tr::severity::ERROR, "Failed to load font '{}': File not found.", name);
+		throw std::runtime_error{std::format("Failed to load font '{}': File not found", name)};
 	}
 	catch (tr::ttfont_file_load_error& err) {
-		LOG(ERROR, "Failed to load font '{}': {}.", name, err.what());
-		throw std::runtime_error{format("Failed to load font '{}': {}", name, err.what())};
+		LOG(tr::severity::ERROR, "Failed to load font '{}': {}.", name, err.what());
+		throw std::runtime_error{std::format("Failed to load font '{}': {}", name, err.what())};
 	}
 }
 
@@ -37,7 +37,7 @@ font_manager_t::optional_font_base* font_manager_t::optional_font::operator->() 
 	return reinterpret_cast<optional_font_base*>(&data);
 }
 
-ttfont& font_manager_t::find_font(font font) noexcept
+tr::ttfont& font_manager_t::find_font(font font) noexcept
 {
 	switch (font) {
 	case font::DEFAULT:
@@ -69,11 +69,11 @@ ttfont& font_manager_t::find_font(font font) noexcept
 }
 
 // Splits a string by lines.
-vector<string> split_into_lines(string_view text)
+std::vector<std::string> split_into_lines(std::string_view text)
 {
-	vector<string> lines;
-	string_view::iterator start{text.begin()};
-	string_view::iterator end{std::find(start, text.end(), '\n')};
+	std::vector<std::string> lines;
+	std::string_view::iterator start{text.begin()};
+	std::string_view::iterator end{std::find(start, text.end(), '\n')};
 	while (end != text.end()) {
 		lines.push_back({start, end});
 		start = end + 1;
@@ -83,15 +83,16 @@ vector<string> split_into_lines(string_view text)
 	return lines;
 }
 
-vector<string> split_overlong_lines(vector<string>&& lines, const tr::ttfont& font, ttf_style style, float outline, float max_w)
+std::vector<std::string> split_overlong_lines(std::vector<std::string>&& lines, const tr::ttfont& font, tr::ttf_style style, float outline,
+											  float max_w)
 {
-	for (vector<string>::iterator it = lines.begin(); it != lines.end(); ++it) {
+	for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); ++it) {
 		if (it->empty()) {
 			continue;
 		}
 
-		tr::ttf_measure_result measure{font.measure_text(*it, max_w, style, outline)};
-		if (measure.text != string_view{*it}) {
+		const tr::ttf_measure_result measure{font.measure_text(*it, max_w, style, outline)};
+		if (measure.text != std::string_view{*it}) {
 			it = std::prev(lines.emplace(std::next(it), it->begin() + measure.text.size(), it->end()));
 			it->erase(it->begin() + measure.text.size(), it->end());
 		}
@@ -105,7 +106,7 @@ void font_manager_t::load_fonts()
 {
 	_standard_fonts.emplace(load_font("charge_vector_b.otf"), load_font("linux_biolinum_rb.ttf"));
 	try {
-		string language_font{languages.contains(settings.language) ? languages.at(settings.language).font : string{}};
+		std::string language_font{languages.contains(settings.language) ? languages.at(settings.language).font : std::string{}};
 		if (language_font.empty() || language_font == "charge_vector_b.otf") {
 			_language_font.state = optional_font_state::USE_DEFAULT;
 		}
@@ -119,7 +120,7 @@ void font_manager_t::load_fonts()
 		_language_preview_font.state = optional_font_state::USE_LANGUAGE;
 	}
 	catch (std::exception& err) {
-		LOG(ERROR, "Falling back to linux_biolinum_rb.ttf.", err.what());
+		LOG(tr::severity::ERROR, "Falling back to linux_biolinum_rb.ttf.", err.what());
 		_language_font.state = optional_font_state::USE_FALLBACK;
 	}
 }
@@ -144,7 +145,7 @@ void font_manager_t::set_language_font()
 void font_manager_t::reload_language_preview_font(const settings_t& pending)
 {
 	const bool had_value{_language_preview_font.state == optional_font_state::USE_STORED};
-	string new_font;
+	std::string new_font;
 	try {
 		new_font = languages.at(pending.language).font;
 		if (new_font.empty() || new_font == "charge_vector_b.otf") {
@@ -181,15 +182,15 @@ void font_manager_t::unload_all() noexcept
 	if (_language_preview_font.state == optional_font_state::USE_STORED) {
 		_language_preview_font->~optional_font_base();
 	}
-	LOG(INFO, "Unloaded all fonts.");
+	LOG(tr::severity::INFO, "Unloaded all fonts.");
 }
 
 /////////////////////////////////////////////////////////////// OPERATIONS ////////////////////////////////////////////////////////////////
 
-font font_manager_t::determine_font(string_view text) noexcept
+font font_manager_t::determine_font(std::string_view text) noexcept
 {
-	ttfont& font{find_font(font::LANGUAGE)};
-	if (rs::all_of(tr::utf8::range(text), [&](tr::codepoint chr) { return chr == '\n' || font.contains(chr); })) {
+	tr::ttfont& font{find_font(font::LANGUAGE)};
+	if (std::ranges::all_of(tr::utf8::range(text), [&](tr::codepoint chr) { return chr == '\n' || font.contains(chr); })) {
 		return font::LANGUAGE;
 	}
 	else {
@@ -199,81 +200,82 @@ font font_manager_t::determine_font(string_view text) noexcept
 
 float font_manager_t::font_line_skip(font font, float size)
 {
-	ttfont& font_ref{find_font(font)};
+	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
 	return font_ref.line_skip() / engine::render_scale();
 }
 
-vec2 font_manager_t::text_size(string_view text, font font, ttf_style style, float size, float outline, float max_w)
+glm::vec2 font_manager_t::text_size(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
-	if (max_w != UNLIMITED_WIDTH) {
+	if (max_w != tr::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * engine::render_scale();
 	}
-	const float outline_max_w{max_w != UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : UNLIMITED_WIDTH};
+	const float outline_max_w{max_w != tr::UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : tr::UNLIMITED_WIDTH};
 
-	ttfont& font_ref{find_font(font)};
+	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
 	glm::ivec2 text_size{0, font_ref.text_size(text, outline_max_w, style, scaled_outline).y};
-	for (string_view line : split_into_lines(text)) {
+	for (std::string_view line : split_into_lines(text)) {
 		tr::ttf_measure_result result{font_ref.measure_text(line, outline_max_w, style, scaled_outline)};
 		if (result.text != line) {
 			text_size.x = outline_max_w;
 			break;
 		}
 		else {
-			text_size.x = max(text_size.x, result.size);
+			text_size.x = std::max(text_size.x, result.size);
 		}
 	}
-	return static_cast<vec2>(text_size) / engine::render_scale();
+	return static_cast<glm::vec2>(text_size) / engine::render_scale();
 }
 
-int font_manager_t::count_lines(string_view text, font font, ttf_style style, float size, float outline, float max_w)
+int font_manager_t::count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
-	if (max_w != UNLIMITED_WIDTH) {
+	if (max_w != tr::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * engine::render_scale();
 	}
-	const float outline_max_w{max_w != UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : UNLIMITED_WIDTH};
+	const float outline_max_w{max_w != tr::UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : tr::UNLIMITED_WIDTH};
 
-	ttfont& font_ref{find_font(font)};
+	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
 	return split_overlong_lines(split_into_lines(text), font_ref, style, scaled_outline, outline_max_w).size();
 }
 
-bitmap font_manager_t::render_text(string_view text, font font, ttf_style style, float size, float outline, float max_w, tr::halign align)
+tr::bitmap font_manager_t::render_text(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w,
+									   tr::halign align)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
-	if (max_w != UNLIMITED_WIDTH) {
+	if (max_w != tr::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * engine::render_scale();
 	}
-	const float outline_max_w{max_w != UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : UNLIMITED_WIDTH};
+	const float outline_max_w{max_w != tr::UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : tr::UNLIMITED_WIDTH};
 
-	ttfont& font_ref{find_font(font)};
+	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	bitmap render{font_ref.draw(text, outline_max_w, align, {127, 127, 127, 127}, style, scaled_outline)};
-	const bitmap fill{font_ref.draw(text, max_w, align, {255, 255, 255, 255}, style)};
+	tr::bitmap render{font_ref.draw(text, outline_max_w, align, {127, 127, 127, 127}, style, scaled_outline)};
+	const tr::bitmap fill{font_ref.draw(text, max_w, align, {255, 255, 255, 255}, style)};
 	render.blit(glm::ivec2{scaled_outline}, fill.sub({{}, render.size() - scaled_outline * 2}));
 	return render;
 }
 
-bitmap font_manager_t::render_gradient_text(string_view text, font font, ttf_style style, float size, float outline, float max_w,
-											tr::halign align)
+tr::bitmap font_manager_t::render_gradient_text(std::string_view text, font font, tr::ttf_style style, float size, float outline,
+												float max_w, tr::halign align)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
-	if (max_w != UNLIMITED_WIDTH) {
+	if (max_w != tr::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * engine::render_scale();
 	}
-	const float outline_max_w{max_w != UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : UNLIMITED_WIDTH};
+	const float outline_max_w{max_w != tr::UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : tr::UNLIMITED_WIDTH};
 
-	ttfont& font_ref{find_font(font)};
+	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	bitmap render{font_ref.draw(text, outline_max_w, align, {0, 0, 0, 127}, style, scaled_outline)};
-	bitmap fill{font_ref.draw(text, max_w, align, {255, 255, 255, 255}, style)};
-	for (bitmap::mut_it it = fill.begin(); it != fill.end(); ++it) {
-		const rgba8 value{*it};
-		u8 shade{static_cast<u8>(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};
-		*it = rgba8{shade, shade, shade, value.a};
+	tr::bitmap render{font_ref.draw(text, outline_max_w, align, {0, 0, 0, 127}, style, scaled_outline)};
+	tr::bitmap fill{font_ref.draw(text, max_w, align, {255, 255, 255, 255}, style)};
+	for (tr::bitmap::mut_it it = fill.begin(); it != fill.end(); ++it) {
+		const tr::rgba8 value{*it};
+		std::uint8_t shade{static_cast<std::uint8_t>(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};
+		*it = tr::rgba8{shade, shade, shade, value.a};
 	}
 	render.blit(glm::ivec2{scaled_outline}, fill.sub({{}, render.size() - 2 * scaled_outline}));
 	return render;

@@ -7,26 +7,26 @@ class trail {
 	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
 
 	// The size of the trail.
-	inline static constexpr size_t SIZE{max<size_t>(SECOND_TICKS / 5, 1)};
+	inline static constexpr std::size_t SIZE{std::max<std::size_t>(SECOND_TICKS / 5, 1)};
 
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a trail.
-	trail(const vec2& value) noexcept;
+	trail(const glm::vec2& value) noexcept;
 
 	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
 
 	// Gets a control point in the trail.
-	const vec2& operator[](size_t i) const noexcept;
+	const glm::vec2& operator[](std::size_t i) const noexcept;
 
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Pushes a new control point to the front of the trail.
-	void push(const vec2& value) noexcept;
+	void push(const glm::vec2& value) noexcept;
 
   private:
 	// The array backing the circular buffer.
-	array<vec2, SIZE> _buffer;
+	std::array<glm::vec2, SIZE> _buffer;
 	// The current position of the head of the circular buffer.
-	u32 _head;
+	std::uint32_t _head;
 };

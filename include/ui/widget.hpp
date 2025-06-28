@@ -11,17 +11,17 @@ class text_widget : public widget {
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a text widget.
-	text_widget(string_view name, vec2 pos, align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
-				vector<key_chord>&& shortcuts, font font, ttf_style style, halign text_alignment, float font_size, int max_width,
-				rgba8 color, text_callback text_cb);
+	text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
+				std::vector<key_chord>&& shortcuts, font font, tr::ttf_style style, tr::halign text_alignment, float font_size,
+				int max_width, tr::rgba8 color, text_callback text_cb);
 
 	// Creates a common type of text widget: non-interactible, single-line.
-	text_widget(string_view name, vec2 pos, align alignment, font font, ttf_style style, float font_size,
-				text_callback text_cb = DEFAULT_TEXT_CALLBACK, rgba8 color = {160, 160, 160, 160});
+	text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, tr::ttf_style style, float font_size,
+				text_callback text_cb = DEFAULT_TEXT_CALLBACK, tr::rgba8 color = "A0A0A0A0"_rgba8);
 
 	// Creates a common type of text widget: non-interactible, tooltippable, single-line.
-	text_widget(string_view name, vec2 pos, align alignment, string_view tooltip_key, font font, ttf_style style, float font_size,
-				text_callback text_cb = DEFAULT_TEXT_CALLBACK);
+	text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::string_view tooltip_key, font font, tr::ttf_style style,
+				float font_size, text_callback text_cb = DEFAULT_TEXT_CALLBACK);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
@@ -33,7 +33,7 @@ class text_widget : public widget {
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
 	// Gets the size of the widget.
-	vec2 size() const override;
+	glm::vec2 size() const override;
 	// Updates the widget.
 	void update() noexcept override;
 	// Instructs the widget to release its graphical resources.
@@ -44,25 +44,25 @@ class text_widget : public widget {
   protected:
 	struct cached {
 		// The texture of the text.
-		texture texture;
+		tr::texture texture;
 		// The amount of texture that's actually being used.
-		vec2 size;
+		glm::vec2 size;
 		// The text in the texture.
-		string text;
+		std::string text;
 	};
 
 	// The font used when drawing the text.
 	font _font;
 	// The style used when drawing the font.
-	ttf_style _style;
+	tr::ttf_style _style;
 	// The alignment the text is drawn with.
-	halign _text_alignment;
+	tr::halign _text_alignment;
 	// The font size used when drawing the text.
 	float _font_size;
 	// The maximum allowed width of the widget's text.
 	int _max_width;
 	// Cached texture and string.
-	mutable optional<cached> _cached;
+	mutable std::optional<cached> _cached;
 
 	// Updates the cache.
 	void update_cache() const;
@@ -74,9 +74,9 @@ class clickable_text_widget : public text_widget {
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a clickable text widget.
-	clickable_text_widget(string_view name, vec2 pos, align alignment, font font, float font_size, text_callback text_cb,
+	clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size, text_callback text_cb,
 						  status_callback status_cb, action_callback action_cb, tooltip_callback tooltip_cb = NO_TOOLTIP,
-						  vector<key_chord>&& shortcuts = {}) noexcept;
+						  std::vector<key_chord>&& shortcuts = {}) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -100,18 +100,18 @@ class clickable_text_widget : public text_widget {
 };
 
 // Widget for inputting a line of text.
-template <size_t S> class line_input_widget : public text_widget {
+template <std::size_t S> class line_input_widget : public text_widget {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a text line input wiget.
-	line_input_widget(string_view name, vec2 pos, align alignment, float font_size, status_callback status_cb,
+	line_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, float font_size, status_callback status_cb,
 					  action_callback enter_cb) noexcept;
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
 	// The input buffer.
-	static_string<S> buffer;
+	tr::static_string<S> buffer;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -126,7 +126,7 @@ template <size_t S> class line_input_widget : public text_widget {
 	void on_hold_end() noexcept override;
 	void on_gain_focus() noexcept override;
 	void on_lose_focus() noexcept override;
-	void on_write(string_view input) noexcept override;
+	void on_write(std::string_view input) noexcept override;
 	void on_enter() override;
 	void on_erase() noexcept override;
 	void on_clear() noexcept override;
@@ -143,22 +143,22 @@ template <size_t S> class line_input_widget : public text_widget {
 };
 
 // Widget for inputting multiline text.
-template <size_t S> class multiline_input_widget : public text_widget {
+template <std::size_t S> class multiline_input_widget : public text_widget {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a multiline input wiget.
-	multiline_input_widget(string_view name, vec2 pos, align alignment, float width, u8 max_lines, halign text_alignment, float font_size,
-						   status_callback status_cb) noexcept;
+	multiline_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, float width, std::uint8_t max_lines,
+						   tr::halign text_alignment, float font_size, status_callback status_cb) noexcept;
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
 	// The input buffer.
-	static_string<S> buffer;
+	tr::static_string<S> buffer;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	vec2 size() const override;
+	glm::vec2 size() const override;
 	void add_to_renderer() override;
 	bool active() const noexcept override;
 
@@ -170,7 +170,7 @@ template <size_t S> class multiline_input_widget : public text_widget {
 	void on_hold_end() noexcept override;
 	void on_gain_focus() noexcept override;
 	void on_lose_focus() noexcept override;
-	void on_write(string_view input) noexcept override;
+	void on_write(std::string_view input) noexcept override;
 	void on_enter() override;
 	void on_erase() noexcept override;
 	void on_clear() noexcept override;
@@ -183,7 +183,7 @@ template <size_t S> class multiline_input_widget : public text_widget {
 	// The size of the widget.
 	glm::vec2 _size;
 	// The maximum allowed number of lines of text.
-	u8 _max_lines;
+	std::uint8_t _max_lines;
 	// Keeps track of whether the widget has input focus.
 	bool _has_focus;
 };
@@ -196,16 +196,16 @@ class color_preview_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a color preview widget.
-	color_preview_widget(string_view name, vec2 pos, align alignment, u16& hue_ref) noexcept;
+	color_preview_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t& hue_ref) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	vec2 size() const noexcept override;
+	glm::vec2 size() const noexcept override;
 	void add_to_renderer() override;
 
   private:
 	// Reference to the hue value.
-	u16& _hue_ref;
+	std::uint16_t& _hue_ref;
 };
 
 // Clickable arrow widget.
@@ -214,12 +214,12 @@ class arrow_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates an arrow widget.
-	arrow_widget(string_view name, vec2 pos, align alignment, bool right_arrow, status_callback status_cb, action_callback action_cb,
-				 vector<key_chord>&& chords = {}) noexcept;
+	arrow_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb,
+				 action_callback action_cb, std::vector<key_chord>&& chords = {}) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	vec2 size() const noexcept override;
+	glm::vec2 size() const noexcept override;
 	void add_to_renderer() override;
 	void update() noexcept override;
 
@@ -249,11 +249,11 @@ struct replay_playback_indicator_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a replay playback indicator widget.
-	replay_playback_indicator_widget(string_view name, vec2 pos, align alignment) noexcept;
+	replay_playback_indicator_widget(std::string_view name, glm::vec2 pos, tr::align alignment) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	vec2 size() const noexcept override;
+	glm::vec2 size() const noexcept override;
 	void add_to_renderer() override;
 };
 
@@ -261,22 +261,26 @@ struct replay_playback_indicator_widget : public widget {
 
 // Score widget.
 struct score_widget : public text_widget {
+	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
+
+	// Sentinel to not display the rank of the widget.
+	static constexpr std::size_t DONT_SHOW_RANK{-1UZ};
+
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a score widget.
-	score_widget(string_view name, vec2 pos, align alignment, size_t rank, score* score) noexcept;
+	score_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::size_t rank, score* score) noexcept;
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
 	// The rank of the score.
-	size_t rank;
+	std::size_t rank;
 	// Pointer to the score this widget is displaying information for.
 	score* score;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	vec2 size() const noexcept override;
-	vec2 tl() const noexcept override;
+	glm::vec2 size() const noexcept override;
 	void add_to_renderer() override;
 };
 
@@ -284,18 +288,17 @@ struct score_widget : public text_widget {
 struct replay_widget : public clickable_text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	replay_widget(string_view name, vec2 pos, align alignment, auto base_status_cb, auto base_action_cb,
-				  optional<map<string, replay_header>::iterator> it, key shortcut);
+	replay_widget(std::string_view name, glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
+				  std::optional<std::map<std::string, replay_header>::iterator> it, tr::keycode shortcut);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
 	// The replay header.
-	optional<map<string, replay_header>::iterator> it;
+	std::optional<std::map<std::string, replay_header>::iterator> it;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-	vec2 size() const noexcept override;
-	vec2 tl() const noexcept override;
+	glm::vec2 size() const noexcept override;
 	void add_to_renderer() override;
 };
 

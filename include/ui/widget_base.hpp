@@ -7,27 +7,27 @@
 // Shortcut key chord.
 struct key_chord {
 	// Shortcut chord key.
-	key key;
+	tr::keycode key;
 	// Shortcut chord modifiers.
-	mods mods{mods::NONE};
+	tr::keymods mods{tr::keymods::NONE};
 
 	bool operator==(const key_chord&) const = default;
 };
 
 // Alias for the type of a tooltip callback.
-using tooltip_callback = function<string()>;
+using tooltip_callback = std::function<std::string()>;
 // Sentinel for a mousable to not have a tooltip.
 inline const tooltip_callback NO_TOOLTIP{};
 
 // Alias for a text widget text callback.
-using text_callback = function<string(const static_string<30>&)>;
-// Default callback for text widgets: gettnig a localization string using the widget name as the key.
-inline const text_callback DEFAULT_TEXT_CALLBACK{[](const static_string<30>& name) { return string{localization[name]}; }};
+using text_callback = std::function<std::string(const tr::static_string<30>&)>;
+// Default callback for text widgets: gettnig a localization std::string using the widget name as the key.
+inline const text_callback DEFAULT_TEXT_CALLBACK{[](const tr::static_string<30>& name) { return std::string{localization[name]}; }};
 
 // Alias for a clickable widget status callback.
-using status_callback = function<bool()>;
+using status_callback = std::function<bool()>;
 // Alias for a clickable widget action callback.
-using action_callback = function<void()>;
+using action_callback = std::function<void()>;
 
 ////////////////////////////////////////////////////////////////// WIDGET /////////////////////////////////////////////////////////////////
 
@@ -35,17 +35,17 @@ using action_callback = function<void()>;
 class widget {
   public:
 	// Creates a widget.
-	widget(string_view name, vec2 pos, align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
-		   vector<key_chord>&& shortcuts) noexcept;
+	widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
+		   std::vector<key_chord>&& shortcuts) noexcept;
 	// Virtual destructor.
 	virtual ~widget() noexcept = default;
 
 	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
 
 	// The name of the widget.
-	static_string<30> name;
+	tr::static_string<30> name;
 	// The alignment of the widget.
-	align alignment;
+	tr::align alignment;
 	// The position of the widget.
 	interpolated_vec2 pos;
 	// An optional tooltip callback (the widget must be hoverable for it to be used).
@@ -54,9 +54,9 @@ class widget {
 	///////////////////////////////////////////////////////////////// SIZE ////////////////////////////////////////////////////////////////
 
 	// Gets the size of the widget.
-	virtual vec2 size() const = 0;
+	virtual glm::vec2 size() const = 0;
 	// Gets the top-left corner of the widget.
-	virtual vec2 tl() const noexcept;
+	glm::vec2 tl() const noexcept;
 
 	/////////////////////////////////////////////////////////////// OPACITY ///////////////////////////////////////////////////////////////
 
@@ -65,11 +65,11 @@ class widget {
 	// Hides the widget instantly.
 	void hide() noexcept;
 	// Hides the widget gradually.
-	void hide(u16 time) noexcept;
+	void hide(std::uint16_t time) noexcept;
 	// Unhides the widget instantly.
 	void unhide() noexcept;
 	// Unhides the widget gradually.
-	void unhide(u16 time) noexcept;
+	void unhide(std::uint16_t time) noexcept;
 
 	/////////////////////////////////////////////////////////////// STATUS ////////////////////////////////////////////////////////////////
 
@@ -109,7 +109,7 @@ class widget {
 	// Callback for losing input focus.
 	virtual void on_lose_focus() {};
 	// Callback for character insertion.
-	virtual void on_write(string_view){};
+	virtual void on_write(std::string_view){};
 	// Callback for when enter is pressed.
 	virtual void on_enter() {};
 	// Callback for character deletion.
@@ -138,5 +138,5 @@ class widget {
 	// Whether the widget is writable.
 	bool _writable;
 	// The shortcuts of the widget.
-	vector<key_chord> _shortcuts;
+	std::vector<key_chord> _shortcuts;
 };

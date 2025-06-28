@@ -20,7 +20,7 @@ enum audio_file {
 };
 
 // The filenames of the audio files.
-array<const char*, audio_file::COUNT> AUDIO_FILENAMES{
+std::array<const char*, audio_file::COUNT> AUDIO_FILENAMES{
 	"click.ogg", "confirm.ogg", "back.ogg", "hit.ogg", "explosion.ogg", "bounce1.ogg",
 };
 
@@ -44,18 +44,18 @@ audio_file sfx_to_audio_file(sfx sfx) noexcept
 }
 
 // Sound effect audio buffers.
-array<optional<audio_buffer>, audio_file::COUNT> sounds;
+std::array<std::optional<tr::audio_buffer>, audio_file::COUNT> sounds;
 
 // Tries to load an audio file.
-optional<audio_buffer> load_audio_file(const char* filename) noexcept
+std::optional<tr::audio_buffer> load_audio_file(const char* filename) noexcept
 {
 	try {
-		optional<audio_buffer> buffer{tr::load_audio_file(cli_settings.datadir / "audio" / filename)};
-		LOG(INFO, "Loaded audio from '{}'.", (cli_settings.datadir / "audio" / filename).string());
+		std::optional<tr::audio_buffer> buffer{tr::load_audio_file(cli_settings.datadir / "audio" / filename)};
+		LOG(tr::severity::INFO, "Loaded audio from '{}'.", (cli_settings.datadir / "audio" / filename).string());
 		return buffer;
 	}
 	catch (std::exception& err) {
-		LOG(ERROR, "Failed to load audio from '{}': {}.", (cli_settings.datadir / "audio" / filename).string(), err.what());
+		LOG(tr::severity::ERROR, "Failed to load audio from '{}': {}.", (cli_settings.datadir / "audio" / filename).string(), err.what());
 		return std::nullopt;
 	}
 }
@@ -66,7 +66,7 @@ void audio::initialize() noexcept
 {
 	try {
 		tr::audio_system::initialize();
-		LOG(INFO, "Initialized the audio system.");
+		LOG(tr::severity::INFO, "Initialized the audio system.");
 		tr::audio_system::set_master_gain(2);
 		tr::audio_system::set_class_gain(0, settings.sfx_volume / 100.0f);
 		tr::audio_system::set_class_gain(1, settings.music_volume / 100.0f);
@@ -75,7 +75,7 @@ void audio::initialize() noexcept
 		}
 	}
 	catch (std::exception& err) {
-		LOG(ERROR, "Failed to initialize the audio system: {}.", err.what());
+		LOG(tr::severity::ERROR, "Failed to initialize the audio system: {}.", err.what());
 	}
 }
 
@@ -84,12 +84,12 @@ void audio::play(sfx sfx, float volume, float pan, float pitch) noexcept
 	const audio_file file{sfx_to_audio_file(sfx)};
 	if (tr::audio_system::active() && sounds[file].has_value()) {
 		try {
-			audio_source source{0};
+			tr::audio_source source{0};
 			source.use(*sounds[file]);
 			source.set_classes(1);
 			source.set_gain(volume);
 			source.set_pitch(pitch);
-			source.set_pos({magth(1.0f, tr::acos(pan)), 0});
+			source.set_pos({tr::magth(1.0f, tr::acos(pan)), 0});
 			source.set_rolloff(1.0f);
 			source.play();
 		}
@@ -109,10 +109,10 @@ void audio::apply_settings() noexcept
 void audio::shut_down() noexcept
 {
 	if (tr::audio_system::active()) {
-		for (optional<audio_buffer>& sound : sounds) {
+		for (std::optional<tr::audio_buffer>& sound : sounds) {
 			sound.reset();
 		}
 		tr::audio_system::shut_down();
-		LOG(INFO, "Shut down the audio system.");
+		LOG(tr::severity::INFO, "Shut down the audio system.");
 	}
 }

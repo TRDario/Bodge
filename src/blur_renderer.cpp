@@ -19,9 +19,9 @@ constexpr const char* FRAGMENT_SHADER_SRC{
 	"(2*R));k+=texture(t,p)*w;}C=k;}else{for(d=1/S.y,y=-r,p.y+=y*d;y<=r;y++,p.y+=d){w=W*exp((-y*y)/"
 	"(2*R));k+=texture(t,p)*w;}vec3 g=H(k.rgb);C=vec4(G(vec3(g.x,g.y*s,g.z)),1);}}"};
 // The renderer ID of the pause menu background renderer.
-const u32 RENDERER_ID{tr::alloc_renderer_id()};
+const std::uint32_t RENDERER_ID{tr::alloc_renderer_id()};
 // The mesh used for drawing the pause menu background.
-constexpr array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
+constexpr std::array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -34,17 +34,17 @@ blur_renderer::blur_renderer(int texture_size)
 {
 	_tex_unit.set_texture(_input_tex);
 	_pipeline.fragment_shader().set_uniform(0, _tex_unit);
-	_pipeline.fragment_shader().set_uniform(1, static_cast<vec2>(_input_tex.size()));
+	_pipeline.fragment_shader().set_uniform(1, static_cast<glm::vec2>(_input_tex.size()));
 
-	if (cli_settings.debug_mode) {
-		_input_tex.set_label("(Bodge) Blur Renderer Input Texture");
-		_aux_tex.set_label("(Bodge) Blur Renderer Auxilliary Texture");
-		_pipeline.set_label("(Bodge) Blur Renderer Pipeline");
-		_pipeline.vertex_shader().set_label("(Bodge) Blur Renderer Vertex Shader");
-		_pipeline.fragment_shader().set_label("(Bodge) Blur Renderer Fragment Shader");
-		_vformat.set_label("(Bodge) Blur Renderer Vertex Format");
-		_vbuffer.set_label("(Bodge) Blur Renderer Vertex Buffer");
-	}
+#ifndef NDEBUG
+	_input_tex.set_label("(Bodge) Blur Renderer Input Texture");
+	_aux_tex.set_label("(Bodge) Blur Renderer Auxilliary Texture");
+	_pipeline.set_label("(Bodge) Blur Renderer Pipeline");
+	_pipeline.vertex_shader().set_label("(Bodge) Blur Renderer Vertex Shader");
+	_pipeline.fragment_shader().set_label("(Bodge) Blur Renderer Fragment Shader");
+	_vformat.set_label("(Bodge) Blur Renderer Vertex Format");
+	_vbuffer.set_label("(Bodge) Blur Renderer Vertex Buffer");
+#endif
 }
 
 ///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ tr::render_target blur_renderer::input() noexcept
 
 void blur_renderer::draw(float saturation, float strength) noexcept
 {
-	strength = max(std::round(strength * engine::render_scale()), 2.0f);
+	strength = std::max(std::round(strength * engine::render_scale()), 2.0f);
 
 	tr::gfx_context::set_renderer(RENDERER_ID);
 	tr::gfx_context::set_shader_pipeline(_pipeline);

@@ -1,16 +1,13 @@
 #pragma once
-#include "../game/game.hpp"
-#include "../ui/ui_manager.hpp"
+#include "save_score_state.hpp"
 
-// Replay screen state.
-class replays_state : public tr::state {
+// Replay saving state.
+class save_replay_state : public tr::state {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	// Creates a replay screen state with a randomly chosen background gamemode.
-	replays_state();
-	// Creates a replay screen state with an ongoing game.
-	replays_state(std::unique_ptr<game>&& game);
+	// Creates a replay saving state.
+	save_replay_state(std::unique_ptr<active_game>&& game, save_screen_flags flags);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -22,43 +19,38 @@ class replays_state : public tr::state {
 	void draw() override;
 
   private:
-	// Substates within the replay screen state.
+	// base substates within the replay saving state.
+	enum class base_substate : std::uint8_t {
+		// Currently saving the score.
+		SAVING_REPLAY = 0x0,
+		// Entering the replay saving sceen.
+		EXITING = 0x1
+	};
+	// base_substate combined with save_screen_flags.
 	enum class substate : std::uint8_t {
-		// Entering the replays screen from a replay.
-		RETURNING_FROM_REPLAY,
-		// In the replays screen.
-		IN_REPLAYS,
-		// Switching the page.
-		SWITCHING_PAGE,
-		// Starting a replay.
-		STARTING_REPLAY,
-		// Exiting the replays screen.
-		ENTERING_TITLE
 	};
 
 	// The current menu substate.
 	substate _substate;
-	// The current replay page.
-	std::uint16_t _page;
 	// Internal timer.
 	ticks _timer;
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
-	std::unique_ptr<game> _game;
-	// List of replays.
-	std::map<std::string, replay_header> _replays;
-	// The selected replay.
-	std::map<std::string, replay_header>::iterator _selected;
+	std::unique_ptr<active_game> _game;
+	// Header of the replay that will be saved.
+	replay_header _replay;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
+	// Combines a base substate and flags into a substate.
+	friend substate operator|(const base_substate& l, const save_screen_flags& r) noexcept;
+	// Converts a substate to a base substate.
+	friend base_substate to_base(substate state) noexcept;
+	// Converts a substate to save screen flags.
+	friend save_screen_flags to_flags(substate state) noexcept;
 	// Calculates the fade overlay opacity.
 	float fade_overlay_opacity() const noexcept;
-	// Sets up the UI.
-	void set_up_ui();
-	// Sets up the page switching animation.
-	void set_up_page_switch_animation() noexcept;
 	// Sets up the exit animation.
 	void set_up_exit_animation() noexcept;
 };

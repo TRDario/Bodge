@@ -19,7 +19,7 @@ class player {
 	// Gets the amount of time that passed since game over.
 	ticks time_since_game_over() const noexcept;
 	// Checks whether a player and any balls are colliding.
-	friend bool colliding(const player& player, const static_vector<ball, 255>& balls) noexcept;
+	friend bool colliding(const player& player, const tr::static_vector<ball, 255>& balls) noexcept;
 
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
@@ -28,7 +28,7 @@ class player {
 	// Updates the player state without updating the position.
 	void update() noexcept;
 	// Updates the player state.
-	void update(vec2 target) noexcept;
+	void update(glm::vec2 target) noexcept;
 
 	////////////////////////////////////////////////////////////// GRAPHICS ///////////////////////////////////////////////////////////////
 
@@ -39,13 +39,13 @@ class player {
 	// Death fragment.
 	struct death_fragment {
 		// The position of the fragment.
-		vec2 pos;
+		glm::vec2 pos;
 		// The velocity of the fragment.
-		vec2 vel;
+		glm::vec2 vel;
 		// The rotation of the fragment.
-		fangle rot;
+		tr::fangle rot;
 		// The angular velocity of the fragment.
-		fangle rotvel;
+		tr::fangle rotvel;
 
 		// Updates the fragment.
 		void update() noexcept;
@@ -56,7 +56,7 @@ class player {
 	// Control points of the player's trail.
 	trail _trail;
 	// The death fragments.
-	array<death_fragment, 6> _fragments;
+	std::array<death_fragment, 6> _fragments;
 	// The number of lives left.
 	int _lives;
 	// The player's movement inertia.
@@ -79,16 +79,16 @@ class player {
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Gets the size of timer text.
-	vec2 timer_text_size(const string& text, float scale) const noexcept;
+	glm::vec2 timer_text_size(const std::string& text, float scale) const noexcept;
 	// Sets up the fragments for the death animation.
 	void set_up_death_fragments() noexcept;
 
 	// Adds the player fill to the renderer.
-	void add_fill_to_renderer(u8 opacity, fangle rotation, float size) const;
+	void add_fill_to_renderer(std::uint8_t opacity, tr::fangle rotation, float size) const;
 	// Adds the player outline to the renderer.
-	void add_outline_to_renderer(tr::rgb8 tint, u8 opacity, fangle rotation, float size) const;
+	void add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::fangle rotation, float size) const;
 	// Adds the player trail to the renderer.
-	void add_trail_to_renderer(tr::rgb8 tint, u8 opacity, fangle rotation, float size) const;
+	void add_trail_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::fangle rotation, float size) const;
 	// Adds the lives UI to the renderer.
 	void add_lives_to_renderer() const;
 	// Adds the timer text to the renderer.

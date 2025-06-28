@@ -6,7 +6,7 @@
 // Gamemode player settings.
 struct player_settings {
 	// The number of starting lives.
-	u32 starting_lives{2};
+	std::uint32_t starting_lives{2};
 	// The size of the player hitbox.
 	float size{10};
 	// The player's movement inertia (range: [0, 1]).
@@ -26,9 +26,9 @@ constexpr player_settings NO_PLAYER{-1U};
 // Gamemode ball settings.
 struct ball_settings {
 	// The starting number of balls.
-	u8 starting_count{10};
+	std::uint8_t starting_count{10};
 	// The largest possible number of balls.
-	u8 max_count{20};
+	std::uint8_t max_count{20};
 	// The interval between ball spawns in ticks.
 	ticks spawn_interval{10_s};
 	// The starting size of ball spawns.
@@ -50,11 +50,11 @@ struct gamemode {
 	// Flag marking the gamemode as a special, built-in gamemode.
 	bool builtin{false};
 	// The name of the gamemode.
-	static_string<12> name{"Untitled"};
+	tr::static_string<12> name{"Untitled"};
 	// The author of the gamemode.
-	static_string<20> author{"Unknown"};
+	tr::static_string<20> author{"Unknown"};
 	// The description of the gamemode.
-	static_string<40> description;
+	tr::static_string<40> description;
 	// Player settings.
 	player_settings player{};
 	// Ball settings.
@@ -65,7 +65,8 @@ struct gamemode {
 	// Creates a default gamemode.
 	gamemode() noexcept = default;
 	// Creates a builtin gamemode.
-	constexpr gamemode(string_view name, string_view description, const player_settings& player, const ball_settings& ball) noexcept
+	constexpr gamemode(std::string_view name, std::string_view description, const player_settings& player,
+					   const ball_settings& ball) noexcept
 		: builtin{true}, name{name}, author{"TRDario"}, description{description}, player{player}, ball{ball}
 	{
 	}
@@ -75,11 +76,16 @@ struct gamemode {
 	{
 	}
 	// Loads a gamemode from file.
-	gamemode(const path& path);
+	gamemode(const std::filesystem::path& path);
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
 	bool operator==(const gamemode&) const noexcept = default;
+
+	// Gets the localization of the name of the gamemode.
+	std::string_view name_loc() const noexcept;
+	// Gets the localization of the description of the gamemode.
+	std::string_view description_loc() const noexcept;
 
 	// Saves a gamemode to file.
 	void save_to_file() noexcept;
@@ -87,29 +93,29 @@ struct gamemode {
 
 // Gamemode binary reader.
 template <> struct tr::binary_reader<gamemode> {
-	static void read_from_stream(istream& is, gamemode& out);
-	static span<const byte> read_from_span(span<const byte> span, gamemode& out);
+	static void read_from_stream(std::istream& is, gamemode& out);
+	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, gamemode& out);
 };
 
 // Gamemode binary writer.
 template <> struct tr::binary_writer<gamemode> {
-	static void write_to_stream(ostream& os, const gamemode& in);
-	static span<byte> write_to_span(span<byte> span, const gamemode& in);
+	static void write_to_stream(std::ostream& os, const gamemode& in);
+	static std::span<std::byte> write_to_span(std::span<std::byte> span, const gamemode& in);
 };
 
 // Loads all found gamemodes.
-vector<gamemode> load_gamemodes() noexcept;
+std::vector<gamemode> load_gamemodes() noexcept;
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // The gamemodes that can appear in the main menu background.
-const array<gamemode, 2> BUILTIN_GAMEMODES{
+const std::array<gamemode, 2> BUILTIN_GAMEMODES{
 	gamemode{"gm_test", "gm_test_d", player_settings{}, ball_settings{10, 10, 10_s, 50, 0, 400, 0}},
 	gamemode{"gm_test2", "gm_test2_d", player_settings{}, ball_settings{10, 10, 10_s, 50, 0, 400, 0}},
 };
 
 // The gamemodes that can appear in the main menu background.
-constexpr array<gamemode, 5> MENU_GAMEMODES{
+constexpr std::array<gamemode, 5> MENU_GAMEMODES{
 	ball_settings{},
 	ball_settings{1, 20, 1_s, 10, 2, 250, 10},
 	ball_settings{10, 10, 10_s, 50, 0, 400, 0},
