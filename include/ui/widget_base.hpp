@@ -29,6 +29,9 @@ using status_callback = std::function<bool()>;
 // Alias for a clickable widget action callback.
 using action_callback = std::function<void()>;
 
+// Sentinel for no shortcuts.
+constexpr std::vector<key_chord> NO_SHORTCUTS{};
+
 ////////////////////////////////////////////////////////////////// WIDGET /////////////////////////////////////////////////////////////////
 
 // Base widget class.

@@ -121,7 +121,8 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 		}
 		return nullptr;
 	case substate::RESTARTING:
-		return _timer >= 0.5_s ? std::make_unique<game_state>(std::make_unique<active_game>(_game->gamemode()), true) : nullptr;
+		return _timer >= 0.5_s ? std::make_unique<game_state>(std::make_unique<active_game>(_game->gamemode()), game_type::REGULAR, true)
+							   : nullptr;
 	case substate::SAVING_AND_RESTARTING:
 	case substate::SAVING_AND_QUITTING: {
 		if (_timer >= 0.5_s) {

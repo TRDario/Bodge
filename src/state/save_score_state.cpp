@@ -13,23 +13,23 @@ constexpr std::initializer_list<key_chord> CANCEL_SHORTCUTS{{tr::keycode::ESCAPE
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 save_score_state::save_score_state(std::unique_ptr<active_game>&& game, glm::vec2 mouse_pos, save_screen_flags flags)
-	: _substate{base_substate::SAVING_SCORE | flags}
+	: _substate{substate_base::SAVING_SCORE | flags}
 	, _timer{0}
 	, _game{std::move(game)}
 	, _mouse_pos{mouse_pos}
 	, _score{{}, unix_now(), _game->result(), {!_game->game_over(), cli_settings.game_speed != 1.0f}}
 {
-	const status_callback status_cb{[this] { return to_base(_substate) == base_substate::SAVING_SCORE; }};
+	const status_callback status_cb{[this] { return to_base(_substate) == substate_base::SAVING_SCORE; }};
 
 	const action_callback save_action_cb{[this] {
-		_substate = base_substate::ENTERING_SAVE_REPLAY | to_flags(_substate);
+		_substate = substate_base::ENTERING_SAVE_REPLAY | to_flags(_substate);
 		_timer = 0;
 		set_up_exit_animation();
 		scorefile.playtime += _score.result;
 		scorefile.add_score(_game->gamemode(), _score);
 	}};
 	const action_callback cancel_action_cb{[this] {
-		_substate = base_substate::RETURNING | to_flags(_substate);
+		_substate = substate_base::RETURNING | to_flags(_substate);
 		_timer = 0;
 		set_up_exit_animation();
 	}};
@@ -63,7 +63,8 @@ save_score_state::save_score_state(std::unique_ptr<active_game>&& game, glm::vec
 	save.unhide(0.5_s);
 
 	widget& cancel{_ui.emplace<clickable_text_widget>("cancel", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													  DEFAULT_TEXT_CALLBACK, status_cb, cancel_action_cb, NO_TOOLTIP, CANCEL_SHORTCUTS)};
+													  DEFAULT_TEXT_CALLBACK, status_cb, cancel_action_cb, NO_TOOLTIP, CANCEL_SHORTCUTS,
+													  sfx::CANCEL)};
 	cancel.pos.change({500, 1000}, 0.5_s);
 	cancel.unhide(0.5_s);
 }
@@ -86,21 +87,21 @@ std::unique_ptr<tr::state> save_score_state::update(tr::duration)
 	_score.description = _ui.get<multiline_input_widget<255>>("input").buffer;
 
 	switch (to_base(_substate)) {
-	case base_substate::SAVING_SCORE:
+	case substate_base::SAVING_SCORE:
 		return nullptr;
-	case base_substate::RETURNING:
+	case substate_base::RETURNING:
 		if (_timer >= 0.5_s) {
 			if (to_flags(_substate) & save_screen_flags::GAME_OVER) {
 				return std::make_unique<game_over_state>(std::move(_game), false);
 			}
 			else {
-				return std::make_unique<pause_state>(std::move(_game), _mouse_pos, false);
+				return std::make_unique<pause_state>(std::move(_game), game_type::REGULAR, _mouse_pos, false);
 			}
 		}
 		else {
 			return nullptr;
 		}
-	case base_substate::ENTERING_SAVE_REPLAY:
+	case substate_base::ENTERING_SAVE_REPLAY:
 		return _timer >= 0.5_s ? std::make_unique<save_replay_state>(std::move(_game), to_flags(_substate)) : nullptr;
 	}
 }
@@ -118,14 +119,14 @@ void save_score_state::draw()
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-save_score_state::substate operator|(const save_score_state::base_substate& l, const save_screen_flags& r) noexcept
+save_score_state::substate operator|(const save_score_state::substate_base& l, const save_screen_flags& r) noexcept
 {
 	return static_cast<save_score_state::substate>(static_cast<int>(l) | static_cast<int>(r));
 }
 
-save_score_state::base_substate to_base(save_score_state::substate state) noexcept
+save_score_state::substate_base to_base(save_score_state::substate state) noexcept
 {
-	return static_cast<save_score_state::base_substate>(static_cast<int>(state) & 0x3);
+	return static_cast<save_score_state::substate_base>(static_cast<int>(state) & 0x3);
 }
 
 save_screen_flags to_flags(save_score_state::substate state) noexcept

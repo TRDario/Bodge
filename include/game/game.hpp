@@ -4,6 +4,16 @@
 #include "ball.hpp"
 #include "player.hpp"
 
+// Types of games.
+enum class game_type {
+	// Regular game.
+	REGULAR = 0x0,
+	// Gamemode designer test game.
+	TEST = 0x8,
+	// Replay.
+	REPLAY = 0x10
+};
+
 // Game state.
 class game {
   public:
@@ -11,6 +21,8 @@ class game {
 
 	// Creates a new game state.
 	game(const gamemode& gamemode, std::uint64_t rng_seed);
+	game(game&&) noexcept = default;
+	virtual ~game() noexcept = default;
 
 	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
 
@@ -25,6 +37,8 @@ class game {
 
 	// Updates the game state given an input.
 	void update(const glm::vec2& input) noexcept;
+	// Virtual update function.
+	virtual void update();
 
 	////////////////////////////////////////////////////////////// GRAPHICS ///////////////////////////////////////////////////////////////
 
@@ -75,7 +89,7 @@ class active_game : public game {
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Updates the game state.
-	void update();
+	void update() override;
 
   private:
 	// The replay storing inputs.
@@ -106,7 +120,7 @@ class replay_game : public game {
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Updates the game state.
-	void update() noexcept;
+	void update() noexcept override;
 
   private:
 	// The replay from which inputs are gotten.

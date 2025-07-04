@@ -2,15 +2,13 @@
 #include "../game/game.hpp"
 #include "../ui/ui_manager.hpp"
 
-// Title screen state.
-class title_state : public tr::state {
+// Gamemode player settings editor state.
+class player_settings_editor_state : public tr::state {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	// Creates a title state with a randomly chosen background gamemode.
-	title_state();
-	// Creates a title state with an ongoing game.
-	title_state(std::unique_ptr<game>&& game);
+	// Creates a gamemode player settings editor state.
+	player_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -22,24 +20,12 @@ class title_state : public tr::state {
 	void draw() override;
 
   private:
-	// Substates within the title screen state.
+	// Substates within the player settings editor state.
 	enum class substate : std::uint8_t {
-		// Entering the game.
-		ENTERING_GAME,
-		// In the main menu.
-		IN_TITLE,
-		// Entering the "Start Game" menu.
-		ENTERING_START_GAME,
-		// Entering the gamemode editor.
-		ENTERING_gamemode_designer,
-		// Entering the replays screen.
-		ENTERING_REPLAYS,
-		// Entering the scores screen.
-		ENTERING_SCOREBOARDS,
-		// Entering the settings screen.
-		ENTERING_SETTINGS,
-		// Exiting the game.
-		EXITING_GAME
+		// In the player settings editor screen.
+		IN_EDITOR,
+		// Exiting the player settings editor screen.
+		EXITING
 	};
 
 	// The current menu substate.
@@ -50,13 +36,11 @@ class title_state : public tr::state {
 	ui_manager _ui;
 	// Background game.
 	std::unique_ptr<game> _game;
+	// The pending gamemode.
+	gamemode _gamemode;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
-	// Calculates the fade overlay opacity.
-	float fade_overlay_opacity() const noexcept;
-	// Sets up the UI.
-	void set_up_ui();
 	// Sets up the exit animation.
 	void set_up_exit_animation() noexcept;
 };

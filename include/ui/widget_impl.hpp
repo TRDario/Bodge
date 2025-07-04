@@ -1,11 +1,12 @@
 #pragma once
+#include "../audio.hpp"
 #include "../engine.hpp"
 #include "widget.hpp"
 
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
 template <std::size_t S>
-line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, float font_size,
+line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, tr::ttf_style style, float font_size,
 										status_callback status_cb, action_callback enter_cb) noexcept
 	: text_widget{name,
 				  pos,
@@ -15,7 +16,7 @@ line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr
 				  true,
 				  {},
 				  font::LANGUAGE,
-				  tr::ttf_style::NORMAL,
+				  style,
 				  tr::halign::CENTER,
 				  font_size,
 				  tr::UNLIMITED_WIDTH,
@@ -50,6 +51,7 @@ template <std::size_t S> void line_input_widget<S>::on_hover() noexcept
 {
 	if (!_has_focus) {
 		color.change({220, 220, 220, 220}, 0.2_s);
+		audio::play(sfx::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
 }
 
@@ -63,11 +65,12 @@ template <std::size_t S> void line_input_widget<S>::on_unhover() noexcept
 template <std::size_t S> void line_input_widget<S>::on_hold_begin() noexcept
 {
 	color = {32, 32, 32, 255};
+	audio::play(sfx::HOLD, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 template <std::size_t S> void line_input_widget<S>::on_hold_transfer_in() noexcept
 {
-	color = {32, 32, 32, 255};
+	on_hold_begin();
 }
 
 template <std::size_t S> void line_input_widget<S>::on_hold_transfer_out() noexcept
@@ -85,6 +88,7 @@ template <std::size_t S> void line_input_widget<S>::on_gain_focus() noexcept
 {
 	_has_focus = true;
 	color.change({255, 255, 255, 255}, 0.2_s);
+	audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 template <std::size_t S> void line_input_widget<S>::on_lose_focus() noexcept
@@ -97,6 +101,7 @@ template <std::size_t S> void line_input_widget<S>::on_write(std::string_view in
 {
 	if (buffer.size() + input.size() <= S) {
 		buffer.append(input);
+		audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
 	}
 }
 
@@ -107,12 +112,16 @@ template <std::size_t S> void line_input_widget<S>::on_enter()
 
 template <std::size_t S> void line_input_widget<S>::on_erase() noexcept
 {
-	buffer.pop_back();
+	if (!buffer.empty()) {
+		buffer.pop_back();
+		audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
+	}
 }
 
 template <std::size_t S> void line_input_widget<S>::on_clear() noexcept
 {
 	buffer.clear();
+	audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
 }
 
 template <std::size_t S> void line_input_widget<S>::on_copy() noexcept
@@ -127,6 +136,7 @@ template <std::size_t S> void line_input_widget<S>::on_paste() noexcept
 			std::string pasted{tr::keyboard::clipboard_text()};
 			std::erase(pasted, '\n');
 			buffer += (buffer.size() + pasted.size() > S) ? std::string_view{pasted}.substr(0, S - buffer.size()) : pasted;
+			audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
 		}
 	}
 	catch (...) {
@@ -267,6 +277,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_hover() noexcept
 {
 	if (!_has_focus) {
 		color.change({220, 220, 220, 220}, 0.2_s);
+		audio::play(sfx::HOVER, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
 }
 
@@ -280,11 +291,12 @@ template <std::size_t S> void multiline_input_widget<S>::on_unhover() noexcept
 template <std::size_t S> void multiline_input_widget<S>::on_hold_begin() noexcept
 {
 	color = {32, 32, 32, 255};
+	audio::play(sfx::HOLD, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_hold_transfer_in() noexcept
 {
-	color = {32, 32, 32, 255};
+	on_hold_begin();
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_hold_transfer_out() noexcept
@@ -296,6 +308,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_hold_end() noexcept
 {
 	_has_focus = true;
 	color = {255, 255, 255, 255};
+	audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_gain_focus() noexcept
@@ -316,6 +329,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_write(std::string_vi
 		buffer.append(input);
 		if (font_manager.count_lines(buffer, font::LANGUAGE, tr::ttf_style::NORMAL, _font_size, _font_size / 12, _size.x) > _max_lines) {
 			buffer.pop_back();
+			audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
 		}
 	}
 }
@@ -324,17 +338,22 @@ template <std::size_t S> void multiline_input_widget<S>::on_enter()
 {
 	if (font_manager.count_lines(buffer, font::LANGUAGE, tr::ttf_style::NORMAL, _font_size, _font_size / 12, _size.x) < _max_lines) {
 		buffer.append('\n');
+		audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
 	}
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_erase() noexcept
 {
-	buffer.pop_back();
+	if (!buffer.empty()) {
+		buffer.pop_back();
+		audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
+	}
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_clear() noexcept
 {
 	buffer.clear();
+	audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_copy() noexcept
@@ -353,6 +372,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_paste() noexcept
 			if (font_manager.count_lines(copy, font::LANGUAGE, tr::ttf_style::NORMAL, _font_size, _font_size / 12, _size.x) <= _max_lines) {
 				buffer = copy;
 			}
+			audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
 		}
 	}
 	catch (...) {

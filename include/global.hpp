@@ -106,3 +106,13 @@ inline tr::logger logger;
 
 // Gets the current unix timestamp.
 std::int64_t unix_now() noexcept;
+
+/////////////////////////////////////////////////////////////////// TIME //////////////////////////////////////////////////////////////////
+
+// Struct containing information about a label widget.
+struct label {
+	// The tag of the label.
+	const char* tag;
+	// The tooltip of the label.
+	const char* tooltip;
+};

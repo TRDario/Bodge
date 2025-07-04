@@ -1,4 +1,5 @@
 #pragma once
+#include "../audio.hpp"
 #include "../font_manager.hpp"
 #include "../replay.hpp"
 #include "widget_base.hpp"
@@ -76,7 +77,7 @@ class clickable_text_widget : public text_widget {
 	// Creates a clickable text widget.
 	clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size, text_callback text_cb,
 						  status_callback status_cb, action_callback action_cb, tooltip_callback tooltip_cb = NO_TOOLTIP,
-						  std::vector<key_chord>&& shortcuts = {}) noexcept;
+						  std::vector<key_chord>&& shortcuts = {}, sfx sfx = sfx::CONFIRM) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -97,6 +98,10 @@ class clickable_text_widget : public text_widget {
 	status_callback _status_cb;
 	// Callback called when the widget is interacted with.
 	action_callback _action_cb;
+	// Overrides the disabled color effect.
+	bool _override_disabled_color;
+	// The sound effect that interacting with the widget plays.
+	sfx _sfx;
 };
 
 // Widget for inputting a line of text.
@@ -105,8 +110,8 @@ template <std::size_t S> class line_input_widget : public text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a text line input wiget.
-	line_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, float font_size, status_callback status_cb,
-					  action_callback enter_cb) noexcept;
+	line_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, tr::ttf_style style, float font_size,
+					  status_callback status_cb, action_callback enter_cb) noexcept;
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 

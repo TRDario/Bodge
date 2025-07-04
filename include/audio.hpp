@@ -2,18 +2,16 @@
 
 // Sound effects.
 enum class sfx {
-	// Menu button click sound effect.
-	CLICK,
-	// Menu button selection and click release sound effect.
+	// UI button hover.
+	HOVER,
+	// UI button hold.
+	HOLD,
+	// Affirmative action.
 	CONFIRM,
-	// Sound effect for menu shrotcuts that go back.
-	BACK,
-	// Player hit sound effect.
-	HIT,
-	// Game over explosion sound effect.
-	EXPLOSION,
-	// Ball bounce sound effects.
-	BOUNCE
+	// Negative action.
+	CANCEL,
+	// Typing.
+	TYPE,
 };
 
 // Audio system.

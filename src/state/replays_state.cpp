@@ -1,5 +1,5 @@
 #include "../../include/engine.hpp"
-#include "../../include/state/replay_state.hpp"
+#include "../../include/state/game_state.hpp"
 #include "../../include/state/replays_state.hpp"
 #include "../../include/state/title_state.hpp"
 
@@ -73,9 +73,10 @@ std::unique_ptr<tr::state> replays_state::update(tr::duration)
 		}
 		return nullptr;
 	case substate::STARTING_REPLAY:
-		return _timer >= 0.5_s ? std::make_unique<replay_state>(
-									 std::make_unique<replay_game>(_selected->second.gamemode, replay{_selected->first}), true)
-							   : nullptr;
+		return _timer >= 0.5_s
+				   ? std::make_unique<game_state>(std::make_unique<replay_game>(_selected->second.gamemode, replay{_selected->first}),
+												  game_type::REPLAY, true)
+				   : nullptr;
 	case substate::ENTERING_TITLE:
 		return _timer >= 0.5_s ? std::make_unique<title_state>(std::move(_game)) : nullptr;
 	}
@@ -148,7 +149,8 @@ void replays_state::set_up_ui()
 	title.unhide(0.5_s);
 
 	widget& exit{_ui.emplace<clickable_text_widget>("exit", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS)};
+													DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
+													sfx::CANCEL)};
 	exit.pos.change({500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 

@@ -8,9 +8,9 @@ struct player_settings {
 	// The number of starting lives.
 	std::uint32_t starting_lives{2};
 	// The size of the player hitbox.
-	float size{10};
+	float hitbox_radius{10};
 	// The player's movement inertia (range: [0, 1]).
-	float inertia{0.1};
+	float inertia_factor{0.1};
 
 	bool operator==(const player_settings&) const noexcept = default;
 
@@ -31,12 +31,12 @@ struct ball_settings {
 	std::uint8_t max_count{20};
 	// The interval between ball spawns in ticks.
 	ticks spawn_interval{10_s};
-	// The starting size of ball spawns.
-	float starting_size{20};
+	// The initial size of ball spawns.
+	float initial_size{20};
 	// The amount added to the new ball size on every spawn.
 	float size_step{1};
-	// The starting velocity of ball spawns.
-	float starting_velocity{300};
+	// The initial velocity of ball spawns.
+	float initial_velocity{300};
 	// The amount added to the new ball velocity on every spawn.
 	float velocity_step{20};
 
@@ -50,9 +50,9 @@ struct gamemode {
 	// Flag marking the gamemode as a special, built-in gamemode.
 	bool builtin{false};
 	// The name of the gamemode.
-	tr::static_string<12> name{"Untitled"};
+	tr::static_string<12> name{};
 	// The author of the gamemode.
-	tr::static_string<20> author{"Unknown"};
+	tr::static_string<20> author{};
 	// The description of the gamemode.
 	tr::static_string<40> description;
 	// Player settings.

@@ -16,7 +16,7 @@ inline constexpr tr::rgb8 BALL_FILL_COLOR{0, 0, 0};
 void play_ball_sound(glm::vec2 pos, float velocity)
 {
 	const float pan{(pos.x - 500) / 500};
-	audio::play(sfx::BOUNCE, velocity / 2000, pan, std::clamp(velocity / 600, 0.5f, 1.25f));
+	// audio::play(sfx::BOUNCE, velocity / 2000, pan, std::clamp(velocity / 600, 0.5f, 1.25f));
 }
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////

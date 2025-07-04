@@ -3,16 +3,6 @@
 #include "../../include/state/settings_state.hpp"
 #include "../../include/state/title_state.hpp"
 
-////////////////////////////////////////////////////////////////// TYPES //////////////////////////////////////////////////////////////////
-
-// Struct containing information about a settings screen label.
-struct settings_label {
-	// The tag of the label.
-	const char* tag;
-	// The tooltip of the label.
-	const char* tooltip;
-};
-
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings screen right-aligned widgets.
@@ -46,7 +36,7 @@ constexpr std::array<const char*, 24> RIGHT_WIDGETS{
 // Sentinel string for having no tooltip.
 constexpr const char* NO_TOOLTIP_STR{nullptr};
 // Settings screen left-aligned labels.
-constexpr std::array<settings_label, 8> LABELS{{
+constexpr std::array<label, 8> LABELS{{
 	{"window_size", "window_size_tt"},
 	{"refresh_rate", "refresh_rate_tt"},
 	{"msaa", "msaa_tt"},
@@ -58,12 +48,12 @@ constexpr std::array<settings_label, 8> LABELS{{
 }};
 
 // Settings screen bottom buttons.
-constexpr std::array<const char*, 3> BOTTOM_BUTTONS{"exit", "apply", "revert"};
+constexpr std::array<const char*, 3> BOTTOM_BUTTONS{"revert", "apply", "exit"};
 // Shortcuts of the bottom buttons.
-constexpr std::array<std::initializer_list<key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_CHORDS{{
-	{{tr::keycode::ESCAPE}},
-	{{tr::keycode::S, tr::keymods::CTRL}},
+constexpr std::array<std::initializer_list<key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
 	{{tr::keycode::Z, tr::keymods::CTRL}},
+	{{tr::keycode::S, tr::keymods::CTRL}},
+	{{tr::keycode::ESCAPE}},
 }};
 
 // Starting position of the window size widgets.
@@ -116,9 +106,9 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		[this] { return _substate != substate::ENTERING_TITLE && _pending.music_volume < 100; }};
 	const status_callback cur_language_status_cb{[this] { return _substate != substate::ENTERING_TITLE && languages.size() > 1; }};
 	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_status_cbs{
+		[this] { return _substate != substate::ENTERING_TITLE && _pending != settings; },
+		[this] { return _substate != substate::ENTERING_TITLE && _pending != settings; },
 		[this] { return _substate != substate::ENTERING_TITLE && _pending == settings; },
-		[this] { return _substate != substate::ENTERING_TITLE && _pending != settings; },
-		[this] { return _substate != substate::ENTERING_TITLE && _pending != settings; },
 	};
 
 	// ACTION CALLBACKS
@@ -149,11 +139,11 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		}
 	}};
 	const action_callback refresh_rate_dec_action_cb{[this] {
-		int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
 		_pending.refresh_rate = std::max(15, _pending.refresh_rate - delta);
 	}};
 	const action_callback refresh_rate_inc_action_cb{[this] {
-		int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
 		_pending.refresh_rate = std::min<int>(max_refresh_rate(), _pending.refresh_rate + delta);
 	}};
 	const action_callback cur_refresh_rate_action_cb{[this] {
@@ -176,35 +166,35 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	const action_callback msaa_dec_action_cb{[this] { _pending.msaa = _pending.msaa == 2 ? NO_MSAA : _pending.msaa / 2; }};
 	const action_callback msaa_inc_action_cb{[this] { _pending.msaa = _pending.msaa == NO_MSAA ? 2 : _pending.msaa * 2; }};
 	const action_callback primary_hue_dec_action_cb{[this] {
-		int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
 		_pending.primary_hue = (_pending.primary_hue - delta + 360) % 360;
 	}};
 	const action_callback primary_hue_inc_action_cb{[this] {
-		int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
 		_pending.primary_hue = (_pending.primary_hue + delta) % 360;
 	}};
 	const action_callback secondary_hue_dec_action_cb{[this] {
-		int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
 		_pending.secondary_hue = (_pending.secondary_hue - delta + 360) % 360;
 	}};
 	const action_callback secondary_hue_inc_action_cb{[this] {
-		int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
 		_pending.secondary_hue = (_pending.secondary_hue + delta) % 360;
 	}};
 	const action_callback sfx_volume_dec_action_cb{[this] {
-		int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
 		_pending.sfx_volume = std::max(_pending.sfx_volume - delta, 0);
 	}};
 	const action_callback sfx_volume_inc_action_cb{[this] {
-		int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
 		_pending.sfx_volume = std::min(_pending.sfx_volume + delta, 100);
 	}};
 	const action_callback music_volume_dec_action_cb{[this] {
-		int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
 		_pending.music_volume = std::min(_pending.music_volume - delta, 100);
 	}};
 	const action_callback music_volume_inc_action_cb{[this] {
-		int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
 		_pending.music_volume = std::min(_pending.music_volume + delta, 100);
 	}};
 	const action_callback cur_language_action_cb{[this] {
@@ -217,9 +207,8 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	}};
 	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_action_cbs{
 		[this] {
-			_substate = substate::ENTERING_TITLE;
-			_timer = 0;
-			set_up_exit_animation();
+			_pending = settings;
+			font_manager.reload_language_preview_font(_pending);
 		},
 		[this] {
 			const settings_t old_settings{settings};
@@ -240,8 +229,9 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 			engine::apply_settings(old_settings);
 		},
 		[this] {
-			_pending = settings;
-			font_manager.reload_language_preview_font(_pending);
+			_substate = substate::ENTERING_TITLE;
+			_timer = 0;
+			set_up_exit_animation();
 		},
 	};
 
@@ -268,8 +258,8 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	title.unhide(0.5_s);
 
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
-		const settings_label& label{LABELS[i]};
-		const glm::vec2 pos{-200, 196 + i * 75};
+		const label& label{LABELS[i]};
+		const glm::vec2 pos{-50, 196 + i * 75};
 		widget& widget{label.tooltip != NO_TOOLTIP_STR
 						   ? _ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
 													  tr::ttf_style::NORMAL, 48)
@@ -392,10 +382,11 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	cur_language.unhide(0.5_s);
 
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
+		const sfx sfx{i == 1 ? sfx::CONFIRM : sfx::CANCEL};
 		widget& widget{_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 														  DEFAULT_TEXT_CALLBACK, bottom_status_cbs[i], bottom_action_cbs[i], NO_TOOLTIP,
-														  BOTTOM_CHORDS[i])};
-		widget.pos.change({500, 1000 - i * 50}, 0.5_s);
+														  BOTTOM_SHORTCUTS[i], sfx)};
+		widget.pos.change({500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
 }
@@ -438,7 +429,7 @@ void settings_state::set_up_exit_animation() noexcept
 	for (const char* tag : BOTTOM_BUTTONS) {
 		_ui.get(tag).pos.change(BOTTOM_START_POS, 0.5_s);
 	}
-	for (const char* tag : tr::project(LABELS, &settings_label::tag)) {
+	for (const char* tag : tr::project(LABELS, &label::tag)) {
 		widget& widget{_ui.get(tag)};
 		widget.pos.change({-50, glm::vec2{widget.pos}.y}, 0.5_s);
 	}

@@ -2,15 +2,15 @@
 #include "../game/game.hpp"
 #include "../ui/ui_manager.hpp"
 
-// Title screen state.
-class title_state : public tr::state {
+// Gamemode editor screen state.
+class gamemode_designer_state : public tr::state {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	// Creates a title state with a randomly chosen background gamemode.
-	title_state();
-	// Creates a title state with an ongoing game.
-	title_state(std::unique_ptr<game>&& game);
+	// Creates a gamemode editor screen state.
+	gamemode_designer_state(std::unique_ptr<game>&& game, const gamemode& gamemode, bool returning_from_subscreen);
+	// Creates a gamemode editor screen state returning from a test game.
+	gamemode_designer_state(const gamemode& gamemode);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -22,24 +22,20 @@ class title_state : public tr::state {
 	void draw() override;
 
   private:
-	// Substates within the title screen state.
+	// Substates within the gamemode editor state.
 	enum class substate : std::uint8_t {
-		// Entering the game.
-		ENTERING_GAME,
-		// In the main menu.
-		IN_TITLE,
-		// Entering the "Start Game" menu.
-		ENTERING_START_GAME,
-		// Entering the gamemode editor.
-		ENTERING_gamemode_designer,
-		// Entering the replays screen.
-		ENTERING_REPLAYS,
-		// Entering the scores screen.
-		ENTERING_SCOREBOARDS,
-		// Entering the settings screen.
-		ENTERING_SETTINGS,
-		// Exiting the game.
-		EXITING_GAME
+		// Returning from a test game.
+		RETURNING_FROM_TEST_GAME,
+		// In the gamemode editor screen.
+		IN_GAMEMODE_DESIGNER,
+		// Entering the test game.
+		ENTERING_TEST_GAME,
+		// Entering the ball settings editor subscreen.
+		ENTERING_BALL_SETTINGS_EDITOR,
+		// Entering the player settings editor subscreen.
+		ENTERING_PLAYER_SETTINGS_EDITOR,
+		// Exiting the gamemode editor screen.
+		ENTERING_TITLE
 	};
 
 	// The current menu substate.
@@ -50,13 +46,18 @@ class title_state : public tr::state {
 	ui_manager _ui;
 	// Background game.
 	std::unique_ptr<game> _game;
+	// The pending gamemode.
+	gamemode _gamemode;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Calculates the fade overlay opacity.
 	float fade_overlay_opacity() const noexcept;
+
 	// Sets up the UI.
-	void set_up_ui();
+	void set_up_ui(bool returning_from_subscreen);
+	// Sets up the animation for entering a sub-screen.
+	void set_up_subscreen_animation() noexcept;
 	// Sets up the exit animation.
 	void set_up_exit_animation() noexcept;
 };

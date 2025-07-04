@@ -8,38 +8,33 @@ enum audio_file {
 	// Sentinel for the first audio file.
 	FIRST,
 
-	CLICK = FIRST,
+	HOVER = FIRST,
+	HOLD,
 	CONFIRM,
-	BACK,
-	HIT,
-	EXPLOSION,
-	BOUNCE1,
+	CANCEL,
+	TYPE,
 
 	// The total number of sounds.
 	COUNT
 };
 
 // The filenames of the audio files.
-std::array<const char*, audio_file::COUNT> AUDIO_FILENAMES{
-	"click.ogg", "confirm.ogg", "back.ogg", "hit.ogg", "explosion.ogg", "bounce1.ogg",
-};
+std::array<const char*, audio_file::COUNT> AUDIO_FILENAMES{"hover.ogg", "hold.ogg", "confirm.ogg", "cancel.ogg", "type.ogg"};
 
 // Converts a sound effect name to an actual audio file.
 audio_file sfx_to_audio_file(sfx sfx) noexcept
 {
 	switch (sfx) {
-	case sfx::CLICK:
-		return audio_file::CLICK;
+	case sfx::HOVER:
+		return audio_file::HOVER;
+	case sfx::HOLD:
+		return audio_file::HOLD;
 	case sfx::CONFIRM:
-		return audio_file::CLICK;
-	case sfx::BACK:
-		return audio_file::CLICK;
-	case sfx::HIT:
-		return audio_file::CLICK;
-	case sfx::EXPLOSION:
-		return audio_file::CLICK;
-	case sfx::BOUNCE:
-		return audio_file::BOUNCE1;
+		return audio_file::CONFIRM;
+	case sfx::CANCEL:
+		return audio_file::CANCEL;
+	case sfx::TYPE:
+		return audio_file::TYPE;
 	}
 }
 
@@ -50,12 +45,12 @@ std::array<std::optional<tr::audio_buffer>, audio_file::COUNT> sounds;
 std::optional<tr::audio_buffer> load_audio_file(const char* filename) noexcept
 {
 	try {
-		std::optional<tr::audio_buffer> buffer{tr::load_audio_file(cli_settings.datadir / "audio" / filename)};
-		LOG(tr::severity::INFO, "Loaded audio from '{}'.", (cli_settings.datadir / "audio" / filename).string());
+		std::optional<tr::audio_buffer> buffer{tr::load_audio_file(cli_settings.datadir / "sfx" / filename)};
+		LOG(tr::severity::INFO, "Loaded audio from '{}'.", (cli_settings.datadir / "sfx" / filename).string());
 		return buffer;
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load audio from '{}': {}.", (cli_settings.datadir / "audio" / filename).string(), err.what());
+		LOG(tr::severity::ERROR, "Failed to load audio from '{}': {}.", (cli_settings.datadir / "sfx" / filename).string(), err.what());
 		return std::nullopt;
 	}
 }

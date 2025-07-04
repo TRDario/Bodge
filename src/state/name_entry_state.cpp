@@ -35,7 +35,8 @@ name_entry_state::name_entry_state()
 	title.pos.change({500, 0}, 1.0_s);
 	title.unhide(1.0_s);
 
-	widget& input{_ui.emplace<line_input_widget<20>>("input", glm::vec2{500, 500}, tr::align::CENTER, 64, input_status_cb, action_cb)};
+	widget& input{_ui.emplace<line_input_widget<20>>("input", glm::vec2{500, 500}, tr::align::CENTER, tr::ttf_style::NORMAL, 64,
+													 input_status_cb, action_cb)};
 	input.unhide(1.0_s);
 
 	widget& confirm{_ui.emplace<clickable_text_widget>("confirm", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,

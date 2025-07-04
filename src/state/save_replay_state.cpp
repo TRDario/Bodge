@@ -12,9 +12,9 @@ constexpr std::initializer_list<key_chord> DONT_SAVE_SHORTCUTS{{tr::keycode::ESC
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_screen_flags flags)
-	: _substate{base_substate::SAVING_REPLAY | flags}, _timer{0}, _game{std::move(game)}, _replay{_game->replay().header()}
+	: _substate{substate_base::SAVING_REPLAY | flags}, _timer{0}, _game{std::move(game)}, _replay{_game->replay().header()}
 {
-	const status_callback status_cb{[this] { return to_base(_substate) == base_substate::SAVING_REPLAY; }};
+	const status_callback status_cb{[this] { return to_base(_substate) == substate_base::SAVING_REPLAY; }};
 
 	widget& title{_ui.emplace<text_widget>("save_replay", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
 	title.pos.change({500, 0}, 0.5_s);
@@ -25,8 +25,8 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 	name_label.unhide(0.5_s);
 
 	const action_callback name_action_cb{[this] { _ui.move_input_focus_forward(); }};
-	widget& name{
-		_ui.emplace<line_input_widget<20>>("name_input", glm::vec2{400, 235}, tr::align::TOP_CENTER, 64, status_cb, name_action_cb)};
+	widget& name{_ui.emplace<line_input_widget<20>>("name_input", glm::vec2{400, 235}, tr::align::TOP_CENTER, tr::ttf_style::NORMAL, 64,
+													status_cb, name_action_cb)};
 	name.pos.change({500, 235}, 0.5_s);
 	name.unhide(0.5_s);
 
@@ -41,12 +41,12 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 	description.unhide(0.5_s);
 
 	const status_callback save_status_cb{[this] {
-		return to_base(_substate) == base_substate::SAVING_REPLAY && !_ui.get<line_input_widget<20>>("name_input").buffer.empty();
+		return to_base(_substate) == substate_base::SAVING_REPLAY && !_ui.get<line_input_widget<20>>("name_input").buffer.empty();
 	}};
 	const action_callback save_action_cb{[this] {
 		const score_flags flags{!_game->game_over(), cli_settings.game_speed != 1.0f};
 
-		_substate = base_substate::EXITING | to_flags(_substate);
+		_substate = substate_base::EXITING | to_flags(_substate);
 		_timer = 0;
 		set_up_exit_animation();
 		_game->replay().set_header({_ui.get<multiline_input_widget<255>>("description_input").buffer, unix_now(), _game->result(), flags},
@@ -59,15 +59,15 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 	save.unhide(0.5_s);
 
 	const action_callback dont_save_action_cb{[this] {
-		_substate = base_substate::EXITING | to_flags(_substate);
+		_substate = substate_base::EXITING | to_flags(_substate);
 		_timer = 0;
 		set_up_exit_animation();
 	}};
-	widget& dont_save{_ui.emplace<clickable_text_widget>("dont_save", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-														 DEFAULT_TEXT_CALLBACK, status_cb, dont_save_action_cb, NO_TOOLTIP,
-														 DONT_SAVE_SHORTCUTS)};
-	dont_save.pos.change({500, 1000}, 0.5_s);
-	dont_save.unhide(0.5_s);
+	widget& discard{_ui.emplace<clickable_text_widget>("discard", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
+													   DEFAULT_TEXT_CALLBACK, status_cb, dont_save_action_cb, NO_TOOLTIP,
+													   DONT_SAVE_SHORTCUTS)};
+	discard.pos.change({500, 1000}, 0.5_s);
+	discard.unhide(0.5_s);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
@@ -86,9 +86,9 @@ std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
 		_game->update();
 	}
 
-	if (_timer >= 0.5_s && to_base(_substate) == base_substate::EXITING) {
+	if (_timer >= 0.5_s && to_base(_substate) == substate_base::EXITING) {
 		if (to_flags(_substate) & save_screen_flags::RESTARTING) {
-			return std::make_unique<game_state>(std::make_unique<active_game>(_game->gamemode()), true);
+			return std::make_unique<game_state>(std::make_unique<active_game>(_game->gamemode()), game_type::REGULAR, true);
 		}
 		else {
 			return std::make_unique<title_state>();
@@ -113,14 +113,14 @@ void save_replay_state::draw()
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-save_replay_state::substate operator|(const save_replay_state::base_substate& l, const save_screen_flags& r) noexcept
+save_replay_state::substate operator|(const save_replay_state::substate_base& l, const save_screen_flags& r) noexcept
 {
 	return static_cast<save_replay_state::substate>(static_cast<int>(l) | static_cast<int>(r));
 }
 
-save_replay_state::base_substate to_base(save_replay_state::substate state) noexcept
+save_replay_state::substate_base to_base(save_replay_state::substate state) noexcept
 {
-	return static_cast<save_replay_state::base_substate>(static_cast<int>(state) & 0x1);
+	return static_cast<save_replay_state::substate_base>(static_cast<int>(state) & 0x1);
 }
 
 save_screen_flags to_flags(save_replay_state::substate state) noexcept
@@ -130,7 +130,7 @@ save_screen_flags to_flags(save_replay_state::substate state) noexcept
 
 float save_replay_state::fade_overlay_opacity() const noexcept
 {
-	if (to_base(_substate) == base_substate::EXITING) {
+	if (to_base(_substate) == substate_base::EXITING) {
 		return _timer / 0.5_sf;
 	}
 	else {
@@ -146,6 +146,6 @@ void save_replay_state::set_up_exit_animation() noexcept
 	_ui.get("description").pos.change({400, 440}, 0.5_s);
 	_ui.get("description_input").pos.change({400, 475}, 0.5_s);
 	_ui.get("save").pos.change(BOTTOM_START_POS, 0.5_s);
-	_ui.get("dont_save").pos.change(BOTTOM_START_POS, 0.5_s);
+	_ui.get("discard").pos.change(BOTTOM_START_POS, 0.5_s);
 	_ui.hide_all(0.5_s);
 }

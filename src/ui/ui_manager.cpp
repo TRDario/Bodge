@@ -191,6 +191,7 @@ void ui_manager::handle_event(const tr::event& event)
 		if (_input != _objects.end()) {
 			if (key_down.key == tr::keycode::ESCAPE) {
 				clear_input_focus();
+				audio::play(sfx::CANCEL, 0.5f, 0.0f);
 			}
 			else if (key_down.key == tr::keycode::TAB) {
 				if (key_down.mods == tr::keymods::SHIFT) {
@@ -204,11 +205,15 @@ void ui_manager::handle_event(const tr::event& event)
 				if (key_down.mods == tr::keymods::CTRL && key_down.key == tr::keycode::C) {
 					(*_input)->on_copy();
 				}
+				else if (key_down.mods == tr::keymods::CTRL && key_down.key == tr::keycode::X) {
+					(*_input)->on_copy();
+					(*_input)->on_clear();
+				}
 				else if (key_down.mods == tr::keymods::CTRL && key_down.key == tr::keycode::V) {
 					(*_input)->on_paste();
 				}
 				else if (key_down.key == tr::keycode::BACKSPACE || key_down.key == tr::keycode::DELETE) {
-					if (key_down.mods == tr::keymods::SHIFT) {
+					if (key_down.mods & tr::keymods::CTRL) {
 						(*_input)->on_clear();
 					}
 					else {

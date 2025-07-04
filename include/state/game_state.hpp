@@ -1,5 +1,6 @@
 #pragma once
 #include "../game/game.hpp"
+#include "../ui/ui_manager.hpp"
 
 // Active game state.
 class game_state : public tr::state {
@@ -7,7 +8,7 @@ class game_state : public tr::state {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Constructs a game state.
-	game_state(std::unique_ptr<active_game>&& game, bool fade_in) noexcept;
+	game_state(std::unique_ptr<game>&& game, game_type type, bool fade_in) noexcept;
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
@@ -19,20 +20,42 @@ class game_state : public tr::state {
 	void draw() override;
 
   private:
-	// Substates within the game state.
-	enum class substate : std::uint8_t {
-		// Transitioning into the game state from the menu.
+	// Base substates within the game state.
+	enum class substate_base : std::uint8_t {
+		// Entering from another screen.
 		STARTING,
 		// Regular operation.
-		PLAYING,
+		ONGOING,
 		// The game is over.
-		GAME_OVER
+		GAME_OVER,
+		// Exiting into another screen.
+		EXITING
+	};
+	// Substates of the game state.
+	enum class substate : std::uint8_t {
 	};
 
 	// The current game substate.
 	substate _substate;
 	// The current tick timestamp.
 	ticks _timer;
-	// The gamestate.
-	std::unique_ptr<active_game> _game;
+	// The UI manager.
+	ui_manager _ui;
+	// The actual game.
+	std::unique_ptr<game> _game;
+
+	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
+
+	// Combines a substate base and game type into a substate.
+	friend substate operator|(const substate_base& l, const game_type& r) noexcept;
+	// Converts a substate to a substate base.
+	friend substate_base to_base(substate state) noexcept;
+	// Converts a substate to a game type.
+	friend game_type to_type(substate state) noexcept;
+
+	// Calculates the fade overlay opacity.
+	float fade_overlay_opacity() const noexcept;
+
+	// Adds the replay cursor to the renderer.
+	void add_replay_cursor_to_renderer(glm::vec2 pos) const;
 };

@@ -1,3 +1,4 @@
+#include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -330,7 +331,7 @@ void text_widget::update_cache() const
 
 clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size,
 											 text_callback text_cb, status_callback status_cb, action_callback action_cb,
-											 tooltip_callback tooltip_cb, std::vector<key_chord>&& shortcuts) noexcept
+											 tooltip_callback tooltip_cb, std::vector<key_chord>&& shortcuts, sfx sfx) noexcept
 	: text_widget{name,
 				  pos,
 				  alignment,
@@ -347,13 +348,15 @@ clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 po
 				  std::move(text_cb)}
 	, _status_cb{std::move(status_cb)}
 	, _action_cb{std::move(action_cb)}
+	, _override_disabled_color{false}
+	, _sfx{sfx}
 {
 }
 
 void clickable_text_widget::add_to_renderer()
 {
 	const interpolated_rgba8 real_color{color};
-	if (!active()) {
+	if (!active() && !_override_disabled_color) {
 		color = {80, 80, 80, 160};
 	}
 	text_widget::add_to_renderer();
@@ -368,6 +371,9 @@ bool clickable_text_widget::active() const noexcept
 void clickable_text_widget::on_hover() noexcept
 {
 	color.change({255, 255, 255, 255}, 0.2_s);
+	if (active()) {
+		audio::play(sfx::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	}
 }
 
 void clickable_text_widget::on_unhover() noexcept
@@ -378,11 +384,12 @@ void clickable_text_widget::on_unhover() noexcept
 void clickable_text_widget::on_hold_begin() noexcept
 {
 	color = {32, 32, 32, 255};
+	audio::play(sfx::HOLD, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 void clickable_text_widget::on_hold_transfer_in() noexcept
 {
-	color = {32, 32, 32, 255};
+	on_hold_begin();
 }
 
 void clickable_text_widget::on_hold_transfer_out() noexcept
@@ -394,12 +401,17 @@ void clickable_text_widget::on_hold_end() noexcept
 {
 	color.change({255, 255, 255, 255}, 0.2_s);
 	_action_cb();
+	audio::play(_sfx, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 void clickable_text_widget::on_shortcut() noexcept
 {
 	if (active()) {
+		color = {255, 255, 255, 255};
+		color.change({160, 160, 160, 160}, 0.2_s);
+		_override_disabled_color = true;
 		_action_cb();
+		audio::play(_sfx, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
 }
 
@@ -480,6 +492,9 @@ bool arrow_widget::active() const noexcept
 void arrow_widget::on_hover() noexcept
 {
 	_color.change({255, 255, 255, 255}, 0.2_s);
+	if (active()) {
+		audio::play(sfx::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	}
 }
 
 void arrow_widget::on_unhover() noexcept
@@ -490,11 +505,12 @@ void arrow_widget::on_unhover() noexcept
 void arrow_widget::on_hold_begin() noexcept
 {
 	_color = {32, 32, 32, 255};
+	audio::play(sfx::HOLD, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 void arrow_widget::on_hold_transfer_in() noexcept
 {
-	_color = {32, 32, 32, 255};
+	on_hold_begin();
 }
 
 void arrow_widget::on_hold_transfer_out() noexcept
@@ -506,6 +522,7 @@ void arrow_widget::on_hold_end() noexcept
 {
 	_color.change({255, 255, 255, 255}, 0.2_s);
 	_action_cb();
+	audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 void arrow_widget::on_shortcut() noexcept

@@ -100,7 +100,8 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game) noexcept
 		set_up_exit_animation();
 	}};
 	widget& exit{_ui.emplace<clickable_text_widget>("exit", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_CHORDS)};
+													DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_CHORDS,
+													sfx::CANCEL)};
 	exit.pos.change({500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 }
@@ -146,7 +147,7 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 	case substate::ENTERING_TITLE:
 		return _timer >= 0.5_s ? std::make_unique<title_state>(std::move(_game)) : nullptr;
 	case substate::ENTERING_GAME:
-		return _timer >= 0.5_s ? std::make_unique<game_state>(std::make_unique<active_game>(*_cur), true) : nullptr;
+		return _timer >= 0.5_s ? std::make_unique<game_state>(std::make_unique<active_game>(*_cur), game_type::REGULAR, true) : nullptr;
 	}
 }
 

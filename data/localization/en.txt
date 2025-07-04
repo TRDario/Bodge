@@ -1,37 +1,66 @@
 language_name = "English"
 
-# Name entry screen
-    enter_your_name = "ENTER YOUR NAME"
-    empty = "(EMPTY...)"
+# Common
+    by      = "BY"
+    cancel  = "CANCEL"
     confirm = "CONFIRM"
+    discard = "DISCARD"
+    empty   = "(EMPTY...)"
+    exit    = "EXIT"
+    pb      = "PERSONAL BEST"
+    save    = "SAVE"
 
 # Title screen
-    copyright       = "©2025 TRDario"
-    version         = "a0.1.0"
-    start_game      = "START GAME"
-    gamemode_editor = "GAMEMODE EDITOR"
-    replays         = "REPLAYS"
-    scoreboards     = "SCOREBOARDS"
-    settings        = "SETTINGS"
-    credits         = "CREDITS"
-    exit            = "EXIT"
+    copyright         = "©2025 TRDario"
+    enter_your_name   = "ENTER YOUR NAME"
+    version           = "a0.1.0"
+    start_game        = "START GAME"
+    gamemode_designer = "GAMEMODE DESIGNER"
+    replays           = "REPLAYS"
+    scoreboards       = "SCOREBOARDS"
+    settings          = "SETTINGS"
+    credits           = "CREDITS"
 
 # Start game screen
-    by = "BY"
     no_description = "(NO DESCRIPTION...)"
-    pb = "PERSONAL BEST"
-    start = "START"
+    start          = "START"
 
-# Scores screen
+# Gamemode editor
+    ball_settings       = "BALL SETTINGS"
+    player_settings     = "PLAYER SETTINGS"
+    test                = "TEST"
+    starting_count      = "STARTING COUNT:"
+    starting_count_tt   = "THE STARTING NUMBER OF BALLS.\nSIZE AND VELOCITY STEPS WILL BE APPLIED AS USUAL."
+    max_count           = "MAX COUNT:"
+    max_count_tt        = "THE MAXIMUM ALLOWED NUMBER OF BALLS AT ONE TIME."
+    spawn_interval      = "SPAWN INTERVAL:"
+    spawn_interval_tt   = "THE INTERVAL BETWEEN TWO BALLS SPAWNING."
+    initial_size        = "INITIAL SIZE:"
+    initial_size_tt     = "THE INITIAL SIZE OF BALLS (IN UNITS)."
+    size_step           = "SIZE STEP:"
+    size_step_tt        = "AN AMOUNT ADDED TO THE SIZE OF EACH SUBSEQUENT BALL (IN UNITS)."
+    initial_velocity    = "INITIAL VELOCITY:"
+    initial_velocity_tt = "THE INITIAL VELOCITY OF BALLS (IN UNITS PER SECOND)."
+    velocity_step       = "VELOCITY STEP:"
+    velocity_step_tt    = "AN AMOUNT ADDED TO THE VELOCITY OF EACH SUBSEQUENT BALL (IN UNITS PER SECOND)."
+    starting_lives      = "STARTING LIVES:"
+    starting_lives_tt   = "THE NUMBER OF EXTRA STARTING LIVES."
+    hitbox_radius       = "HITBOX RADIUS:"
+    hitbox_size_tt      = "THE RADIUS OF THE PLAYER HITBOX (0 FOR A POINT)."
+    inertia_factor      = "INERTIA FACTOR:"
+    inertia_factor_tt   = "MOVEMENT INERTIA FACTOR (CLOSER TO 1 = MORE SLUGGISH MOVEMENT)."
+
+# Scoreboards
     total_playtime  = "TOTAL PLAYTIME FOR"
     no_scores_found = "(NO SCORES FOUND...)"
 
-# Replays screen
+# Replays
+    replay              = "REPLAY"
     no_replays_found    = "(NO REPLAYS FOUND...)"
     exited_prematurely  = "(GAME WAS EXITED PREMATURELY)"
     modified_game_speed = "(GAME WAS PLAYED WITH MODIFIED GAME SPEED)"
 
-# Settings screen
+# Settings
     window_size		 = "WINDOW SIZE:"
     window_size_tt   = "SETTING 'FULLSCREEN' WILL CREATE A BORDERLESS FULLSCREEN WINDOW.\nSETTING A SPECIFIC VALUE WILL FORCE A SQUARE WINDOW OF THAT SIZE."
     fullscreen		 = "FULLSCREEN"
@@ -50,7 +79,10 @@ language_name = "English"
     revert 			 = "REVERT"
     apply 			 = "APPLY"
 
-# Pause/game over screen
+# Pause/game over
+    paused           = "PAUSED"
+    test_paused      = "TEST PAUSED"
+    replay_paused    = "REPLAY PAUSED"
     unpause          = "UNPAUSE"
     game_over        = "GAME OVER"
     new_pb           = "NEW PERSONAL BEST!"
@@ -59,22 +91,12 @@ language_name = "English"
     save_and_quit    = "SAVE AND QUIT"
     quit             = "QUIT"
 
-# Save score screen
+# Score/replay saving
     save_score  = "SAVE SCORE"
-    preview     = "PREVIEW:"
-    description = "DESCRIPTION:"
-    save        = "SAVE"
-    cancel      = "CANCEL"
-
-# Save replay screen
     save_replay = "SAVE REPLAY"
-    name = "NAME:"
-    save = "SAVE"
-    dont_save = "DON'T SAVE"
-
-# Replay screens
-    replay        = "REPLAY"
-    replay_paused = "REPLAY PAUSED"
+    preview     = "PREVIEW:"
+    name        = "NAME:"
+    description = "DESCRIPTION:"
 
 # Built-in gamemodes
     gm_test    = "TEST"

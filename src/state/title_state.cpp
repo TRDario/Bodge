@@ -1,4 +1,6 @@
+#include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/replays_state.hpp"
 #include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/settings_state.hpp"
@@ -8,7 +10,7 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Title screen buttons.
-constexpr std::array<const char*, 7> BUTTONS{"start_game", "gamemode_editor", "scoreboards", "replays", "settings", "credits", "exit"};
+constexpr std::array<const char*, 7> BUTTONS{"start_game", "gamemode_designer", "scoreboards", "replays", "settings", "credits", "exit"};
 // Shortcuts of the title screen buttons.
 constexpr std::array<std::initializer_list<key_chord>, BUTTONS.size()> SHORTCUTS{{
 	{{tr::keycode::ENTER}, {tr::keycode::TOP_ROW_1}},
@@ -61,6 +63,8 @@ std::unique_ptr<tr::state> title_state::update(tr::duration)
 		return nullptr;
 	case substate::ENTERING_START_GAME:
 		return _timer >= 0.5_s ? std::make_unique<start_game_state>(std::move(_game)) : nullptr;
+	case substate::ENTERING_gamemode_designer:
+		return _timer >= 0.5_s ? std::make_unique<gamemode_designer_state>(std::move(_game), gamemode{}, false) : nullptr;
 	case substate::ENTERING_SCOREBOARDS:
 		return _timer >= 0.5_s ? std::make_unique<scoreboards_state>(std::move(_game)) : nullptr;
 	case substate::ENTERING_REPLAYS:
@@ -89,10 +93,11 @@ float title_state::fade_overlay_opacity() const noexcept
 	case substate::ENTERING_GAME:
 		return 1 - _timer / 1_sf;
 	case substate::IN_TITLE:
+	case substate::ENTERING_START_GAME:
+	case substate::ENTERING_gamemode_designer:
+	case substate::ENTERING_REPLAYS:
 	case substate::ENTERING_SCOREBOARDS:
 	case substate::ENTERING_SETTINGS:
-	case substate::ENTERING_START_GAME:
-	case substate::ENTERING_REPLAYS:
 		return 0;
 	case substate::EXITING_GAME:
 		return _timer / 0.5_sf;
@@ -117,7 +122,11 @@ void title_state::set_up_ui()
 			_timer = 0;
 			set_up_exit_animation();
 		},
-		[] {},
+		[this] {
+			_substate = substate::ENTERING_gamemode_designer;
+			_timer = 0;
+			set_up_exit_animation();
+		},
 		[this] {
 			_substate = substate::ENTERING_SCOREBOARDS;
 			_timer = 0;
@@ -133,7 +142,7 @@ void title_state::set_up_ui()
 			_timer = 0;
 			set_up_exit_animation();
 		},
-		[] {},
+		[] { audio::play(sfx::CONFIRM, 0.5f, 0.0f); },
 		[this] {
 			_substate = substate::EXITING_GAME;
 			_timer = 0;
@@ -146,7 +155,8 @@ void title_state::set_up_ui()
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * tr::rand(rng, 35.0f, 75.0f)};
 		const glm::vec2 pos{end_pos.x + offset, end_pos.y};
 		widget& widget{_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER_RIGHT, font::LANGUAGE, 48,
-														  DEFAULT_TEXT_CALLBACK, status_cb, action_cbs[i], NO_TOOLTIP, SHORTCUTS[i])};
+														  DEFAULT_TEXT_CALLBACK, status_cb, action_cbs[i], NO_TOOLTIP, SHORTCUTS[i],
+														  i != BUTTONS.size() - 1 ? sfx::CONFIRM : sfx::CANCEL)};
 		widget.pos.change(end_pos, 1_s);
 		widget.unhide(1_s);
 		end_pos += glm::vec2{-25, 50};

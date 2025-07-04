@@ -7,8 +7,8 @@
 game::game(const ::gamemode& gamemode, std::uint64_t rng_seed)
 	: _gamemode{gamemode}
 	, _rng{rng_seed}
-	, _ball_size{gamemode.ball.starting_size}
-	, _ball_velocity{gamemode.ball.starting_velocity}
+	, _ball_size{gamemode.ball.initial_size}
+	, _ball_velocity{gamemode.ball.initial_velocity}
 	, _age{0}
 	, _last_spawn{0}
 {
@@ -68,6 +68,11 @@ void game::update(const glm::vec2& input) noexcept
 			}
 		}
 	}
+}
+
+void game::update()
+{
+	update({});
 }
 
 void game::add_overlay_to_renderer() const

@@ -33,7 +33,7 @@ class save_score_state : public tr::state {
 
   private:
 	// base substates within the score saving state.
-	enum class base_substate : std::uint8_t {
+	enum class substate_base : std::uint8_t {
 		// Currently saving the score.
 		SAVING_SCORE = 0x0,
 		// Returning to the previous menu.
@@ -41,7 +41,7 @@ class save_score_state : public tr::state {
 		// Entering the replay saving sceen.
 		ENTERING_SAVE_REPLAY = 0x2
 	};
-	// base_substate combined with save_screen_flags.
+	// substate_base combined with save_screen_flags.
 	enum class substate : std::uint8_t {
 	};
 
@@ -61,9 +61,9 @@ class save_score_state : public tr::state {
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Combines a base substate and flags into a substate.
-	friend substate operator|(const base_substate& l, const save_screen_flags& r) noexcept;
+	friend substate operator|(const substate_base& l, const save_screen_flags& r) noexcept;
 	// Converts a substate to a base substate.
-	friend base_substate to_base(substate state) noexcept;
+	friend substate_base to_base(substate state) noexcept;
 	// Converts a substate to save screen flags.
 	friend save_screen_flags to_flags(substate state) noexcept;
 	// Sets up the exit animation.

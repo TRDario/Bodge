@@ -197,10 +197,10 @@ void player::add_death_fragments_to_renderer() const
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
 player::player(const player_settings& settings, ticks pb) noexcept
-	: _hitbox{{500, 500}, settings.size}
+	: _hitbox{{500, 500}, settings.hitbox_radius}
 	, _trail{_hitbox.c}
 	, _lives{static_cast<int>(settings.starting_lives)}
-	, _inertia{settings.inertia}
+	, _inertia{settings.inertia_factor}
 	, _timer{0}
 	, _game_over_timer{0}
 	, _iframes{0}
@@ -239,10 +239,10 @@ void player::hit() noexcept
 
 	if (game_over()) {
 		set_up_death_fragments();
-		audio::play(sfx::EXPLOSION, 1, 0);
+		// audio::play(sfx::EXPLOSION, 1, 0);
 	}
 	else {
-		audio::play(sfx::HIT, 1, 0);
+		// audio::play(sfx::HIT, 1, 0);
 	}
 }
 
