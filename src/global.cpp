@@ -25,7 +25,7 @@ std::uint8_t max_msaa() noexcept
 				tr::window::close();
 				max = trying;
 			}
-			catch (tr::window_open_error& err) {
+			catch (tr::window_open_error&) {
 				break;
 			}
 		}

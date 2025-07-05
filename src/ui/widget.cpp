@@ -191,7 +191,7 @@ void widget::hide() noexcept
 	_opacity = 0;
 }
 
-void widget::hide(std::uint16_t time) noexcept
+void widget::hide(ticks time) noexcept
 {
 	_opacity.change(0, time);
 }
@@ -201,7 +201,7 @@ void widget::unhide() noexcept
 	_opacity = 1;
 }
 
-void widget::unhide(std::uint16_t time) noexcept
+void widget::unhide(ticks time) noexcept
 {
 	_opacity.change(1, time);
 }
@@ -370,7 +370,7 @@ bool clickable_text_widget::active() const noexcept
 
 void clickable_text_widget::on_hover() noexcept
 {
-	color.change({255, 255, 255, 255}, 0.2_s);
+	color.change("FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
 		audio::play(sfx::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
@@ -399,7 +399,7 @@ void clickable_text_widget::on_hold_transfer_out() noexcept
 
 void clickable_text_widget::on_hold_end() noexcept
 {
-	color.change({255, 255, 255, 255}, 0.2_s);
+	color.change("FFFFFF"_rgba8, 0.2_s);
 	_action_cb();
 	audio::play(_sfx, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
@@ -407,7 +407,7 @@ void clickable_text_widget::on_hold_end() noexcept
 void clickable_text_widget::on_shortcut() noexcept
 {
 	if (active()) {
-		color = {255, 255, 255, 255};
+		color = "FFFFFF"_rgba8;
 		color.change({160, 160, 160, 160}, 0.2_s);
 		_override_disabled_color = true;
 		_action_cb();
@@ -491,7 +491,7 @@ bool arrow_widget::active() const noexcept
 
 void arrow_widget::on_hover() noexcept
 {
-	_color.change({255, 255, 255, 255}, 0.2_s);
+	_color.change("FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
 		audio::play(sfx::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
@@ -520,7 +520,7 @@ void arrow_widget::on_hold_transfer_out() noexcept
 
 void arrow_widget::on_hold_end() noexcept
 {
-	_color.change({255, 255, 255, 255}, 0.2_s);
+	_color.change("FFFFFF"_rgba8, 0.2_s);
 	_action_cb();
 	audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
@@ -650,7 +650,7 @@ score_widget::score_widget(std::string_view name, glm::vec2 pos, tr::align align
 glm::vec2 score_widget::size() const noexcept
 {
 	if (score != nullptr) {
-		const int icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
+		const std::uint32_t icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
 		if (icons != 0) {
 			return text_widget::size() + glm::vec2{0, 20};
 		}
@@ -670,7 +670,7 @@ void score_widget::add_to_renderer()
 	if (score != nullptr) {
 		const score_flags flags{score->flags};
 		const glm::vec2 text_size{text_widget::size()};
-		const int icons{flags.exited_prematurely + flags.modified_game_speed};
+		const std::uint32_t icons{flags.exited_prematurely + flags.modified_game_speed};
 		int i = 0;
 
 		if (flags.exited_prematurely) {
@@ -691,7 +691,7 @@ glm::vec2 replay_widget::size() const noexcept
 {
 	if (it.has_value()) {
 		const score_flags flags{(*it)->second.flags};
-		const int icons{flags.exited_prematurely + flags.modified_game_speed};
+		const std::uint32_t icons{flags.exited_prematurely + flags.modified_game_speed};
 		if (icons != 0) {
 			return clickable_text_widget::size() + glm::vec2{0, 20};
 		}
@@ -712,7 +712,7 @@ void replay_widget::add_to_renderer()
 		const score_flags flags{(*it)->second.flags};
 		const glm::vec2 text_size{clickable_text_widget::size()};
 		const tr::rgba8 color{active() ? tr::rgba8{this->color} : "80808080"_rgba8};
-		const int icons{flags.exited_prematurely + flags.modified_game_speed};
+		const std::uint32_t icons{flags.exited_prematurely + flags.modified_game_speed};
 		int i = 0;
 
 		if (flags.exited_prematurely) {

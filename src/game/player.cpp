@@ -97,12 +97,12 @@ void player::add_trail_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::fang
 		tr::fill_poly_vtx(trail.positions | std::views::drop(6 * (i + 1)), 6, {_trail[i], trail_size}, rotation);
 		for (int j = 0; j < 6; ++j) {
 			trail.colors[6 * (i + 1) + j].a = trail_opacity;
-			*indices_it++ = trail.base_index + 6 * (i + 1) + j;
-			*indices_it++ = trail.base_index + 6 * (i + 1) + ((j + 1) % 6);
-			*indices_it++ = trail.base_index + 6 * i + ((j + 1) % 6);
-			*indices_it++ = trail.base_index + 6 * (i + 1) + j;
-			*indices_it++ = trail.base_index + 6 * i + ((j + 1) % 6);
-			*indices_it++ = trail.base_index + 6 * i + j;
+			*indices_it++ = static_cast<std::uint16_t>(trail.base_index + 6 * (i + 1) + j);
+			*indices_it++ = static_cast<std::uint16_t>(trail.base_index + 6 * (i + 1) + ((j + 1) % 6));
+			*indices_it++ = static_cast<std::uint16_t>(trail.base_index + 6 * i + ((j + 1) % 6));
+			*indices_it++ = static_cast<std::uint16_t>(trail.base_index + 6 * (i + 1) + j);
+			*indices_it++ = static_cast<std::uint16_t>(trail.base_index + 6 * i + ((j + 1) % 6));
+			*indices_it++ = static_cast<std::uint16_t>(trail.base_index + 6 * i + j);
 		}
 	}
 }

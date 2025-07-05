@@ -74,61 +74,61 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 
 	// ACTION CALLBACKS
 
-	const action_callback starting_count_dec_action_cb{[this] {
+	const action_callback starting_count_dec_action_cb{[&starting_count = _gamemode.ball.starting_count] {
 		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10 : 1};
-		_gamemode.ball.starting_count = std::max<int>(_gamemode.ball.starting_count - delta, 0);
+		starting_count = static_cast<std::uint8_t>(std::max(starting_count - delta, 0));
 	}};
-	const action_callback starting_count_inc_action_cb{[this] {
+	const action_callback starting_count_inc_action_cb{[&ball = _gamemode.ball] {
 		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10 : 1};
-		_gamemode.ball.starting_count = std::min<int>(_gamemode.ball.starting_count + delta, _gamemode.ball.max_count);
+		ball.starting_count = static_cast<std::uint8_t>(std::min(ball.starting_count + delta, static_cast<int>(ball.max_count)));
 	}};
-	const action_callback max_count_dec_action_cb{[this] {
+	const action_callback max_count_dec_action_cb{[&ball = _gamemode.ball] {
 		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10 : 1};
-		_gamemode.ball.max_count = std::max<int>(_gamemode.ball.max_count - delta, _gamemode.ball.starting_count);
+		ball.max_count = static_cast<std::uint8_t>(std::max(ball.max_count - delta, static_cast<int>(ball.starting_count)));
 	}};
-	const action_callback max_count_inc_action_cb{[this] {
+	const action_callback max_count_inc_action_cb{[&max_count = _gamemode.ball.max_count] {
 		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10 : 1};
-		_gamemode.ball.max_count = std::min<int>(_gamemode.ball.max_count + delta, 255);
+		max_count = static_cast<std::uint8_t>(std::min(max_count + delta, 255));
 	}};
-	const action_callback spawn_interval_dec_action_cb{[this] {
+	const action_callback spawn_interval_dec_action_cb{[&spawn_interval = _gamemode.ball.spawn_interval] {
 		const ticks delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10_s : 1_s};
-		_gamemode.ball.spawn_interval = std::max<int>(_gamemode.ball.spawn_interval - delta, 1_s);
+		spawn_interval = static_cast<ticks>(std::max(static_cast<int>(spawn_interval - delta), static_cast<int>(1_s)));
 	}};
-	const action_callback spawn_interval_inc_action_cb{[this] {
+	const action_callback spawn_interval_inc_action_cb{[&spawn_interval = _gamemode.ball.spawn_interval] {
 		const ticks delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10_s : 1_s};
-		_gamemode.ball.spawn_interval = std::min<int>(_gamemode.ball.spawn_interval + delta, 60_s);
+		spawn_interval = std::min(spawn_interval + delta, 60_s);
 	}};
-	const action_callback initial_size_dec_action_cb{[this] {
+	const action_callback initial_size_dec_action_cb{[&initial_size = _gamemode.ball.initial_size] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10.0f : 1.0f};
-		_gamemode.ball.initial_size = std::max(_gamemode.ball.initial_size - delta, 10.0f);
+		initial_size = std::max(initial_size - delta, 10.0f);
 	}};
-	const action_callback initial_size_inc_action_cb{[this] {
+	const action_callback initial_size_inc_action_cb{[&initial_size = _gamemode.ball.initial_size] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10.0f : 1.0f};
-		_gamemode.ball.initial_size = std::min(_gamemode.ball.initial_size + delta, 250.0f);
+		initial_size = std::min(initial_size + delta, 250.0f);
 	}};
-	const action_callback size_step_dec_action_cb{[this] {
+	const action_callback size_step_dec_action_cb{[&size_step = _gamemode.ball.size_step] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10.0f : 1.0f};
-		_gamemode.ball.size_step = std::max(_gamemode.ball.size_step - delta, 0.0f);
+		size_step = std::max(size_step - delta, 0.0f);
 	}};
-	const action_callback size_step_inc_action_cb{[this] {
+	const action_callback size_step_inc_action_cb{[&size_step = _gamemode.ball.size_step] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10.0f : 1.0f};
-		_gamemode.ball.size_step = std::min(_gamemode.ball.size_step + delta, 50.0f);
+		size_step = std::min(size_step + delta, 50.0f);
 	}};
-	const action_callback initial_velocity_dec_action_cb{[this] {
+	const action_callback initial_velocity_dec_action_cb{[&initial_velocity = _gamemode.ball.initial_velocity] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 100.0f : 10.0f};
-		_gamemode.ball.initial_velocity = std::max(_gamemode.ball.initial_velocity - delta, 100.0f);
+		initial_velocity = std::max(initial_velocity - delta, 100.0f);
 	}};
-	const action_callback initial_velocity_inc_action_cb{[this] {
+	const action_callback initial_velocity_inc_action_cb{[&initial_velocity = _gamemode.ball.initial_velocity] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 100.0f : 10.0f};
-		_gamemode.ball.initial_velocity = std::min(_gamemode.ball.initial_velocity + delta, 5000.0f);
+		initial_velocity = std::min(initial_velocity + delta, 5000.0f);
 	}};
-	const action_callback velocity_step_dec_action_cb{[this] {
+	const action_callback velocity_step_dec_action_cb{[&velocity_step = _gamemode.ball.velocity_step] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 100.0f : 10.0f};
-		_gamemode.ball.velocity_step = std::max(_gamemode.ball.velocity_step - delta, 0.0f);
+		velocity_step = std::max(velocity_step - delta, 0.0f);
 	}};
-	const action_callback velocity_step_inc_action_cb{[this] {
+	const action_callback velocity_step_inc_action_cb{[&velocity_step = _gamemode.ball.velocity_step] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 100.0f : 10.0f};
-		_gamemode.ball.velocity_step = std::min(_gamemode.ball.velocity_step + delta, 1000.0f);
+		velocity_step = std::min(velocity_step + delta, 1000.0f);
 	}};
 	const action_callback exit_action_cb{[this] {
 		_substate = substate::EXITING;

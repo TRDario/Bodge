@@ -113,13 +113,13 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	// ACTION CALLBACKS
 
-	const action_callback window_size_dec_action_cb{[this] {
+	const action_callback window_size_dec_action_cb{[&window_size = _pending.window_size] {
 		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 100 : 10};
-		_pending.window_size = std::max(MIN_WINDOW_SIZE, _pending.window_size - delta);
+		window_size = std::max(MIN_WINDOW_SIZE, window_size - delta);
 	}};
-	const action_callback window_size_inc_action_cb{[this] {
+	const action_callback window_size_inc_action_cb{[&window_size = _pending.window_size] {
 		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 100 : 10};
-		_pending.window_size = std::min(max_window_size(), _pending.window_size + delta);
+		window_size = std::min(max_window_size(), window_size + delta);
 	}};
 	const action_callback cur_window_size_action_cb{[this] {
 		widget& cur_window_size{_ui.get("cur_window_size")};
@@ -138,13 +138,13 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 			_ui.get("window_size_inc").hide();
 		}
 	}};
-	const action_callback refresh_rate_dec_action_cb{[this] {
+	const action_callback refresh_rate_dec_action_cb{[&refresh_rate = _pending.refresh_rate] {
 		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		_pending.refresh_rate = std::max(15, _pending.refresh_rate - delta);
+		refresh_rate = std::max(std::uint16_t{15}, static_cast<std::uint16_t>(refresh_rate - delta));
 	}};
-	const action_callback refresh_rate_inc_action_cb{[this] {
+	const action_callback refresh_rate_inc_action_cb{[&refresh_rate = _pending.refresh_rate] {
 		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		_pending.refresh_rate = std::min<int>(max_refresh_rate(), _pending.refresh_rate + delta);
+		refresh_rate = std::min(max_refresh_rate(), static_cast<std::uint16_t>(refresh_rate + delta));
 	}};
 	const action_callback cur_refresh_rate_action_cb{[this] {
 		widget& cur_refresh_rate{_ui.get("cur_refresh_rate")};
@@ -163,39 +163,39 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 			_ui.get("refresh_rate_inc").hide();
 		}
 	}};
-	const action_callback msaa_dec_action_cb{[this] { _pending.msaa = _pending.msaa == 2 ? NO_MSAA : _pending.msaa / 2; }};
-	const action_callback msaa_inc_action_cb{[this] { _pending.msaa = _pending.msaa == NO_MSAA ? 2 : _pending.msaa * 2; }};
-	const action_callback primary_hue_dec_action_cb{[this] {
+	const action_callback msaa_dec_action_cb{[&msaa = _pending.msaa] { msaa = msaa == 2 ? NO_MSAA : static_cast<std::uint8_t>(msaa / 2); }};
+	const action_callback msaa_inc_action_cb{[&msaa = _pending.msaa] { msaa = msaa == NO_MSAA ? 2 : static_cast<std::uint8_t>(msaa * 2); }};
+	const action_callback primary_hue_dec_action_cb{[&primary_hue = _pending.primary_hue] {
 		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		_pending.primary_hue = (_pending.primary_hue - delta + 360) % 360;
+		primary_hue = static_cast<std::uint16_t>((primary_hue - delta + 360) % 360);
 	}};
-	const action_callback primary_hue_inc_action_cb{[this] {
+	const action_callback primary_hue_inc_action_cb{[&primary_hue = _pending.primary_hue] {
 		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		_pending.primary_hue = (_pending.primary_hue + delta) % 360;
+		primary_hue = static_cast<std::uint16_t>((primary_hue + delta) % 360);
 	}};
-	const action_callback secondary_hue_dec_action_cb{[this] {
+	const action_callback secondary_hue_dec_action_cb{[&secondary_hue = _pending.secondary_hue] {
 		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		_pending.secondary_hue = (_pending.secondary_hue - delta + 360) % 360;
+		secondary_hue = static_cast<std::uint16_t>((secondary_hue - delta + 360) % 360);
 	}};
-	const action_callback secondary_hue_inc_action_cb{[this] {
+	const action_callback secondary_hue_inc_action_cb{[&secondary_hue = _pending.secondary_hue] {
 		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		_pending.secondary_hue = (_pending.secondary_hue + delta) % 360;
+		secondary_hue = static_cast<std::uint16_t>((secondary_hue + delta) % 360);
 	}};
-	const action_callback sfx_volume_dec_action_cb{[this] {
+	const action_callback sfx_volume_dec_action_cb{[&sfx_volume = _pending.sfx_volume] {
 		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		_pending.sfx_volume = std::max(_pending.sfx_volume - delta, 0);
+		sfx_volume = static_cast<std::uint8_t>(std::max(sfx_volume - delta, 0));
 	}};
-	const action_callback sfx_volume_inc_action_cb{[this] {
+	const action_callback sfx_volume_inc_action_cb{[&sfx_volume = _pending.sfx_volume] {
 		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		_pending.sfx_volume = std::min(_pending.sfx_volume + delta, 100);
+		sfx_volume = static_cast<std::uint8_t>(std::min(sfx_volume + delta, 100));
 	}};
-	const action_callback music_volume_dec_action_cb{[this] {
+	const action_callback music_volume_dec_action_cb{[&music_volume = _pending.music_volume] {
 		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		_pending.music_volume = std::min(_pending.music_volume - delta, 100);
+		music_volume = static_cast<std::uint8_t>(std::max(music_volume - delta, 100));
 	}};
-	const action_callback music_volume_inc_action_cb{[this] {
+	const action_callback music_volume_inc_action_cb{[&music_volume = _pending.music_volume] {
 		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		_pending.music_volume = std::min(_pending.music_volume + delta, 100);
+		music_volume = static_cast<std::uint8_t>(std::min(music_volume + delta, 100));
 	}};
 	const action_callback cur_language_action_cb{[this] {
 		std::map<language_code, language>::iterator it{std::next(languages.find(_pending.language))};
@@ -237,11 +237,11 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	// TEXT CALLBACKS
 
-	const text_callback cur_window_size_text_cb{[this](auto&) {
-		return _pending.window_size == FULLSCREEN ? std::string{localization["fullscreen"]} : std::to_string(_pending.window_size);
+	const text_callback cur_window_size_text_cb{[&window_size = _pending.window_size](auto&) {
+		return window_size == FULLSCREEN ? std::string{localization["fullscreen"]} : std::to_string(window_size);
 	}};
-	const text_callback cur_refresh_rate_text_cb{[this](auto&) {
-		return _pending.refresh_rate == NATIVE_REFRESH_RATE ? std::string{localization["native"]} : std::to_string(_pending.refresh_rate);
+	const text_callback cur_refresh_rate_text_cb{[&refresh_rate = _pending.refresh_rate](auto&) {
+		return refresh_rate == NATIVE_REFRESH_RATE ? std::string{localization["native"]} : std::to_string(refresh_rate);
 	}};
 	const text_callback cur_msaa_text_cb{[this](auto&) { return _pending.msaa == NO_MSAA ? "--" : std::format("x{}", _pending.msaa); }};
 	const text_callback cur_primary_hue_text_cb{[this](auto&) { return std::to_string(_pending.primary_hue); }};

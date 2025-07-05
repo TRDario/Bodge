@@ -48,29 +48,29 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 
 	// ACTION CALLBACKS
 
-	const action_callback starting_lives_dec_action_cb{[this] {
+	const action_callback starting_lives_dec_action_cb{[&starting_lives = _gamemode.player.starting_lives] {
 		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10 : 1};
-		_gamemode.player.starting_lives = std::max<int>(_gamemode.player.starting_lives - delta, 0);
+		starting_lives = static_cast<std::uint32_t>(std::max(static_cast<int>(starting_lives - delta), 0));
 	}};
-	const action_callback starting_lives_inc_action_cb{[this] {
+	const action_callback starting_lives_inc_action_cb{[&starting_lives = _gamemode.player.starting_lives] {
 		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10 : 1};
-		_gamemode.player.starting_lives = std::min<int>(_gamemode.player.starting_lives + delta, 255);
+		starting_lives = std::min(starting_lives + delta, std::uint32_t{255});
 	}};
-	const action_callback hitbox_radius_dec_action_cb{[this] {
+	const action_callback hitbox_radius_dec_action_cb{[&hitbox_radius = _gamemode.player.hitbox_radius] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10.0f : 1.0f};
-		_gamemode.player.hitbox_radius = std::max(_gamemode.player.hitbox_radius - delta, 0.0f);
+		hitbox_radius = std::max(hitbox_radius - delta, 0.0f);
 	}};
-	const action_callback hitbox_radius_inc_action_cb{[this] {
+	const action_callback hitbox_radius_inc_action_cb{[&hitbox_radius = _gamemode.player.hitbox_radius] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10.0f : 1.0f};
-		_gamemode.player.hitbox_radius = std::min(_gamemode.player.hitbox_radius + delta, 100.0f);
+		hitbox_radius = std::min(hitbox_radius + delta, 100.0f);
 	}};
-	const action_callback inertia_factor_dec_action_cb{[this] {
+	const action_callback inertia_factor_dec_action_cb{[&inertia_factor = _gamemode.player.inertia_factor] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 0.1f : 0.01f};
-		_gamemode.player.inertia_factor = std::max(_gamemode.player.inertia_factor - delta, 0.0f);
+		inertia_factor = std::max(inertia_factor - delta, 0.0f);
 	}};
-	const action_callback inertia_factor_inc_action_cb{[this] {
+	const action_callback inertia_factor_inc_action_cb{[&inertia_factor = _gamemode.player.inertia_factor] {
 		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 0.1f : 0.01f};
-		_gamemode.player.inertia_factor = std::min(_gamemode.player.inertia_factor + delta, 0.99f);
+		inertia_factor = std::min(inertia_factor + delta, 0.99f);
 	}};
 	const action_callback exit_action_cb{[this] {
 		_substate = substate::EXITING;

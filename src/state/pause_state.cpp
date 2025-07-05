@@ -73,7 +73,7 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 	case substate_base::UNPAUSING:
 		if (to_type(_substate) != game_type::REPLAY) {
 			float ratio{_timer / 0.5_sf};
-			ratio = ratio < 0.5 ? 4 * std::pow(ratio, 3) : 1 - std::pow(-2 * ratio + 2, 3) / 2;
+			ratio = ratio < 0.5 ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
 			engine::set_mouse_pos(_end_mouse_pos + (_start_mouse_pos - _end_mouse_pos) * ratio);
 		}
 		return _timer >= 0.5_s ? std::make_unique<game_state>(std::move(_game), to_type(_substate), false) : nullptr;
@@ -81,14 +81,14 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 		if (_timer < 0.5_s) {
 			return nullptr;
 		}
-		tr::renderer_2d::set_default_transform(TRANSFORM);
-		switch (to_type(_substate)) {
-		case game_type::REGULAR:
-		case game_type::TEST:
-			return std::make_unique<game_state>(std::make_unique<active_game>(_game->gamemode()), to_type(_substate), true);
-		case game_type::REPLAY:
+			tr::renderer_2d::set_default_transform(TRANSFORM);
+			switch (to_type(_substate)) {
+			case game_type::REGULAR:
+			case game_type::TEST:
+				return std::make_unique<game_state>(std::make_unique<active_game>(_game->gamemode()), to_type(_substate), true);
+			case game_type::REPLAY:
 			return std::make_unique<game_state>(std::make_unique<replay_game>(static_cast<replay_game&>(*_game)), game_type::REPLAY, true);
-		}
+			}
 	case substate_base::SAVING_AND_RESTARTING:
 	case substate_base::SAVING_AND_QUITTING: {
 		if (_timer >= 0.5_s) {
@@ -177,7 +177,7 @@ float pause_state::blur_strength() const noexcept
 
 void pause_state::set_up_full_ui()
 {
-	constexpr float TITLE_Y{500 - (BUTTONS_REGULAR.size() + 1) * 30};
+	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
 	widget& title{
 		_ui.emplace<text_widget>("paused", glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
 	title.pos.change({500, TITLE_Y}, 0.5_s);
@@ -229,7 +229,7 @@ void pause_state::set_up_full_ui()
 
 void pause_state::set_up_limited_ui()
 {
-	constexpr float TITLE_Y{500 - (BUTTONS_SPECIAL.size() + 1) * 30};
+	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
 	const char* const title_tag{to_type(_substate) == game_type::REPLAY ? "replay_paused" : "test_paused"};
 	widget& title{
 		_ui.emplace<text_widget>(title_tag, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
@@ -287,6 +287,6 @@ void pause_state::set_up_exit_animation() noexcept
 			widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}
 	}
-
+	
 	_ui.hide_all(0.5_s);
 }

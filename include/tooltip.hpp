@@ -22,7 +22,7 @@ class tooltip {
 	// The last drawn text string.
 	std::string _last_text;
 	// The size of the last drawn text string.
-	glm::vec2 _last_size;
+	glm::vec2 _last_size{};
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 

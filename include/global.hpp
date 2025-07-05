@@ -1,7 +1,6 @@
 #pragma once
 #include <tr/audio.hpp>
-#include <tr/graphics.hpp>
-#include <tr/system.hpp>
+#include <tr/sysgfx.hpp>
 
 ////////////////////////////////////////////////////////////////// USING //////////////////////////////////////////////////////////////////
 
@@ -38,22 +37,22 @@ inline constexpr ticks SECOND_TICKS{240};
 // Seconds -> Ticks literal.
 constexpr ticks operator""_s(unsigned long long seconds) noexcept
 {
-	return 240 * seconds;
+	return static_cast<ticks>(240 * seconds);
 }
 // Seconds -> Ticks literal.
 constexpr ticks operator""_s(long double seconds) noexcept
 {
-	return 240 * seconds;
+	return static_cast<ticks>(240 * seconds);
 }
 // Seconds -> Ticks literal (float).
 constexpr float operator""_sf(unsigned long long seconds) noexcept
 {
-	return 240 * seconds;
+	return static_cast<float>(240 * seconds);
 }
 // Seconds -> Ticks literal (float).
 constexpr float operator""_sf(long double seconds) noexcept
 {
-	return 240 * seconds;
+	return static_cast<float>(240 * seconds);
 }
 
 // Formats timer text.

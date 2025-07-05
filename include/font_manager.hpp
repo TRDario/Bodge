@@ -42,7 +42,7 @@ class font_manager_t {
 	glm::vec2 text_size(std::string_view text, font font, tr::ttf_style style, float size, float outline,
 						float max_w = tr::UNLIMITED_WIDTH);
 	// Gets the number of lines in a text string.
-	int count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w = tr::UNLIMITED_WIDTH);
+	std::size_t count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w = tr::UNLIMITED_WIDTH);
 	// Renders text.
 	tr::bitmap render_text(std::string_view text, font font, tr::ttf_style style, float size, float outline,
 						   float max_w = tr::UNLIMITED_WIDTH, tr::halign align = tr::halign::LEFT);
@@ -75,7 +75,7 @@ class font_manager_t {
 	// Janky optional-esque thing for fonts.
 	struct optional_font {
 		// Storage for the actual font.
-		alignas(optional_font_base) std::byte data[sizeof(optional_font_base)];
+		alignas(optional_font_base) std::byte data[sizeof(optional_font_base)]{};
 		// The state of the font object.
 		optional_font_state state{optional_font_state::USE_DEFAULT};
 

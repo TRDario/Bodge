@@ -91,7 +91,7 @@ std::vector<std::string> split_overlong_lines(std::vector<std::string>&& lines, 
 			continue;
 		}
 
-		const tr::ttf_measure_result measure{font.measure_text(*it, max_w, style, outline)};
+		const tr::ttf_measure_result measure{font.measure_text(*it, static_cast<int>(max_w), style, static_cast<int>(outline))};
 		if (measure.text != std::string_view{*it}) {
 			it = std::prev(lines.emplace(std::next(it), it->begin() + measure.text.size(), it->end()));
 			it->erase(it->begin() + measure.text.size(), it->end());
@@ -211,7 +211,7 @@ glm::vec2 font_manager_t::text_size(std::string_view text, font font, tr::ttf_st
 	if (max_w != tr::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * engine::render_scale();
 	}
-	const float outline_max_w{max_w != tr::UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : tr::UNLIMITED_WIDTH};
+	const int outline_max_w{max_w != tr::UNLIMITED_WIDTH ? static_cast<int>(max_w + 2 * scaled_outline) : tr::UNLIMITED_WIDTH};
 
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
@@ -229,7 +229,7 @@ glm::vec2 font_manager_t::text_size(std::string_view text, font font, tr::ttf_st
 	return static_cast<glm::vec2>(text_size) / engine::render_scale();
 }
 
-int font_manager_t::count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
+std::size_t font_manager_t::count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
 	if (max_w != tr::UNLIMITED_WIDTH) {
@@ -239,7 +239,7 @@ int font_manager_t::count_lines(std::string_view text, font font, tr::ttf_style 
 
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	return split_overlong_lines(split_into_lines(text), font_ref, style, scaled_outline, outline_max_w).size();
+	return split_overlong_lines(split_into_lines(text), font_ref, style, static_cast<float>(scaled_outline), outline_max_w).size();
 }
 
 tr::bitmap font_manager_t::render_text(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w,
@@ -249,12 +249,12 @@ tr::bitmap font_manager_t::render_text(std::string_view text, font font, tr::ttf
 	if (max_w != tr::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * engine::render_scale();
 	}
-	const float outline_max_w{max_w != tr::UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : tr::UNLIMITED_WIDTH};
+	const int outline_max_w{max_w != tr::UNLIMITED_WIDTH ? static_cast<int>(max_w + 2 * scaled_outline) : tr::UNLIMITED_WIDTH};
 
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	tr::bitmap render{font_ref.draw(text, outline_max_w, align, {127, 127, 127, 127}, style, scaled_outline)};
-	const tr::bitmap fill{font_ref.draw(text, max_w, align, {255, 255, 255, 255}, style)};
+	tr::bitmap render{font_ref.draw(text, outline_max_w, align, "80808080"_rgba8, style, scaled_outline)};
+	const tr::bitmap fill{font_ref.draw(text, static_cast<int>(max_w), align, "FFFFFF"_rgba8, style)};
 	render.blit(glm::ivec2{scaled_outline}, fill.sub({{}, render.size() - scaled_outline * 2}));
 	return render;
 }
@@ -266,12 +266,12 @@ tr::bitmap font_manager_t::render_gradient_text(std::string_view text, font font
 	if (max_w != tr::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * engine::render_scale();
 	}
-	const float outline_max_w{max_w != tr::UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : tr::UNLIMITED_WIDTH};
+	const int outline_max_w{max_w != tr::UNLIMITED_WIDTH ? static_cast<int>(max_w + 2 * scaled_outline) : tr::UNLIMITED_WIDTH};
 
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	tr::bitmap render{font_ref.draw(text, outline_max_w, align, {0, 0, 0, 127}, style, scaled_outline)};
-	tr::bitmap fill{font_ref.draw(text, max_w, align, {255, 255, 255, 255}, style)};
+	tr::bitmap render{font_ref.draw(text, outline_max_w, align, "00000080"_rgba8, style, scaled_outline)};
+	tr::bitmap fill{font_ref.draw(text, static_cast<int>(max_w), align, "FFFFFF"_rgba8, style)};
 	for (tr::bitmap::mut_it it = fill.begin(); it != fill.end(); ++it) {
 		const tr::rgba8 value{*it};
 		std::uint8_t shade{static_cast<std::uint8_t>(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};

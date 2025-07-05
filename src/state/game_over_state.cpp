@@ -19,7 +19,7 @@ constexpr std::array<std::initializer_list<key_chord>, BUTTONS.size()> SHORTCUTS
 }};
 
 // The height of the title text.
-constexpr float TITLE_Y{500 - (BUTTONS.size() + 3) * 30};
+constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 

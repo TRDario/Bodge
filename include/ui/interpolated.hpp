@@ -21,7 +21,7 @@ class interpolated_float {
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Begins an interpolation.
-	void change(float end, std::uint16_t time) noexcept;
+	void change(float end, ticks time) noexcept;
 	// Sets the float.
 	interpolated_float& operator=(float r) noexcept;
 
@@ -56,7 +56,7 @@ class interpolated_vec2 {
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Begins an interpolation.
-	void change(glm::vec2 end, std::uint16_t time) noexcept;
+	void change(glm::vec2 end, ticks time) noexcept;
 	// Sets the vector.
 	interpolated_vec2& operator=(glm::vec2 r) noexcept;
 
@@ -91,7 +91,7 @@ class interpolated_rgba8 {
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Begins an interpolation.
-	void change(tr::rgba8 end, std::uint16_t time) noexcept;
+	void change(tr::rgba8 end, ticks time) noexcept;
 	// Sets the color.
 	interpolated_rgba8& operator=(tr::rgba8 r) noexcept;
 

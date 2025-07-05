@@ -30,7 +30,7 @@ using status_callback = std::function<bool()>;
 using action_callback = std::function<void()>;
 
 // Sentinel for no shortcuts.
-constexpr std::vector<key_chord> NO_SHORTCUTS{};
+constexpr std::initializer_list<key_chord> NO_SHORTCUTS{};
 
 ////////////////////////////////////////////////////////////////// WIDGET /////////////////////////////////////////////////////////////////
 
@@ -68,11 +68,11 @@ class widget {
 	// Hides the widget instantly.
 	void hide() noexcept;
 	// Hides the widget gradually.
-	void hide(std::uint16_t time) noexcept;
+	void hide(ticks time) noexcept;
 	// Unhides the widget instantly.
 	void unhide() noexcept;
 	// Unhides the widget gradually.
-	void unhide(std::uint16_t time) noexcept;
+	void unhide(ticks time) noexcept;
 
 	/////////////////////////////////////////////////////////////// STATUS ////////////////////////////////////////////////////////////////
 

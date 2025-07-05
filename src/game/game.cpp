@@ -45,11 +45,11 @@ void game::update(const glm::vec2& input) noexcept
 		add_new_ball();
 	}
 
-	for (std::size_t i = 0; i < _balls.size(); ++i) {
+	for (std::uint8_t i = 0; i < _balls.size(); ++i) {
 		_balls[i].update();
 
 		if (_balls[i].tangible()) {
-			for (std::size_t j = i + 1; j < _balls.size(); ++j) {
+			for (std::uint8_t j = i + 1; j < _balls.size(); ++j) {
 				if (_balls[j].tangible() && colliding(_balls[i], _balls[j])) {
 					handle_collision(_balls[i], _balls[j]);
 				}

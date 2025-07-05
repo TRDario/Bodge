@@ -10,7 +10,7 @@ struct player_settings {
 	// The size of the player hitbox.
 	float hitbox_radius{10};
 	// The player's movement inertia (range: [0, 1]).
-	float inertia_factor{0.1};
+	float inertia_factor{0.1f};
 
 	bool operator==(const player_settings&) const noexcept = default;
 
@@ -19,7 +19,7 @@ struct player_settings {
 };
 
 // Sentinel for an autoplay gamemode.
-constexpr player_settings NO_PLAYER{-1U};
+constexpr player_settings NO_PLAYER{std::numeric_limits<std::uint32_t>::max()};
 
 ////////////////////////////////////////////////////////////// BALL SETTINGS //////////////////////////////////////////////////////////////
 

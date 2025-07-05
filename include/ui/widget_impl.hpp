@@ -24,6 +24,7 @@ line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr
 				  [this](auto&) { return buffer.empty() ? std::string{localization["empty"]} : std::string{buffer}; }}
 	, _status_cb{std::move(status_cb)}
 	, _enter_cb{std::move(enter_cb)}
+	, _has_focus{false}
 {
 }
 
@@ -81,13 +82,13 @@ template <std::size_t S> void line_input_widget<S>::on_hold_transfer_out() noexc
 template <std::size_t S> void line_input_widget<S>::on_hold_end() noexcept
 {
 	_has_focus = true;
-	color = {255, 255, 255, 255};
+	color = "FFFFFF"_rgba8;
 }
 
 template <std::size_t S> void line_input_widget<S>::on_gain_focus() noexcept
 {
 	_has_focus = true;
-	color.change({255, 255, 255, 255}, 0.2_s);
+	color.change("FFFFFF"_rgba8, 0.2_s);
 	audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
@@ -307,14 +308,14 @@ template <std::size_t S> void multiline_input_widget<S>::on_hold_transfer_out() 
 template <std::size_t S> void multiline_input_widget<S>::on_hold_end() noexcept
 {
 	_has_focus = true;
-	color = {255, 255, 255, 255};
+	color = "FFFFFF"_rgba8;
 	audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_gain_focus() noexcept
 {
 	_has_focus = true;
-	color.change({255, 255, 255, 255}, 0.2_s);
+	color.change("FFFFFF"_rgba8, 0.2_s);
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_lose_focus() noexcept

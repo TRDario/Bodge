@@ -114,7 +114,7 @@ void replays_state::set_up_ui()
 	const status_callback status_cb{[this] { return _substate == substate::IN_REPLAYS; }};
 	const status_callback page_dec_status_cb{[this] { return _substate == substate::IN_REPLAYS && _page > 0; }};
 	const status_callback page_inc_status_cb{
-		[this] { return _substate == substate::IN_REPLAYS && _page < (std::max(_replays.size() - 1, 0uz) / REPLAYS_PER_PAGE); }};
+		[this] { return _substate == substate::IN_REPLAYS && _page < (std::max(_replays.size() - 1, std::size_t{0}) / REPLAYS_PER_PAGE); }};
 
 	// ACTION CALLBACKS
 
@@ -163,7 +163,7 @@ void replays_state::set_up_ui()
 	}
 
 	std::map<std::string, replay_header>::iterator it{_replays.begin()};
-	for (std::size_t i = 0; i < REPLAYS_PER_PAGE; ++i) {
+	for (int i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		const std::optional<std::map<std::string, replay_header>::iterator> opt_it{it != _replays.end() ? std::optional{it++}
 																										: std::nullopt};
 		const glm::vec2 pos{i % 2 == 0 ? 400 : 600, 183 + 150 * i};
@@ -174,19 +174,19 @@ void replays_state::set_up_ui()
 	}
 
 	const text_callback cur_page_text_cb{
-		[this](auto&) { return std::format("{}/{}", _page + 1, std::max(_replays.size() - 1, 0uz) / REPLAYS_PER_PAGE + 1); }};
+		[this](auto&) { return std::format("{}/{}", _page + 1, std::max(_replays.size() - 1, std::size_t{0}) / REPLAYS_PER_PAGE + 1); }};
 	widget& cur_page{_ui.emplace<text_widget>("cur_page", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL,
 											  48, cur_page_text_cb)};
 	cur_page.pos.change({500, 950}, 0.5_s);
 	cur_page.unhide(0.5_s);
 
 	widget& page_dec{_ui.emplace<arrow_widget>("page_dec", glm::vec2{-50, 942.5}, tr::align::BOTTOM_LEFT, false, page_dec_status_cb,
-											   page_dec_action_cb, std::move(PAGE_DEC_SHORTCUTS))};
+											   page_dec_action_cb, PAGE_DEC_SHORTCUTS)};
 	page_dec.pos.change({10, 942.5}, 0.5_s);
 	page_dec.unhide(0.5_s);
 
 	widget& page_inc{_ui.emplace<arrow_widget>("page_inc", glm::vec2{1050, 942.5}, tr::align::BOTTOM_RIGHT, true, page_inc_status_cb,
-											   page_inc_action_cb, std::move(PAGE_INC_SHORTCUTS))};
+											   page_inc_action_cb, PAGE_INC_SHORTCUTS)};
 	page_inc.pos.change({990, 942.5}, 0.5_s);
 	page_inc.unhide(0.5_s);
 }

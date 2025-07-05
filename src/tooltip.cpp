@@ -10,7 +10,11 @@ void tooltip::render(std::string_view text)
 	const glm::vec2 scaled_last_size{_last_size * engine::render_scale()};
 
 	if (_texture.size().x < scaled_last_size.x || _texture.size().y < scaled_last_size.y) {
-		std::exchange(_texture, {{std::bit_ceil<std::uint32_t>(scaled_last_size.x), std::bit_ceil<std::uint32_t>(scaled_last_size.y)}});
+		const glm::ivec2 new_size{
+			static_cast<int>(std::bit_ceil(static_cast<std::uint32_t>(scaled_last_size.x))),
+			static_cast<int>(std::bit_ceil(static_cast<std::uint32_t>(scaled_last_size.y))),
+		};
+		std::exchange(_texture, tr::texture{new_size});
 		_texture.set_region({}, render.sub({{}, scaled_last_size}));
 	}
 	else {

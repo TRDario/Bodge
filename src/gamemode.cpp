@@ -5,7 +5,7 @@
 
 bool player_settings::autoplay() const noexcept
 {
-	return starting_lives == -1U;
+	return starting_lives == std::numeric_limits<std::uint32_t>::max();
 }
 
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ std::vector<gamemode> load_gamemodes() noexcept
 {
 	std::vector<gamemode> gamemodes;
 	try {
-		gamemodes.append_range(BUILTIN_GAMEMODES);
+		gamemodes.insert(gamemodes.end(), BUILTIN_GAMEMODES.begin(), BUILTIN_GAMEMODES.end());
 		const std::filesystem::path gamemode_dir{cli_settings.userdir / "gamemodes"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{gamemode_dir}) {
 			const std::filesystem::path path{file};

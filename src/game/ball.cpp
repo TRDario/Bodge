@@ -159,12 +159,12 @@ void ball::add_to_renderer() const
 			tr::fill_poly_vtx(positions, vertices, {_trail[i], _hitbox.r});
 			std::ranges::fill(colors, tr::rgba8{tint, opacity});
 			for (std::size_t j = 0; j < vertices; ++j) {
-				*indices_it++ = trail.base_index + drawn_trails * vertices + j;
-				*indices_it++ = trail.base_index + drawn_trails * vertices + (j + 1) % vertices;
-				*indices_it++ = trail.base_index + (drawn_trails - 1) * vertices + (j + 1) % vertices;
-				*indices_it++ = trail.base_index + drawn_trails * vertices + j;
-				*indices_it++ = trail.base_index + (drawn_trails - 1) * vertices + (j + 1) % vertices;
-				*indices_it++ = trail.base_index + (drawn_trails - 1) * vertices + j;
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + drawn_trails * vertices + j);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + drawn_trails * vertices + (j + 1) % vertices);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (drawn_trails - 1) * vertices + (j + 1) % vertices);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + drawn_trails * vertices + j);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (drawn_trails - 1) * vertices + (j + 1) % vertices);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (drawn_trails - 1) * vertices + j);
 			}
 			++drawn_trails;
 		}
