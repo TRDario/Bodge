@@ -5,7 +5,7 @@
 
 // Minified version of src/shaders/pause_menu_background.vert.
 constexpr const char* VERTEX_SHADER_SRC{
-	"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;L(0)out vec2 P;void main(){P=p;gl_Position=vec4(p,0,1);}"};
+	"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;out gl_PerVertex{vec4 gl_Position;};L(0)out vec2 P;void main(){P=p;gl_Position=vec4(p,0,1);}"};
 // Minified version of src/shaders/pause_menu_background.frag.
 constexpr const char* FRAGMENT_SHADER_SRC{
 	"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;L(0)out vec4 C;L(0)uniform sampler2D t;L(1)uniform vec2 S;L(2)uniform "

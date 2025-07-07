@@ -13,26 +13,6 @@ std::uint16_t max_refresh_rate() noexcept
 	return tr::round_cast<std::uint16_t>(tr::refresh_rate());
 }
 
-std::uint8_t max_msaa() noexcept
-{
-	static std::uint8_t max{255};
-	if (max == 255) {
-		max = 0;
-		while (true) {
-			try {
-				const std::uint8_t trying{static_cast<std::uint8_t>(max == 0 ? 2 : max * 2)};
-				tr::window::open_windowed("", {250, 250}, tr::window_flag::DEFAULT, {.multisamples = trying});
-				tr::window::close();
-				max = trying;
-			}
-			catch (tr::window_open_error&) {
-				break;
-			}
-		}
-	}
-	return max;
-}
-
 // Gets the formatted timer text string.
 std::string timer_text(ticks time)
 {

@@ -92,7 +92,7 @@ void settings_t::validate() noexcept
 			refresh_rate = clamped;
 		}
 	}
-	const std::uint8_t adjusted{std::clamp(msaa, NO_MSAA, max_msaa())};
+	const std::uint8_t adjusted{std::clamp(msaa, NO_MSAA, tr::max_msaa())};
 	if (adjusted != msaa) {
 		LOG(tr::severity::WARN, "Adjusted MSAA from x{:d} to x{:d}.", msaa, adjusted);
 		msaa = adjusted;

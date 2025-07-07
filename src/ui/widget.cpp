@@ -650,7 +650,7 @@ score_widget::score_widget(std::string_view name, glm::vec2 pos, tr::align align
 glm::vec2 score_widget::size() const noexcept
 {
 	if (score != nullptr) {
-		const std::uint32_t icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
+		const auto icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
 		if (icons != 0) {
 			return text_widget::size() + glm::vec2{0, 20};
 		}
@@ -670,7 +670,7 @@ void score_widget::add_to_renderer()
 	if (score != nullptr) {
 		const score_flags flags{score->flags};
 		const glm::vec2 text_size{text_widget::size()};
-		const std::uint32_t icons{flags.exited_prematurely + flags.modified_game_speed};
+		const auto icons{flags.exited_prematurely + flags.modified_game_speed};
 		int i = 0;
 
 		if (flags.exited_prematurely) {
@@ -691,7 +691,7 @@ glm::vec2 replay_widget::size() const noexcept
 {
 	if (it.has_value()) {
 		const score_flags flags{(*it)->second.flags};
-		const std::uint32_t icons{flags.exited_prematurely + flags.modified_game_speed};
+		const auto icons{flags.exited_prematurely + flags.modified_game_speed};
 		if (icons != 0) {
 			return clickable_text_widget::size() + glm::vec2{0, 20};
 		}
@@ -712,7 +712,7 @@ void replay_widget::add_to_renderer()
 		const score_flags flags{(*it)->second.flags};
 		const glm::vec2 text_size{clickable_text_widget::size()};
 		const tr::rgba8 color{active() ? tr::rgba8{this->color} : "80808080"_rgba8};
-		const std::uint32_t icons{flags.exited_prematurely + flags.modified_game_speed};
+		const auto icons{flags.exited_prematurely + flags.modified_game_speed};
 		int i = 0;
 
 		if (flags.exited_prematurely) {

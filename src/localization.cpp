@@ -3,7 +3,7 @@
 
 void load_language(const std::filesystem::path& entry)
 {
-	const std::string stem{std::filesystem::path{entry}.stem()};
+	const std::string stem{std::filesystem::path{entry}.stem().string()};
 	if (std::filesystem::is_regular_file(entry) && entry.extension() == ".txt" && stem.size() == 2) {
 		language_code code{stem[0], stem[1]};
 		tr::localization_map localization;
@@ -31,11 +31,11 @@ void load_localization() noexcept
 {
 	if (!languages.contains(settings.language)) {
 		LOG(tr::severity::ERROR, "Settings language with code '{}' was not found in the language list.",
-			std::string_view{settings.language});
+			std::string_view{settings.language.data(), 2});
 		return;
 	}
 
-	const std::string_view name{settings.language};
+	const std::string_view name{settings.language.data(), 2};
 	tr::localization_map old{std::move(localization)};
 	try {
 		const std::string filename{std::format("localization/{}.txt", name)};

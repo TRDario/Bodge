@@ -97,7 +97,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	}};
 	const status_callback cur_refresh_rate_status_cb{[this] { return _substate != substate::ENTERING_TITLE; }};
 	const status_callback msaa_dec_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.msaa != NO_MSAA; }};
-	const status_callback msaa_inc_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.msaa != max_msaa(); }};
+	const status_callback msaa_inc_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.msaa != tr::max_msaa(); }};
 	const status_callback hue_arrow_status_cb{[this] { return _substate != substate::ENTERING_TITLE; }};
 	const status_callback sfx_volume_dec_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.sfx_volume > 0; }};
 	const status_callback sfx_volume_inc_status_cb{[this] { return _substate != substate::ENTERING_TITLE && _pending.sfx_volume < 100; }};

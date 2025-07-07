@@ -154,7 +154,7 @@ std::map<std::string, replay_header> load_replay_headers() noexcept
 
 			try {
 				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
-				replays.emplace(path.filename(), tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
+				replays.emplace(path.filename().string(), tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
 				LOG(tr::severity::INFO, "Loaded replay header from '{}'.", path.string());
 			}
 			catch (std::exception& err) {

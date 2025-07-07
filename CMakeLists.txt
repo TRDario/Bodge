@@ -6,15 +6,15 @@ include (FetchContent)
 FetchContent_Declare(
 	tr-sysgfx
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-sysgfx.git
-	GIT_TAG			0144ed1446d763767fa72e6fd30c52bbb7e5dca0
+	GIT_TAG			efd6fc0b7a215188c79b1b56d6b261a82d329036
 )
 FetchContent_MakeAvailable(tr-sysgfx)
 
 FetchContent_Declare(
 	tr-audio
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-audio.git
-	GIT_TAG			d43057eaae61fd0df95da094d0c25a590cd35866
-)
+	GIT_TAG			bec261891daac8d7c3c7248aca1be88eba23a4b1
+) 
 FetchContent_MakeAvailable(tr-audio)
 
 add_executable(
@@ -30,11 +30,14 @@ add_executable(
     src/gamemode.cpp src/global.cpp src/localization.cpp src/replay.cpp src/score.cpp src/settings.cpp
 )
 target_compile_features(Bodge PUBLIC cxx_std_20)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	target_compile_options (Bodge PRIVATE -Wall -Wextra -Wpedantic)
-	target_compile_options (Bodge PRIVATE -fno-trapping-math -fno-math-errno -fno-signed-zeros -fassociative-math -ffp-contract=fast)
+if ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")) OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	target_compile_options (tr-utility PRIVATE -Wall -Wextra -Wpedantic)
+	target_compile_options (tr-utility PRIVATE -fno-trapping-math -fno-math-errno -fno-signed-zeros -fassociative-math -ffp-contract=fast)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
+	target_compile_options (tr-utility PRIVATE /clang:-Wall /clang:-Wextra /clang:-Wpedantic)
+	target_compile_options (tr-utility PRIVATE /clang:-fno-trapping-math /clang:-fno-math-errno /clang:-fno-signed-zeros /clang:-fassociative-math /clang:-ffp-contract=fast)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	target_compile_options(Bodge PUBLIC /Zc:preprocessor /W4 /WX)
+	target_compile_options(tr-utility PUBLIC /Zc:preprocessor /W3 /WX)
 endif ()
 target_link_libraries(Bodge tr::sysgfx tr::audio)
 target_precompile_headers (Bodge PRIVATE <tr/utility.hpp>)

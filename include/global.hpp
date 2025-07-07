@@ -25,8 +25,6 @@ std::uint16_t max_refresh_rate() noexcept;
 
 // Sentinel for disabled multisampled anti-aliasing.
 constexpr std::uint8_t NO_MSAA{0};
-// The maximum allowed multisampled anti-aliasing.
-std::uint8_t max_msaa() noexcept;
 
 ///////////////////////////////////////////////////////////////// TICKRATE ////////////////////////////////////////////////////////////////
 
