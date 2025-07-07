@@ -6,14 +6,14 @@ include (FetchContent)
 FetchContent_Declare(
 	tr-sysgfx
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-sysgfx.git
-	GIT_TAG			efd6fc0b7a215188c79b1b56d6b261a82d329036
+	GIT_TAG			f22e0df258a6864befc54d59fcb7903861c0febf
 )
 FetchContent_MakeAvailable(tr-sysgfx)
 
 FetchContent_Declare(
 	tr-audio
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-audio.git
-	GIT_TAG			bec261891daac8d7c3c7248aca1be88eba23a4b1
+	GIT_TAG			23eaee85fd1dc8236cad3d904a846852f4c72b0b
 ) 
 FetchContent_MakeAvailable(tr-audio)
 
