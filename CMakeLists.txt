@@ -6,14 +6,14 @@ include (FetchContent)
 FetchContent_Declare(
 	tr-sysgfx
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-sysgfx.git
-	GIT_TAG			efd6fc0b7a215188c79b1b56d6b261a82d329036
+	GIT_TAG			672304e6dcd0a4a3d256c207c31527521a27c48f
 )
 FetchContent_MakeAvailable(tr-sysgfx)
 
 FetchContent_Declare(
 	tr-audio
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-audio.git
-	GIT_TAG			bec261891daac8d7c3c7248aca1be88eba23a4b1
+	GIT_TAG			80d6dc19877d28fe46f0193b797a81a62c115101
 ) 
 FetchContent_MakeAvailable(tr-audio)
 
@@ -30,6 +30,9 @@ add_executable(
     src/gamemode.cpp src/global.cpp src/localization.cpp src/replay.cpp src/score.cpp src/settings.cpp
 )
 target_compile_features(Bodge PUBLIC cxx_std_20)
+if (TR_DEBUG)
+	target_compile_definitions(Bodge PRIVATE TR_DEBUG)
+endif ()
 if ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")) OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options (tr-utility PRIVATE -Wall -Wextra -Wpedantic)
 	target_compile_options (tr-utility PRIVATE -fno-trapping-math -fno-math-errno -fno-signed-zeros -fassociative-math -ffp-contract=fast)

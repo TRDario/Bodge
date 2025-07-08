@@ -32,7 +32,7 @@ tr::static_atlas create_timer_atlas()
 		renders.emplace(std::string{&chr, 1}, font_manager.render_gradient_text({&chr, 1}, font::DEFAULT, tr::ttf_style::NORMAL, 64, 5));
 	}
 	tr::static_atlas atlas{renders};
-#ifndef NDEBUG
+#ifdef TR_DEBUG
 	atlas.set_label("(Bodge) Timer Atlas");
 #endif
 	return atlas;
