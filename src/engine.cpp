@@ -164,7 +164,7 @@ void engine::initialize()
 {
 	const tr::gfx_properties gfx{
 		.debug_context = cli_settings.debug_mode,
-		.double_buffer = false,
+		.double_buffer = true,
 		.multisamples = settings.msaa,
 	};
 	if (settings.window_size == FULLSCREEN) {

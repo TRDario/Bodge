@@ -130,19 +130,20 @@ void ball::add_to_renderer() const
 
 	// Add the trail.
 	if (_age > BALL_SPAWN_TIME) {
-		std::size_t trail_vertices{2 * vertices};
+		std::size_t drawn_trails{2};
 		for (std::size_t i = 0; i < _trail.SIZE - 1; ++i) {
 			const glm::vec2 prev{i == 0 ? _hitbox.c : _trail[i - 1]};
 			if (!tr::collinear(prev, _trail[i], _trail[i + 1])) {
-				trail_vertices += vertices;
+				++drawn_trails;
 			}
 		}
-		const std::size_t trail_indices{6 * (trail_vertices - 1)};
+		const std::size_t trail_vertices{drawn_trails * vertices};
+		const std::size_t trail_indices{(drawn_trails - 1) * vertices * 6};
 
 		tr::color_mesh_ref trail{tr::renderer_2d::new_color_mesh(layer::BALL_TRAILS, trail_vertices, trail_indices)};
 		tr::fill_poly_vtx(trail.positions | std::views::take(vertices), vertices, _hitbox);
 		std::ranges::fill(trail.colors | std::views::take(vertices), tr::rgba8{tint, tr::norm_cast<std::uint8_t>(0.4f)});
-		std::size_t drawn_trails{1};
+		std::size_t trail_index{1};
 		std::vector<std::uint16_t>::iterator indices_it{trail.indices.begin()};
 		for (std::size_t i = 0; i < _trail.SIZE; ++i) {
 			// Cull unnecessary trail vertices.
@@ -154,19 +155,19 @@ void ball::add_to_renderer() const
 			}
 
 			const std::uint8_t opacity{tr::norm_cast<std::uint8_t>((_trail.SIZE - i - 1) * 0.4f / _trail.SIZE)};
-			const auto positions{trail.positions | std::views::drop(drawn_trails * vertices) | std::views::take(vertices)};
-			const auto colors{trail.colors | std::views::drop(drawn_trails * vertices) | std::views::take(vertices)};
+			const auto positions{trail.positions | std::views::drop(trail_index * vertices) | std::views::take(vertices)};
+			const auto colors{trail.colors | std::views::drop(trail_index * vertices) | std::views::take(vertices)};
 			tr::fill_poly_vtx(positions, vertices, {_trail[i], _hitbox.r});
 			std::ranges::fill(colors, tr::rgba8{tint, opacity});
 			for (std::size_t j = 0; j < vertices; ++j) {
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + drawn_trails * vertices + j);
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + drawn_trails * vertices + (j + 1) % vertices);
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (drawn_trails - 1) * vertices + (j + 1) % vertices);
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + drawn_trails * vertices + j);
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (drawn_trails - 1) * vertices + (j + 1) % vertices);
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (drawn_trails - 1) * vertices + j);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + trail_index * vertices + j);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + trail_index * vertices + (j + 1) % vertices);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (trail_index - 1) * vertices + (j + 1) % vertices);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + trail_index * vertices + j);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (trail_index - 1) * vertices + (j + 1) % vertices);
+				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (trail_index - 1) * vertices + j);
 			}
-			++drawn_trails;
+			++trail_index;
 		}
 	}
 }
