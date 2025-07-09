@@ -52,6 +52,7 @@ void cli_settings_t::parse(int argc, const char** argv)
 
 	if (debug_mode) {
 		logger = tr::logger{userdir / "log.txt"};
+		tr::gfx_context::set_log_path(userdir / "gl.txt");
 	}
 }
 
