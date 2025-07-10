@@ -17,10 +17,12 @@ int main(int argc, const char** argv)
 		audio::initialize();
 		engine::initialize();
 		engine::set_main_menu_state();
+		tr::window::show();
 		while (engine::active()) {
 			engine::handle_events();
 			engine::redraw_if_needed();
 		}
+		tr::window::hide();
 		engine::shut_down();
 		audio::shut_down();
 		font_manager.unload_all();

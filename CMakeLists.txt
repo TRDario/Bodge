@@ -6,7 +6,7 @@ include (FetchContent)
 FetchContent_Declare(
 	tr-sysgfx
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-sysgfx.git
-	GIT_TAG			93fcefdac57a2473b3af99bd6714a7acff41db27
+	GIT_TAG			6b9f55cd3b49d4e99ceb5fc8fdfeef3dfc28e367
 )
 FetchContent_MakeAvailable(tr-sysgfx)
 
