@@ -182,6 +182,7 @@ void engine::initialize()
 	if (cli_settings.debug_mode) {
 		tr::debug_renderer::initialize();
 	}
+	tr::window::show();
 	LOG(tr::severity::INFO, "Initialized the engine.");
 }
 
@@ -210,6 +211,7 @@ void engine::apply_settings(const settings_t& old_settings)
 
 void engine::shut_down() noexcept
 {
+	tr::window::hide();
 	engine_data.reset();
 	tr::debug_renderer::shut_down();
 	tr::renderer_2d::shut_down();

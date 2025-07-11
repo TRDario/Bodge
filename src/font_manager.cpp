@@ -1,5 +1,5 @@
-#include "../include/engine.hpp"
 #include "../include/font_manager.hpp"
+#include "../include/engine.hpp"
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
@@ -19,11 +19,11 @@ tr::ttfont load_font(std::string_view name)
 			return font;
 		}
 		LOG(tr::severity::ERROR, "Failed to load font '{}': File not found.", name);
-		throw std::runtime_error{std::format("Failed to load font '{}': File not found", name)};
+		TR_THROW(tr::custom_exception, "Font not found", path.string(), {});
 	}
-	catch (tr::ttfont_file_load_error& err) {
-		LOG(tr::severity::ERROR, "Failed to load font '{}': {}.", name, err.what());
-		throw std::runtime_error{std::format("Failed to load font '{}': {}", name, err.what())};
+	catch (tr::ttfont_load_error& err) {
+		LOG(tr::severity::ERROR, "Failed to load font '{}':", name);
+		TR_THROW(tr::custom_exception, "Font loading failure", std::string{err.description()}, std::string{err.details()});
 	}
 }
 
@@ -83,15 +83,14 @@ std::vector<std::string> split_into_lines(std::string_view text)
 	return lines;
 }
 
-std::vector<std::string> split_overlong_lines(std::vector<std::string>&& lines, const tr::ttfont& font, tr::ttf_style style, float outline,
-											  float max_w)
+std::vector<std::string> split_overlong_lines(std::vector<std::string>&& lines, const tr::ttfont& font, float max_w)
 {
 	for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); ++it) {
 		if (it->empty()) {
 			continue;
 		}
 
-		const tr::ttf_measure_result measure{font.measure_text(*it, static_cast<int>(max_w), style, static_cast<int>(outline))};
+		const tr::ttf_measure_result measure{font.measure_text(*it, static_cast<int>(max_w))};
 		if (measure.text != std::string_view{*it}) {
 			it = std::prev(lines.emplace(std::next(it), it->begin() + measure.text.size(), it->end()));
 			it->erase(it->begin() + measure.text.size(), it->end());
@@ -215,9 +214,11 @@ glm::vec2 font_manager_t::text_size(std::string_view text, font font, tr::ttf_st
 
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	glm::ivec2 text_size{0, font_ref.text_size(text, outline_max_w, style, scaled_outline).y};
+	font_ref.set_style(style);
+	font_ref.set_outline(scaled_outline);
+	glm::ivec2 text_size{0, font_ref.text_size(text, outline_max_w).y};
 	for (std::string_view line : split_into_lines(text)) {
-		tr::ttf_measure_result result{font_ref.measure_text(line, outline_max_w, style, scaled_outline)};
+		tr::ttf_measure_result result{font_ref.measure_text(line, outline_max_w)};
 		if (result.text != line) {
 			text_size.x = outline_max_w;
 			break;
@@ -239,7 +240,9 @@ std::size_t font_manager_t::count_lines(std::string_view text, font font, tr::tt
 
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	return split_overlong_lines(split_into_lines(text), font_ref, style, static_cast<float>(scaled_outline), outline_max_w).size();
+	font_ref.set_style(style);
+	font_ref.set_outline(scaled_outline);
+	return split_overlong_lines(split_into_lines(text), font_ref, outline_max_w).size();
 }
 
 tr::bitmap font_manager_t::render_text(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w,
@@ -253,8 +256,11 @@ tr::bitmap font_manager_t::render_text(std::string_view text, font font, tr::ttf
 
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	tr::bitmap render{font_ref.draw(text, outline_max_w, align, "80808080"_rgba8, style, scaled_outline)};
-	const tr::bitmap fill{font_ref.draw(text, static_cast<int>(max_w), align, "FFFFFF"_rgba8, style)};
+	font_ref.set_style(style);
+	font_ref.set_outline(scaled_outline);
+	tr::bitmap render{font_ref.render(text, outline_max_w, align, "80808080"_rgba8)};
+	font_ref.set_outline(0);
+	const tr::bitmap fill{font_ref.render(text, static_cast<int>(max_w), align, "FFFFFF"_rgba8)};
 	render.blit(glm::ivec2{scaled_outline}, fill.sub({{}, render.size() - scaled_outline * 2}));
 	return render;
 }
@@ -270,8 +276,11 @@ tr::bitmap font_manager_t::render_gradient_text(std::string_view text, font font
 
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
-	tr::bitmap render{font_ref.draw(text, outline_max_w, align, "00000080"_rgba8, style, scaled_outline)};
-	tr::bitmap fill{font_ref.draw(text, static_cast<int>(max_w), align, "FFFFFF"_rgba8, style)};
+	font_ref.set_style(style);
+	font_ref.set_outline(scaled_outline);
+	tr::bitmap render{font_ref.render(text, outline_max_w, align, "00000080"_rgba8)};
+	font_ref.set_outline(0);
+	tr::bitmap fill{font_ref.render(text, static_cast<int>(max_w), align, "FFFFFF"_rgba8)};
 	for (tr::bitmap::mut_it it = fill.begin(); it != fill.end(); ++it) {
 		const tr::rgba8 value{*it};
 		std::uint8_t shade{static_cast<std::uint8_t>(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};

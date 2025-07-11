@@ -39,7 +39,7 @@ void cli_settings_t::parse(int argc, const char** argv)
 		datadir = tr::executable_dir() / "data";
 	}
 	if (userdir.empty()) {
-		userdir = tr::user_dir("TRDario", "Bodge");
+		userdir = tr::user_dir();
 	}
 
 	constexpr std::array<const char*, 4> DIRECTORIES{"localization", "fonts", "replays", "gamemodes"};
@@ -51,8 +51,9 @@ void cli_settings_t::parse(int argc, const char** argv)
 	}
 
 	if (debug_mode) {
-		logger = tr::logger{userdir / "log.txt"};
-		tr::gfx_context::set_log_path(userdir / "gl.txt");
+		tr::log = tr::logger{"tr", userdir / "tr.log"};
+		tr::gfx_context::log = tr::logger{"gl", userdir / "gl.log"};
+		logger = tr::logger{"Bodge", userdir / "Bodge.log"};
 	}
 }
 

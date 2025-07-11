@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/state/name_entry_state.hpp"
+#include "../../include/engine.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -43,8 +43,6 @@ name_entry_state::name_entry_state()
 													   DEFAULT_TEXT_CALLBACK, confirm_status_cb, action_cb, NO_TOOLTIP, CONFIRM_SHORTCUTS)};
 	confirm.pos.change({500, 1000}, 1.0_s);
 	confirm.unhide(1.0_s);
-
-	_ui.move_input_focus_forward();
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

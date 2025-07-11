@@ -98,6 +98,8 @@ inline tr::xorshiftr_128p rng;
 inline tr::logger logger;
 // Logging macro.
 #define LOG(...) TR_LOG(logger, __VA_ARGS__)
+// Logging macro.
+#define LOG_CONTINUE(...) TR_LOG_CONTINUE(logger, __VA_ARGS__)
 
 /////////////////////////////////////////////////////////////////// TIME //////////////////////////////////////////////////////////////////
 

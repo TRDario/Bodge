@@ -8,6 +8,7 @@
 int main(int argc, const char** argv)
 {
 	try {
+		tr::initialize_application("TRDario", "Bodge");
 		cli_settings.parse(argc, argv);
 		settings.load_from_file();
 		scorefile.load_from_file();
@@ -17,21 +18,24 @@ int main(int argc, const char** argv)
 		audio::initialize();
 		engine::initialize();
 		engine::set_main_menu_state();
-		tr::window::show();
 		while (engine::active()) {
 			engine::handle_events();
 			engine::redraw_if_needed();
 		}
-		tr::window::hide();
 		engine::shut_down();
 		audio::shut_down();
 		font_manager.unload_all();
 		scorefile.save_to_file();
 		settings.save_to_file();
 	}
+	catch (tr::exception& err) {
+		LOG(tr::severity::FATAL, err);
+		tr::show_fatal_exception_message_box(err);
+		std::exit(EXIT_FAILURE);
+	}
 	catch (std::exception& err) {
-		LOG(tr::severity::FATAL, "Fatal exception: {}", err.what());
-		tr::show_message_box(tr::msg_box_type::ERROR, tr::msg_buttons::OK, "Fatal Exception - Bodge", err.what());
+		LOG(tr::severity::FATAL, err);
+		tr::show_fatal_exception_message_box(err);
 		std::exit(EXIT_FAILURE);
 	}
 }

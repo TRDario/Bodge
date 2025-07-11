@@ -4,10 +4,12 @@
       "name": "x64-Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "inheritEnvironments": [ "clang_cl_x64" ],
+      "inheritEnvironments": [
+        "clang_cl_x64"
+      ],
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": "-DTR_DEBUG=1",
+      "cmakeCommandArgs": "-DTR_ENABLE_ASSERTS=1",
       "ctestCommandArgs": ""
     },
     {
@@ -19,7 +21,9 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "clang_cl_x64" ]
+      "inheritEnvironments": [
+        "clang_cl_x64"
+      ]
     },
     {
       "name": "x64-RelWithDebInfo",
@@ -27,10 +31,12 @@
       "configurationType": "RelWithDebInfo",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": "-DTR_DEBUG=1",
+      "cmakeCommandArgs": "-DTR_ENABLE_ASSERTS=1",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "clang_cl_x64_x64" ]
+      "inheritEnvironments": [
+        "clang_cl_x64_x64"
+      ]
     }
   ]
 }

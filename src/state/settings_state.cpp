@@ -1,6 +1,6 @@
+#include "../../include/state/settings_state.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
-#include "../../include/state/settings_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////

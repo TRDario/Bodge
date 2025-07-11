@@ -1,2 +1,0 @@
-language_name = "hrvatski"
-font = "linux_biolinum_rb.ttf"

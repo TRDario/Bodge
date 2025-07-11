@@ -4,16 +4,9 @@ project(Bodge VERSION 0.1.0 LANGUAGES C CXX)
 include (FetchContent)
 
 FetchContent_Declare(
-	tr-sysgfx
-	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-sysgfx.git
-	GIT_TAG			6b9f55cd3b49d4e99ceb5fc8fdfeef3dfc28e367
-)
-FetchContent_MakeAvailable(tr-sysgfx)
-
-FetchContent_Declare(
 	tr-audio
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-audio.git
-	GIT_TAG			80d6dc19877d28fe46f0193b797a81a62c115101
+	GIT_TAG			801d50cb371c056bf48627e1255c4ea926d2e50d
 ) 
 FetchContent_MakeAvailable(tr-audio)
 
@@ -30,8 +23,8 @@ add_executable(
     src/gamemode.cpp src/global.cpp src/localization.cpp src/replay.cpp src/score.cpp src/settings.cpp
 )
 target_compile_features(Bodge PUBLIC cxx_std_20)
-if (TR_DEBUG)
-	target_compile_definitions(Bodge PRIVATE TR_DEBUG)
+if (TR_ENABLE_ASSERTS)
+	target_compile_definitions(Bodge PRIVATE TR_ENABLE_ASSERTS)
 endif ()
 if ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")) OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options (Bodge PRIVATE -Wall -Wextra -Wpedantic)
@@ -42,5 +35,5 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUA
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(Bodge PUBLIC /Zc:preprocessor /W3 /WX)
 endif ()
-target_link_libraries(Bodge tr::sysgfx tr::audio)
+target_link_libraries(Bodge tr::audio)
 target_precompile_headers (Bodge PRIVATE <tr/utility.hpp>)
