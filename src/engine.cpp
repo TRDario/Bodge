@@ -141,6 +141,8 @@ struct engine_data {
 	int redraw;
 	// The position of the mouse.
 	glm::vec2 mouse_pos;
+	// The held keyboard modifiers.
+	tr::keymods keymods;
 
 	// Initializes the engine data.
 	engine_data();
@@ -257,6 +259,12 @@ void engine::handle_events()
 			engine_data->mouse_pos = glm::clamp(engine_data->mouse_pos + delta, 0.0f, 1000.0f);
 			break;
 		}
+		case tr::key_down_event::ID:
+			engine_data->keymods = tr::key_down_event{event}.mods;
+			break;
+		case tr::key_up_event::ID:
+			engine_data->keymods = tr::key_up_event{event}.mods;
+			break;
 		default:
 			break;
 		}

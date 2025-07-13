@@ -6,7 +6,7 @@ include (FetchContent)
 FetchContent_Declare(
 	tr-audio
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-audio.git
-	GIT_TAG			801d50cb371c056bf48627e1255c4ea926d2e50d
+	GIT_TAG			7a21789de51f46d6ad1d9e176f8dc488c8a1008d
 ) 
 FetchContent_MakeAvailable(tr-audio)
 

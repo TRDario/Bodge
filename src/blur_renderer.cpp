@@ -35,16 +35,15 @@ blur_renderer::blur_renderer(int texture_size)
 	_tex_unit.set_texture(_input_tex);
 	_pipeline.fragment_shader().set_uniform(0, _tex_unit);
 	_pipeline.fragment_shader().set_uniform(1, static_cast<glm::vec2>(_input_tex.size()));
-
-#ifdef TR_DEBUG
-	_input_tex.set_label("(Bodge) Blur Renderer Input Texture");
-	_aux_tex.set_label("(Bodge) Blur Renderer Auxilliary Texture");
-	_pipeline.set_label("(Bodge) Blur Renderer Pipeline");
-	_pipeline.vertex_shader().set_label("(Bodge) Blur Renderer Vertex Shader");
-	_pipeline.fragment_shader().set_label("(Bodge) Blur Renderer Fragment Shader");
-	_vformat.set_label("(Bodge) Blur Renderer Vertex Format");
-	_vbuffer.set_label("(Bodge) Blur Renderer Vertex Buffer");
-#endif
+	if (tr::gfx_context::debug()) {
+		_input_tex.set_label("(Bodge) Blur Renderer Input Texture");
+		_aux_tex.set_label("(Bodge) Blur Renderer Auxilliary Texture");
+		_pipeline.set_label("(Bodge) Blur Renderer Pipeline");
+		_pipeline.vertex_shader().set_label("(Bodge) Blur Renderer Vertex Shader");
+		_pipeline.fragment_shader().set_label("(Bodge) Blur Renderer Fragment Shader");
+		_vformat.set_label("(Bodge) Blur Renderer Vertex Format");
+		_vbuffer.set_label("(Bodge) Blur Renderer Vertex Buffer");
+	}
 }
 
 ///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////

@@ -314,9 +314,9 @@ void text_widget::update_cache() const
 		tr::bitmap render{font_manager.render_text(text, _font, _style, _font_size, _font_size / 12, _max_width, _text_alignment)};
 		if (!_cached || _cached->texture.size().x < render.size().x || _cached->texture.size().y < render.size().y) {
 			_cached.emplace(tr::texture{render}, render.size(), std::move(text));
-#ifdef TR_DEBUG
-			_cached->texture.set_label(std::format("(Bodge) Widget texture - \"{}\"", name));
-#endif
+			if (tr::gfx_context::debug()) {
+				_cached->texture.set_label(std::format("(Bodge) Widget texture - \"{}\"", name));
+			}
 		}
 		else {
 			_cached->texture.clear({});

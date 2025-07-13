@@ -9,7 +9,7 @@ struct cli_settings_t {
 	std::filesystem::path userdir;
 	// The game speed factor.
 	float game_speed{1.0f};
-#ifdef TR_DEBUG
+#ifdef TR_ENABLE_ASSERTS
 	// Whether debug mode should be enabled.
 	bool debug_mode{true};
 #else
