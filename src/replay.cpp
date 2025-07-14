@@ -115,7 +115,8 @@ void replay::save_to_file() const noexcept
 		LOG(tr::severity::INFO, "Saved replay '{}' to '{}'.", _header.name, path.string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save replay: {}", path.string(), err.what());
+		LOG(tr::severity::ERROR, "Failed to save replay:");
+		LOG_CONTINUE("{}", err.what());
 	}
 }
 
@@ -154,17 +155,20 @@ std::map<std::string, replay_header> load_replay_headers() noexcept
 
 			try {
 				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
-				replays.emplace(path.filename().string(), tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
+				replays.emplace(path.filename().string(),
+								tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
 				LOG(tr::severity::INFO, "Loaded replay header from '{}'.", path.string());
 			}
 			catch (std::exception& err) {
-				LOG(tr::severity::ERROR, "Failed to load replay header from '{}': {}.", path.string(), err.what());
+				LOG(tr::severity::ERROR, "Failed to load replay header from '{}':", path.string());
+				LOG_CONTINUE("{}", err.what());
 			}
 		}
 		LOG(tr::severity::INFO, "Loaded replay headers.");
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load replay headers: {}.", err.what());
+		LOG(tr::severity::ERROR, "Failed to load replay headers:");
+		LOG_CONTINUE("{}", err.what());
 	}
 	return replays;
 }

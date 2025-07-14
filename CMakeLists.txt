@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.30.0)
-project(Bodge VERSION 0.1.0 LANGUAGES C CXX)
+project(Bodge VERSION 0.2.0 LANGUAGES C CXX)
 
 include (FetchContent)
 
 FetchContent_Declare(
-	tr-audio
-	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr-audio.git
-	GIT_TAG			7a21789de51f46d6ad1d9e176f8dc488c8a1008d
+	tr
+	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr.git
+    GIT_TAG origin/main
 ) 
-FetchContent_MakeAvailable(tr-audio)
+FetchContent_MakeAvailable(tr)
 
 add_executable(
     Bodge
@@ -35,5 +35,5 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUA
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(Bodge PUBLIC /Zc:preprocessor /W3 /WX)
 endif ()
-target_link_libraries(Bodge tr::audio)
+target_link_libraries(Bodge tr::tr)
 target_precompile_headers (Bodge PRIVATE <tr/utility.hpp>)

@@ -1,6 +1,6 @@
+#include "../../include/state/replays_state.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/replays_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -9,11 +9,11 @@
 constexpr std::size_t REPLAYS_PER_PAGE{5};
 
 // Shortcuts of the exit button.
-constexpr std::initializer_list<key_chord> EXIT_SHORTCUTS{{tr::keycode::ESCAPE}, {tr::keycode::Q}, {tr::keycode::E}};
+constexpr std::initializer_list<tr::key_chord> EXIT_SHORTCUTS{{tr::keycode::ESCAPE}, {tr::keycode::Q}, {tr::keycode::E}};
 // Shortcuts of the page decrement button.
-constexpr std::initializer_list<key_chord> PAGE_DEC_SHORTCUTS{{tr::keycode::LEFT}};
+constexpr std::initializer_list<tr::key_chord> PAGE_DEC_SHORTCUTS{{tr::keycode::LEFT}};
 // Shortcuts of the page increment button.
-constexpr std::initializer_list<key_chord> PAGE_INC_SHORTCUTS{{tr::keycode::RIGHT}};
+constexpr std::initializer_list<tr::key_chord> PAGE_INC_SHORTCUTS{{tr::keycode::RIGHT}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -163,7 +163,7 @@ void replays_state::set_up_ui()
 	}
 
 	std::map<std::string, replay_header>::iterator it{_replays.begin()};
-	for (int i = 0; i < REPLAYS_PER_PAGE; ++i) {
+	for (std::size_t i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		const std::optional<std::map<std::string, replay_header>::iterator> opt_it{it != _replays.end() ? std::optional{it++}
 																										: std::nullopt};
 		const glm::vec2 pos{i % 2 == 0 ? 400 : 600, 183 + 150 * i};

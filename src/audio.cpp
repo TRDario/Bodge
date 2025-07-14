@@ -50,7 +50,8 @@ std::optional<tr::audio_buffer> load_audio_file(const char* filename) noexcept
 		return buffer;
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load audio from '{}': {}.", (cli_settings.datadir / "sfx" / filename).string(), err.what());
+		LOG(tr::severity::ERROR, "Failed to load audio from '{}':", (cli_settings.datadir / "sfx" / filename).string());
+		LOG_CONTINUE("{}", err.what());
 		return std::nullopt;
 	}
 }
@@ -70,7 +71,8 @@ void audio::initialize() noexcept
 		}
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to initialize the audio system: {}.", err.what());
+		LOG(tr::severity::ERROR, "Failed to initialize the audio system:");
+		LOG_CONTINUE("{}", err.what());
 	}
 }
 

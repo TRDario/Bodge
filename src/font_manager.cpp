@@ -18,11 +18,9 @@ tr::ttfont load_font(std::string_view name)
 			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
 			return font;
 		}
-		LOG(tr::severity::ERROR, "Failed to load font '{}': File not found.", name);
 		TR_THROW(tr::custom_exception, "Font not found", path.string(), {});
 	}
 	catch (tr::ttfont_load_error& err) {
-		LOG(tr::severity::ERROR, "Failed to load font '{}':", name);
 		TR_THROW(tr::custom_exception, "Font loading failure", std::string{err.description()}, std::string{err.details()});
 	}
 }

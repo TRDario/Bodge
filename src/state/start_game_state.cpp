@@ -1,6 +1,6 @@
+#include "../../include/state/start_game_state.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/start_game_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -8,13 +8,18 @@
 // Gamemode display widgets.
 constexpr std::array<const char*, 4> GAMEMODE_WIDGETS{"name", "author", "description", "pb"};
 // Shortcuts of the previous gamemode button.
-constexpr std::initializer_list<key_chord> PREV_CHORDS{{tr::keycode::LEFT}};
+constexpr std::initializer_list<tr::key_chord> PREV_CHORDS{{tr::keycode::LEFT}};
 // Shortcuts of the next gamemode button.
-constexpr std::initializer_list<key_chord> NEXT_CHORDS{{tr::keycode::RIGHT}};
+constexpr std::initializer_list<tr::key_chord> NEXT_CHORDS{{tr::keycode::RIGHT}};
 // Shortcuts of the start button.
-constexpr std::initializer_list<key_chord> START_CHORDS{{tr::keycode::ENTER}, {tr::keycode::TOP_ROW_1}};
+constexpr std::initializer_list<tr::key_chord> START_CHORDS{{tr::keycode::ENTER}, {tr::keycode::TOP_ROW_1}};
 // Shortcuts of the exit button.
-constexpr std::initializer_list<key_chord> EXIT_CHORDS{{tr::keycode::ESCAPE}, {tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::TOP_ROW_2}};
+constexpr std::initializer_list<tr::key_chord> EXIT_CHORDS{
+	{tr::keycode::ESCAPE},
+	{tr::keycode::Q},
+	{tr::keycode::E},
+	{tr::keycode::TOP_ROW_2},
+};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 

@@ -1,7 +1,7 @@
+#include "../../include/state/pause_state.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
-#include "../../include/state/pause_state.hpp"
 #include "../../include/state/replays_state.hpp"
 #include "../../include/state/save_score_state.hpp"
 #include "../../include/state/title_state.hpp"
@@ -13,15 +13,15 @@ constexpr std::array<const char*, 5> BUTTONS_REGULAR{"unpause", "save_and_restar
 // The special pause screen buttons.
 constexpr std::array<const char*, 3> BUTTONS_SPECIAL{"unpause", "restart", "quit"};
 // Shortcuts of the regular button set.
-constexpr std::array<std::initializer_list<key_chord>, BUTTONS_REGULAR.size()> SHORTCUTS_REGULAR{{
+constexpr std::array<std::initializer_list<tr::key_chord>, BUTTONS_REGULAR.size()> SHORTCUTS_REGULAR{{
 	{{tr::keycode::ESCAPE}, {tr::keycode::TOP_ROW_1}},
-	{{tr::keycode::R, tr::keymods::SHIFT}, {tr::keycode::TOP_ROW_2}},
+	{{tr::keycode::R, tr::keymod::SHIFT}, {tr::keycode::TOP_ROW_2}},
 	{{tr::keycode::R}, {tr::keycode::TOP_ROW_3}},
-	{{tr::keycode::Q, tr::keymods::SHIFT}, {tr::keycode::E, tr::keymods::SHIFT}, {tr::keycode::TOP_ROW_4}},
+	{{tr::keycode::Q, tr::keymod::SHIFT}, {tr::keycode::E, tr::keymod::SHIFT}, {tr::keycode::TOP_ROW_4}},
 	{{tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::TOP_ROW_5}},
 }};
 // Shortcuts of the special button set.
-constexpr std::array<std::initializer_list<key_chord>, BUTTONS_SPECIAL.size()> SHORTCUTS_SPECIAL{{
+constexpr std::array<std::initializer_list<tr::key_chord>, BUTTONS_SPECIAL.size()> SHORTCUTS_SPECIAL{{
 	{{tr::keycode::ESCAPE}, {tr::keycode::TOP_ROW_1}},
 	{{tr::keycode::R}, {tr::keycode::TOP_ROW_2}},
 	{{tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::TOP_ROW_3}},
@@ -81,14 +81,14 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 		if (_timer < 0.5_s) {
 			return nullptr;
 		}
-			tr::renderer_2d::set_default_transform(TRANSFORM);
-			switch (to_type(_substate)) {
-			case game_type::REGULAR:
-			case game_type::TEST:
-				return std::make_unique<game_state>(std::make_unique<active_game>(_game->gamemode()), to_type(_substate), true);
-			case game_type::REPLAY:
+		tr::renderer_2d::set_default_transform(TRANSFORM);
+		switch (to_type(_substate)) {
+		case game_type::REGULAR:
+		case game_type::TEST:
+			return std::make_unique<game_state>(std::make_unique<active_game>(_game->gamemode()), to_type(_substate), true);
+		case game_type::REPLAY:
 			return std::make_unique<game_state>(std::make_unique<replay_game>(static_cast<replay_game&>(*_game)), game_type::REPLAY, true);
-			}
+		}
 	case substate_base::SAVING_AND_RESTARTING:
 	case substate_base::SAVING_AND_QUITTING: {
 		if (_timer >= 0.5_s) {
@@ -287,6 +287,6 @@ void pause_state::set_up_exit_animation() noexcept
 			widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}
 	}
-	
+
 	_ui.hide_all(0.5_s);
 }

@@ -1,6 +1,6 @@
+#include "../../include/ui/widget.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
-#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -164,7 +164,7 @@ void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, fl
 ///////////////////////////////////////////////////////////////// WIDGET //////////////////////////////////////////////////////////////////
 
 widget::widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
-			   std::vector<key_chord>&& shortcuts) noexcept
+			   std::vector<tr::key_chord>&& shortcuts) noexcept
 	: name{name}
 	, alignment{alignment}
 	, pos{pos}
@@ -221,9 +221,9 @@ bool widget::active() const noexcept
 	return false;
 }
 
-bool widget::is_shortcut(const key_chord& chord) const noexcept
+bool widget::is_shortcut(const tr::key_chord& chord) const noexcept
 {
-	const std::vector<key_chord>::const_iterator it{std::ranges::find(_shortcuts, chord)};
+	const std::vector<tr::key_chord>::const_iterator it{std::ranges::find(_shortcuts, chord)};
 	return it != _shortcuts.end();
 }
 
@@ -236,7 +236,7 @@ void widget::update()
 /////////////////////////////////////////////////////////////// TEXT_WIDGET ///////////////////////////////////////////////////////////////
 
 text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb,
-						 bool writable, std::vector<key_chord>&& shortcuts, font font, tr::ttf_style style, tr::halign text_alignment,
+						 bool writable, std::vector<tr::key_chord>&& shortcuts, font font, tr::ttf_style style, tr::halign text_alignment,
 						 float font_size, int max_width, tr::rgba8 color, text_callback text_cb)
 	: widget{name, pos, alignment, hoverable, std::move(tooltip_cb), writable, std::move(shortcuts)}
 	, color{color}
@@ -331,7 +331,7 @@ void text_widget::update_cache() const
 
 clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size,
 											 text_callback text_cb, status_callback status_cb, action_callback action_cb,
-											 tooltip_callback tooltip_cb, std::vector<key_chord>&& shortcuts, sfx sfx) noexcept
+											 tooltip_callback tooltip_cb, std::vector<tr::key_chord>&& shortcuts, sfx sfx) noexcept
 	: text_widget{name,
 				  pos,
 				  alignment,
@@ -444,7 +444,7 @@ void color_preview_widget::add_to_renderer()
 /////////////////////////////////////////////////////////////// ARROW_WIDGET //////////////////////////////////////////////////////////////
 
 arrow_widget::arrow_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb,
-						   action_callback action_cb, std::vector<key_chord>&& chords) noexcept
+						   action_callback action_cb, std::vector<tr::key_chord>&& chords) noexcept
 	: widget{name, pos, alignment, true, NO_TOOLTIP, false, std::move(chords)}
 	, _right{right_arrow}
 	, _color{{160, 160, 160, 160}}
@@ -547,7 +547,7 @@ void replay_playback_indicator_widget::add_to_renderer()
 {
 	const glm::vec2 tl{this->tl()};
 
-	if (tr::keyboard::held_mods() & tr::keymods::SHIFT) {
+	if (engine::held_keymods() & tr::keymod::SHIFT) {
 		const tr::color_mesh_ref mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
 		tr::fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
 		tr::fill_poly_idx(mesh.indices.begin() + tr::poly_outline_idx(3), 3, mesh.base_index + 6);
@@ -555,7 +555,7 @@ void replay_playback_indicator_widget::add_to_renderer()
 						  mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 	}
-	else if (tr::keyboard::held_mods() & tr::keymods::CTRL) {
+	else if (engine::held_keymods() & tr::keymod::CTRL) {
 		const tr::color_mesh_ref mesh{tr::renderer_2d::new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
 		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),
 						  mesh.positions.begin());

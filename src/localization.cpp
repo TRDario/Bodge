@@ -23,7 +23,8 @@ void load_languages() noexcept
 	}
 	catch (std::exception& err) {
 		languages.clear();
-		LOG(tr::severity::ERROR, "Failed to load language list: {}", err.what());
+		LOG(tr::severity::ERROR, "Failed to load language list:");
+		LOG_CONTINUE("{}", err.what());
 	}
 }
 
@@ -58,6 +59,7 @@ void load_localization() noexcept
 	}
 	catch (std::exception& err) {
 		localization = std::move(old);
-		LOG(tr::severity::ERROR, "Failed to load '{}' localization: {}", name, err.what());
+		LOG(tr::severity::ERROR, "Failed to load '{}' localization:", name);
+		LOG_CONTINUE("{}", err.what());
 	}
 }

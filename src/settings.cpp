@@ -67,14 +67,16 @@ void settings_t::raw_load_from_file() noexcept
 		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 		std::span<const std::byte> data{raw};
 		if (tr::binary_read<std::uint8_t>(data) != SETTINGS_VERSION) {
-			LOG(tr::severity::ERROR, "Failed to load settings from '{}': Wrong settings file version.", path.string());
+			LOG(tr::severity::ERROR, "Failed to load settings from '{}':", path.string());
+			LOG_CONTINUE("Wrong settings file version.");
 			return;
 		}
 		tr::binary_read(data, *this);
 		LOG(tr::severity::INFO, "Loaded settings from '{}'.", (cli_settings.userdir / "settings.dat").string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load settings from '{}': {}.", (cli_settings.userdir / "settings.dat").string(), err.what());
+		LOG(tr::severity::ERROR, "Failed to load settings from '{}':", (cli_settings.userdir / "settings.dat").string());
+		LOG_CONTINUE("{}", err.what());
 	}
 }
 
@@ -138,6 +140,7 @@ void settings_t::save_to_file() noexcept
 		LOG(tr::severity::INFO, "Saved settings to '{}'.", path.string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save settings to '{}': {}", path.string(), err.what());
+		LOG(tr::severity::ERROR, "Failed to save settings to '{}':", path.string());
+		LOG_CONTINUE("{}", err.what());
 	}
 }

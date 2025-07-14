@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/state/scoreboards_state.hpp"
+#include "../../include/engine.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -7,15 +7,15 @@
 // The number of scores per page.
 constexpr std::size_t SCORES_PER_PAGE{8};
 // Shortcuts of the exit button.
-constexpr std::initializer_list<key_chord> EXIT_SHORTCUTS{{tr::keycode::ESCAPE}, {tr::keycode::Q}, {tr::keycode::E}};
+constexpr std::initializer_list<tr::key_chord> EXIT_SHORTCUTS{{tr::keycode::ESCAPE}, {tr::keycode::Q}, {tr::keycode::E}};
 // Shortcuts of the gamemode decrement button.
-constexpr std::initializer_list<key_chord> GAMEMODE_DEC_SHORTCUTS{{tr::keycode::LEFT, tr::keymods::SHIFT}};
+constexpr std::initializer_list<tr::key_chord> GAMEMODE_DEC_SHORTCUTS{{tr::keycode::LEFT, tr::keymod::SHIFT}};
 // Shortcuts of the gamemode increment button.
-constexpr std::initializer_list<key_chord> GAMEMODE_INC_SHORTCUTS{{tr::keycode::RIGHT, tr::keymods::SHIFT}};
+constexpr std::initializer_list<tr::key_chord> GAMEMODE_INC_SHORTCUTS{{tr::keycode::RIGHT, tr::keymod::SHIFT}};
 // Shortcuts of the page decrement button.
-constexpr std::initializer_list<key_chord> PAGE_DEC_SHORTCUTS{{tr::keycode::LEFT}};
+constexpr std::initializer_list<tr::key_chord> PAGE_DEC_SHORTCUTS{{tr::keycode::LEFT}};
 // Shortcuts of the page increment button.
-constexpr std::initializer_list<key_chord> PAGE_INC_SHORTCUTS{{tr::keycode::RIGHT}};
+constexpr std::initializer_list<tr::key_chord> PAGE_INC_SHORTCUTS{{tr::keycode::RIGHT}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -118,7 +118,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 
 	const tooltip_callback cur_gamemode_tooltip_cb{[this] { return std::string{_current->gamemode.description_loc()}; }};
 	widget& cur_gamemode{_ui.emplace<text_widget>("cur_gamemode", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, true, cur_gamemode_tooltip_cb,
-												  false, std::vector<key_chord>{}, font::LANGUAGE, tr::ttf_style::NORMAL,
+												  false, std::vector<tr::key_chord>{}, font::LANGUAGE, tr::ttf_style::NORMAL,
 												  tr::halign::CENTER, 48, tr::UNLIMITED_WIDTH, "A0A0A0A0"_rgba8, cur_gamemode_text_cb)};
 	cur_gamemode.pos.change({500, 900}, 0.5_s);
 	cur_gamemode.unhide(0.5_s);

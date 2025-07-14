@@ -13,7 +13,7 @@ class text_widget : public widget {
 
 	// Creates a text widget.
 	text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
-				std::vector<key_chord>&& shortcuts, font font, tr::ttf_style style, tr::halign text_alignment, float font_size,
+				std::vector<tr::key_chord>&& shortcuts, font font, tr::ttf_style style, tr::halign text_alignment, float font_size,
 				int max_width, tr::rgba8 color, text_callback text_cb);
 
 	// Creates a common type of text widget: non-interactible, single-line.
@@ -77,7 +77,7 @@ class clickable_text_widget : public text_widget {
 	// Creates a clickable text widget.
 	clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size, text_callback text_cb,
 						  status_callback status_cb, action_callback action_cb, tooltip_callback tooltip_cb = NO_TOOLTIP,
-						  std::vector<key_chord>&& shortcuts = {}, sfx sfx = sfx::CONFIRM) noexcept;
+						  std::vector<tr::key_chord>&& shortcuts = {}, sfx sfx = sfx::CONFIRM) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -220,7 +220,7 @@ class arrow_widget : public widget {
 
 	// Creates an arrow widget.
 	arrow_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb,
-				 action_callback action_cb, std::vector<key_chord>&& chords = {}) noexcept;
+				 action_callback action_cb, std::vector<tr::key_chord>&& chords = {}) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 

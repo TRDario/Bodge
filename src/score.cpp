@@ -1,5 +1,5 @@
-#include "../include/gamemode.hpp"
 #include "../include/score.hpp"
+#include "../include/gamemode.hpp"
 #include "../include/settings.hpp"
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
@@ -97,7 +97,8 @@ void scorefile_t::load_from_file() noexcept
 		LOG(tr::severity::INFO, "Loaded scores from '{}'.", path.string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load scores from '{}': {}.", (cli_settings.userdir / "scorefile.dat").string(), err.what());
+		LOG(tr::severity::ERROR, "Failed to load scores from '{}':", (cli_settings.userdir / "scorefile.dat").string());
+		LOG_CONTINUE("{}", err.what());
 	}
 }
 
@@ -115,6 +116,7 @@ void scorefile_t::save_to_file() noexcept
 		LOG(tr::severity::INFO, "Saved scores to '{}'.", path.string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save scores to '{}': {}.", path.string(), err.what());
+		LOG(tr::severity::ERROR, "Failed to save scores to '{}':", path.string());
+		LOG_CONTINUE("{}", err.what());
 	}
 }

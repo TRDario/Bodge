@@ -127,14 +127,14 @@ template <std::size_t S> void line_input_widget<S>::on_clear() noexcept
 
 template <std::size_t S> void line_input_widget<S>::on_copy() noexcept
 {
-	tr::keyboard::set_clipboard_text(std::string{buffer}.c_str());
+	tr::clipboard::set(std::string{buffer});
 }
 
 template <std::size_t S> void line_input_widget<S>::on_paste() noexcept
 {
 	try {
-		if (tr::keyboard::clipboard_has_text()) {
-			std::string pasted{tr::keyboard::clipboard_text()};
+		if (!tr::clipboard::empty()) {
+			std::string pasted{tr::clipboard::get()};
 			std::erase(pasted, '\n');
 			buffer += (buffer.size() + pasted.size() > S) ? std::string_view{pasted}.substr(0, S - buffer.size()) : pasted;
 			audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
@@ -359,14 +359,14 @@ template <std::size_t S> void multiline_input_widget<S>::on_clear() noexcept
 
 template <std::size_t S> void multiline_input_widget<S>::on_copy() noexcept
 {
-	tr::keyboard::set_clipboard_text(std::string{buffer}.c_str());
+	tr::clipboard::set(std::string{buffer}.c_str());
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_paste() noexcept
 {
 	try {
-		if (tr::keyboard::clipboard_has_text()) {
-			std::string pasted{tr::keyboard::clipboard_text()};
+		if (!tr::clipboard::empty()) {
+			std::string pasted{tr::clipboard::get()};
 			tr::static_string<S> copy{buffer};
 			copy += (buffer.size() + pasted.size() > S) ? std::string_view{pasted}.substr(0, S - buffer.size()) : pasted;
 			// Replace this with a smarter solution eventually, maybe.

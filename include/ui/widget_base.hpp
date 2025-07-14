@@ -4,16 +4,6 @@
 
 ////////////////////////////////////////////////////////////////// TYPES //////////////////////////////////////////////////////////////////
 
-// Shortcut key chord.
-struct key_chord {
-	// Shortcut chord key.
-	tr::keycode key;
-	// Shortcut chord modifiers.
-	tr::keymods mods{tr::keymods::NONE};
-
-	bool operator==(const key_chord&) const = default;
-};
-
 // Alias for the type of a tooltip callback.
 using tooltip_callback = std::function<std::string()>;
 // Sentinel for a mousable to not have a tooltip.
@@ -30,7 +20,7 @@ using status_callback = std::function<bool()>;
 using action_callback = std::function<void()>;
 
 // Sentinel for no shortcuts.
-constexpr std::initializer_list<key_chord> NO_SHORTCUTS{};
+constexpr std::initializer_list<tr::key_chord> NO_SHORTCUTS{};
 
 ////////////////////////////////////////////////////////////////// WIDGET /////////////////////////////////////////////////////////////////
 
@@ -39,7 +29,7 @@ class widget {
   public:
 	// Creates a widget.
 	widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
-		   std::vector<key_chord>&& shortcuts) noexcept;
+		   std::vector<tr::key_chord>&& shortcuts) noexcept;
 	// Virtual destructor.
 	virtual ~widget() noexcept = default;
 
@@ -101,7 +91,7 @@ class widget {
 	//////////////////////////////////////////////////////// SHORTCUT INTERACTION /////////////////////////////////////////////////////////
 
 	// Gets whether a chord is a valid shortcut for this widget.
-	bool is_shortcut(const key_chord& chord) const noexcept;
+	bool is_shortcut(const tr::key_chord& chord) const noexcept;
 	// Callback for one of the widget's shortcuts being pressed.
 	virtual void on_shortcut() {}
 
@@ -141,5 +131,5 @@ class widget {
 	// Whether the widget is writable.
 	bool _writable;
 	// The shortcuts of the widget.
-	std::vector<key_chord> _shortcuts;
+	std::vector<tr::key_chord> _shortcuts;
 };

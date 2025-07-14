@@ -1,4 +1,5 @@
 #include "../include/gamemode.hpp"
+#include "../include/score.hpp"
 #include "../include/settings.hpp"
 
 ///////////////////////////////////////////////////////////// PLAYER SETTINGS /////////////////////////////////////////////////////////////
@@ -9,6 +10,11 @@ bool player_settings::autoplay() const noexcept
 }
 
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
+
+gamemode::gamemode() noexcept
+	: author{scorefile.name}
+{
+}
 
 gamemode::gamemode(const std::filesystem::path& path)
 {
@@ -84,10 +90,12 @@ void gamemode::save_to_file() noexcept
 
 		std::ostringstream bufstream{std::ios::binary};
 		tr::binary_write(bufstream, *this);
-		tr::binary_write(file, tr::encrypt(tr::range_bytes(bufstream.view()), tr::rand<std::uint8_t>(rng)));
+		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), tr::rand<std::uint8_t>(rng))};
+		tr::binary_write(file, std::span{encrypted});
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save gamemode '{}': {}.", name, err.what());
+		LOG(tr::severity::ERROR, "Failed to save gamemode:");
+		LOG_CONTINUE("{}", err.what());
 	}
 }
 
@@ -107,12 +115,14 @@ std::vector<gamemode> load_gamemodes() noexcept
 				LOG(tr::severity::INFO, "Loaded gamemode '{}' from '{}'.", gamemodes.back().name, path.string());
 			}
 			catch (std::exception& err) {
-				LOG(tr::severity::ERROR, "Failed to load gamemode from '{}': {}.", path.string(), err.what());
+				LOG(tr::severity::ERROR, "Failed to load gamemode from '{}':", path.string());
+				LOG_CONTINUE("{}", err.what());
 			}
 		}
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::INFO, "Failed to load gamemodes: {}.", err.what());
+		LOG(tr::severity::INFO, "Failed to load gamemodes:");
+		LOG_CONTINUE("{}", err.what());
 	}
 	return gamemodes;
 }

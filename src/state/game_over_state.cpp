@@ -8,12 +8,12 @@
 // The pause screen buttons.
 constexpr std::array<const char*, 4> BUTTONS{"save_and_restart", "restart", "save_and_quit", "quit"};
 // Shortcuts of the buttons.
-constexpr std::array<std::initializer_list<key_chord>, BUTTONS.size()> SHORTCUTS{{
-	{{tr::keycode::R, tr::keymods::SHIFT}, {tr::keycode::TOP_ROW_1}},
+constexpr std::array<std::initializer_list<tr::key_chord>, BUTTONS.size()> SHORTCUTS{{
+	{{tr::keycode::R, tr::keymod::SHIFT}, {tr::keycode::TOP_ROW_1}},
 	{{tr::keycode::R}, {tr::keycode::TOP_ROW_2}},
-	{{tr::keycode::ESCAPE, tr::keymods::SHIFT},
-	 {tr::keycode::Q, tr::keymods::SHIFT},
-	 {tr::keycode::E, tr::keymods::SHIFT},
+	{{tr::keycode::ESCAPE, tr::keymod::SHIFT},
+	 {tr::keycode::Q, tr::keymod::SHIFT},
+	 {tr::keycode::E, tr::keymod::SHIFT},
 	 {tr::keycode::TOP_ROW_3}},
 	{{tr::keycode::ESCAPE}, {tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::TOP_ROW_4}},
 }};

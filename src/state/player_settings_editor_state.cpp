@@ -1,5 +1,5 @@
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
+#include "../../include/state/gamemode_designer_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -14,7 +14,7 @@ constexpr std::array<const char*, 9> RIGHT_WIDGETS{"starting_lives_dec", "cur_st
 												   "hitbox_radius_dec",  "cur_hitbox_radius",  "hitbox_radius_inc",
 												   "inertia_factor_dec", "cur_inertia_factor", "inertia_factor_inc"};
 // Shortcuts of the exit button.
-constexpr std::initializer_list<key_chord> EXIT_SHORTCUTS{
+constexpr std::initializer_list<tr::key_chord> EXIT_SHORTCUTS{
 	{tr::keycode::C}, {tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::ESCAPE}, {tr::keycode::TOP_ROW_2},
 };
 
@@ -49,28 +49,22 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 	// ACTION CALLBACKS
 
 	const action_callback starting_lives_dec_action_cb{[&starting_lives = _gamemode.player.starting_lives] {
-		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10 : 1};
-		starting_lives = static_cast<std::uint32_t>(std::max(static_cast<int>(starting_lives - delta), 0));
+		starting_lives = static_cast<std::uint32_t>(std::max(static_cast<int>(starting_lives - engine::keymods_choose(1, 5, 10)), 0));
 	}};
 	const action_callback starting_lives_inc_action_cb{[&starting_lives = _gamemode.player.starting_lives] {
-		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10 : 1};
-		starting_lives = std::min(starting_lives + delta, std::uint32_t{255});
+		starting_lives = std::min(starting_lives + engine::keymods_choose(1, 5, 10), std::uint32_t{255});
 	}};
 	const action_callback hitbox_radius_dec_action_cb{[&hitbox_radius = _gamemode.player.hitbox_radius] {
-		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10.0f : 1.0f};
-		hitbox_radius = std::max(hitbox_radius - delta, 0.0f);
+		hitbox_radius = std::max(hitbox_radius - engine::keymods_choose(1, 5, 10), 0.0f);
 	}};
 	const action_callback hitbox_radius_inc_action_cb{[&hitbox_radius = _gamemode.player.hitbox_radius] {
-		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 10.0f : 1.0f};
-		hitbox_radius = std::min(hitbox_radius + delta, 100.0f);
+		hitbox_radius = std::min(hitbox_radius + engine::keymods_choose(1, 5, 10), 100.0f);
 	}};
 	const action_callback inertia_factor_dec_action_cb{[&inertia_factor = _gamemode.player.inertia_factor] {
-		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 0.1f : 0.01f};
-		inertia_factor = std::max(inertia_factor - delta, 0.0f);
+		inertia_factor = std::max(inertia_factor - engine::keymods_choose(0.01f, 0.05f, 0.1f), 0.0f);
 	}};
 	const action_callback inertia_factor_inc_action_cb{[&inertia_factor = _gamemode.player.inertia_factor] {
-		const float delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 0.1f : 0.01f};
-		inertia_factor = std::min(inertia_factor + delta, 0.99f);
+		inertia_factor = std::min(inertia_factor + engine::keymods_choose(0.01f, 0.05f, 0.1f), 0.99f);
 	}};
 	const action_callback exit_action_cb{[this] {
 		_substate = substate::EXITING;
@@ -101,9 +95,9 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 														 starting_lives_inc_status_cb, starting_lives_inc_action_cb)};
 	widget& cur_starting_lives{_ui.emplace<text_widget>("cur_starting_lives", STARTING_LIVES_START_POS, tr::align::CENTER, font::LANGUAGE,
 														tr::ttf_style::NORMAL, 48, cur_starting_lives_text_cb)};
-	starting_lives_dec.pos.change({800, STARTING_LIVES_START_POS.y}, 0.5_s);
+	starting_lives_dec.pos.change({790, STARTING_LIVES_START_POS.y}, 0.5_s);
 	starting_lives_inc.pos.change({985, STARTING_LIVES_START_POS.y}, 0.5_s);
-	cur_starting_lives.pos.change({892.5, STARTING_LIVES_START_POS.y}, 0.5_s);
+	cur_starting_lives.pos.change({887.5, STARTING_LIVES_START_POS.y}, 0.5_s);
 	starting_lives_dec.unhide(0.5_s);
 	starting_lives_inc.unhide(0.5_s);
 	cur_starting_lives.unhide(0.5_s);
@@ -114,9 +108,9 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 														hitbox_radius_inc_status_cb, hitbox_radius_inc_action_cb)};
 	widget& cur_hitbox_radius{_ui.emplace<text_widget>("cur_hitbox_radius", HITBOX_RADIUS_START_POS, tr::align::CENTER, font::LANGUAGE,
 													   tr::ttf_style::NORMAL, 48, cur_hitbox_radius_text_cb)};
-	hitbox_radius_dec.pos.change({800, HITBOX_RADIUS_START_POS.y}, 0.5_s);
+	hitbox_radius_dec.pos.change({790, HITBOX_RADIUS_START_POS.y}, 0.5_s);
 	hitbox_radius_inc.pos.change({985, HITBOX_RADIUS_START_POS.y}, 0.5_s);
-	cur_hitbox_radius.pos.change({892.5, HITBOX_RADIUS_START_POS.y}, 0.5_s);
+	cur_hitbox_radius.pos.change({887.5, HITBOX_RADIUS_START_POS.y}, 0.5_s);
 	hitbox_radius_dec.unhide(0.5_s);
 	hitbox_radius_inc.unhide(0.5_s);
 	cur_hitbox_radius.unhide(0.5_s);
@@ -127,9 +121,9 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 														 inertia_factor_inc_status_cb, inertia_factor_inc_action_cb)};
 	widget& cur_inertia_factor{_ui.emplace<text_widget>("cur_inertia_factor", INERTIA_FACTOR_START_POS, tr::align::CENTER, font::LANGUAGE,
 														tr::ttf_style::NORMAL, 48, cur_inertia_factor_text_cb)};
-	inertia_factor_dec.pos.change({800, INERTIA_FACTOR_START_POS.y}, 0.5_s);
+	inertia_factor_dec.pos.change({790, INERTIA_FACTOR_START_POS.y}, 0.5_s);
 	inertia_factor_inc.pos.change({985, INERTIA_FACTOR_START_POS.y}, 0.5_s);
-	cur_inertia_factor.pos.change({892.5, INERTIA_FACTOR_START_POS.y}, 0.5_s);
+	cur_inertia_factor.pos.change({887.5, INERTIA_FACTOR_START_POS.y}, 0.5_s);
 	inertia_factor_dec.unhide(0.5_s);
 	inertia_factor_inc.unhide(0.5_s);
 	cur_inertia_factor.unhide(0.5_s);

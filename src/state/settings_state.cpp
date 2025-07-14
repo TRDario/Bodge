@@ -50,9 +50,9 @@ constexpr std::array<label, 8> LABELS{{
 // Settings screen bottom buttons.
 constexpr std::array<const char*, 3> BOTTOM_BUTTONS{"revert", "apply", "exit"};
 // Shortcuts of the bottom buttons.
-constexpr std::array<std::initializer_list<key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
-	{{tr::keycode::Z, tr::keymods::CTRL}},
-	{{tr::keycode::S, tr::keymods::CTRL}},
+constexpr std::array<std::initializer_list<tr::key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
+	{{tr::keycode::Z, tr::keymod::CTRL}},
+	{{tr::keycode::S, tr::keymod::CTRL}},
 	{{tr::keycode::ESCAPE}},
 }};
 
@@ -114,11 +114,11 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	// ACTION CALLBACKS
 
 	const action_callback window_size_dec_action_cb{[&window_size = _pending.window_size] {
-		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 100 : 10};
+		const int delta{engine::held_keymods() & tr::keymod::SHIFT ? 100 : 10};
 		window_size = std::max(MIN_WINDOW_SIZE, window_size - delta);
 	}};
 	const action_callback window_size_inc_action_cb{[&window_size = _pending.window_size] {
-		const int delta{tr::keyboard::held_mods() & tr::keymods::SHIFT ? 100 : 10};
+		const int delta{engine::held_keymods() & tr::keymod::SHIFT ? 100 : 10};
 		window_size = std::min(max_window_size(), window_size + delta);
 	}};
 	const action_callback cur_window_size_action_cb{[this] {
@@ -139,11 +139,11 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		}
 	}};
 	const action_callback refresh_rate_dec_action_cb{[&refresh_rate = _pending.refresh_rate] {
-		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(engine::held_keymods() & tr::keymod::SHIFT) ? 10 : 1};
 		refresh_rate = std::max(std::uint16_t{15}, static_cast<std::uint16_t>(refresh_rate - delta));
 	}};
 	const action_callback refresh_rate_inc_action_cb{[&refresh_rate = _pending.refresh_rate] {
-		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
+		const int delta{(engine::held_keymods() & tr::keymod::SHIFT) ? 10 : 1};
 		refresh_rate = std::min(max_refresh_rate(), static_cast<std::uint16_t>(refresh_rate + delta));
 	}};
 	const action_callback cur_refresh_rate_action_cb{[this] {
@@ -166,36 +166,28 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	const action_callback msaa_dec_action_cb{[&msaa = _pending.msaa] { msaa = msaa == 2 ? NO_MSAA : static_cast<std::uint8_t>(msaa / 2); }};
 	const action_callback msaa_inc_action_cb{[&msaa = _pending.msaa] { msaa = msaa == NO_MSAA ? 2 : static_cast<std::uint8_t>(msaa * 2); }};
 	const action_callback primary_hue_dec_action_cb{[&primary_hue = _pending.primary_hue] {
-		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		primary_hue = static_cast<std::uint16_t>((primary_hue - delta + 360) % 360);
+		primary_hue = static_cast<std::uint16_t>((primary_hue - engine::keymods_choose(1, 10, 100) + 360) % 360);
 	}};
 	const action_callback primary_hue_inc_action_cb{[&primary_hue = _pending.primary_hue] {
-		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		primary_hue = static_cast<std::uint16_t>((primary_hue + delta) % 360);
+		primary_hue = static_cast<std::uint16_t>((primary_hue + engine::keymods_choose(1, 10, 100)) % 360);
 	}};
 	const action_callback secondary_hue_dec_action_cb{[&secondary_hue = _pending.secondary_hue] {
-		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		secondary_hue = static_cast<std::uint16_t>((secondary_hue - delta + 360) % 360);
+		secondary_hue = static_cast<std::uint16_t>((secondary_hue - engine::keymods_choose(1, 10, 100) + 360) % 360);
 	}};
 	const action_callback secondary_hue_inc_action_cb{[&secondary_hue = _pending.secondary_hue] {
-		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		secondary_hue = static_cast<std::uint16_t>((secondary_hue + delta) % 360);
+		secondary_hue = static_cast<std::uint16_t>((secondary_hue + engine::keymods_choose(1, 10, 100)) % 360);
 	}};
 	const action_callback sfx_volume_dec_action_cb{[&sfx_volume = _pending.sfx_volume] {
-		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		sfx_volume = static_cast<std::uint8_t>(std::max(sfx_volume - delta, 0));
+		sfx_volume = static_cast<std::uint8_t>(std::max(sfx_volume - engine::keymods_choose(1, 10, 25), 0));
 	}};
 	const action_callback sfx_volume_inc_action_cb{[&sfx_volume = _pending.sfx_volume] {
-		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		sfx_volume = static_cast<std::uint8_t>(std::min(sfx_volume + delta, 100));
+		sfx_volume = static_cast<std::uint8_t>(std::min(sfx_volume + engine::keymods_choose(1, 10, 25), 100));
 	}};
 	const action_callback music_volume_dec_action_cb{[&music_volume = _pending.music_volume] {
-		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		music_volume = static_cast<std::uint8_t>(std::max(music_volume - delta, 100));
+		music_volume = static_cast<std::uint8_t>(std::max(music_volume - engine::keymods_choose(1, 10, 25), 100));
 	}};
 	const action_callback music_volume_inc_action_cb{[&music_volume = _pending.music_volume] {
-		const int delta{(tr::keyboard::held_mods() & tr::keymods::SHIFT) ? 10 : 1};
-		music_volume = static_cast<std::uint8_t>(std::min(music_volume + delta, 100));
+		music_volume = static_cast<std::uint8_t>(std::min(music_volume + engine::keymods_choose(1, 10, 25), 100));
 	}};
 	const action_callback cur_language_action_cb{[this] {
 		std::map<language_code, language>::iterator it{std::next(languages.find(_pending.language))};

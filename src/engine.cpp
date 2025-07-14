@@ -139,10 +139,12 @@ struct engine_data {
 	tooltip tooltip;
 	// Whether the screen should be redrawn. If above 1, ticks will be paused to catch up.
 	int redraw;
+	// The held keyboard modifiers.
+	tr::keymod held_keymods;
 	// The position of the mouse.
 	glm::vec2 mouse_pos;
-	// The held keyboard modifiers.
-	tr::keymods keymods;
+	// The held mouse buttons.
+	tr::mouse_button held_buttons;
 
 	// Initializes the engine data.
 	engine_data();
@@ -156,7 +158,9 @@ engine_data::engine_data()
 	, screen{setup_screen()}
 	, blur{screen.size().x}
 	, redraw{true}
+	, held_keymods{tr::keymod::NONE}
 	, mouse_pos{500, 500}
+	, held_buttons{}
 {
 }
 
@@ -251,19 +255,25 @@ void engine::handle_events()
 			tr::mouse::show_cursor(true);
 			tr::mouse::set_relative_mode(false);
 			return;
+		case tr::key_down_event::ID:
+			engine_data->held_keymods = tr::key_down_event{event}.mods;
+			break;
+		case tr::key_up_event::ID:
+			engine_data->held_keymods = tr::key_up_event{event}.mods;
+			break;
 		case tr::mouse_motion_event::ID: {
-			if (!tr::mouse::in_relative_mode()) {
+			if (!tr::window::has_focus()) {
 				return;
 			}
 			const glm::vec2 delta{tr::mouse_motion_event{event}.delta / render_scale() * tr::window::pixel_density()};
 			engine_data->mouse_pos = glm::clamp(engine_data->mouse_pos + delta, 0.0f, 1000.0f);
 			break;
 		}
-		case tr::key_down_event::ID:
-			engine_data->keymods = tr::key_down_event{event}.mods;
+		case tr::mouse_down_event::ID:
+			engine_data->held_buttons |= tr::mouse_down_event{event}.button;
 			break;
-		case tr::key_up_event::ID:
-			engine_data->keymods = tr::key_up_event{event}.mods;
+		case tr::mouse_up_event::ID:
+			engine_data->held_buttons &= ~tr::mouse_up_event{event}.button;
 			break;
 		default:
 			break;
@@ -271,6 +281,11 @@ void engine::handle_events()
 
 		engine_data->state.handle_event(event);
 	});
+}
+
+tr::keymod engine::held_keymods() noexcept
+{
+	return engine_data->held_keymods;
 }
 
 glm::vec2 engine::mouse_pos() noexcept
@@ -281,6 +296,11 @@ glm::vec2 engine::mouse_pos() noexcept
 void engine::set_mouse_pos(glm::vec2 pos) noexcept
 {
 	engine_data->mouse_pos = pos;
+}
+
+tr::mouse_button engine::held_buttons() noexcept
+{
+	return engine_data->held_buttons;
 }
 
 //////////////////////////////////////////////////////////////// GRAPHICS /////////////////////////////////////////////////////////////////

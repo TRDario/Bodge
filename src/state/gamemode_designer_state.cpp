@@ -1,19 +1,19 @@
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/ball_settings_editor_state.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Shortcuts of the ball settings button.
-constexpr std::initializer_list<key_chord> BALL_SETTINGS_SHORTCUTS{{tr::keycode::B}, {tr::keycode::TOP_ROW_1}};
+constexpr std::initializer_list<tr::key_chord> BALL_SETTINGS_SHORTCUTS{{tr::keycode::B}, {tr::keycode::TOP_ROW_1}};
 // Shortcuts of the player settings button.
-constexpr std::initializer_list<key_chord> PLAYER_SETTINGS_SHORTCUTS{{tr::keycode::P}, {tr::keycode::TOP_ROW_2}};
+constexpr std::initializer_list<tr::key_chord> PLAYER_SETTINGS_SHORTCUTS{{tr::keycode::P}, {tr::keycode::TOP_ROW_2}};
 // Buttons at the bottom of the screen.
 constexpr std::array<const char*, 3> BOTTOM_BUTTONS{"test", "save", "discard"};
 // Shortcuts of the bottom buttons.
-constexpr std::array<std::initializer_list<key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
+constexpr std::array<std::initializer_list<tr::key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
 	{{tr::keycode::T}, {tr::keycode::TOP_ROW_3}},
 	{{tr::keycode::S}, {tr::keycode::ENTER}, {tr::keycode::TOP_ROW_4}},
 	{{tr::keycode::C}, {tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::ESCAPE}, {tr::keycode::TOP_ROW_5}},

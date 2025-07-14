@@ -1,13 +1,13 @@
-#include "../../include/state/game_state.hpp"
 #include "../../include/state/save_replay_state.hpp"
+#include "../../include/state/game_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Shortcuts of the save button.
-constexpr std::initializer_list<key_chord> SAVE_SHORTCUTS{{tr::keycode::ENTER}, {tr::keycode::S}, {tr::keycode::TOP_ROW_1}};
+constexpr std::initializer_list<tr::key_chord> SAVE_SHORTCUTS{{tr::keycode::ENTER}, {tr::keycode::S}, {tr::keycode::TOP_ROW_1}};
 // Shortcuts of the don't save button.
-constexpr std::initializer_list<key_chord> DONT_SAVE_SHORTCUTS{{tr::keycode::ESCAPE}, {tr::keycode::C}, {tr::keycode::TOP_ROW_2}};
+constexpr std::initializer_list<tr::key_chord> DONT_SAVE_SHORTCUTS{{tr::keycode::ESCAPE}, {tr::keycode::C}, {tr::keycode::TOP_ROW_2}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 

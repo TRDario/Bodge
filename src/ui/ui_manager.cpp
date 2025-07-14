@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/ui/ui_manager.hpp"
+#include "../../include/engine.hpp"
 
 //
 
@@ -127,7 +127,7 @@ void ui_manager::handle_event(const tr::event& event)
 
 		if (old_hovered_it != _hovered) {
 			if (old_hovered_it != _objects.end()) {
-				if (tr::mouse::held(tr::mouse_button::LEFT) && (*old_hovered_it)->active()) {
+				if (engine::held_buttons() == tr::mouse_button::LEFT && (*old_hovered_it)->active()) {
 					(*old_hovered_it)->on_hold_transfer_out();
 				}
 				else {
@@ -135,7 +135,7 @@ void ui_manager::handle_event(const tr::event& event)
 				}
 			}
 			if (_hovered != _objects.end()) {
-				if (tr::mouse::held(tr::mouse_button::LEFT) && (*_hovered)->active()) {
+				if (engine::held_buttons() == tr::mouse_button::LEFT && (*_hovered)->active()) {
 					(*_hovered)->on_hold_transfer_in();
 				}
 				else {
@@ -194,7 +194,7 @@ void ui_manager::handle_event(const tr::event& event)
 				audio::play(sfx::CANCEL, 0.5f, 0.0f);
 			}
 			else if (key_down.key == tr::keycode::TAB) {
-				if (key_down.mods == tr::keymods::SHIFT) {
+				if (key_down.mods == tr::keymod::SHIFT) {
 					move_input_focus_backward();
 				}
 				else {
@@ -202,18 +202,18 @@ void ui_manager::handle_event(const tr::event& event)
 				}
 			}
 			else if ((*_input)->active()) {
-				if (key_down.mods == tr::keymods::CTRL && key_down.key == tr::keycode::C) {
+				if (key_down.mods == tr::keymod::CTRL && key_down.key == tr::keycode::C) {
 					(*_input)->on_copy();
 				}
-				else if (key_down.mods == tr::keymods::CTRL && key_down.key == tr::keycode::X) {
+				else if (key_down.mods == tr::keymod::CTRL && key_down.key == tr::keycode::X) {
 					(*_input)->on_copy();
 					(*_input)->on_clear();
 				}
-				else if (key_down.mods == tr::keymods::CTRL && key_down.key == tr::keycode::V) {
+				else if (key_down.mods == tr::keymod::CTRL && key_down.key == tr::keycode::V) {
 					(*_input)->on_paste();
 				}
 				else if (key_down.key == tr::keycode::BACKSPACE || key_down.key == tr::keycode::DELETE) {
-					if (key_down.mods & tr::keymods::CTRL) {
+					if (key_down.mods & tr::keymod::CTRL) {
 						(*_input)->on_clear();
 					}
 					else {
@@ -227,7 +227,7 @@ void ui_manager::handle_event(const tr::event& event)
 		}
 		else {
 			if (key_down.key == tr::keycode::TAB) {
-				if (key_down.mods == tr::keymods::SHIFT) {
+				if (key_down.mods == tr::keymod::SHIFT) {
 					move_input_focus_backward();
 				}
 				else {

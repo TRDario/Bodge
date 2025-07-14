@@ -1,3 +1,4 @@
+#include "../../include/state/title_state.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
@@ -5,14 +6,13 @@
 #include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/settings_state.hpp"
 #include "../../include/state/start_game_state.hpp"
-#include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Title screen buttons.
 constexpr std::array<const char*, 7> BUTTONS{"start_game", "gamemode_designer", "scoreboards", "replays", "settings", "credits", "exit"};
 // Shortcuts of the title screen buttons.
-constexpr std::array<std::initializer_list<key_chord>, BUTTONS.size()> SHORTCUTS{{
+constexpr std::array<std::initializer_list<tr::key_chord>, BUTTONS.size()> SHORTCUTS{{
 	{{tr::keycode::ENTER}, {tr::keycode::TOP_ROW_1}},
 	{{tr::keycode::G}, {tr::keycode::TOP_ROW_2}},
 	{{tr::keycode::B}, {tr::keycode::TOP_ROW_3}},

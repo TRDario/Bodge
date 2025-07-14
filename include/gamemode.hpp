@@ -63,7 +63,7 @@ struct gamemode {
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a default gamemode.
-	gamemode() noexcept = default;
+	gamemode() noexcept;
 	// Creates a builtin gamemode.
 	constexpr gamemode(std::string_view name, std::string_view description, const player_settings& player,
 					   const ball_settings& ball) noexcept

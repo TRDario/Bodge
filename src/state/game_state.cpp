@@ -1,6 +1,6 @@
+#include "../../include/state/game_state.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/game_over_state.hpp"
-#include "../../include/state/game_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/pause_state.hpp"
 #include "../../include/state/replays_state.hpp"
@@ -42,12 +42,12 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 		return nullptr;
 	case substate_base::ONGOING:
 		if (to_type(_substate) == game_type::REPLAY) {
-			if (tr::keyboard::held_mods() & tr::keymods::SHIFT) {
+			if (engine::held_keymods() & tr::keymod::SHIFT) {
 				if (_timer % 4 == 0) {
 					_game->update();
 				}
 			}
-			else if (tr::keyboard::held_mods() & tr::keymods::CTRL) {
+			else if (engine::held_keymods() & tr::keymod::CTRL) {
 				for (int i = 0; i < 4; ++i) {
 					_game->update();
 					if (static_cast<replay_game*>(_game.get())->done()) {

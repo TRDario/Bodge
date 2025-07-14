@@ -48,10 +48,16 @@ struct engine {
 	static bool active() noexcept;
 	// Handles any events.
 	static void handle_events();
+	// Gets the held keyboard modifiers.
+	static tr::keymod held_keymods() noexcept;
+	// Chooses one out of 3 options based on the held keymods.
+	template <class T> static T keymods_choose(T min, T mid, T max) noexcept;
 	// Gets the normalized mouse position.
 	static glm::vec2 mouse_pos() noexcept;
 	// Sets the normalized mouse position.
 	static void set_mouse_pos(glm::vec2 pos) noexcept;
+	// Gets the held mouse buttons.
+	static tr::mouse_button held_buttons() noexcept;
 
 	////////////////////////////////////////////////////////////// GRAPHICS ///////////////////////////////////////////////////////////////
 
@@ -73,3 +79,18 @@ struct engine {
 void add_menu_game_overlay_to_renderer();
 // Adds a fade overlay to the renderer.
 void add_fade_overlay_to_renderer(float opacity);
+
+///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
+
+template <class T> T engine::keymods_choose(T min, T mid, T max) noexcept
+{
+	if (held_keymods() & tr::keymod::CTRL) {
+		return max;
+	}
+	else if (held_keymods() & tr::keymod::SHIFT) {
+		return mid;
+	}
+	else {
+		return min;
+	}
+}
