@@ -19,8 +19,10 @@ class save_score_state : public tr::state {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	// Creates a score saving state.
+	// Creates a score saving state (from the pause screen).
 	save_score_state(std::unique_ptr<active_game>&& game, glm::vec2 mouse_pos, save_screen_flags flags);
+	// Creates a score saving state (from the game over screen).
+	save_score_state(std::unique_ptr<active_game>&& game, ticks prev_pb, save_screen_flags flags);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -44,17 +46,24 @@ class save_score_state : public tr::state {
 	// substate_base combined with save_screen_flags.
 	enum class substate : std::uint8_t {
 	};
+	// Substate-specific data.
+	union substate_data {
+		// Stored mouse position for the pause screen state.
+		glm::vec2 mouse_pos;
+		// Stored previous personal best for the game over state.
+		ticks prev_pb;
+	};
 
 	// The current menu substate.
 	substate _substate;
+	// Substate-specific data.
+	substate_data _substate_data;
 	// Internal timer.
 	ticks _timer;
 	// The UI manager.
 	ui_manager _ui;
 	// Background game.
 	std::unique_ptr<active_game> _game;
-	// The position of the mouse right before pausing.
-	glm::vec2 _mouse_pos;
 	// The score that will be saved.
 	score _score;
 
@@ -66,6 +75,9 @@ class save_score_state : public tr::state {
 	friend substate_base to_base(substate state) noexcept;
 	// Converts a substate to save screen flags.
 	friend save_screen_flags to_flags(substate state) noexcept;
+
+	// Sets up the UI.
+	void set_up_ui();
 	// Sets up the exit animation.
 	void set_up_exit_animation() noexcept;
 };

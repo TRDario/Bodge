@@ -23,11 +23,8 @@ constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
-game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_in) noexcept
-	: _substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}
-	, _timer{0}
-	, _game{std::move(game)}
-	, _pb{scorefile.pb(_game->gamemode()) < _game->result()}
+game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_in, ticks prev_pb) noexcept
+	: _substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}, _timer{0}, _game{std::move(game)}, _prev_pb{prev_pb}
 {
 	widget& title{
 		_ui.emplace<text_widget>("game_over", glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
@@ -44,13 +41,17 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	time.unhide(0.5_s);
 
 	const float pb_h{time_h + font_manager.font_line_skip(font::LANGUAGE, 48) + 4};
-	text_callback pb_text_cb{
-		_pb ? text_callback{[](const auto&) -> std::string { return std::string{localization["new_pb"]}; }}
-			: text_callback{[pb = std::format("{}: {}", localization["pb"], scorefile.pb(_game->gamemode()))](const auto&) { return pb; }}};
+	text_callback pb_text_cb;
+	if (_prev_pb < _game->result()) {
+		pb_text_cb = [](const auto&) -> std::string { return std::string{localization["new_pb"]}; };
+	}
+	else {
+		pb_text_cb = [pb = std::format("{}: {}", localization["pb"], scorefile.category_pb(_game->gamemode()))](const auto&) { return pb; };
+	}
 	widget& pb{_ui.emplace<text_widget>("pb", glm::vec2{600, pb_h}, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 24,
 										std::move(pb_text_cb), "FFFF00C0"_rgba8)};
 	pb.pos.change({500, pb_h}, 0.5_s);
-	if (!_pb) {
+	if (_prev_pb >= _game->result()) {
 		pb.unhide(0.5_s);
 	}
 
@@ -111,7 +112,7 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 		}
 		[[fallthrough]];
 	case substate::GAME_OVER:
-		if (_pb) {
+		if (_prev_pb < _game->result()) {
 			if (_timer % 0.5_s == 0) {
 				_ui.get("pb").hide();
 			}
@@ -126,11 +127,9 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 	case substate::SAVING_AND_RESTARTING:
 	case substate::SAVING_AND_QUITTING: {
 		if (_timer >= 0.5_s) {
-			const save_screen_flags state_flags{
-				_substate == substate::SAVING_AND_RESTARTING ? save_screen_flags::RESTARTING | save_screen_flags::GAME_OVER
-															 : save_screen_flags::GAME_OVER,
-			};
-			return std::make_unique<save_score_state>(std::move(_game), glm::vec2{}, state_flags);
+			const save_screen_flags state_flags{_substate == substate::SAVING_AND_RESTARTING ? save_screen_flags::RESTARTING
+																							 : save_screen_flags::NONE};
+			return std::make_unique<save_score_state>(std::move(_game), _prev_pb, state_flags);
 		}
 		else {
 			return nullptr;

@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/game/game.hpp"
+#include "../../include/engine.hpp"
 #include "../../include/score.hpp"
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
@@ -13,7 +13,7 @@ game::game(const ::gamemode& gamemode, std::uint64_t rng_seed)
 	, _last_spawn{0}
 {
 	if (!_gamemode.player.autoplay()) {
-		_player.emplace(gamemode.player, scorefile.pb(_gamemode));
+		_player.emplace(gamemode.player, scorefile.category_pb(_gamemode));
 	}
 
 	for (int i = 0; i < gamemode.ball.starting_count; ++i) {

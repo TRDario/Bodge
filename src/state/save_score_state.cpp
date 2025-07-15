@@ -14,10 +14,90 @@ constexpr std::initializer_list<tr::key_chord> CANCEL_SHORTCUTS{{tr::keycode::ES
 
 save_score_state::save_score_state(std::unique_ptr<active_game>&& game, glm::vec2 mouse_pos, save_screen_flags flags)
 	: _substate{substate_base::SAVING_SCORE | flags}
+	, _substate_data{.mouse_pos = mouse_pos}
 	, _timer{0}
 	, _game{std::move(game)}
-	, _mouse_pos{mouse_pos}
 	, _score{{}, unix_now(), _game->result(), {!_game->game_over(), cli_settings.game_speed != 1.0f}}
+{
+	set_up_ui();
+}
+
+save_score_state::save_score_state(std::unique_ptr<active_game>&& game, ticks prev_pb, save_screen_flags flags)
+	: _substate{substate_base::SAVING_SCORE | flags}
+	, _substate_data{.prev_pb = prev_pb}
+	, _timer{0}
+	, _game{std::move(game)}
+	, _score{{}, unix_now(), _game->result(), {!_game->game_over(), cli_settings.game_speed != 1.0f}}
+{
+	set_up_ui();
+}
+
+///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
+
+std::unique_ptr<tr::state> save_score_state::handle_event(const tr::event& event)
+{
+	_ui.handle_event(event);
+	return nullptr;
+}
+
+std::unique_ptr<tr::state> save_score_state::update(tr::duration)
+{
+	++_timer;
+	_ui.update();
+	if (to_flags(_substate) & save_screen_flags::GAME_OVER) {
+		_game->update();
+	}
+	_score.description = _ui.get<multiline_input_widget<255>>("input").buffer;
+
+	switch (to_base(_substate)) {
+	case substate_base::SAVING_SCORE:
+		return nullptr;
+	case substate_base::RETURNING:
+		if (_timer >= 0.5_s) {
+			if (to_flags(_substate) & save_screen_flags::GAME_OVER) {
+				return std::make_unique<game_over_state>(std::move(_game), false, _substate_data.prev_pb);
+			}
+			else {
+				return std::make_unique<pause_state>(std::move(_game), game_type::REGULAR, _substate_data.mouse_pos, false);
+			}
+		}
+		else {
+			return nullptr;
+		}
+	case substate_base::ENTERING_SAVE_REPLAY:
+		return _timer >= 0.5_s ? std::make_unique<save_replay_state>(std::move(_game), to_flags(_substate)) : nullptr;
+	}
+}
+
+void save_score_state::draw()
+{
+	if (to_flags(_substate) & save_screen_flags::GAME_OVER) {
+		_game->add_to_renderer();
+		tr::renderer_2d::draw(engine::blur_renderer().input());
+	}
+	engine::blur_renderer().draw(0.35f, 10.0f);
+	_ui.add_to_renderer();
+	tr::renderer_2d::draw(engine::screen());
+}
+
+///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+
+save_score_state::substate operator|(const save_score_state::substate_base& l, const save_screen_flags& r) noexcept
+{
+	return static_cast<save_score_state::substate>(static_cast<int>(l) | static_cast<int>(r));
+}
+
+save_score_state::substate_base to_base(save_score_state::substate state) noexcept
+{
+	return static_cast<save_score_state::substate_base>(static_cast<int>(state) & 0x3);
+}
+
+save_screen_flags to_flags(save_score_state::substate state) noexcept
+{
+	return static_cast<save_screen_flags>(static_cast<int>(state) & static_cast<int>(save_screen_flags::MASK));
+}
+
+void save_score_state::set_up_ui()
 {
 	const status_callback status_cb{[this] { return to_base(_substate) == substate_base::SAVING_SCORE; }};
 
@@ -27,6 +107,7 @@ save_score_state::save_score_state(std::unique_ptr<active_game>&& game, glm::vec
 		set_up_exit_animation();
 		scorefile.playtime += _score.result;
 		scorefile.add_score(_game->gamemode(), _score);
+		scorefile.update_category(_game->gamemode(), _game->result());
 	}};
 	const action_callback cancel_action_cb{[this] {
 		_substate = substate_base::RETURNING | to_flags(_substate);
@@ -67,71 +148,6 @@ save_score_state::save_score_state(std::unique_ptr<active_game>&& game, glm::vec
 													  sfx::CANCEL)};
 	cancel.pos.change({500, 1000}, 0.5_s);
 	cancel.unhide(0.5_s);
-}
-
-///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
-
-std::unique_ptr<tr::state> save_score_state::handle_event(const tr::event& event)
-{
-	_ui.handle_event(event);
-	return nullptr;
-}
-
-std::unique_ptr<tr::state> save_score_state::update(tr::duration)
-{
-	++_timer;
-	_ui.update();
-	if (to_flags(_substate) & save_screen_flags::GAME_OVER) {
-		_game->update();
-	}
-	_score.description = _ui.get<multiline_input_widget<255>>("input").buffer;
-
-	switch (to_base(_substate)) {
-	case substate_base::SAVING_SCORE:
-		return nullptr;
-	case substate_base::RETURNING:
-		if (_timer >= 0.5_s) {
-			if (to_flags(_substate) & save_screen_flags::GAME_OVER) {
-				return std::make_unique<game_over_state>(std::move(_game), false);
-			}
-			else {
-				return std::make_unique<pause_state>(std::move(_game), game_type::REGULAR, _mouse_pos, false);
-			}
-		}
-		else {
-			return nullptr;
-		}
-	case substate_base::ENTERING_SAVE_REPLAY:
-		return _timer >= 0.5_s ? std::make_unique<save_replay_state>(std::move(_game), to_flags(_substate)) : nullptr;
-	}
-}
-
-void save_score_state::draw()
-{
-	if (to_flags(_substate) & save_screen_flags::GAME_OVER) {
-		_game->add_to_renderer();
-		tr::renderer_2d::draw(engine::blur_renderer().input());
-	}
-	engine::blur_renderer().draw(0.35f, 10.0f);
-	_ui.add_to_renderer();
-	tr::renderer_2d::draw(engine::screen());
-}
-
-///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
-
-save_score_state::substate operator|(const save_score_state::substate_base& l, const save_screen_flags& r) noexcept
-{
-	return static_cast<save_score_state::substate>(static_cast<int>(l) | static_cast<int>(r));
-}
-
-save_score_state::substate_base to_base(save_score_state::substate state) noexcept
-{
-	return static_cast<save_score_state::substate_base>(static_cast<int>(state) & 0x3);
-}
-
-save_screen_flags to_flags(save_score_state::substate state) noexcept
-{
-	return static_cast<save_screen_flags>(static_cast<int>(state) & static_cast<int>(save_screen_flags::MASK));
 }
 
 void save_score_state::set_up_exit_animation() noexcept

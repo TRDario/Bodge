@@ -23,7 +23,7 @@ void load_languages() noexcept
 	}
 	catch (std::exception& err) {
 		languages.clear();
-		LOG(tr::severity::ERROR, "Failed to load language list:");
+		LOG(tr::severity::ERROR, "Failed to load language list.");
 		LOG_CONTINUE("{}", err.what());
 	}
 }
@@ -47,19 +47,20 @@ void load_localization() noexcept
 
 		std::vector<std::string> errors{localization.load(path)};
 		if (errors.empty()) {
-			LOG(tr::severity::INFO, "Loaded {} localization from '{}'.", languages[settings.language].name, path.string());
+			LOG(tr::severity::INFO, "Loaded {} localization.", languages[settings.language].name);
+			LOG_CONTINUE("From: '{}'", path.string());
 		}
 		else {
-			LOG(tr::severity::WARN, "Loaded {} localization from '{}' with {} errors: ", languages[settings.language].name, path.string(),
-				errors.size());
+			LOG(tr::severity::WARN, "Loaded {} localization with {} errors: ", languages[settings.language].name, errors.size());
+			LOG_CONTINUE("From: '{}'", path.string());
 			for (const std::string& error : errors) {
-				LOG(tr::severity::ERROR, "{}", error);
+				LOG_CONTINUE("{}", error);
 			}
 		}
 	}
 	catch (std::exception& err) {
 		localization = std::move(old);
-		LOG(tr::severity::ERROR, "Failed to load '{}' localization:", name);
+		LOG(tr::severity::ERROR, "Failed to load '{}' localization.", name);
 		LOG_CONTINUE("{}", err.what());
 	}
 }

@@ -1,6 +1,11 @@
 #pragma once
 #include "gamemode.hpp"
 
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+
+// Scorefile version identifier.
+constexpr std::uint8_t SCOREFILE_VERSION{0};
+
 /////////////////////////////////////////////////////////////// SCORE FLAGS ///////////////////////////////////////////////////////////////
 
 // Packed score flags.
@@ -45,6 +50,8 @@ template <> struct tr::binary_writer<score> {
 struct score_category {
 	// The gamemode defining the category.
 	gamemode gamemode;
+	// The personal best time for this category.
+	ticks pb;
 	// The scores in the category.
 	std::vector<score> scores;
 };
@@ -71,9 +78,13 @@ struct scorefile_t {
 	std::vector<score_category> categories;
 	// The total recorded playtime.
 	ticks playtime{0};
+	// The last selected gamemode.
+	gamemode last_selected_gamemode;
 
 	// Finds the personal best result for a given gamemode.
-	ticks pb(const gamemode& gamemode) const noexcept;
+	ticks category_pb(const gamemode& gamemode) const noexcept;
+	// Updates the personal best if the current result is better.
+	void update_category(const gamemode& gamemode, ticks pb);
 
 	// Adds a new score to the scorefile.
 	void add_score(const gamemode& gamemode, const score& score);

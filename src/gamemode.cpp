@@ -92,9 +92,12 @@ void gamemode::save_to_file() noexcept
 		tr::binary_write(bufstream, *this);
 		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), tr::rand<std::uint8_t>(rng))};
 		tr::binary_write(file, std::span{encrypted});
+
+		LOG(tr::severity::INFO, "Saved gamemode '{}'.", name);
+		LOG_CONTINUE("To: '{}'", path.string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save gamemode:");
+		LOG(tr::severity::ERROR, "Failed to save gamemode '{}'.", name);
 		LOG_CONTINUE("{}", err.what());
 	}
 }
@@ -112,16 +115,18 @@ std::vector<gamemode> load_gamemodes() noexcept
 					continue;
 				}
 				gamemodes.emplace_back(path);
-				LOG(tr::severity::INFO, "Loaded gamemode '{}' from '{}'.", gamemodes.back().name, path.string());
+				LOG(tr::severity::INFO, "Loaded gamemode '{}'.", gamemodes.back().name);
+				LOG_CONTINUE("From: '{}'", path.string());
 			}
 			catch (std::exception& err) {
-				LOG(tr::severity::ERROR, "Failed to load gamemode from '{}':", path.string());
+				LOG(tr::severity::ERROR, "Failed to load gamemode.");
+				LOG_CONTINUE("From: '{}'", path.string());
 				LOG_CONTINUE("{}", err.what());
 			}
 		}
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::INFO, "Failed to load gamemodes:");
+		LOG(tr::severity::INFO, "Failed to load gamemodes.");
 		LOG_CONTINUE("{}", err.what());
 	}
 	return gamemodes;

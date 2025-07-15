@@ -61,21 +61,24 @@ void cli_settings_t::parse(int argc, const char** argv)
 
 void settings_t::raw_load_from_file() noexcept
 {
+	const std::filesystem::path path{cli_settings.userdir / "settings.dat"};
 	try {
-		const std::filesystem::path path{cli_settings.userdir / "settings.dat"};
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 		std::span<const std::byte> data{raw};
 		if (tr::binary_read<std::uint8_t>(data) != SETTINGS_VERSION) {
-			LOG(tr::severity::ERROR, "Failed to load settings from '{}':", path.string());
+			LOG(tr::severity::ERROR, "Failed to load settings.", path.string());
+			LOG_CONTINUE("From: '{}'", path.string());
 			LOG_CONTINUE("Wrong settings file version.");
 			return;
 		}
 		tr::binary_read(data, *this);
-		LOG(tr::severity::INFO, "Loaded settings from '{}'.", (cli_settings.userdir / "settings.dat").string());
+		LOG(tr::severity::INFO, "Loaded settings.");
+		LOG_CONTINUE("From: '{}'", path.string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load settings from '{}':", (cli_settings.userdir / "settings.dat").string());
+		LOG(tr::severity::ERROR, "Failed to load settings.", path.string());
+		LOG_CONTINUE("From: '{}'", path.string());
 		LOG_CONTINUE("{}", err.what());
 	}
 }
@@ -137,10 +140,12 @@ void settings_t::save_to_file() noexcept
 		tr::binary_write(buffer, *this);
 		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), tr::rand<std::uint8_t>(rng))};
 		tr::binary_write(file, std::span{encrypted});
-		LOG(tr::severity::INFO, "Saved settings to '{}'.", path.string());
+		LOG(tr::severity::INFO, "Saved settings.");
+		LOG_CONTINUE("To: '{}'", path.string());
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save settings to '{}':", path.string());
+		LOG(tr::severity::ERROR, "Failed to save settings.");
+		LOG_CONTINUE("To: '{}'", path.string());
 		LOG_CONTINUE("{}", err.what());
 	}
 }

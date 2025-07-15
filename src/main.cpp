@@ -30,12 +30,12 @@ int main(int argc, const char** argv)
 	}
 	catch (tr::exception& err) {
 		LOG(tr::severity::FATAL, err);
-		tr::show_fatal_exception_message_box(err);
+		tr::show_fatal_error_message_box(err);
 		std::exit(EXIT_FAILURE);
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::FATAL, err);
-		tr::show_fatal_exception_message_box(err);
+		tr::show_fatal_error_message_box(err);
 		std::exit(EXIT_FAILURE);
 	}
 }

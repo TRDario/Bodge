@@ -26,6 +26,11 @@ constexpr std::initializer_list<tr::key_chord> EXIT_CHORDS{
 start_game_state::start_game_state(std::unique_ptr<game>&& game) noexcept
 	: _substate{substate::IN_START_GAME}, _timer{0}, _game{std::move(game)}, _gamemodes{load_gamemodes()}, _cur{_gamemodes.begin()}
 {
+	std::vector<gamemode>::iterator last_selected_it{std::ranges::find(_gamemodes, scorefile.last_selected_gamemode)};
+	if (last_selected_it != _gamemodes.end()) {
+		_cur = last_selected_it;
+	}
+
 	const status_callback status_cb{[this] { return _substate == substate::IN_START_GAME; }};
 
 	widget& title{_ui.emplace<text_widget>("start_game", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
@@ -51,7 +56,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game) noexcept
 	description.unhide(0.5_s);
 
 	text_callback pb_text_cb{
-		[pb = std::format("{}:\n{}", localization["pb"], timer_text(scorefile.pb(*_cur)))](const auto&) { return pb; }};
+		[pb = std::format("{}:\n{}", localization["pb"], timer_text(scorefile.category_pb(*_cur)))](const auto&) { return pb; }};
 	widget& pb{_ui.emplace<text_widget>("pb", glm::vec2{500, 695}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 48,
 										std::move(pb_text_cb), "FFFF00C0"_rgba8)};
 	pb.pos.change({500, 595}, 0.5_s);
@@ -93,6 +98,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game) noexcept
 		_substate = substate::ENTERING_GAME;
 		_timer = 0;
 		set_up_exit_animation();
+		scorefile.last_selected_gamemode = *_cur;
 	}};
 	widget& start{_ui.emplace<clickable_text_widget>("start", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 													 DEFAULT_TEXT_CALLBACK, status_cb, start_action_cb, NO_TOOLTIP, START_CHORDS)};
@@ -103,6 +109,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game) noexcept
 		_substate = substate::ENTERING_TITLE;
 		_timer = 0;
 		set_up_exit_animation();
+		scorefile.last_selected_gamemode = *_cur;
 	}};
 	widget& exit{_ui.emplace<clickable_text_widget>("exit", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 													DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_CHORDS,
@@ -138,7 +145,7 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 				[name = std::string{_cur->name_loc()}](auto&) { return name; },
 				[author = std::format("{}: {}", localization["by"], _cur->author)](auto&) { return author; },
 				[desc = std::string{_cur->description_loc()}](auto&) { return desc; },
-				[pb = std::format("{}:\n{}", localization["pb"], timer_text(scorefile.pb(*_cur)))](auto&) { return pb; },
+				[pb = std::format("{}:\n{}", localization["pb"], timer_text(scorefile.category_pb(*_cur)))](auto&) { return pb; },
 			};
 			for (std::size_t i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
 				text_widget& widget{_ui.get<text_widget>(GAMEMODE_WIDGETS[i])};

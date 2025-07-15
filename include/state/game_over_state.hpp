@@ -8,7 +8,7 @@ class game_over_state : public tr::state {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Constructs a game over state.
-	game_over_state(std::unique_ptr<active_game>&& game, bool blur_in) noexcept;
+	game_over_state(std::unique_ptr<active_game>&& game, bool blur_in, ticks prev_pb) noexcept;
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
@@ -44,8 +44,8 @@ class game_over_state : public tr::state {
 	ui_manager _ui;
 	// The gamestate.
 	std::unique_ptr<active_game> _game;
-	// Cached information about if a new pb was reached.
-	bool _pb;
+	// Cached information about the previous personal best.
+	ticks _prev_pb;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 

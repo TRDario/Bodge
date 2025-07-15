@@ -10,18 +10,26 @@ tr::ttfont load_font(std::string_view name)
 		if (std::filesystem::is_regular_file(path)) {
 			tr::ttfont font{tr::load_ttfont_file(path, 48)};
 			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
+			LOG_CONTINUE("From: '{}'", path.string());
 			return font;
 		}
 		path = cli_settings.userdir / "fonts" / name;
 		if (std::filesystem::is_regular_file(path)) {
 			tr::ttfont font{tr::load_ttfont_file(path, 48)};
 			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
+			LOG_CONTINUE("From: '{}'", path.string());
 			return font;
 		}
-		TR_THROW(tr::custom_exception, "Font not found", path.string(), {});
+
+		LOG(tr::severity::FATAL, "Failed to load font '{}'.", name);
+		LOG_CONTINUE("File not found in neither data nor user directory.");
+		tr::terminate("Font not found", path.string());
 	}
 	catch (tr::ttfont_load_error& err) {
-		TR_THROW(tr::custom_exception, "Font loading failure", std::string{err.description()}, std::string{err.details()});
+		LOG(tr::severity::FATAL, "Failed to load font '{}'.", name);
+		LOG_CONTINUE("", err.description());
+		LOG_CONTINUE("", err.details());
+		tr::terminate("Font loading failure", err.description(), err.details());
 	}
 }
 

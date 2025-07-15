@@ -202,6 +202,7 @@ void pause_state::set_up_full_ui()
 			_timer = 0;
 			_substate = substate_base::RESTARTING | game_type::REGULAR;
 			scorefile.playtime += _game->result();
+			scorefile.update_category(_game->gamemode(), _game->result());
 			set_up_exit_animation();
 		},
 		[this] {
@@ -213,6 +214,7 @@ void pause_state::set_up_full_ui()
 			_timer = 0;
 			_substate = substate_base::QUITTING | game_type::REGULAR;
 			scorefile.playtime += _game->result();
+			scorefile.update_category(_game->gamemode(), _game->result());
 			set_up_exit_animation();
 		},
 	};

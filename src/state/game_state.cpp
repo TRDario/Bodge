@@ -82,9 +82,13 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 		_game->update();
 		if (_timer >= 0.75_s) {
 			switch (to_type(_substate)) {
-			case game_type::REGULAR:
+			case game_type::REGULAR: {
 				tr::renderer_2d::set_default_transform(TRANSFORM);
-				return std::make_unique<game_over_state>(std::unique_ptr<active_game>{static_cast<active_game*>(_game.release())}, true);
+				const ticks prev_pb{scorefile.category_pb(_game->gamemode())};
+				scorefile.update_category(_game->gamemode(), _game->result());
+				return std::make_unique<game_over_state>(std::unique_ptr<active_game>{static_cast<active_game*>(_game.release())}, true,
+														 prev_pb);
+			}
 			case game_type::TEST:
 			case game_type::REPLAY:
 				_substate = substate_base::EXITING | to_type(_substate);

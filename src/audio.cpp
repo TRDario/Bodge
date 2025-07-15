@@ -45,13 +45,15 @@ std::array<std::optional<tr::audio_buffer>, audio_file::COUNT> sounds;
 std::optional<tr::audio_buffer> load_audio_file(const char* filename) noexcept
 {
 	try {
-		std::optional<tr::audio_buffer> buffer{tr::load_audio_file(cli_settings.datadir / "sfx" / filename)};
-		LOG(tr::severity::INFO, "Loaded audio from '{}'.", (cli_settings.datadir / "sfx" / filename).string());
+		const std::filesystem::path& path{cli_settings.datadir / "sfx" / filename};
+		std::optional<tr::audio_buffer> buffer{tr::load_audio_file(path)};
+		LOG(tr::severity::INFO, "Loaded audio file '{}'.", filename);
+		LOG_CONTINUE("From: '{}'", path.string());
 		return buffer;
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load audio from '{}':", (cli_settings.datadir / "sfx" / filename).string());
-		LOG_CONTINUE("{}", err.what());
+	catch (tr::audio_file_open_error& err) {
+		LOG(tr::severity::ERROR, "Failed to load audio file '{}'.", filename);
+		LOG_CONTINUE("{}", err.description());
 		return std::nullopt;
 	}
 }
@@ -70,8 +72,12 @@ void audio::initialize() noexcept
 			sounds[i] = load_audio_file(AUDIO_FILENAMES[i]);
 		}
 	}
+	catch (tr::audio_system_init_error& err) {
+		LOG(tr::severity::ERROR, "Failed to initialize the audio system.");
+		LOG_CONTINUE("{}", err.description());
+	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to initialize the audio system:");
+		LOG(tr::severity::ERROR, "Failed to initialize the audio system.");
 		LOG_CONTINUE("{}", err.what());
 	}
 }

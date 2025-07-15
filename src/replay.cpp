@@ -65,7 +65,8 @@ replay::replay(const std::string& filename)
 	tr::decrypt_to(decrypted, encrypted);
 	tr::binary_read(decrypted, _inputs);
 	_next = _inputs.begin();
-	LOG(tr::severity::INFO, "Loaded replay '{}' from '{}'.", _header.name, path.string());
+	LOG(tr::severity::INFO, "Loaded replay '{}'.", _header.name);
+	LOG_CONTINUE("From: '{}'", path.string());
 }
 
 replay::replay(const replay& r)
@@ -112,7 +113,8 @@ void replay::save_to_file() const noexcept
 		tr::binary_write(bufstream, _inputs);
 		tr::encrypt_to(buffer, tr::range_bytes(bufstream.view()), tr::rand<std::uint8_t>(rng));
 		tr::binary_write(file, buffer);
-		LOG(tr::severity::INFO, "Saved replay '{}' to '{}'.", _header.name, path.string());
+		LOG(tr::severity::INFO, "Saved replay '{}'.", _header.name);
+		LOG_CONTINUE("To: '{}'", path.string());
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to save replay:");
@@ -157,17 +159,19 @@ std::map<std::string, replay_header> load_replay_headers() noexcept
 				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
 				replays.emplace(path.filename().string(),
 								tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
-				LOG(tr::severity::INFO, "Loaded replay header from '{}'.", path.string());
+				LOG(tr::severity::INFO, "Loaded replay header.");
+				LOG_CONTINUE("From: '{}'", path.string());
 			}
 			catch (std::exception& err) {
-				LOG(tr::severity::ERROR, "Failed to load replay header from '{}':", path.string());
+				LOG(tr::severity::ERROR, "Failed to load replay header.");
+				LOG_CONTINUE("From: '{}'", path.string());
 				LOG_CONTINUE("{}", err.what());
 			}
 		}
 		LOG(tr::severity::INFO, "Loaded replay headers.");
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load replay headers:");
+		LOG(tr::severity::ERROR, "Failed to load replay headers.");
 		LOG_CONTINUE("{}", err.what());
 	}
 	return replays;
