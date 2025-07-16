@@ -278,7 +278,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_hover() noexcept
 {
 	if (!_has_focus) {
 		color.change({220, 220, 220, 220}, 0.2_s);
-		audio::play(sfx::HOVER, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+		audio::play(sfx::HOVER, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
 }
 
@@ -309,13 +309,13 @@ template <std::size_t S> void multiline_input_widget<S>::on_hold_end() noexcept
 {
 	_has_focus = true;
 	color = "FFFFFF"_rgba8;
-	audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_gain_focus() noexcept
 {
 	_has_focus = true;
 	color.change("FFFFFF"_rgba8, 0.2_s);
+	audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_lose_focus() noexcept
@@ -330,6 +330,8 @@ template <std::size_t S> void multiline_input_widget<S>::on_write(std::string_vi
 		buffer.append(input);
 		if (font_manager.count_lines(buffer, font::LANGUAGE, tr::ttf_style::NORMAL, _font_size, _font_size / 12, _size.x) > _max_lines) {
 			buffer.pop_back();
+		}
+		else {
 			audio::play(sfx::TYPE, 0.2f, 0.0f, tr::rand(rng, 0.75f, 1.25f));
 		}
 	}

@@ -87,6 +87,7 @@ std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
 	}
 
 	if (_timer >= 0.5_s && to_base(_substate) == substate_base::EXITING) {
+		tr::renderer_2d::set_default_transform(TRANSFORM);
 		if (to_flags(_substate) & save_screen_flags::RESTARTING) {
 			return std::make_unique<game_state>(std::make_unique<active_game>(_game->gamemode()), game_type::REGULAR, true);
 		}

@@ -34,15 +34,6 @@ void ui_manager::move_input_focus_forward() noexcept
 				return;
 			}
 		}
-		// Loop back and search up to the original.
-		for (std::list<std::unique_ptr<widget>>::iterator it = _objects.begin(); it != _input; ++it) {
-			if ((*it)->writable()) {
-				(*_input)->on_lose_focus();
-				(*it)->on_gain_focus();
-				_input = it;
-				return;
-			}
-		}
 		// Nothing else found, just unselect.
 		clear_input_focus();
 	}
@@ -69,15 +60,6 @@ void ui_manager::move_input_focus_backward() noexcept
 				return;
 			}
 		}
-		// Loop back and search up to the original.
-		for (auto it = _objects.rbegin(); it != std::make_reverse_iterator(_input); ++it) {
-			if ((*it)->writable()) {
-				(*it)->on_gain_focus();
-				(*_input)->on_lose_focus();
-				_input = --(it.base());
-				return;
-			}
-		}
 		// Nothing else found, just unselect.
 		clear_input_focus();
 	}
@@ -89,6 +71,7 @@ void ui_manager::clear_input_focus() noexcept
 		tr::event_queue::send_text_input_events(false);
 		(*_input)->on_lose_focus();
 		_input = _objects.end();
+		audio::play(sfx::CANCEL, 0.5f, 0.0f);
 	}
 }
 
@@ -146,7 +129,12 @@ void ui_manager::handle_event(const tr::event& event)
 	} break;
 	case tr::mouse_down_event::ID: {
 		if (tr::mouse_down_event{event}.button == tr::mouse_button::LEFT) {
-			clear_input_focus();
+			const bool something_had_input_focus{_input != _objects.end()};
+			if (something_had_input_focus) {
+				tr::event_queue::send_text_input_events(false);
+				(*_input)->on_lose_focus();
+				_input = _objects.end();
+			}
 
 			const std::list<std::unique_ptr<widget>>::iterator old_hovered_it{_hovered};
 			_hovered = _objects.end();
@@ -170,6 +158,9 @@ void ui_manager::handle_event(const tr::event& event)
 			if (_hovered != _objects.end() && (*_hovered)->active()) {
 				(*_hovered)->on_hold_begin();
 			}
+			else if (something_had_input_focus) {
+				audio::play(sfx::CANCEL, 0.5f, 0.0f);
+			}
 		}
 	} break;
 	case tr::mouse_up_event::ID: {
@@ -191,7 +182,6 @@ void ui_manager::handle_event(const tr::event& event)
 		if (_input != _objects.end()) {
 			if (key_down.key == tr::keycode::ESCAPE) {
 				clear_input_focus();
-				audio::play(sfx::CANCEL, 0.5f, 0.0f);
 			}
 			else if (key_down.key == tr::keycode::TAB) {
 				if (key_down.mods == tr::keymod::SHIFT) {
