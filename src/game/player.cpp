@@ -1,8 +1,8 @@
+#include "../../include/game/player.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/font_manager.hpp"
 #include "../../include/game/ball.hpp"
-#include "../../include/game/player.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -254,6 +254,13 @@ void player::update() noexcept
 	}
 
 	if (!game_over()) {
+		if (_timer % 2_s == 0) {
+			audio::play(sfx::TICK, 0.5f, 0.0f);
+		}
+		else if (_timer % 2_s == 1_s) {
+			audio::play(sfx::TICK, 0.5f, 0.0f, 0.75f);
+		}
+
 		++_timer;
 		const float life_size{_lives > MAX_LARGE_LIVES ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
 		const int lives_in_line{std::min(_lives, LIVES_PER_LINE)};
@@ -291,6 +298,13 @@ void player::update(glm::vec2 target) noexcept
 	}
 
 	if (!game_over()) {
+		if (_timer % 2_s == 0) {
+			audio::play(sfx::TICK, 0.5f, 0.0f);
+		}
+		else if (_timer % 2_s == 1_s) {
+			audio::play(sfx::TICK, 0.5f, 0.0f, 0.75f);
+		}
+
 		++_timer;
 		target = glm::clamp(target, glm::vec2{FIELD_MIN + _hitbox.r}, glm::vec2{FIELD_MAX - _hitbox.r});
 

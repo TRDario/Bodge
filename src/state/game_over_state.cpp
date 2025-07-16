@@ -46,7 +46,9 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 		pb_text_cb = [](const auto&) -> std::string { return std::string{localization["new_pb"]}; };
 	}
 	else {
-		pb_text_cb = [pb = std::format("{}: {}", localization["pb"], scorefile.category_pb(_game->gamemode()))](const auto&) { return pb; };
+		pb_text_cb = [str = std::format("{}: {}", localization["pb"], timer_text(scorefile.category_pb(_game->gamemode())))](const auto&) {
+			return str;
+		};
 	}
 	widget& pb{_ui.emplace<text_widget>("pb", glm::vec2{600, pb_h}, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 24,
 										std::move(pb_text_cb), "FFFF00C0"_rgba8)};

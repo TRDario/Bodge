@@ -12,6 +12,17 @@ enum class sfx {
 	CANCEL,
 	// Typing.
 	TYPE,
+	// Pausing the game.
+	PAUSE,
+	// Unpausing the game.
+	UNPAUSE,
+	// Clock tick.
+	TICK,
+	// Ball bounce
+	BOUNCE,
+
+	// The total number of sound effects.
+	COUNT,
 };
 
 // Audio system.
