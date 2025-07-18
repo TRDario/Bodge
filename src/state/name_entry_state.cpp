@@ -1,5 +1,5 @@
-#include "../../include/state/name_entry_state.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/state/name_entry_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -10,9 +10,7 @@ constexpr std::initializer_list<tr::key_chord> CONFIRM_SHORTCUTS{{tr::keycode::E
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 name_entry_state::name_entry_state()
-	: _substate{substate::ENTERING_GAME}
-	, _timer{0}
-	, _game{std::make_unique<game>(MENU_GAMEMODES[tr::rand(rng, MENU_GAMEMODES.size())], tr::rand<std::uint64_t>(rng))}
+	: _substate{substate::ENTERING_GAME}, _timer{0}, _game{std::make_unique<game>(pick_menu_gamemode(), tr::rand<std::uint64_t>(rng))}
 {
 	const status_callback input_status_cb{[this] { return _substate != substate::ENTERING_TITLE; }};
 	const status_callback confirm_status_cb{

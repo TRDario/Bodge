@@ -105,20 +105,5 @@ template <> struct tr::binary_writer<gamemode> {
 
 // Loads all found gamemodes.
 std::vector<gamemode> load_gamemodes() noexcept;
-
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
-
-// The gamemodes that can appear in the main menu background.
-const std::array<gamemode, 2> BUILTIN_GAMEMODES{
-	gamemode{"gm_test", "gm_test_d", player_settings{}, ball_settings{10, 10, 10_s, 50, 0, 400, 0}},
-	gamemode{"gm_test2", "gm_test2_d", player_settings{}, ball_settings{10, 10, 10_s, 50, 0, 400, 0}},
-};
-
-// The gamemodes that can appear in the main menu background.
-constexpr std::array<gamemode, 5> MENU_GAMEMODES{
-	ball_settings{},
-	ball_settings{1, 20, 1_s, 10, 2, 250, 10},
-	ball_settings{10, 10, 10_s, 50, 0, 400, 0},
-	ball_settings{50, 50, 10_s, 10, 0, 400, 0},
-	ball_settings{25, 25, 10_s, 20, 0, 350, 0},
-};
+// Randomly picks a menu gamemode.
+gamemode pick_menu_gamemode() noexcept;

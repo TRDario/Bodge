@@ -1,6 +1,6 @@
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/ball_settings_editor_state.hpp"
 #include "../../include/state/game_state.hpp"
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/title_state.hpp"
 
@@ -30,7 +30,7 @@ gamemode_designer_state::gamemode_designer_state(std::unique_ptr<game>&& game, c
 gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 	: _substate{substate::RETURNING_FROM_TEST_GAME}
 	, _timer{0}
-	, _game{std::make_unique<game>(MENU_GAMEMODES[tr::rand(rng, MENU_GAMEMODES.size())], tr::rand<std::uint64_t>(rng))}
+	, _game{std::make_unique<game>(pick_menu_gamemode(), tr::rand<std::uint64_t>(rng))}
 	, _gamemode{gamemode}
 {
 	set_up_ui(false);

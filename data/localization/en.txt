@@ -99,7 +99,5 @@ language_name = "English"
     description = "DESCRIPTION:"
 
 # Built-in gamemodes
-    gm_test    = "TEST"
-    gm_test_d  = "COOL TEST DESCRIPTION HERE"
-    gm_test2   = "TEST2"
-    gm_test2_d = "COOLER TEST DESCRIPTION HERE"
+    gm_classic   = "CLASSIC"
+    gm_classic_d = "HOW LONG CAN YOU LAST UNTIL IT GETS TOO MUCH?"

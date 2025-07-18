@@ -1,7 +1,7 @@
-#include "../../include/state/save_score_state.hpp"
 #include "../../include/state/game_over_state.hpp"
 #include "../../include/state/pause_state.hpp"
 #include "../../include/state/save_replay_state.hpp"
+#include "../../include/state/save_score_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -23,7 +23,7 @@ save_score_state::save_score_state(std::unique_ptr<active_game>&& game, glm::vec
 }
 
 save_score_state::save_score_state(std::unique_ptr<active_game>&& game, ticks prev_pb, save_screen_flags flags)
-	: _substate{substate_base::SAVING_SCORE | flags}
+	: _substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
 	, _substate_data{.prev_pb = prev_pb}
 	, _timer{0}
 	, _game{std::move(game)}

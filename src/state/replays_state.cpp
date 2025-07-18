@@ -1,6 +1,6 @@
-#include "../../include/state/replays_state.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/game_state.hpp"
+#include "../../include/state/replays_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -21,7 +21,7 @@ replays_state::replays_state()
 	: _substate{substate::RETURNING_FROM_REPLAY}
 	, _page{0}
 	, _timer{0}
-	, _game{std::make_unique<game>(MENU_GAMEMODES[tr::rand(rng, MENU_GAMEMODES.size())], tr::rand<std::uint64_t>(rng))}
+	, _game{std::make_unique<game>(pick_menu_gamemode(), tr::rand<std::uint64_t>(rng))}
 	, _replays{load_replay_headers()}
 {
 	set_up_ui();

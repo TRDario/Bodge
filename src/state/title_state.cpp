@@ -1,4 +1,3 @@
-#include "../../include/state/title_state.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
@@ -6,6 +5,7 @@
 #include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/settings_state.hpp"
 #include "../../include/state/start_game_state.hpp"
+#include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -25,9 +25,7 @@ constexpr std::array<std::initializer_list<tr::key_chord>, BUTTONS.size()> SHORT
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
 title_state::title_state()
-	: _substate{substate::ENTERING_GAME}
-	, _timer{0}
-	, _game{std::make_unique<game>(MENU_GAMEMODES[tr::rand(rng, MENU_GAMEMODES.size())], tr::rand<std::uint64_t>(rng))}
+	: _substate{substate::ENTERING_GAME}, _timer{0}, _game{std::make_unique<game>(pick_menu_gamemode(), tr::rand<std::uint64_t>(rng))}
 {
 	set_up_ui();
 }

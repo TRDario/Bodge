@@ -2,6 +2,22 @@
 #include "../include/score.hpp"
 #include "../include/settings.hpp"
 
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+
+// The gamemodes that can appear in the main menu background.
+const std::array<gamemode, 1> BUILTIN_GAMEMODES{
+	gamemode{"gm_classic", "gm_classic_d", player_settings{}, ball_settings{1, 50, 10_s, 25, 0, 450, 25}},
+};
+
+// The gamemodes that can appear in the main menu background.
+constexpr std::array<gamemode, 5> MENU_GAMEMODES{
+	ball_settings{},
+	ball_settings{1, 20, 1_s, 10, 2, 250, 10},
+	ball_settings{10, 10, 10_s, 50, 0, 400, 0},
+	ball_settings{50, 50, 10_s, 10, 0, 400, 0},
+	ball_settings{25, 25, 10_s, 20, 0, 350, 0},
+};
+
 ///////////////////////////////////////////////////////////// PLAYER SETTINGS /////////////////////////////////////////////////////////////
 
 bool player_settings::autoplay() const noexcept
@@ -102,6 +118,8 @@ void gamemode::save_to_file() noexcept
 	}
 }
 
+//
+
 std::vector<gamemode> load_gamemodes() noexcept
 {
 	std::vector<gamemode> gamemodes;
@@ -130,4 +148,9 @@ std::vector<gamemode> load_gamemodes() noexcept
 		LOG_CONTINUE("{}", err.what());
 	}
 	return gamemodes;
+}
+
+gamemode pick_menu_gamemode() noexcept
+{
+	return MENU_GAMEMODES[tr::rand(rng, MENU_GAMEMODES.size())];
 }
