@@ -527,7 +527,10 @@ void arrow_widget::on_hold_end() noexcept
 
 void arrow_widget::on_shortcut() noexcept
 {
-	_action_cb();
+	if (active()) {
+		_action_cb();
+		audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	}
 }
 
 ////////////////////////////////////////////////////// REPLAY_PLAYBACK_INDICATOR_WIDGET ///////////////////////////////////////////////////

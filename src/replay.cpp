@@ -106,12 +106,12 @@ void replay::save_to_file() const noexcept
 		std::ostringstream bufstream{std::ios::binary};
 		std::vector<std::byte> buffer;
 		tr::binary_write(bufstream, _header);
-		tr::encrypt_to(buffer, tr::range_bytes(bufstream.view()), tr::rand<std::uint8_t>(rng));
+		tr::encrypt_to(buffer, bufstream.view(), tr::rand<std::uint8_t>(rng));
 		tr::binary_write(file, buffer);
 
 		bufstream.str({});
 		tr::binary_write(bufstream, _inputs);
-		tr::encrypt_to(buffer, tr::range_bytes(bufstream.view()), tr::rand<std::uint8_t>(rng));
+		tr::encrypt_to(buffer, bufstream.view(), tr::rand<std::uint8_t>(rng));
 		tr::binary_write(file, buffer);
 		LOG(tr::severity::INFO, "Saved replay '{}'.", _header.name);
 		LOG_CONTINUE("To: '{}'", path.string());

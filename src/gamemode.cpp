@@ -5,8 +5,10 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // The gamemodes that can appear in the main menu background.
-const std::array<gamemode, 1> BUILTIN_GAMEMODES{
+const std::array<gamemode, 3> BUILTIN_GAMEMODES{
 	gamemode{"gm_classic", "gm_classic_d", player_settings{}, ball_settings{1, 50, 10_s, 25, 0, 450, 25}},
+	gamemode{"gm_chonk", "gm_chonk_d", player_settings{}, ball_settings{5, 20, 15_s, 75, 0, 350, 25}},
+	gamemode{"gm_swarm", "gm_swarm_d", player_settings{2, 20, 0.05f}, ball_settings{15, 50, 2.5_s, 10, 0, 250, 10}},
 };
 
 // The gamemodes that can appear in the main menu background.

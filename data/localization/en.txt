@@ -101,3 +101,7 @@ language_name = "English"
 # Built-in gamemodes
     gm_classic   = "CLASSIC"
     gm_classic_d = "HOW LONG CAN YOU LAST UNTIL IT GETS TOO MUCH?"
+    gm_chonk     = "CHONK"
+    gm_chonk_d   = "THEY'RE ACTUALLY JUST BIG BONED."
+    gm_swarm     = "SWARM"
+    gm_swarm_d   = "QUICKLY DEVOLVES INTO A BULLET HELL."
