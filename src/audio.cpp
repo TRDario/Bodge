@@ -5,7 +5,8 @@
 
 // The filenames of the audio files.
 std::array<const char*, static_cast<int>(sfx::COUNT)> AUDIO_FILENAMES{
-	"hover.ogg", "hold.ogg", "confirm.ogg", "cancel.ogg", "type.ogg", "pause.ogg", "unpause.ogg", "tick.ogg", "bounce.ogg",
+	"hover.ogg",   "hold.ogg", "confirm.ogg", "cancel.ogg", "type.ogg",      "pause.ogg",
+	"unpause.ogg", "tick.ogg", "bounce.ogg",  "hit.ogg",    "game_over.ogg",
 };
 
 // Sound effect audio buffers.
@@ -15,7 +16,7 @@ std::array<std::optional<tr::audio_buffer>, static_cast<int>(sfx::COUNT)> sounds
 std::optional<tr::audio_buffer> load_audio_file(const char* filename) noexcept
 {
 	try {
-		const std::filesystem::path& path{cli_settings.datadir / "sfx" / filename};
+		const std::filesystem::path& path{cli_settings.datadir / "sounds" / filename};
 		std::optional<tr::audio_buffer> buffer{tr::load_audio_file(path)};
 		LOG(tr::severity::INFO, "Loaded audio file '{}'.", filename);
 		LOG_CONTINUE("From: '{}'", path.string());

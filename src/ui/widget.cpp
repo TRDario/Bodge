@@ -348,15 +348,23 @@ clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 po
 				  std::move(text_cb)}
 	, _status_cb{std::move(status_cb)}
 	, _action_cb{std::move(action_cb)}
-	, _override_disabled_color{false}
+	, _override_disabled_color_left{0}
 	, _sfx{sfx}
 {
+}
+
+void clickable_text_widget::update() noexcept
+{
+	if (_override_disabled_color_left > 0) {
+		--_override_disabled_color_left;
+	}
+	text_widget::update();
 }
 
 void clickable_text_widget::add_to_renderer()
 {
 	const interpolated_rgba8 real_color{color};
-	if (!active() && !_override_disabled_color) {
+	if (!active() && _override_disabled_color_left == 0) {
 		color = {80, 80, 80, 160};
 	}
 	text_widget::add_to_renderer();
@@ -407,12 +415,57 @@ void clickable_text_widget::on_hold_end() noexcept
 void clickable_text_widget::on_shortcut() noexcept
 {
 	if (active()) {
-		color = "FFFFFF"_rgba8;
-		color.change({160, 160, 160, 160}, 0.2_s);
-		_override_disabled_color = true;
 		_action_cb();
+		color = "FFFFFF"_rgba8;
+		color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
+		_override_disabled_color_left = 0.2_s;
 		audio::play(_sfx, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
+}
+
+/////////////////////////////////////////////////////////////// IMAGE_WIDGET //////////////////////////////////////////////////////////////
+
+// Loads an image and returns a fallback texture if loading fails.
+tr::bitmap load_image(std::string_view texture) noexcept
+{
+	try {
+		const std::filesystem::path path{cli_settings.datadir / "graphics" / std::format("{}.qoi", texture)};
+		tr::bitmap image{tr::load_bitmap_file(path)};
+		LOG(tr::severity::INFO, "Loaded texture '{}'.", texture);
+		LOG_CONTINUE("From: {}", path.string());
+		return image;
+	}
+	catch (tr::bitmap_load_error& err) {
+		LOG(tr::severity::ERROR, "Failed to load texture '{}'.", texture);
+		LOG_CONTINUE("{}", err.description());
+		LOG_CONTINUE("{}", err.details());
+		return tr::create_checkerboard({64, 64});
+	}
+}
+
+image_widget::image_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t* hue_ref)
+	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, _texture{load_image(name)}, _hue_ref{hue_ref}
+{
+	_texture.set_filtering(tr::min_filter::LINEAR, tr::mag_filter::LINEAR);
+}
+
+glm::vec2 image_widget::size() const noexcept
+{
+	return glm::vec2{_texture.size()} / 2.0f / engine::render_scale();
+}
+
+void image_widget::add_to_renderer()
+{
+	tr::rgba8 color{255, 255, 255, 255};
+	if (_hue_ref != nullptr) {
+		color = tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(*_hue_ref), 1, 1});
+	}
+	color.a = static_cast<std::uint8_t>(color.a * opacity());
+
+	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, _texture)};
+	tr::fill_rect_vtx(quad.positions, {tl(), size()});
+	tr::fill_rect_vtx(quad.uvs, {{0, 0}, {1, 1}});
+	std::ranges::fill(quad.tints, tr::rgba8{color});
 }
 
 /////////////////////////////////////////////////////////// COLOR_PREVIEW_WIDGET //////////////////////////////////////////////////////////
@@ -450,6 +503,7 @@ arrow_widget::arrow_widget(std::string_view name, glm::vec2 pos, tr::align align
 	, _color{{160, 160, 160, 160}}
 	, _status_cb{std::move(status_cb)}
 	, _action_cb{std::move(action_cb)}
+	, _override_disabled_color_left{0}
 {
 }
 
@@ -460,7 +514,10 @@ glm::vec2 arrow_widget::size() const noexcept
 
 void arrow_widget::add_to_renderer()
 {
-	tr::rgba8 color{active() ? tr::rgba8{_color} : "505050A0"_rgba8};
+	tr::rgba8 color{_color};
+	if (!active() && _override_disabled_color_left == 0) {
+		color = {80, 80, 80, 160};
+	}
 	color.a *= opacity();
 
 	const glm::vec2 tl{this->tl()};
@@ -480,6 +537,9 @@ void arrow_widget::add_to_renderer()
 
 void arrow_widget::update() noexcept
 {
+	if (_override_disabled_color_left > 0) {
+		--_override_disabled_color_left;
+	}
 	_color.update();
 	widget::update();
 }
@@ -529,6 +589,9 @@ void arrow_widget::on_shortcut() noexcept
 {
 	if (active()) {
 		_action_cb();
+		_color = "FFFFFF"_rgba8;
+		_color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
+		_override_disabled_color_left = 0.2_s;
 		audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
 }

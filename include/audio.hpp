@@ -18,8 +18,12 @@ enum class sfx {
 	UNPAUSE,
 	// Clock tick.
 	TICK,
-	// Ball bounce
+	// Ball bounce.
 	BOUNCE,
+	// Player hit.
+	HIT,
+	// Game over.
+	GAME_OVER,
 
 	// The total number of sound effects.
 	COUNT,

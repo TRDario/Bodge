@@ -81,6 +81,7 @@ class clickable_text_widget : public text_widget {
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
+	void update() noexcept override;
 	void add_to_renderer() override;
 
 	bool active() const noexcept override;
@@ -98,8 +99,8 @@ class clickable_text_widget : public text_widget {
 	status_callback _status_cb;
 	// Callback called when the widget is interacted with.
 	action_callback _action_cb;
-	// Overrides the disabled color effect.
-	bool _override_disabled_color;
+	// Timer used when overriding the disabled color.
+	ticks _override_disabled_color_left;
 	// The sound effect that interacting with the widget plays.
 	sfx _sfx;
 };
@@ -195,6 +196,30 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 
 ///////////////////////////////////////////////////////////// NON-TEXT WIDGETS ////////////////////////////////////////////////////////////
 
+// Image widget.
+class image_widget : public widget {
+  public:
+	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
+
+	// Creates an image widget.
+	image_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t* hue_ref = nullptr);
+
+	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
+
+	// Gets the size of the widget.
+	glm::vec2 size() const noexcept override;
+	// Adds the widget to the renderer.
+	void add_to_renderer() override;
+
+	// No need to specialize release_graphical_resources because this class of widget is not used in the settings menu.
+
+  private:
+	// The image texture.
+	tr::texture _texture;
+	// A reference to the hue to apply to the widget, or nullptr to not tint the widget.
+	std::uint16_t* _hue_ref;
+};
+
 // Color preview widget.
 class color_preview_widget : public widget {
   public:
@@ -247,6 +272,8 @@ class arrow_widget : public widget {
 	status_callback _status_cb;
 	// Callback called when the widget is interacted with.
 	action_callback _action_cb;
+	// Timer used when overriding the disabled color.
+	ticks _override_disabled_color_left;
 };
 
 // Replay playback indicator widget.

@@ -239,10 +239,10 @@ void player::hit() noexcept
 
 	if (game_over()) {
 		set_up_death_fragments();
-		// audio::play(sfx::EXPLOSION, 1, 0);
+		audio::play(sfx::GAME_OVER, 1, 0);
 	}
 	else {
-		// audio::play(sfx::HIT, 1, 0);
+		audio::play(sfx::HIT, 1, 0);
 	}
 }
 

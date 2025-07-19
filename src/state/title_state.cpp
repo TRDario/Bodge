@@ -1,3 +1,4 @@
+#include "../../include/state/title_state.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
@@ -5,7 +6,6 @@
 #include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/settings_state.hpp"
 #include "../../include/state/start_game_state.hpp"
-#include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -104,6 +104,16 @@ float title_state::fade_overlay_opacity() const noexcept
 
 void title_state::set_up_ui()
 {
+	widget& logo_text{_ui.emplace<image_widget>("logo_text", glm::vec2{500, 100}, tr::align::CENTER)};
+	logo_text.pos.change({500, 160}, 2.5_s);
+	logo_text.unhide(2.5_s);
+	widget& logo_overlay{_ui.emplace<image_widget>("logo_overlay", glm::vec2{500, 100}, tr::align::CENTER, &settings.primary_hue)};
+	logo_overlay.pos.change({500, 160}, 2.5_s);
+	logo_overlay.unhide(2.5_s);
+	widget& logo_ball{_ui.emplace<image_widget>("logo_ball", glm::vec2{-180, 644}, tr::align::CENTER, &settings.secondary_hue)};
+	logo_ball.pos.change({327, 217}, 2.5_s);
+	logo_ball.unhide(2.5_s);
+
 	widget& copyright{
 		_ui.emplace<text_widget>("copyright", glm::vec2{4, 1000}, tr::align::TOP_LEFT, font::DEFAULT, tr::ttf_style::NORMAL, 24)};
 	copyright.pos.change({4, 998 - copyright.size().y}, 1_s);
@@ -169,6 +179,9 @@ void title_state::set_up_exit_animation() noexcept
 		widget& widget{_ui.get(tag)};
 		widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}
+	_ui.get("logo_text").pos.change({500, 220}, 0.5_s);
+	_ui.get("logo_overlay").pos.change({500, 220}, 0.5_s);
+	_ui.get("logo_ball").pos.change({487, 57}, 0.5_s);
 	_ui.get("copyright").pos.change({4, 1000}, 0.5_s);
 	_ui.get("version").pos.change({996, 1000}, 0.5_s);
 	_ui.hide_all(0.5_s);

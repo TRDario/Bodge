@@ -23,6 +23,18 @@ inline constexpr tr::blend_mode REVERSE_ALPHA_BLENDING{
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
+// Sets the program icon.
+void set_icon() noexcept
+{
+	try {
+		tr::window::set_icon(tr::load_bitmap_file(cli_settings.datadir / "graphics" / "icon.qoi"));
+	}
+	catch (std::exception& err) {
+		LOG(tr::severity::ERROR, "Failed to set window icon.");
+		LOG_CONTINUE("{}", err.what());
+	}
+}
+
 // Initializes the 2D renderer.
 void initialize_2d_renderer()
 {
@@ -37,7 +49,7 @@ void initialize_2d_renderer()
 }
 
 // Creates a draw timer according to the active settings.
-tr::timer create_draw_timer()
+tr::timer create_draw_timer() noexcept
 {
 	if (settings.refresh_rate != NATIVE_REFRESH_RATE) {
 		return tr::create_draw_timer(settings.refresh_rate);
@@ -179,6 +191,7 @@ void engine::initialize()
 	else {
 		tr::window::open_windowed("Bodge", glm::ivec2{settings.window_size}, tr::window_flag::DEFAULT, gfx);
 	}
+	set_icon();
 	tr::window::set_vsync(tr::vsync::DISABLED);
 	tr::mouse::show_cursor(false);
 	tr::mouse::set_relative_mode(true);

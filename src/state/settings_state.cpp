@@ -119,14 +119,30 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	const action_callback window_size_inc_action_cb{[&window_size = _pending.window_size] {
 		window_size = std::min(max_window_size(), window_size + engine::keymods_choose(1, 10, 100));
 	}};
-	const action_callback cur_window_size_action_cb{[this] { update_window_size_buttons(); }};
+	const action_callback cur_window_size_action_cb{[this] {
+		if (_pending.window_size == FULLSCREEN) {
+			_pending.window_size = 500;
+		}
+		else {
+			_pending.window_size = FULLSCREEN;
+		}
+		update_window_size_buttons();
+	}};
 	const action_callback refresh_rate_dec_action_cb{[&refresh_rate = _pending.refresh_rate] {
 		refresh_rate = static_cast<std::uint16_t>(std::max(15, refresh_rate - engine::keymods_choose(1, 10, 25)));
 	}};
 	const action_callback refresh_rate_inc_action_cb{[&refresh_rate = _pending.refresh_rate] {
 		refresh_rate = static_cast<std::uint16_t>(std::max(15, refresh_rate + engine::keymods_choose(1, 10, 25)));
 	}};
-	const action_callback cur_refresh_rate_action_cb{[this] { update_refresh_rate_buttons(); }};
+	const action_callback cur_refresh_rate_action_cb{[this] {
+		if (_pending.refresh_rate == NATIVE_REFRESH_RATE) {
+			_pending.refresh_rate = max_refresh_rate();
+		}
+		else {
+			_pending.refresh_rate = NATIVE_REFRESH_RATE;
+		}
+		update_refresh_rate_buttons();
+	}};
 	const action_callback msaa_dec_action_cb{[&msaa = _pending.msaa] { msaa = msaa == 2 ? NO_MSAA : static_cast<std::uint8_t>(msaa / 2); }};
 	const action_callback msaa_inc_action_cb{[&msaa = _pending.msaa] { msaa = msaa == NO_MSAA ? 2 : static_cast<std::uint8_t>(msaa * 2); }};
 	const action_callback primary_hue_dec_action_cb{[&primary_hue = _pending.primary_hue] {
@@ -385,18 +401,16 @@ void settings_state::update_window_size_buttons() noexcept
 {
 	widget& cur_window_size{_ui.get("cur_window_size")};
 	if (_pending.window_size == FULLSCREEN) {
-		_pending.window_size = 500;
-		cur_window_size.pos = glm::vec2{875, 196};
-		cur_window_size.alignment = tr::align::CENTER;
-		_ui.get("window_size_dec").unhide();
-		_ui.get("window_size_inc").unhide();
-	}
-	else {
-		_pending.window_size = FULLSCREEN;
 		cur_window_size.pos = glm::vec2{985, 196};
 		cur_window_size.alignment = tr::align::CENTER_RIGHT;
 		_ui.get("window_size_dec").hide();
 		_ui.get("window_size_inc").hide();
+	}
+	else {
+		cur_window_size.pos = glm::vec2{875, 196};
+		cur_window_size.alignment = tr::align::CENTER;
+		_ui.get("window_size_dec").unhide();
+		_ui.get("window_size_inc").unhide();
 	}
 }
 
@@ -404,18 +418,16 @@ void settings_state::update_refresh_rate_buttons() noexcept
 {
 	widget& cur_refresh_rate{_ui.get("cur_refresh_rate")};
 	if (_pending.refresh_rate == NATIVE_REFRESH_RATE) {
-		_pending.refresh_rate = max_refresh_rate();
-		cur_refresh_rate.pos = glm::vec2{892.5, 271};
-		cur_refresh_rate.alignment = tr::align::CENTER;
-		_ui.get("refresh_rate_dec").unhide();
-		_ui.get("refresh_rate_inc").unhide();
-	}
-	else {
-		_pending.refresh_rate = NATIVE_REFRESH_RATE;
 		cur_refresh_rate.pos = glm::vec2{985, 271};
 		cur_refresh_rate.alignment = tr::align::CENTER_RIGHT;
 		_ui.get("refresh_rate_dec").hide();
 		_ui.get("refresh_rate_inc").hide();
+	}
+	else {
+		cur_refresh_rate.pos = glm::vec2{892.5, 271};
+		cur_refresh_rate.alignment = tr::align::CENTER;
+		_ui.get("refresh_rate_dec").unhide();
+		_ui.get("refresh_rate_inc").unhide();
 	}
 }
 
