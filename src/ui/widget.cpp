@@ -540,6 +540,10 @@ void arrow_widget::update() noexcept
 	if (_override_disabled_color_left > 0) {
 		--_override_disabled_color_left;
 	}
+	// Fixes an edge case of being stuck with the disabled color after using a shortcut.
+	if (active() && _color == tr::rgba8{ 80, 80, 80, 160 }) {
+		_color = tr::rgba8{160, 160, 160, 160};
+	}
 	_color.update();
 	widget::update();
 }

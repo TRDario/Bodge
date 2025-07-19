@@ -1,6 +1,15 @@
 #include "../include/replay.hpp"
 #include "../include/settings.hpp"
 
+///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+
+std::string to_filename(std::string_view name) {
+	std::string filename{name};
+	std::erase_if(filename, [](char chr) { return chr >= 0x7F || (!std::isalnum(chr) && chr != '_' && chr != '-'); });
+	std::ranges::replace(filename, ' ', '_');
+	return filename.empty() ? "Replay" : filename;
+}
+
 ////////////////////////////////////////////////////////////// REPLAY HEADER //////////////////////////////////////////////////////////////
 
 void tr::binary_reader<replay_header>::read_from_stream(std::istream& is, replay_header& out)
@@ -89,8 +98,9 @@ void replay::set_header(const score& header, std::string_view name) noexcept
 
 void replay::save_to_file() const noexcept
 {
-	std::filesystem::path path{cli_settings.userdir / "replays" / std::format("{}.dat", _header.name)};
 	try {
+		std::string filename{to_filename(_header.name)};
+		std::filesystem::path path{cli_settings.userdir / "replays" / std::format("{}.dat", filename)};
 		std::ofstream file;
 		if (!std::filesystem::exists(path)) {
 			file = tr::open_file_w(path, std::ios::binary);
@@ -98,7 +108,7 @@ void replay::save_to_file() const noexcept
 		else {
 			int index{0};
 			do {
-				path = cli_settings.userdir / "replays" / std::format("{}({}).dat", _header.name, index++);
+				path = cli_settings.userdir / "replays" / std::format("{}({}).dat", filename, index++);
 			} while (std::filesystem::exists(path));
 			file = tr::open_file_w(path, std::ios::binary);
 		}
