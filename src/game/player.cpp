@@ -42,7 +42,7 @@ glm::vec2 player::timer_text_size(const std::string& text, float scale) const no
 {
 	glm::vec2 size{};
 	for (char chr : text) {
-		const glm::vec2 char_size{_atlas[{&chr, 1}].size * glm::vec2{_atlas.size()} * scale};
+		const glm::vec2 char_size{_atlas[{&chr, 1}].size * glm::vec2{_atlas.size()} * scale / engine::render_scale()};
 		size = {size.x + char_size.x - 5, std::max<float>(size.y, char_size.y)};
 	}
 	return size;
@@ -141,16 +141,16 @@ void player::add_timer_to_renderer() const
 		const ticks clamped_hover_time{std::min(_timer_hover_time, HOVER_TIME)};
 		const std::uint8_t opacity{static_cast<std::uint8_t>((255 - clamped_hover_time * 180 / HOVER_TIME) * tint_factor / 255)};
 		tint = {tint_factor, tint_factor, tint_factor, opacity};
-		scale = (1.25f - 0.25f * factor) / engine::render_scale();
+		scale = (1.25f - 0.25f * factor);
 	}
 
 	glm::vec2 tl{TIMER_TEXT_POS - timer_text_size(text, scale) / 2.0f};
 	for (char chr : text) {
 		tr::simple_textured_mesh_ref character{tr::renderer_2d::new_textured_fan(layer::GAME_OVERLAY, 4)};
-		tr::fill_rect_vtx(character.positions, {tl, _atlas[{&chr, 1}].size * glm::vec2{_atlas.size()} * scale});
+		tr::fill_rect_vtx(character.positions, {tl, _atlas[{&chr, 1}].size * glm::vec2{_atlas.size()} * scale / engine::render_scale()});
 		tr::fill_rect_vtx(character.uvs, _atlas[{&chr, 1}]);
 		std::ranges::fill(character.tints, tint);
-		tl.x += _atlas[{&chr, 1}].size.x * _atlas.size().x * scale - 5;
+		tl.x += _atlas[{&chr, 1}].size.x * _atlas.size().x * scale / engine::render_scale() - 5;
 	}
 }
 

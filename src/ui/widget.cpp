@@ -451,7 +451,7 @@ image_widget::image_widget(std::string_view name, glm::vec2 pos, tr::align align
 
 glm::vec2 image_widget::size() const noexcept
 {
-	return glm::vec2{_texture.size()} / 2.0f / engine::render_scale();
+	return glm::vec2{_texture.size()} / 2.0f;
 }
 
 void image_widget::add_to_renderer()
