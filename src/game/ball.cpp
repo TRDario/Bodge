@@ -56,9 +56,9 @@ void handle_collision(ball& a, ball& b) noexcept
 {
 	const glm::vec2 dist_vec{a._hitbox.c - b._hitbox.c};
 	const glm::vec2 vel_diff{a._velocity - b._velocity};
-	const glm::vec2 dist2{std::pow(dist_vec.x, 2.0f) + std::pow(dist_vec.y, 2.0f)};
-	const float a_mass{std::pow(a._hitbox.r, 2.0f)};
-	const float b_mass{std::pow(b._hitbox.r, 2.0f)};
+	const glm::vec2 dist2{dist_vec.x * dist_vec.x + dist_vec.y * dist_vec.y};
+	const float a_mass{a._hitbox.r * a._hitbox.r};
+	const float b_mass{b._hitbox.r * b._hitbox.r};
 	const float total_mass{a_mass + b_mass};
 
 	play_ball_sound(a._hitbox.c + dist_vec / 2.0f, std::max(glm::length(a._velocity), glm::length(b._velocity)));
