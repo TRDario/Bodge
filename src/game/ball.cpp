@@ -29,7 +29,7 @@ ball::ball(const tr::fcircle& hitbox, const glm::vec2& velocity) noexcept
 
 ball::ball(tr::xorshiftr_128p& rng, float size, float velocity) noexcept
 	: ball{{{tr::rand(rng, FIELD_MIN + size, FIELD_MAX - size), tr::rand(rng, FIELD_MIN + size, FIELD_MAX - size)}, size},
-		   tr::magth(velocity, tr::rand<tr::fangle>(rng))}
+		   tr::randvec(rng, velocity)}
 {
 }
 
