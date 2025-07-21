@@ -61,7 +61,7 @@ void handle_collision(ball& a, ball& b) noexcept
 	const float b_mass{b._hitbox.r * b._hitbox.r};
 	const float total_mass{a_mass + b_mass};
 
-	play_ball_sound(a._hitbox.c + dist_vec / 2.0f, std::max(glm::length(a._velocity), glm::length(b._velocity)));
+	play_ball_sound(b._hitbox.c + dist_vec / 2.0f, std::max(glm::length(a._velocity), glm::length(b._velocity)));
 
 	a._velocity -= ((2 * b_mass / total_mass) * (glm::dot(dist_vec, vel_diff) / dist2) * dist_vec);
 	b._velocity -= ((2 * a_mass / total_mass) * (glm::dot(-dist_vec, -vel_diff) / dist2) * -dist_vec);
