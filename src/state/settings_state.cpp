@@ -164,7 +164,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		sfx_volume = static_cast<std::uint8_t>(std::min(sfx_volume + engine::keymods_choose(1, 10, 25), 100));
 	}};
 	const action_callback music_volume_dec_action_cb{[&music_volume = _pending.music_volume] {
-		music_volume = static_cast<std::uint8_t>(std::max(music_volume - engine::keymods_choose(1, 10, 25), 100));
+		music_volume = static_cast<std::uint8_t>(std::max(music_volume - engine::keymods_choose(1, 10, 25), 0));
 	}};
 	const action_callback music_volume_inc_action_cb{[&music_volume = _pending.music_volume] {
 		music_volume = static_cast<std::uint8_t>(std::min(music_volume + engine::keymods_choose(1, 10, 25), 100));

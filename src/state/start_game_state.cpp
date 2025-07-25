@@ -99,6 +99,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game) noexcept
 		_timer = 0;
 		set_up_exit_animation();
 		scorefile.last_selected_gamemode = *_cur;
+		audio::fade_song_out(0.5s);
 	}};
 	widget& start{_ui.emplace<clickable_text_widget>("start", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 													 DEFAULT_TEXT_CALLBACK, status_cb, start_action_cb, NO_TOOLTIP, START_CHORDS)};

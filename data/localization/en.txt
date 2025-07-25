@@ -13,7 +13,7 @@ language_name = "English"
 # Title screen
     copyright         = "©2025 TRDario"
     enter_your_name   = "ENTER YOUR NAME"
-    version           = "a0.2.1"
+    version           = "a0.3.0"
     start_game        = "START GAME"
     gamemode_designer = "GAMEMODE DESIGNER"
     replays           = "REPLAYS"

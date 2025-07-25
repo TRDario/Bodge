@@ -28,6 +28,7 @@ title_state::title_state()
 	: _substate{substate::ENTERING_GAME}, _timer{0}, _game{std::make_unique<game>(pick_menu_gamemode(), tr::rand<std::uint64_t>(rng))}
 {
 	set_up_ui();
+	audio::play(song::MENU);
 }
 
 title_state::title_state(std::unique_ptr<game>&& game)
@@ -155,6 +156,7 @@ void title_state::set_up_ui()
 			_substate = substate::EXITING_GAME;
 			_timer = 0;
 			set_up_exit_animation();
+			audio::fade_song_out(0.5s);
 		},
 	};
 
