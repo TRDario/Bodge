@@ -28,7 +28,7 @@ title_state::title_state()
 	: _substate{substate::ENTERING_GAME}, _timer{0}, _game{std::make_unique<game>(pick_menu_gamemode(), tr::rand<std::uint64_t>(rng))}
 {
 	set_up_ui();
-	audio::play(song::MENU);
+	audio::play_song(song::MENU, 1.0s);
 }
 
 title_state::title_state(std::unique_ptr<game>&& game)
@@ -151,7 +151,7 @@ void title_state::set_up_ui()
 			_timer = 0;
 			set_up_exit_animation();
 		},
-		[] { audio::play(sfx::CONFIRM, 0.5f, 0.0f); },
+		[] { audio::play_sound(sound::CONFIRM, 0.5f, 0.0f); },
 		[this] {
 			_substate = substate::EXITING_GAME;
 			_timer = 0;
@@ -166,7 +166,7 @@ void title_state::set_up_ui()
 		const glm::vec2 pos{end_pos.x + offset, end_pos.y};
 		widget& widget{_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER_RIGHT, font::LANGUAGE, 48,
 														  DEFAULT_TEXT_CALLBACK, status_cb, action_cbs[i], NO_TOOLTIP, SHORTCUTS[i],
-														  i != BUTTONS.size() - 1 ? sfx::CONFIRM : sfx::CANCEL)};
+														  i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL)};
 		widget.pos.change(end_pos, 1_s);
 		widget.unhide(1_s);
 		end_pos += glm::vec2{-25, 50};

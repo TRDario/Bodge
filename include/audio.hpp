@@ -1,7 +1,7 @@
 #pragma once
 
 // Sound effects.
-enum class sfx {
+enum class sound {
 	// UI button hover.
 	HOVER,
 	// UI button hold.
@@ -38,15 +38,20 @@ enum class song {
 	COUNT
 };
 
+// Timestamp that skips the menu song intro.
+constexpr tr::fsecs SKIP_MENU_SONG_INTRO{103769 / 44100.0f};
+
 // Audio system.
 struct audio {
 	// Initializes the audio system.
 	// Note that the program has a high tolerance to audio errors and will even survive a complete failure.
 	static void initialize() noexcept;
 	// Plays a sound effect.
-	static void play(sfx sfx, float volume, float pan, float pitch = 1) noexcept;
+	static void play_sound(sound sound, float volume, float pan, float pitch = 1) noexcept;
 	// Plays a song.
-	static void play(song song) noexcept;
+	static void play_song(song song, tr::fsecs fade_in) noexcept;
+	// Plays a song starting at an offset.
+	static void play_song(song song, tr::fsecs offset, tr::fsecs fade_in) noexcept;
 	// Pauses the current song.
 	static void pause_song() noexcept;
 	// Fades the current song out.

@@ -239,10 +239,10 @@ void player::hit() noexcept
 
 	if (game_over()) {
 		set_up_death_fragments();
-		audio::play(sfx::GAME_OVER, 1, 0);
+		audio::play_sound(sound::GAME_OVER, 1, 0);
 	}
 	else {
-		audio::play(sfx::HIT, 1, 0);
+		audio::play_sound(sound::HIT, 1, 0);
 	}
 }
 
@@ -255,10 +255,10 @@ void player::update() noexcept
 
 	if (!game_over()) {
 		if (_timer % 2_s == 0) {
-			audio::play(sfx::TICK, 0.5f, 0.0f);
+			audio::play_sound(sound::TICK, 0.5f, 0.0f);
 		}
 		else if (_timer % 2_s == 1_s) {
-			audio::play(sfx::TICK, 0.5f, 0.0f, 0.75f);
+			audio::play_sound(sound::TICK, 0.5f, 0.0f, 0.75f);
 		}
 
 		++_timer;
@@ -299,10 +299,10 @@ void player::update(glm::vec2 target) noexcept
 
 	if (!game_over()) {
 		if (_timer % 2_s == 0) {
-			audio::play(sfx::TICK, 0.5f, 0.0f);
+			audio::play_sound(sound::TICK, 0.5f, 0.0f);
 		}
 		else if (_timer % 2_s == 1_s) {
-			audio::play(sfx::TICK, 0.5f, 0.0f, 0.75f);
+			audio::play_sound(sound::TICK, 0.5f, 0.0f, 0.75f);
 		}
 
 		++_timer;

@@ -77,7 +77,7 @@ class clickable_text_widget : public text_widget {
 	// Creates a clickable text widget.
 	clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size, text_callback text_cb,
 						  status_callback status_cb, action_callback action_cb, tooltip_callback tooltip_cb = NO_TOOLTIP,
-						  std::vector<tr::key_chord>&& shortcuts = {}, sfx sfx = sfx::CONFIRM) noexcept;
+						  std::vector<tr::key_chord>&& shortcuts = {}, sound sound = sound::CONFIRM) noexcept;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -102,7 +102,7 @@ class clickable_text_widget : public text_widget {
 	// Timer used when overriding the disabled color.
 	ticks _override_disabled_color_left;
 	// The sound effect that interacting with the widget plays.
-	sfx _sfx;
+	sound _sound;
 };
 
 // Widget for inputting a line of text.

@@ -1,6 +1,6 @@
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/ball_settings_editor_state.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/title_state.hpp"
 
@@ -34,6 +34,7 @@ gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 	, _gamemode{gamemode}
 {
 	set_up_ui(false);
+	audio::play_song(song::MENU, SKIP_MENU_SONG_INTRO, 0.5s);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
@@ -132,6 +133,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 			_gamemode.name = _ui.get<line_input_widget<12>>("name").buffer;
 			_gamemode.description = _ui.get<line_input_widget<40>>("description").buffer;
 			set_up_exit_animation();
+			audio::fade_song_out(0.5s);
 		},
 		[this] {
 			_substate = substate::ENTERING_TITLE;
@@ -196,10 +198,10 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	player_settings.unhide(0.5_s);
 
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
-		const sfx sfx{i != BOTTOM_BUTTONS.size() - 1 ? sfx::CONFIRM : sfx::CANCEL};
+		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
 		widget& widget{_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 														  DEFAULT_TEXT_CALLBACK, bottom_status_cbs[i], bottom_action_cbs[i], NO_TOOLTIP,
-														  BOTTOM_SHORTCUTS[i], sfx)};
+														  BOTTOM_SHORTCUTS[i], sound)};
 		widget.pos.change({500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s);
 		widget.unhide(0.5_s);
 	}

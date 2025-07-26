@@ -24,7 +24,7 @@ game_state::game_state(std::unique_ptr<game>&& game, game_type type, bool fade_i
 std::unique_ptr<tr::state> game_state::handle_event(const tr::event& event)
 {
 	if (event.type() == tr::key_down_event::ID && tr::key_down_event{event}.key == tr::keycode::ESCAPE) {
-		audio::play(sfx::PAUSE, 0.8f, 0.0f);
+		audio::play_sound(sound::PAUSE, 0.8f, 0.0f);
 		return std::make_unique<pause_state>(std::move(_game), to_type(_substate), engine::mouse_pos(), true);
 	}
 	return nullptr;

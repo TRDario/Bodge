@@ -96,7 +96,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 
 	widget& exit{_ui.emplace<clickable_text_widget>("exit", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 													DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
-													sfx::CANCEL)};
+													sound::CANCEL)};
 	exit.pos.change({500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 

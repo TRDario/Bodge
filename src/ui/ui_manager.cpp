@@ -71,7 +71,7 @@ void ui_manager::clear_input_focus() noexcept
 		tr::event_queue::send_text_input_events(false);
 		(*_input)->on_lose_focus();
 		_input = _objects.end();
-		audio::play(sfx::CANCEL, 0.5f, 0.0f);
+		audio::play_sound(sound::CANCEL, 0.5f, 0.0f);
 	}
 }
 
@@ -159,7 +159,7 @@ void ui_manager::handle_event(const tr::event& event)
 				(*_hovered)->on_hold_begin();
 			}
 			else if (something_had_input_focus) {
-				audio::play(sfx::CANCEL, 0.5f, 0.0f);
+				audio::play_sound(sound::CANCEL, 0.5f, 0.0f);
 			}
 		}
 	} break;

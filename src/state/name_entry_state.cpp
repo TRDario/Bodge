@@ -1,5 +1,5 @@
-#include "../../include/engine.hpp"
 #include "../../include/state/name_entry_state.hpp"
+#include "../../include/engine.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -24,7 +24,7 @@ name_entry_state::name_entry_state()
 			_ui.get("enter_your_name").pos.change(TOP_START_POS, 1.0_s);
 			_ui.get("confirm").pos.change(BOTTOM_START_POS, 1.0_s);
 			_ui.hide_all(1.0_s);
-			audio::play(sfx::CONFIRM, 0.5f, 0.0f);
+			audio::play_sound(sound::CONFIRM, 0.5f, 0.0f);
 			scorefile.name = input.buffer;
 		}
 	}};

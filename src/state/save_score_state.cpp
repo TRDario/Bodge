@@ -1,7 +1,7 @@
+#include "../../include/state/save_score_state.hpp"
 #include "../../include/state/game_over_state.hpp"
 #include "../../include/state/pause_state.hpp"
 #include "../../include/state/save_replay_state.hpp"
-#include "../../include/state/save_score_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -145,7 +145,7 @@ void save_score_state::set_up_ui()
 
 	widget& cancel{_ui.emplace<clickable_text_widget>("cancel", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 													  DEFAULT_TEXT_CALLBACK, status_cb, cancel_action_cb, NO_TOOLTIP, CANCEL_SHORTCUTS,
-													  sfx::CANCEL)};
+													  sound::CANCEL)};
 	cancel.pos.change({500, 1000}, 0.5_s);
 	cancel.unhide(0.5_s);
 }

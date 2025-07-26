@@ -25,7 +25,7 @@ constexpr std::array<const char*, 24> RIGHT_WIDGETS{
 	"secondary_hue_inc",
 	"secondary_hue_preview",
 	"sfx_volume_dec",
-	"cur_sfx_volume",
+	"cur_sound_volume",
 	"sfx_volume_inc",
 	"music_volume_dec",
 	"cur_music_volume",
@@ -220,7 +220,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	const text_callback cur_msaa_text_cb{[this](auto&) { return _pending.msaa == NO_MSAA ? "--" : std::format("x{}", _pending.msaa); }};
 	const text_callback cur_primary_hue_text_cb{[this](auto&) { return std::to_string(_pending.primary_hue); }};
 	const text_callback cur_secondary_hue_text_cb{[this](auto&) { return std::to_string(_pending.secondary_hue); }};
-	const text_callback cur_sfx_volume_text_cb{[this](auto&) { return std::format("{}%", _pending.sfx_volume); }};
+	const text_callback cur_sound_volume_text_cb{[this](auto&) { return std::format("{}%", _pending.sfx_volume); }};
 	const text_callback cur_music_volume_text_cb{[this](auto&) { return std::format("{}%", _pending.music_volume); }};
 	const text_callback cur_language_text_cb{
 		[this](auto&) { return languages.contains(_pending.language) ? languages[_pending.language].name : "???"; }};
@@ -327,14 +327,14 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 													 sfx_volume_dec_status_cb, sfx_volume_dec_action_cb)};
 	widget& sfx_volume_inc{_ui.emplace<arrow_widget>("sfx_volume_inc", SFX_VOLUME_START_POS, tr::align::CENTER_RIGHT, true,
 													 sfx_volume_inc_status_cb, sfx_volume_inc_action_cb)};
-	widget& cur_sfx_volume{_ui.emplace<text_widget>("cur_sfx_volume", SFX_VOLUME_START_POS, tr::align::CENTER, font::LANGUAGE,
-													tr::ttf_style::NORMAL, 48, cur_sfx_volume_text_cb)};
+	widget& cur_sound_volume{_ui.emplace<text_widget>("cur_sound_volume", SFX_VOLUME_START_POS, tr::align::CENTER, font::LANGUAGE,
+													  tr::ttf_style::NORMAL, 48, cur_sound_volume_text_cb)};
 	sfx_volume_dec.pos.change({765, SFX_VOLUME_START_POS.y}, 0.5_s);
 	sfx_volume_inc.pos.change({985, SFX_VOLUME_START_POS.y}, 0.5_s);
-	cur_sfx_volume.pos.change({875, SFX_VOLUME_START_POS.y}, 0.5_s);
+	cur_sound_volume.pos.change({875, SFX_VOLUME_START_POS.y}, 0.5_s);
 	sfx_volume_dec.unhide(0.5_s);
 	sfx_volume_inc.unhide(0.5_s);
-	cur_sfx_volume.unhide(0.5_s);
+	cur_sound_volume.unhide(0.5_s);
 
 	widget& music_volume_dec{_ui.emplace<arrow_widget>("music_volume_dec", MUSIC_VOLUME_START_POS, tr::align::CENTER_LEFT, false,
 													   music_volume_dec_status_cb, music_volume_dec_action_cb)};
@@ -356,10 +356,10 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	cur_language.unhide(0.5_s);
 
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
-		const sfx sfx{i == 1 ? sfx::CONFIRM : sfx::CANCEL};
+		const sound sound{i == 1 ? sound::CONFIRM : sound::CANCEL};
 		widget& widget{_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 														  DEFAULT_TEXT_CALLBACK, bottom_status_cbs[i], bottom_action_cbs[i], NO_TOOLTIP,
-														  BOTTOM_SHORTCUTS[i], sfx)};
+														  BOTTOM_SHORTCUTS[i], sound)};
 		widget.pos.change({500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s);
 		widget.unhide(0.5_s);
 	}

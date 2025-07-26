@@ -192,7 +192,7 @@ void pause_state::set_up_full_ui()
 			_substate = substate_base::UNPAUSING | game_type::REGULAR;
 			_end_mouse_pos = engine::mouse_pos();
 			set_up_exit_animation();
-			audio::play(sfx::UNPAUSE, 0.8f, 0.0f);
+			audio::play_sound(sound::UNPAUSE, 0.8f, 0.0f);
 		},
 		[this] {
 			_timer = 0;

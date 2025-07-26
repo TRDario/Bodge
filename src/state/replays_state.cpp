@@ -1,6 +1,6 @@
+#include "../../include/state/replays_state.hpp"
 #include "../../include/engine.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/replays_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -25,6 +25,7 @@ replays_state::replays_state()
 	, _replays{load_replay_headers()}
 {
 	set_up_ui();
+	audio::play_song(song::MENU, SKIP_MENU_SONG_INTRO, 0.5s);
 }
 
 replays_state::replays_state(std::unique_ptr<game>&& game)
@@ -123,6 +124,7 @@ void replays_state::set_up_ui()
 		_timer = 0;
 		_selected = it;
 		set_up_exit_animation();
+		audio::fade_song_out(0.5s);
 	}};
 	action_callback exit_action_cb{[this] {
 		_substate = substate::ENTERING_TITLE;
@@ -150,7 +152,7 @@ void replays_state::set_up_ui()
 
 	widget& exit{_ui.emplace<clickable_text_widget>("exit", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 													DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
-													sfx::CANCEL)};
+													sound::CANCEL)};
 	exit.pos.change({500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 

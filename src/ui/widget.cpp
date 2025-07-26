@@ -331,7 +331,7 @@ void text_widget::update_cache() const
 
 clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size,
 											 text_callback text_cb, status_callback status_cb, action_callback action_cb,
-											 tooltip_callback tooltip_cb, std::vector<tr::key_chord>&& shortcuts, sfx sfx) noexcept
+											 tooltip_callback tooltip_cb, std::vector<tr::key_chord>&& shortcuts, sound sound) noexcept
 	: text_widget{name,
 				  pos,
 				  alignment,
@@ -349,7 +349,7 @@ clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 po
 	, _status_cb{std::move(status_cb)}
 	, _action_cb{std::move(action_cb)}
 	, _override_disabled_color_left{0}
-	, _sfx{sfx}
+	, _sound{sound}
 {
 }
 
@@ -380,7 +380,7 @@ void clickable_text_widget::on_hover() noexcept
 {
 	color.change("FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
-		audio::play(sfx::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+		audio::play_sound(sound::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
 }
 
@@ -392,7 +392,7 @@ void clickable_text_widget::on_unhover() noexcept
 void clickable_text_widget::on_hold_begin() noexcept
 {
 	color = {32, 32, 32, 255};
-	audio::play(sfx::HOLD, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	audio::play_sound(sound::HOLD, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 void clickable_text_widget::on_hold_transfer_in() noexcept
@@ -409,7 +409,7 @@ void clickable_text_widget::on_hold_end() noexcept
 {
 	color.change("FFFFFF"_rgba8, 0.2_s);
 	_action_cb();
-	audio::play(_sfx, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	audio::play_sound(_sound, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 void clickable_text_widget::on_shortcut() noexcept
@@ -419,7 +419,7 @@ void clickable_text_widget::on_shortcut() noexcept
 		color = "FFFFFF"_rgba8;
 		color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
 		_override_disabled_color_left = 0.2_s;
-		audio::play(_sfx, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+		audio::play_sound(_sound, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
 }
 
@@ -541,7 +541,7 @@ void arrow_widget::update() noexcept
 		--_override_disabled_color_left;
 	}
 	// Fixes an edge case of being stuck with the disabled color after using a shortcut.
-	if (active() && _color == tr::rgba8{ 80, 80, 80, 160 }) {
+	if (active() && _color == tr::rgba8{80, 80, 80, 160}) {
 		_color = tr::rgba8{160, 160, 160, 160};
 	}
 	_color.update();
@@ -557,7 +557,7 @@ void arrow_widget::on_hover() noexcept
 {
 	_color.change("FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
-		audio::play(sfx::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+		audio::play_sound(sound::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
 }
 
@@ -569,7 +569,7 @@ void arrow_widget::on_unhover() noexcept
 void arrow_widget::on_hold_begin() noexcept
 {
 	_color = {32, 32, 32, 255};
-	audio::play(sfx::HOLD, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	audio::play_sound(sound::HOLD, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 void arrow_widget::on_hold_transfer_in() noexcept
@@ -586,7 +586,7 @@ void arrow_widget::on_hold_end() noexcept
 {
 	_color.change("FFFFFF"_rgba8, 0.2_s);
 	_action_cb();
-	audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 }
 
 void arrow_widget::on_shortcut() noexcept
@@ -596,7 +596,7 @@ void arrow_widget::on_shortcut() noexcept
 		_color = "FFFFFF"_rgba8;
 		_color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
 		_override_disabled_color_left = 0.2_s;
-		audio::play(sfx::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+		audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
 	}
 }
 
