@@ -29,7 +29,8 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 		[this] { return _substate == substate::IN_SCORES && scorefile.categories.size() != 1; }};
 	const status_callback page_dec_status_cb{[this] { return _substate == substate::IN_SCORES && _page > 0; }};
 	const status_callback page_inc_status_cb{[this] {
-		return _substate == substate::IN_SCORES && _page < (std::max(_current->scores.size() - 1, std::size_t{0}) / SCORES_PER_PAGE);
+		return _substate == substate::IN_SCORES &&
+			   _page < (std::max(std::ssize(_current->scores) - 1, std::ptrdiff_t{0}) / SCORES_PER_PAGE);
 	}};
 
 	// ACTION CALLBACKS
@@ -80,7 +81,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	}};
 	const text_callback cur_gamemode_text_cb{[this](auto&) { return std::string{_current->gamemode.name_loc()}; }};
 	const text_callback cur_page_text_cb{[this](auto&) {
-		return std::format("{}/{}", _page + 1, std::max(_current->scores.size() - 1, std::size_t{0}) / SCORES_PER_PAGE + 1);
+		return std::format("{}/{}", _page + 1, std::max(std::ssize(_current->scores) - 1, std::ptrdiff_t{0}) / SCORES_PER_PAGE + 1);
 	}};
 
 	//
