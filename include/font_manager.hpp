@@ -42,13 +42,13 @@ class font_manager_t {
 	glm::vec2 text_size(std::string_view text, font font, tr::ttf_style style, float size, float outline,
 						float max_w = tr::UNLIMITED_WIDTH);
 	// Gets the number of lines in a text string.
-	std::size_t count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w = tr::UNLIMITED_WIDTH);
+	std::size_t count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline,
+							float max_w = tr::UNLIMITED_WIDTH);
 	// Renders text.
 	tr::bitmap render_text(std::string_view text, font font, tr::ttf_style style, float size, float outline,
 						   float max_w = tr::UNLIMITED_WIDTH, tr::halign align = tr::halign::LEFT);
-	// Renders gradient text.
-	tr::bitmap render_gradient_text(std::string_view text, font font, tr::ttf_style style, float size, float outline,
-									float max_w = tr::UNLIMITED_WIDTH, tr::halign align = tr::halign::LEFT);
+	// Renders a gradient glyph.
+	tr::bitmap render_gradient_glyph(std::uint32_t glyph, font font, tr::ttf_style style, float size, float outline);
 
   private:
 	// Structure containing the standard fonts.

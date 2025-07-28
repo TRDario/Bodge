@@ -29,7 +29,7 @@ tr::static_atlas create_timer_atlas()
 {
 	tr::string_hash_map<tr::bitmap> renders;
 	for (char chr : std::string_view{"0123456789:"}) {
-		renders.emplace(std::string{&chr, 1}, font_manager.render_gradient_text({&chr, 1}, font::DEFAULT, tr::ttf_style::NORMAL, 64, 5));
+		renders.emplace(std::string{&chr, 1}, font_manager.render_gradient_glyph(chr, font::DEFAULT, tr::ttf_style::NORMAL, 64, 5));
 	}
 	tr::static_atlas atlas{renders};
 	if (tr::gfx_context::debug()) {

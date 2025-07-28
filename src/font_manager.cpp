@@ -271,22 +271,17 @@ tr::bitmap font_manager_t::render_text(std::string_view text, font font, tr::ttf
 	return render;
 }
 
-tr::bitmap font_manager_t::render_gradient_text(std::string_view text, font font, tr::ttf_style style, float size, float outline,
-												float max_w, tr::halign align)
+tr::bitmap font_manager_t::render_gradient_glyph(std::uint32_t glyph, font font, tr::ttf_style style, float size, float outline)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
-	if (max_w != tr::UNLIMITED_WIDTH) {
-		max_w = (max_w - 2 * outline) * engine::render_scale();
-	}
-	const int outline_max_w{max_w != tr::UNLIMITED_WIDTH ? static_cast<int>(max_w + 2 * scaled_outline) : tr::UNLIMITED_WIDTH};
 
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
-	tr::bitmap render{font_ref.render(text, outline_max_w, align, "00000080"_rgba8)};
+	tr::bitmap render{font_ref.render(glyph, "00000080"_rgba8)};
 	font_ref.set_outline(0);
-	tr::bitmap fill{font_ref.render(text, static_cast<int>(max_w), align, "FFFFFF"_rgba8)};
+	tr::bitmap fill{font_ref.render(glyph, "FFFFFF"_rgba8)};
 	for (tr::bitmap::mut_it it = fill.begin(); it != fill.end(); ++it) {
 		const tr::rgba8 value{*it};
 		std::uint8_t shade{static_cast<std::uint8_t>(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};
