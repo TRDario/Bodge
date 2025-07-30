@@ -22,14 +22,14 @@ constexpr std::array<gamemode, 5> MENU_GAMEMODES{
 
 ///////////////////////////////////////////////////////////// PLAYER SETTINGS /////////////////////////////////////////////////////////////
 
-bool player_settings::autoplay() const noexcept
+bool player_settings::autoplay() const
 {
 	return starting_lives == std::numeric_limits<std::uint32_t>::max();
 }
 
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
 
-gamemode::gamemode() noexcept
+gamemode::gamemode()
 	: author{scorefile.name}
 {
 }
@@ -38,16 +38,6 @@ gamemode::gamemode(const std::filesystem::path& path)
 {
 	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 	tr::binary_read(tr::decrypt(tr::flush_binary(file)), *this);
-}
-
-void tr::binary_reader<gamemode>::read_from_stream(std::istream& is, gamemode& out)
-{
-	tr::binary_read(is, out.builtin);
-	tr::binary_read(is, out.name);
-	tr::binary_read(is, out.author);
-	tr::binary_read(is, out.description);
-	tr::binary_read(is, out.player);
-	tr::binary_read(is, out.ball);
 }
 
 std::span<const std::byte> tr::binary_reader<gamemode>::read_from_span(std::span<const std::byte> span, gamemode& out)
@@ -70,45 +60,31 @@ void tr::binary_writer<gamemode>::write_to_stream(std::ostream& os, const gamemo
 	tr::binary_write(os, in.ball);
 }
 
-std::span<std::byte> tr::binary_writer<gamemode>::write_to_span(std::span<std::byte> span, const gamemode& in)
-{
-	span = tr::binary_write(span, in.builtin);
-	span = tr::binary_write(span, in.name);
-	span = tr::binary_write(span, in.author);
-	span = tr::binary_write(span, in.description);
-	span = tr::binary_write(span, in.player);
-	return tr::binary_write(span, in.ball);
-}
-
-std::string_view gamemode::name_loc() const noexcept
+std::string_view gamemode::name_loc() const
 {
 	return builtin ? localization[name] : std::string_view{name};
 }
 
-std::string_view gamemode::description_loc() const noexcept
+std::string_view gamemode::description_loc() const
 {
 	return builtin ? localization[description] : description.empty() ? localization["no_description"] : std::string_view{description};
 }
 
-void gamemode::save_to_file() noexcept
+void gamemode::save_to_file()
 {
-	try {
-		std::filesystem::path path{cli_settings.userdir / "gamemodes" / std::format("{}.gmd", name)};
-		std::ofstream file;
-		if (!std::filesystem::exists(path)) {
-			file = tr::open_file_w(path, std::ios::binary);
-		}
-		else {
-			int index{0};
-			do {
-				path = cli_settings.userdir / "gamemodes" / std::format("{}({}).gmd", name, index++);
-			} while (std::filesystem::exists(path));
-			file = tr::open_file_w(path, std::ios::binary);
-		}
+	std::filesystem::path path{cli_settings.userdir / "gamemodes" / std::format("{}.gmd", name)};
+	if (std::filesystem::exists(path)) {
+		int index{0};
+		do {
+			path = cli_settings.userdir / "gamemodes" / std::format("{}({}).gmd", name, index++);
+		} while (std::filesystem::exists(path));
+	}
 
+	try {
+		std::ofstream file = tr::open_file_w(path, std::ios::binary);
 		std::ostringstream bufstream{std::ios::binary};
 		tr::binary_write(bufstream, *this);
-		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), tr::rand<std::uint8_t>(rng))};
+		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), rng.generate<std::uint8_t>())};
 		tr::binary_write(file, std::span{encrypted});
 
 		LOG(tr::severity::INFO, "Saved gamemode '{}'.", name);
@@ -116,13 +92,14 @@ void gamemode::save_to_file() noexcept
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to save gamemode '{}'.", name);
+		LOG_CONTINUE("To: '{}'", path.string());
 		LOG_CONTINUE("{}", err.what());
 	}
 }
 
 //
 
-std::vector<gamemode> load_gamemodes() noexcept
+std::vector<gamemode> load_gamemodes()
 {
 	std::vector<gamemode> gamemodes;
 	try {
@@ -152,7 +129,7 @@ std::vector<gamemode> load_gamemodes() noexcept
 	return gamemodes;
 }
 
-gamemode pick_menu_gamemode() noexcept
+gamemode pick_menu_gamemode()
 {
-	return MENU_GAMEMODES[tr::rand(rng, MENU_GAMEMODES.size())];
+	return MENU_GAMEMODES[rng.generate(MENU_GAMEMODES.size())];
 }

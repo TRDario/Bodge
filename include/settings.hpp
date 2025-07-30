@@ -17,11 +17,6 @@ struct cli_settings_t {
 	bool debug_mode{false};
 #endif
 
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
-
-	// Creates default CLI settings.
-	cli_settings_t() noexcept = default;
-
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
 	// Parses the settings from the argument list.
@@ -49,25 +44,20 @@ struct settings_t {
 	// The volume of the music as a percentage.
 	std::uint8_t music_volume{100};
 
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
-
-	// Creates default settings.
-	settings_t() noexcept = default;
-
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
-	bool operator==(const settings_t&) const noexcept = default;
+	bool operator==(const settings_t&) const = default;
 
 	// Loads settings from file.
-	void load_from_file() noexcept;
+	void load_from_file();
 	// Saves settings to file.
-	void save_to_file() noexcept;
+	void save_to_file();
 
   private:
 	// Loads settings from file.
-	void raw_load_from_file() noexcept;
+	void raw_load_from_file();
 	// Validates loaded settings.
-	void validate() noexcept;
+	void validate();
 };
 
 ///////////////////////////////////////////////////////////////// GLOBALS /////////////////////////////////////////////////////////////////

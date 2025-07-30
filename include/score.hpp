@@ -29,19 +29,17 @@ struct score {
 	// Packed score flags.
 	score_flags flags;
 
-	friend std::strong_ordering operator<=>(const score& l, const score& r) noexcept;
+	friend std::strong_ordering operator<=>(const score& l, const score& r);
 };
 
 // Score binary reader.
 template <> struct tr::binary_reader<score> {
-	static void read_from_stream(std::istream& is, score& out);
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, score& out);
 };
 
 // Score binary writer.
 template <> struct tr::binary_writer<score> {
 	static void write_to_stream(std::ostream& os, const score& in);
-	static std::span<std::byte> write_to_span(std::span<std::byte> span, const score& in);
 };
 
 ///////////////////////////////////////////////////////////// SCORE CATEGORY //////////////////////////////////////////////////////////////
@@ -58,14 +56,12 @@ struct score_category {
 
 // Score category binary reader.
 template <> struct tr::binary_reader<score_category> {
-	static void read_from_stream(std::istream& is, score_category& out);
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, score_category& out);
 };
 
 // Score category binary writer.
 template <> struct tr::binary_writer<score_category> {
 	static void write_to_stream(std::ostream& os, const score_category& in);
-	static std::span<std::byte> write_to_span(std::span<std::byte> span, const score_category& in);
 };
 
 //////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
@@ -82,16 +78,16 @@ struct scorefile_t {
 	gamemode last_selected_gamemode;
 
 	// Finds the personal best result for a given gamemode.
-	ticks category_pb(const gamemode& gamemode) const noexcept;
+	ticks category_pb(const gamemode& gamemode) const;
 	// Updates the personal best if the current result is better.
 	void update_category(const gamemode& gamemode, ticks pb);
 
 	// Adds a new score to the scorefile.
 	void add_score(const gamemode& gamemode, const score& score);
 	// Loads the scorefile from file.
-	void load_from_file() noexcept;
+	void load_from_file();
 	// Saves the scorefile to file.
-	void save_to_file() noexcept;
+	void save_to_file();
 };
 
 // The active scorefile.

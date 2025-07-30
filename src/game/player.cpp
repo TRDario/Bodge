@@ -25,13 +25,12 @@ inline constexpr ticks SCREEN_SHAKE_TIME{2_s / 3};
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-tr::static_atlas create_timer_atlas()
+tr::dyn_atlas<char> create_timer_atlas()
 {
-	tr::string_hash_map<tr::bitmap> renders;
+	tr::dyn_atlas<char> atlas;
 	for (char chr : std::string_view{"0123456789:"}) {
-		renders.emplace(std::string{&chr, 1}, font_manager.render_gradient_glyph(chr, font::DEFAULT, tr::ttf_style::NORMAL, 64, 5));
+		atlas.add(chr, font_manager.render_gradient_glyph(chr, font::DEFAULT, tr::ttf_style::NORMAL, 64, 5));
 	}
-	tr::static_atlas atlas{renders};
 	if (tr::gfx_context::debug()) {
 		atlas.set_label("(Bodge) Timer Atlas");
 	}
@@ -42,7 +41,7 @@ glm::vec2 player::timer_text_size(const std::string& text, float scale) const no
 {
 	glm::vec2 size{};
 	for (char chr : text) {
-		const glm::vec2 char_size{_atlas[{&chr, 1}].size * glm::vec2{_atlas.size()} * scale / engine::render_scale()};
+		const glm::vec2 char_size{glm::vec2{_atlas.unnormalized(chr).size} / engine::render_scale() * scale};
 		size = {size.x + char_size.x - 5, std::max<float>(size.y, char_size.y)};
 	}
 	return size;
@@ -51,10 +50,10 @@ glm::vec2 player::timer_text_size(const std::string& text, float scale) const no
 void player::set_up_death_fragments() noexcept
 {
 	for (std::size_t i = 0; i < _fragments.size(); ++i) {
-		const tr::fangle th{60_degf * i + 30_degf};
-		const glm::vec2 vel{tr::magth(tr::rand(rng, 200.0f, 400.0f), tr::rand(rng, th - 30_degf, th + 30_degf))};
-		const tr::fangle ang_vel{tr::rand(rng, 360_degf, 720_degf) * (tr::rand<bool>(rng) ? 1 : -1)};
-		_fragments[i] = {_hitbox.c + tr::magth(_hitbox.r, th), vel, th + 90_degf, ang_vel};
+		const tr::angle th{60_deg * i + 30_deg};
+		const glm::vec2 vel{tr::magth(rng.generate(200.0f, 400.0f), rng.generate(th - 30_deg, th + 30_deg))};
+		const tr::angle ang_vel{rng.generate(360_deg, 720_deg) * (rng.generate_bool() ? 1 : -1)};
+		_fragments[i] = {_hitbox.c + tr::magth(_hitbox.r, th), vel, th + 90_deg, ang_vel};
 	}
 }
 
@@ -64,14 +63,14 @@ void player::death_fragment::update() noexcept
 	rot += rotvel / 1_sf;
 }
 
-void player::add_fill_to_renderer(std::uint8_t opacity, tr::fangle rotation, float size) const
+void player::add_fill_to_renderer(std::uint8_t opacity, tr::angle rotation, float size) const
 {
 	const tr::simple_color_mesh_ref fill{tr::renderer_2d::new_color_fan(layer::PLAYER, 6)};
 	tr::fill_poly_vtx(fill.positions, 6, {_hitbox.c, size}, rotation);
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, opacity});
 }
 
-void player::add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::fangle rotation, float size) const
+void player::add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::angle rotation, float size) const
 {
 	const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::PLAYER, 6)};
 	tr::fill_poly_outline_vtx(outline.positions, 6, {_hitbox.c, size}, rotation, 4.0f);
@@ -79,7 +78,7 @@ void player::add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::fa
 	std::ranges::fill(outline.colors | std::views::drop(6), tr::rgba8{0, 0, 0, opacity});
 }
 
-void player::add_trail_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::fangle rotation, float size) const
+void player::add_trail_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::angle rotation, float size) const
 {
 	constexpr std::size_t VERTICES{6 * (trail::SIZE + 1)};
 	constexpr std::size_t INDICES{tr::poly_outline_idx(6) * trail::SIZE};
@@ -112,7 +111,7 @@ void player::add_lives_to_renderer() const
 	const float life_size{_lives > MAX_LARGE_LIVES ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
 	const std::uint8_t opacity{static_cast<std::uint8_t>(255 - 180 * std::min(_lives_hover_time, HOVER_TIME) / HOVER_TIME)};
-	const tr::fangle rotation{tr::degs(120.0f * _timer / SECOND_TICKS)};
+	const tr::angle rotation{tr::degs(120.0f * _timer / SECOND_TICKS)};
 
 	for (int i = 0; i < _lives; ++i) {
 		const glm::ivec2 grid_pos{i % LIVES_PER_LINE, i / LIVES_PER_LINE};
@@ -147,10 +146,10 @@ void player::add_timer_to_renderer() const
 	glm::vec2 tl{TIMER_TEXT_POS - timer_text_size(text, scale) / 2.0f};
 	for (char chr : text) {
 		tr::simple_textured_mesh_ref character{tr::renderer_2d::new_textured_fan(layer::GAME_OVERLAY, 4)};
-		tr::fill_rect_vtx(character.positions, {tl, _atlas[{&chr, 1}].size * glm::vec2{_atlas.size()} * scale / engine::render_scale()});
-		tr::fill_rect_vtx(character.uvs, _atlas[{&chr, 1}]);
+		tr::fill_rect_vtx(character.positions, {tl, glm::vec2{_atlas.unnormalized(chr).size} / engine::render_scale() * scale});
+		tr::fill_rect_vtx(character.uvs, _atlas[chr]);
 		std::ranges::fill(character.tints, tint);
-		tl.x += _atlas[{&chr, 1}].size.x * _atlas.size().x * scale / engine::render_scale() - 5;
+		tl.x += _atlas.unnormalized(chr).size.x / engine::render_scale() * scale - 5;
 	}
 }
 
@@ -158,7 +157,7 @@ void player::set_screen_shake() const
 {
 	const int screen_shake_left{static_cast<int>(_iframes - PLAYER_INVULN_TIME + SCREEN_SHAKE_TIME)};
 	if (screen_shake_left >= 0) {
-		const glm::vec2 tl{tr::magth(40.0f * screen_shake_left / SCREEN_SHAKE_TIME, tr::rand<tr::fangle>(rng))};
+		const glm::vec2 tl{tr::magth(40.0f * screen_shake_left / SCREEN_SHAKE_TIME, rng.generate_angle())};
 		const glm::mat4 mat{tr::ortho(tr::frect2{tl, glm::vec2{1000}})};
 		tr::renderer_2d::set_default_transform(mat);
 	}
@@ -350,7 +349,7 @@ void player::add_to_renderer() const
 
 	const tr::rgb8 tint{_iframes ? PLAYER_HIT_COLOR : color_cast<tr::rgb8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
 	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(std::abs(std::cos(_iframes * PI * 8 / PLAYER_INVULN_TIME)))};
-	const tr::fangle rotation{tr::degs(270.0f * _timer / SECOND_TICKS)};
+	const tr::angle rotation{tr::degs(270.0f * _timer / SECOND_TICKS)};
 	const float size_offset{3.0f * std::sin(PI * _timer / SECOND_TICKS)};
 	const float size{_hitbox.r + 6 + size_offset};
 

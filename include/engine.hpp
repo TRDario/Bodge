@@ -70,7 +70,7 @@ struct engine {
 	// Gets the screen rendering target.
 	static const tr::render_target& screen() noexcept;
 	// Gets the tooltip manager.
-	static tooltip& tooltip() noexcept;
+	static tooltip_manager& tooltip() noexcept;
 };
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

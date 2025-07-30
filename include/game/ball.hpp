@@ -7,7 +7,7 @@ class ball {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a ball.
-	ball(const tr::fcircle& hitbox, const glm::vec2& velocity) noexcept;
+	ball(const tr::circle& hitbox, const glm::vec2& velocity) noexcept;
 	// Randomly generates a ball.
 	ball(tr::xorshiftr_128p& rng, float size, float velocity) noexcept;
 
@@ -16,7 +16,7 @@ class ball {
 	// Gets whether the ball is tangible.
 	bool tangible() const noexcept;
 	// Gets the hitbox of the player.
-	const tr::fcircle& hitbox() const noexcept;
+	const tr::circle& hitbox() const noexcept;
 	// Checks whether two balls are colliding.
 	friend bool colliding(const ball& a, const ball& b) noexcept;
 
@@ -34,7 +34,7 @@ class ball {
 
   private:
 	// The ball hitbox.
-	tr::fcircle _hitbox;
+	tr::circle _hitbox;
 	// Control points of the ball's trail.
 	trail _trail;
 	// The ball's movement velocity.

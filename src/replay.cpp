@@ -3,7 +3,8 @@
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-std::string to_filename(std::string_view name) {
+std::string to_filename(std::string_view name)
+{
 	std::string filename{name};
 	std::erase_if(filename, [](char chr) { return chr >= 0x7F || (!std::isalnum(chr) && chr != '_' && chr != '-'); });
 	std::ranges::replace(filename, ' ', '_');
@@ -11,15 +12,6 @@ std::string to_filename(std::string_view name) {
 }
 
 ////////////////////////////////////////////////////////////// REPLAY HEADER //////////////////////////////////////////////////////////////
-
-void tr::binary_reader<replay_header>::read_from_stream(std::istream& is, replay_header& out)
-{
-	tr::binary_read<score>(is, out);
-	tr::binary_read(is, out.name);
-	tr::binary_read(is, out.player);
-	tr::binary_read(is, out.gamemode);
-	tr::binary_read(is, out.seed);
-}
 
 std::span<const std::byte> tr::binary_reader<replay_header>::read_from_span(std::span<const std::byte> span, replay_header& out)
 {
@@ -39,24 +31,15 @@ void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const r
 	tr::binary_write(os, in.seed);
 }
 
-std::span<std::byte> tr::binary_writer<replay_header>::write_to_span(std::span<std::byte> span, const replay_header& in)
-{
-	span = tr::binary_write<score>(span, in);
-	span = tr::binary_write(span, in.name);
-	span = tr::binary_write(span, in.player);
-	span = tr::binary_write(span, in.gamemode);
-	return tr::binary_write(span, in.seed);
-}
-
 ///////////////////////////////////////////////////////////////// REPLAY //////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
-replay::replay(const gamemode& gamemode, std::uint64_t seed) noexcept
-	: _header{}
+replay::replay(const gamemode& gamemode, std::uint64_t seed)
+	: header_{}
 {
-	_header.player = scorefile.name;
-	_header.gamemode = gamemode;
-	_header.seed = seed;
+	header_.player = scorefile.name;
+	header_.gamemode = gamemode;
+	header_.seed = seed;
 }
 
 replay::replay(const std::string& filename)
@@ -68,18 +51,18 @@ replay::replay(const std::string& filename)
 
 	tr::binary_read(file, encrypted);
 	tr::decrypt_to(decrypted, encrypted);
-	tr::binary_read(decrypted, _header);
+	tr::binary_read(decrypted, header_);
 
 	tr::binary_read(file, encrypted);
 	tr::decrypt_to(decrypted, encrypted);
-	tr::binary_read(decrypted, _inputs);
-	_next = _inputs.begin();
-	LOG(tr::severity::INFO, "Loaded replay '{}'.", _header.name);
+	tr::binary_read(decrypted, inputs);
+	next_it = inputs.begin();
+	LOG(tr::severity::INFO, "Loaded replay '{}'.", header_.name);
 	LOG_CONTINUE("From: '{}'", path.string());
 }
 
 replay::replay(const replay& r)
-	: _header{r._header}, _inputs{r._inputs}, _next{_inputs.begin()}
+	: header_{r.header_}, inputs{r.inputs}, next_it{inputs.begin()}
 {
 }
 
@@ -87,19 +70,19 @@ replay::replay(const replay& r)
 
 void replay::append(glm::vec2 input)
 {
-	_inputs.push_back(input);
+	inputs.push_back(input);
 }
 
-void replay::set_header(const score& header, std::string_view name) noexcept
+void replay::set_header(const score& header, std::string_view name)
 {
-	static_cast<score&>(_header) = header;
-	_header.name = name;
+	static_cast<score&>(header_) = header;
+	header_.name = name;
 }
 
-void replay::save_to_file() const noexcept
+void replay::save_to_file() const
 {
 	try {
-		std::string filename{to_filename(_header.name)};
+		std::string filename{to_filename(header_.name)};
 		std::filesystem::path path{cli_settings.userdir / "replays" / std::format("{}.dat", filename)};
 		std::ofstream file;
 		if (!std::filesystem::exists(path)) {
@@ -115,15 +98,15 @@ void replay::save_to_file() const noexcept
 
 		std::ostringstream bufstream{std::ios::binary};
 		std::vector<std::byte> buffer;
-		tr::binary_write(bufstream, _header);
-		tr::encrypt_to(buffer, bufstream.view(), tr::rand<std::uint8_t>(rng));
+		tr::binary_write(bufstream, header_);
+		tr::encrypt_to(buffer, bufstream.view(), rng.generate<std::uint8_t>());
 		tr::binary_write(file, buffer);
 
 		bufstream.str({});
-		tr::binary_write(bufstream, _inputs);
-		tr::encrypt_to(buffer, bufstream.view(), tr::rand<std::uint8_t>(rng));
+		tr::binary_write(bufstream, inputs);
+		tr::encrypt_to(buffer, bufstream.view(), rng.generate<std::uint8_t>());
 		tr::binary_write(file, buffer);
-		LOG(tr::severity::INFO, "Saved replay '{}'.", _header.name);
+		LOG(tr::severity::INFO, "Saved replay '{}'.", header_.name);
 		LOG_CONTINUE("To: '{}'", path.string());
 	}
 	catch (std::exception& err) {
@@ -134,27 +117,27 @@ void replay::save_to_file() const noexcept
 
 //////////////////////////////////////////////////////////////// PLAYBACK /////////////////////////////////////////////////////////////////
 
-const replay_header& replay::header() const noexcept
+const replay_header& replay::header() const
 {
-	return _header;
+	return header_;
 }
 
-bool replay::done() const noexcept
+bool replay::done() const
 {
-	return _next == _inputs.end();
+	return next_it == inputs.end();
 }
 
-glm::vec2 replay::next() noexcept
+glm::vec2 replay::next()
 {
-	return *_next++;
+	return *next_it++;
 }
 
-glm::vec2 replay::current() const noexcept
+glm::vec2 replay::current() const
 {
-	return done() ? *std::prev(_next) : *_next;
+	return done() ? *std::prev(next_it) : *next_it;
 }
 
-std::map<std::string, replay_header> load_replay_headers() noexcept
+std::map<std::string, replay_header> load_replay_headers()
 {
 	std::map<std::string, replay_header> replays;
 	try {

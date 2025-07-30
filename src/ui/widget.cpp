@@ -135,10 +135,10 @@ void add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, flo
 	tr::fill_rect_outline_vtx(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2.0f);
 	std::ranges::fill(mesh.colors, color);
 	mesh = tr::renderer_2d::new_color_fan(layer::UI, 4);
-	fill_rotated_rect_vtx(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, 45_degf);
+	fill_rotated_rect_vtx(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, 45_deg);
 	std::ranges::fill(mesh.colors, color);
 	mesh = tr::renderer_2d::new_color_fan(layer::UI, 4);
-	fill_rotated_rect_vtx(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, -45_degf);
+	fill_rotated_rect_vtx(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, -45_deg);
 	std::ranges::fill(mesh.colors, color);
 }
 
@@ -154,7 +154,7 @@ void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, fl
 	tr::fill_rect_outline_vtx(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2);
 	std::ranges::fill(mesh.colors, color);
 	mesh = tr::renderer_2d::new_color_outline(layer::UI, 8);
-	tr::fill_poly_outline_vtx(mesh.positions, 8, {pos + glm::vec2{10, 10}, 7}, 25_degf, 2);
+	tr::fill_poly_outline_vtx(mesh.positions, 8, {pos + glm::vec2{10, 10}, 7}, 25_deg, 2);
 	std::ranges::fill(mesh.colors, color);
 	mesh = tr::renderer_2d::new_color_fan(layer::UI, 4);
 	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{9, 5}, {2, 5}});
@@ -380,7 +380,7 @@ void clickable_text_widget::on_hover() noexcept
 {
 	color.change("FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
-		audio::play_sound(sound::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+		audio::play_sound(sound::HOVER, 0.15f, 0.0f, rng.generate(0.9f, 1.1f));
 	}
 }
 
@@ -392,7 +392,7 @@ void clickable_text_widget::on_unhover() noexcept
 void clickable_text_widget::on_hold_begin() noexcept
 {
 	color = {32, 32, 32, 255};
-	audio::play_sound(sound::HOLD, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	audio::play_sound(sound::HOLD, 0.2f, 0.0f, rng.generate(0.9f, 1.1f));
 }
 
 void clickable_text_widget::on_hold_transfer_in() noexcept
@@ -409,7 +409,7 @@ void clickable_text_widget::on_hold_end() noexcept
 {
 	color.change("FFFFFF"_rgba8, 0.2_s);
 	_action_cb();
-	audio::play_sound(_sound, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	audio::play_sound(_sound, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
 }
 
 void clickable_text_widget::on_shortcut() noexcept
@@ -419,7 +419,7 @@ void clickable_text_widget::on_shortcut() noexcept
 		color = "FFFFFF"_rgba8;
 		color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
 		_override_disabled_color_left = 0.2_s;
-		audio::play_sound(_sound, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+		audio::play_sound(_sound, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
 	}
 }
 
@@ -557,7 +557,7 @@ void arrow_widget::on_hover() noexcept
 {
 	_color.change("FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
-		audio::play_sound(sound::HOVER, 0.15f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+		audio::play_sound(sound::HOVER, 0.15f, 0.0f, rng.generate(0.9f, 1.1f));
 	}
 }
 
@@ -569,7 +569,7 @@ void arrow_widget::on_unhover() noexcept
 void arrow_widget::on_hold_begin() noexcept
 {
 	_color = {32, 32, 32, 255};
-	audio::play_sound(sound::HOLD, 0.2f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	audio::play_sound(sound::HOLD, 0.2f, 0.0f, rng.generate(0.9f, 1.1f));
 }
 
 void arrow_widget::on_hold_transfer_in() noexcept
@@ -586,7 +586,7 @@ void arrow_widget::on_hold_end() noexcept
 {
 	_color.change("FFFFFF"_rgba8, 0.2_s);
 	_action_cb();
-	audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+	audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
 }
 
 void arrow_widget::on_shortcut() noexcept
@@ -596,7 +596,7 @@ void arrow_widget::on_shortcut() noexcept
 		_color = "FFFFFF"_rgba8;
 		_color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
 		_override_disabled_color_left = 0.2_s;
-		audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, tr::rand(rng, 0.9f, 1.1f));
+		audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
 	}
 }
 

@@ -12,10 +12,10 @@ struct player_settings {
 	// The player's movement inertia (range: [0, 1]).
 	float inertia_factor{0.1f};
 
-	bool operator==(const player_settings&) const noexcept = default;
+	bool operator==(const player_settings&) const = default;
 
 	// Gets whether the gamemode is autoplay.
-	bool autoplay() const noexcept;
+	bool autoplay() const;
 };
 
 // Sentinel for an autoplay gamemode.
@@ -40,7 +40,7 @@ struct ball_settings {
 	// The amount added to the new ball velocity on every spawn.
 	float velocity_step{20};
 
-	bool operator==(const ball_settings&) const noexcept = default;
+	bool operator==(const ball_settings&) const = default;
 };
 
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
@@ -63,15 +63,14 @@ struct gamemode {
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a default gamemode.
-	gamemode() noexcept;
+	gamemode();
 	// Creates a builtin gamemode.
-	constexpr gamemode(std::string_view name, std::string_view description, const player_settings& player,
-					   const ball_settings& ball) noexcept
+	constexpr gamemode(std::string_view name, std::string_view description, const player_settings& player, const ball_settings& ball)
 		: builtin{true}, name{name}, author{"TRDario"}, description{description}, player{player}, ball{ball}
 	{
 	}
 	// Creates a menu gamemode.
-	constexpr gamemode(const ball_settings& ball) noexcept
+	constexpr gamemode(const ball_settings& ball)
 		: author{"TRDario"}, player{NO_PLAYER}, ball{ball}
 	{
 	}
@@ -80,30 +79,28 @@ struct gamemode {
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
-	bool operator==(const gamemode&) const noexcept = default;
+	bool operator==(const gamemode&) const = default;
 
 	// Gets the localization of the name of the gamemode.
-	std::string_view name_loc() const noexcept;
+	std::string_view name_loc() const;
 	// Gets the localization of the description of the gamemode.
-	std::string_view description_loc() const noexcept;
+	std::string_view description_loc() const;
 
 	// Saves a gamemode to file.
-	void save_to_file() noexcept;
+	void save_to_file();
 };
 
 // Gamemode binary reader.
 template <> struct tr::binary_reader<gamemode> {
-	static void read_from_stream(std::istream& is, gamemode& out);
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, gamemode& out);
 };
 
 // Gamemode binary writer.
 template <> struct tr::binary_writer<gamemode> {
 	static void write_to_stream(std::ostream& os, const gamemode& in);
-	static std::span<std::byte> write_to_span(std::span<std::byte> span, const gamemode& in);
 };
 
 // Loads all found gamemodes.
-std::vector<gamemode> load_gamemodes() noexcept;
+std::vector<gamemode> load_gamemodes();
 // Randomly picks a menu gamemode.
-gamemode pick_menu_gamemode() noexcept;
+gamemode pick_menu_gamemode();

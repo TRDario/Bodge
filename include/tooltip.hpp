@@ -2,13 +2,8 @@
 #include "global.hpp"
 
 // Tooltip manager.
-class tooltip {
+class tooltip_manager {
   public:
-	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
-
-	// Creates the tooltip.
-	tooltip() = default;
-
 	///////////////////////////////////////////////////////////// OPERATIONS //////////////////////////////////////////////////////////////
 
 	// Adds the tooltip to the renderer.
@@ -16,13 +11,13 @@ class tooltip {
 
   private:
 	// Texture unit used for tooltip rendering.
-	tr::texture_unit _tex_unit;
+	tr::texture_unit tex_unit;
 	// The tooltip text texture.
-	tr::texture _texture{{128, 64}};
+	tr::texture texture{{128, 64}};
 	// The last drawn text string.
-	std::string _last_text;
+	std::string last_text;
 	// The size of the last drawn text string.
-	glm::vec2 _last_size{};
+	glm::vec2 last_size{};
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 

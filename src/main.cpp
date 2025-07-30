@@ -28,11 +28,6 @@ int main(int argc, const char** argv)
 		scorefile.save_to_file();
 		settings.save_to_file();
 	}
-	catch (tr::exception& err) {
-		LOG(tr::severity::FATAL, err);
-		tr::show_fatal_error_message_box(err);
-		std::exit(EXIT_FAILURE);
-	}
 	catch (std::exception& err) {
 		LOG(tr::severity::FATAL, err);
 		tr::show_fatal_error_message_box(err);

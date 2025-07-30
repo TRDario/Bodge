@@ -14,7 +14,7 @@ void load_language(const std::filesystem::path& entry)
 	}
 }
 
-void load_languages() noexcept
+void load_languages()
 {
 	try {
 		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.datadir / "localization"}, load_language);
@@ -28,7 +28,7 @@ void load_languages() noexcept
 	}
 }
 
-void load_localization() noexcept
+void load_localization()
 {
 	if (!languages.contains(settings.language)) {
 		LOG(tr::severity::ERROR, "Settings language with code '{}' was not found in the language list.",

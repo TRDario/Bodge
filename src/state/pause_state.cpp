@@ -220,7 +220,7 @@ void pause_state::set_up_full_ui()
 		},
 	};
 	for (std::size_t i = 0; i < BUTTONS_REGULAR.size(); ++i) {
-		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * tr::rand(rng, 50.0f, 150.0f)};
+		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * rng.generate(50.0f, 150.0f)};
 		const glm::vec2 pos{500 + offset, 500 - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		widget& widget{_ui.emplace<clickable_text_widget>(BUTTONS_REGULAR[i], pos, tr::align::CENTER, font::LANGUAGE, 48,
 														  DEFAULT_TEXT_CALLBACK, i == 0 ? unpause_status_cb : status_cb,
@@ -261,7 +261,7 @@ void pause_state::set_up_limited_ui()
 		},
 	};
 	for (std::size_t i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
-		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * tr::rand(rng, 50.0f, 150.0f)};
+		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * rng.generate(50.0f, 150.0f)};
 		const glm::vec2 pos{500 + offset, 500 - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		widget& widget{_ui.emplace<clickable_text_widget>(BUTTONS_SPECIAL[i], pos, tr::align::CENTER, font::LANGUAGE, 48,
 														  DEFAULT_TEXT_CALLBACK, i == 0 ? unpause_status_cb : status_cb,
@@ -276,7 +276,7 @@ void pause_state::set_up_exit_animation() noexcept
 	if (to_type(_substate) == game_type::REGULAR) {
 		_ui.get("paused").pos.change({500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
 		for (std::size_t i = 0; i < BUTTONS_REGULAR.size(); ++i) {
-			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * tr::rand(rng, 50.0f, 150.0f)};
+			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * rng.generate(50.0f, 150.0f)};
 			widget& widget{_ui.get(BUTTONS_REGULAR[i])};
 			widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}
@@ -285,7 +285,7 @@ void pause_state::set_up_exit_animation() noexcept
 		widget& title{_ui.get(to_type(_substate) == game_type::TEST ? "test_paused" : "replay_paused")};
 		title.pos.change({500, 400 - (BUTTONS_SPECIAL.size() + 1) * 30}, 0.5_s);
 		for (std::size_t i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
-			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * tr::rand(rng, 50.0f, 150.0f)};
+			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * rng.generate(50.0f, 150.0f)};
 			widget& widget{_ui.get(BUTTONS_SPECIAL[i])};
 			widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}

@@ -43,16 +43,16 @@ class player {
 		// The velocity of the fragment.
 		glm::vec2 vel;
 		// The rotation of the fragment.
-		tr::fangle rot;
+		tr::angle rot;
 		// The angular velocity of the fragment.
-		tr::fangle rotvel;
+		tr::angle rotvel;
 
 		// Updates the fragment.
 		void update() noexcept;
 	};
 
 	// The player hitbox.
-	tr::fcircle _hitbox;
+	tr::circle _hitbox;
 	// Control points of the player's trail.
 	trail _trail;
 	// The death fragments.
@@ -72,7 +72,7 @@ class player {
 	// The accumulated time spent hovering over the timer text.
 	ticks _timer_hover_time;
 	// An atlas holding the timer graphics.
-	tr::static_atlas _atlas;
+	tr::dyn_atlas<char> _atlas;
 	// Previous personal best.
 	ticks _pb;
 
@@ -84,11 +84,11 @@ class player {
 	void set_up_death_fragments() noexcept;
 
 	// Adds the player fill to the renderer.
-	void add_fill_to_renderer(std::uint8_t opacity, tr::fangle rotation, float size) const;
+	void add_fill_to_renderer(std::uint8_t opacity, tr::angle rotation, float size) const;
 	// Adds the player outline to the renderer.
-	void add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::fangle rotation, float size) const;
+	void add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::angle rotation, float size) const;
 	// Adds the player trail to the renderer.
-	void add_trail_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::fangle rotation, float size) const;
+	void add_trail_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::angle rotation, float size) const;
 	// Adds the lives UI to the renderer.
 	void add_lives_to_renderer() const;
 	// Adds the timer text to the renderer.

@@ -83,7 +83,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 		},
 	};
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
-		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * tr::rand(rng, 50.0f, 150.0f)};
+		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * rng.generate(50.0f, 150.0f)};
 		const glm::vec2 pos{500 + offset, 500 - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		widget& widget{_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER, font::LANGUAGE, 48, DEFAULT_TEXT_CALLBACK,
 														  status_cb, std::move(action_cbs[i]), NO_TOOLTIP, SHORTCUTS[i])};
@@ -190,7 +190,7 @@ void game_over_state::set_up_exit_animation() noexcept
 	time.pos.change({400, glm::vec2{time.pos}.y}, 0.5_s);
 	pb.pos.change({600, glm::vec2{pb.pos}.y}, 0.5_s);
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
-		const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * tr::rand(rng, 50.0f, 150.0f)};
+		const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * rng.generate(50.0f, 150.0f)};
 		widget& widget{_ui.get(BUTTONS[i])};
 		widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}

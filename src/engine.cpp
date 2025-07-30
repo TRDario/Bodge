@@ -148,7 +148,7 @@ struct engine_data {
 	// Renderer for drawing blurred and desaturated images.
 	blur_renderer blur;
 	// Tooltip manager.
-	tooltip tooltip;
+	tooltip_manager tooltip;
 	// Whether the screen should be redrawn. If above 1, ticks will be paused to catch up.
 	int redraw;
 	// The held keyboard modifiers.
@@ -350,7 +350,7 @@ const tr::render_target& engine::screen() noexcept
 	return engine_data->screen;
 }
 
-tooltip& engine::tooltip() noexcept
+tooltip_manager& engine::tooltip() noexcept
 {
 	return engine_data->tooltip;
 }

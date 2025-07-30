@@ -17,14 +17,12 @@ struct replay_header : score {
 
 // Replay header binary reader.
 template <> struct tr::binary_reader<replay_header> {
-	static void read_from_stream(std::istream& is, replay_header& out);
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, replay_header& out);
 };
 
 // Replay header binary writer.
 template <> struct tr::binary_writer<replay_header> {
 	static void write_to_stream(std::ostream& os, const replay_header& in);
-	static std::span<std::byte> write_to_span(std::span<std::byte> span, const replay_header& in);
 };
 
 ////////////////////////////////////////////////////////////////// REPLAY /////////////////////////////////////////////////////////////////
@@ -35,7 +33,7 @@ class replay {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates an empty replay.
-	replay(const gamemode& gamemode, std::uint64_t seed) noexcept;
+	replay(const gamemode& gamemode, std::uint64_t seed);
 	// Loads a replay from file.
 	replay(const std::string& filename);
 	// Copies a replay.
@@ -48,29 +46,29 @@ class replay {
 	// Appends an input to the replay.
 	void append(glm::vec2 input);
 	// Sets the replay header.
-	void set_header(const score& score, std::string_view name) noexcept;
+	void set_header(const score& score, std::string_view name);
 	// Saves the replay to file.
-	void save_to_file() const noexcept;
+	void save_to_file() const;
 
 	////////////////////////////////////////////////////////////// PLAYBACK ///////////////////////////////////////////////////////////////
 
 	// Gets the replay header.
-	const replay_header& header() const noexcept;
+	const replay_header& header() const;
 	// Gets whether the replay is done.
-	bool done() const noexcept;
+	bool done() const;
 	// Gets the next input.
-	glm::vec2 next() noexcept;
+	glm::vec2 next();
 	// Gets the current input.
-	glm::vec2 current() const noexcept;
+	glm::vec2 current() const;
 
   private:
 	// The replay header.
-	replay_header _header;
+	replay_header header_;
 	// The inputs of the replay.
-	std::vector<glm::vec2> _inputs;
+	std::vector<glm::vec2> inputs;
 	// Iterator to the next input.
-	std::vector<glm::vec2>::iterator _next;
+	std::vector<glm::vec2>::iterator next_it;
 };
 
 // Loads all found replay headers.
-std::map<std::string, replay_header> load_replay_headers() noexcept;
+std::map<std::string, replay_header> load_replay_headers();

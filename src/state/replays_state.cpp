@@ -21,7 +21,7 @@ replays_state::replays_state()
 	: _substate{substate::RETURNING_FROM_REPLAY}
 	, _page{0}
 	, _timer{0}
-	, _game{std::make_unique<game>(pick_menu_gamemode(), tr::rand<std::uint64_t>(rng))}
+	, _game{std::make_unique<game>(pick_menu_gamemode(), rng.generate<std::uint64_t>())}
 	, _replays{load_replay_headers()}
 {
 	set_up_ui();

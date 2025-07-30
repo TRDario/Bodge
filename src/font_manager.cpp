@@ -23,13 +23,14 @@ tr::ttfont load_font(std::string_view name)
 
 		LOG(tr::severity::FATAL, "Failed to load font '{}'.", name);
 		LOG_CONTINUE("File not found in neither data nor user directory.");
-		tr::terminate("Font not found", path.string());
+		throw tr::file_not_found{path.string()};
 	}
 	catch (tr::ttfont_load_error& err) {
 		LOG(tr::severity::FATAL, "Failed to load font '{}'.", name);
 		LOG_CONTINUE("", err.description());
 		LOG_CONTINUE("", err.details());
-		tr::terminate("Font loading failure", err.description(), err.details());
+		tr::show_fatal_error_message_box(err);
+		std::abort();
 	}
 }
 

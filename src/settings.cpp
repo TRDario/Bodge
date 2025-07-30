@@ -59,7 +59,7 @@ void cli_settings_t::parse(int argc, const char** argv)
 
 //////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
 
-void settings_t::raw_load_from_file() noexcept
+void settings_t::raw_load_from_file()
 {
 	const std::filesystem::path path{cli_settings.userdir / "settings.dat"};
 	try {
@@ -83,7 +83,7 @@ void settings_t::raw_load_from_file() noexcept
 	}
 }
 
-void settings_t::validate() noexcept
+void settings_t::validate()
 {
 	if (window_size != FULLSCREEN) {
 		const int clamped{std::clamp(window_size, MIN_WINDOW_SIZE, max_window_size())};
@@ -124,13 +124,13 @@ void settings_t::validate() noexcept
 	}
 }
 
-void settings_t::load_from_file() noexcept
+void settings_t::load_from_file()
 {
 	raw_load_from_file();
 	validate();
 }
 
-void settings_t::save_to_file() noexcept
+void settings_t::save_to_file()
 {
 	const std::filesystem::path path{cli_settings.userdir / "settings.dat"};
 	try {
@@ -138,7 +138,7 @@ void settings_t::save_to_file() noexcept
 		std::ostringstream buffer;
 		tr::binary_write(buffer, SETTINGS_VERSION);
 		tr::binary_write(buffer, *this);
-		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), tr::rand<std::uint8_t>(rng))};
+		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rng.generate<std::uint8_t>())};
 		tr::binary_write(file, std::span{encrypted});
 		LOG(tr::severity::INFO, "Saved settings.");
 		LOG_CONTINUE("To: '{}'", path.string());

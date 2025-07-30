@@ -25,7 +25,7 @@ constexpr std::array<std::initializer_list<tr::key_chord>, BUTTONS.size()> SHORT
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
 title_state::title_state()
-	: _substate{substate::ENTERING_GAME}, _timer{0}, _game{std::make_unique<game>(pick_menu_gamemode(), tr::rand<std::uint64_t>(rng))}
+	: _substate{substate::ENTERING_GAME}, _timer{0}, _game{std::make_unique<game>(pick_menu_gamemode(), rng.generate<std::uint64_t>())}
 {
 	set_up_ui();
 	audio::play_song(song::MENU, 1.0s);
@@ -162,7 +162,7 @@ void title_state::set_up_ui()
 
 	glm::vec2 end_pos{990, 965 - (BUTTONS.size() - 1) * 50};
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
-		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * tr::rand(rng, 35.0f, 75.0f)};
+		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * rng.generate(35.0f, 75.0f)};
 		const glm::vec2 pos{end_pos.x + offset, end_pos.y};
 		widget& widget{_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER_RIGHT, font::LANGUAGE, 48,
 														  DEFAULT_TEXT_CALLBACK, status_cb, action_cbs[i], NO_TOOLTIP, SHORTCUTS[i],
@@ -177,7 +177,7 @@ void title_state::set_up_exit_animation() noexcept
 {
 	int i = 0;
 	for (const char* tag : BUTTONS) {
-		const float offset{(i++ % 2 != 0 ? -1.0f : 1.0f) * tr::rand(rng, 35.0f, 75.0f)};
+		const float offset{(i++ % 2 != 0 ? -1.0f : 1.0f) * rng.generate(35.0f, 75.0f)};
 		widget& widget{_ui.get(tag)};
 		widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}

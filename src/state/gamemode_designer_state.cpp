@@ -30,7 +30,7 @@ gamemode_designer_state::gamemode_designer_state(std::unique_ptr<game>&& game, c
 gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 	: _substate{substate::RETURNING_FROM_TEST_GAME}
 	, _timer{0}
-	, _game{std::make_unique<game>(pick_menu_gamemode(), tr::rand<std::uint64_t>(rng))}
+	, _game{std::make_unique<game>(pick_menu_gamemode(), rng.generate<std::uint64_t>())}
 	, _gamemode{gamemode}
 {
 	set_up_ui(false);

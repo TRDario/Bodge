@@ -4,17 +4,9 @@
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
 
-std::strong_ordering operator<=>(const score& l, const score& r) noexcept
+std::strong_ordering operator<=>(const score& l, const score& r)
 {
 	return l.result <=> r.result;
-}
-
-void tr::binary_reader<score>::read_from_stream(std::istream& is, score& out)
-{
-	tr::binary_read(is, out.description);
-	tr::binary_read(is, out.timestamp);
-	tr::binary_read(is, out.result);
-	tr::binary_read(is, out.flags);
 }
 
 std::span<const std::byte> tr::binary_reader<score>::read_from_span(std::span<const std::byte> span, score& out)
@@ -33,22 +25,7 @@ void tr::binary_writer<score>::write_to_stream(std::ostream& os, const score& in
 	tr::binary_write(os, in.flags);
 }
 
-std::span<std::byte> tr::binary_writer<score>::write_to_span(std::span<std::byte> span, const score& in)
-{
-	span = tr::binary_write(span, in.description);
-	span = tr::binary_write(span, in.timestamp);
-	span = tr::binary_write(span, in.result);
-	return tr::binary_write(span, in.flags);
-}
-
 ///////////////////////////////////////////////////////////// SCORE CATEGORY //////////////////////////////////////////////////////////////
-
-void tr::binary_reader<score_category>::read_from_stream(std::istream& is, score_category& out)
-{
-	tr::binary_read(is, out.gamemode);
-	tr::binary_read(is, out.pb);
-	tr::binary_read(is, out.scores);
-}
 
 std::span<const std::byte> tr::binary_reader<score_category>::read_from_span(std::span<const std::byte> span, score_category& out)
 {
@@ -64,16 +41,9 @@ void tr::binary_writer<score_category>::write_to_stream(std::ostream& os, const 
 	tr::binary_write(os, in.scores);
 }
 
-std::span<std::byte> tr::binary_writer<score_category>::write_to_span(std::span<std::byte> span, const score_category& in)
-{
-	span = tr::binary_write(span, in.gamemode);
-	span = tr::binary_write(span, in.pb);
-	return tr::binary_write(span, in.scores);
-}
-
 //////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
 
-ticks scorefile_t::category_pb(const gamemode& gamemode) const noexcept
+ticks scorefile_t::category_pb(const gamemode& gamemode) const
 {
 	std::vector<score_category>::const_iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gamemode; })};
 	return it != categories.end() ? it->pb : 0;
@@ -99,7 +69,7 @@ void scorefile_t::add_score(const gamemode& gamemode, const score& score)
 	it->scores.insert(std::upper_bound(it->scores.begin(), it->scores.end(), score, std::greater<>{}), score);
 }
 
-void scorefile_t::load_from_file() noexcept
+void scorefile_t::load_from_file()
 {
 	const std::filesystem::path path{cli_settings.userdir / "scorefile.dat"};
 	try {
@@ -126,7 +96,7 @@ void scorefile_t::load_from_file() noexcept
 	}
 }
 
-void scorefile_t::save_to_file() noexcept
+void scorefile_t::save_to_file()
 {
 	const std::filesystem::path path{cli_settings.userdir / "scorefile.dat"};
 	try {
@@ -136,7 +106,7 @@ void scorefile_t::save_to_file() noexcept
 		tr::binary_write(buffer, categories);
 		tr::binary_write(buffer, playtime);
 		tr::binary_write(buffer, last_selected_gamemode);
-		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), tr::rand<std::uint8_t>(rng))};
+		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rng.generate<std::uint8_t>())};
 		tr::binary_write(file, SCOREFILE_VERSION);
 		tr::binary_write(file, std::span{encrypted});
 		LOG(tr::severity::INFO, "Saved scorefile.");

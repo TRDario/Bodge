@@ -17,19 +17,19 @@ void play_ball_sound(glm::vec2 pos, float velocity)
 {
 	const float pan{(pos.x - 500) / 500};
 	const float pitch{std::clamp(velocity / 600, 0.75f, 1.25f)};
-	audio::play_sound(sound::BOUNCE, 0.1f, pan, tr::rand(rng, pitch - 0.2f, pitch + 0.2f));
+	audio::play_sound(sound::BOUNCE, 0.1f, pan, rng.generate(pitch - 0.2f, pitch + 0.2f));
 }
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
-ball::ball(const tr::fcircle& hitbox, const glm::vec2& velocity) noexcept
+ball::ball(const tr::circle& hitbox, const glm::vec2& velocity) noexcept
 	: _hitbox{hitbox}, _trail{hitbox.c}, _velocity{velocity}, _age{0}, _last_collision{0}
 {
 }
 
 ball::ball(tr::xorshiftr_128p& rng, float size, float velocity) noexcept
-	: ball{{{tr::rand(rng, FIELD_MIN + size, FIELD_MAX - size), tr::rand(rng, FIELD_MIN + size, FIELD_MAX - size)}, size},
-		   tr::randvec(rng, velocity)}
+	: ball{{{rng.generate(FIELD_MIN + size, FIELD_MAX - size), rng.generate(FIELD_MIN + size, FIELD_MAX - size)}, size},
+		   rng.generate_vector(velocity)}
 {
 }
 
@@ -40,7 +40,7 @@ bool ball::tangible() const noexcept
 	return _age >= BALL_SPAWN_TIME;
 }
 
-const tr::fcircle& ball::hitbox() const noexcept
+const tr::circle& ball::hitbox() const noexcept
 {
 	return _hitbox;
 }
@@ -126,7 +126,7 @@ void ball::add_to_renderer() const
 	tr::fill_poly_vtx(fill.positions, vertices, {_hitbox.c - thickness / 2, size});
 	std::ranges::fill(fill.colors, tr::rgba8{BALL_FILL_COLOR, opacity});
 	const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::BALLS, vertices)};
-	tr::fill_poly_outline_vtx(outline.positions, vertices, {_hitbox.c, size}, 0_degf, thickness);
+	tr::fill_poly_outline_vtx(outline.positions, vertices, {_hitbox.c, size}, 0_deg, thickness);
 	std::ranges::fill(outline.colors, tr::rgba8{tint, opacity});
 
 	// Add the trail.

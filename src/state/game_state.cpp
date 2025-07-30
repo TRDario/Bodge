@@ -156,9 +156,9 @@ float game_state::fade_overlay_opacity() const noexcept
 void game_state::add_replay_cursor_to_renderer(glm::vec2 pos) const
 {
 	tr::simple_color_mesh_ref quad{tr::renderer_2d::new_color_fan(layer::UI, 4)};
-	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, 45_degf);
+	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, 45_deg);
 	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
 	quad = tr::renderer_2d::new_color_fan(layer::UI, 4);
-	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, -45_degf);
+	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, -45_deg);
 	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1}));
 }
