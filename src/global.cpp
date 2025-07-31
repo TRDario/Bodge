@@ -1,14 +1,12 @@
 #include "../include/global.hpp"
-#include "../include/settings.hpp"
-#include <lz4.h>
 
-int max_window_size() noexcept
+int max_window_size()
 {
 	const glm::ivec2 display_size{tr::display_size()};
 	return std::min(display_size.x, display_size.y);
 }
 
-std::uint16_t max_refresh_rate() noexcept
+std::uint16_t max_refresh_rate()
 {
 	return tr::round_cast<std::uint16_t>(tr::refresh_rate());
 }
@@ -20,7 +18,7 @@ std::string timer_text(ticks time)
 						 : std::format("{:02}:{:02}", time / 1_s, (time % 1_s) * 100 / 1_s)};
 }
 
-std::int64_t unix_now() noexcept
+std::int64_t unix_now()
 {
 	return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }

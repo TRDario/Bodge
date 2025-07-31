@@ -31,7 +31,7 @@ class title_state : public tr::state {
 		// Entering the "Start Game" menu.
 		ENTERING_START_GAME,
 		// Entering the gamemode editor.
-		ENTERING_gamemode_designer,
+		ENTERING_GAMEMODE_DESIGNER,
 		// Entering the replays screen.
 		ENTERING_REPLAYS,
 		// Entering the scores screen.
@@ -43,20 +43,20 @@ class title_state : public tr::state {
 	};
 
 	// The current menu substate.
-	substate _substate;
+	substate m_substate;
 	// Internal timer.
-	ticks _timer;
+	ticks m_timer;
 	// The UI manager.
-	ui_manager _ui;
+	ui_manager m_ui;
 	// Background game.
-	std::unique_ptr<game> _game;
+	std::unique_ptr<game> m_background_game;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Calculates the fade overlay opacity.
-	float fade_overlay_opacity() const noexcept;
+	float fade_overlay_opacity() const;
 	// Sets up the UI.
 	void set_up_ui();
 	// Sets up the exit animation.
-	void set_up_exit_animation() noexcept;
+	void set_up_exit_animation();
 };

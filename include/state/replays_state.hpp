@@ -37,28 +37,28 @@ class replays_state : public tr::state {
 	};
 
 	// The current menu substate.
-	substate _substate;
+	substate m_substate;
 	// The current replay page.
-	std::uint16_t _page;
+	std::uint16_t m_page;
 	// Internal timer.
-	ticks _timer;
+	ticks m_timer;
 	// The UI manager.
-	ui_manager _ui;
+	ui_manager m_ui;
 	// Background game.
-	std::unique_ptr<game> _game;
+	std::unique_ptr<game> m_background_game;
 	// List of replays.
-	std::map<std::string, replay_header> _replays;
+	std::map<std::string, replay_header> m_replays;
 	// The selected replay.
-	std::map<std::string, replay_header>::iterator _selected;
+	std::map<std::string, replay_header>::iterator m_selected;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Calculates the fade overlay opacity.
-	float fade_overlay_opacity() const noexcept;
+	float fade_overlay_opacity() const;
 	// Sets up the UI.
 	void set_up_ui();
 	// Sets up the page switching animation.
-	void set_up_page_switch_animation() noexcept;
+	void set_up_page_switch_animation();
 	// Sets up the exit animation.
-	void set_up_exit_animation() noexcept;
+	void set_up_exit_animation();
 };

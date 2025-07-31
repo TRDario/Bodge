@@ -53,17 +53,17 @@ class text_widget : public widget {
 	};
 
 	// The font used when drawing the text.
-	font font_;
+	font m_font;
 	// The style used when drawing the font.
-	tr::ttf_style style;
+	tr::ttf_style m_style;
 	// The alignment the text is drawn with.
-	tr::halign text_alignment;
+	tr::halign m_text_alignment;
 	// The font size used when drawing the text.
-	float font_size;
+	float m_font_size;
 	// The maximum allowed width of the widget's text.
-	int max_width;
+	int m_max_width;
 	// Cached texture and string.
-	mutable std::optional<cached_t> cached;
+	mutable std::optional<cached_t> m_cached;
 
 	// Updates the cache.
 	void update_cache() const;
@@ -96,13 +96,13 @@ class clickable_text_widget : public text_widget {
 
   private:
 	// Callback used to determine the status of the widget.
-	status_callback status_cb;
+	status_callback m_status_cb;
 	// Callback called when the widget is interacted with.
-	action_callback action_cb;
+	action_callback m_action_cb;
 	// Timer used when overriding the disabled color.
-	ticks override_disabled_color_left;
+	ticks m_override_disabled_color_left;
 	// The sound effect that interacting with the widget plays.
-	sound sound_;
+	sound m_sound;
 };
 
 // Widget for inputting a line of text.
@@ -141,11 +141,11 @@ template <std::size_t S> class line_input_widget : public text_widget {
 
   private:
 	// Callback used to determine the status of the widget.
-	status_callback status_cb;
+	status_callback m_status_cb;
 	// Callback called when enter is pressed.
-	action_callback enter_cb;
+	action_callback m_enter_cb;
 	// Keeps track of whether the widget has input focus.
-	bool has_focus;
+	bool m_has_focus;
 };
 
 // Widget for inputting multiline text.
@@ -185,13 +185,13 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 
   private:
 	// Callback used to determine the status of the widget.
-	status_callback status_cb;
+	status_callback m_status_cb;
 	// The size of the widget.
-	glm::vec2 size_;
+	glm::vec2 m_size;
 	// The maximum allowed number of lines of text.
-	std::uint8_t max_lines;
+	std::uint8_t m_max_lines;
 	// Keeps track of whether the widget has input focus.
-	bool has_focus;
+	bool m_has_focus;
 };
 
 ///////////////////////////////////////////////////////////// NON-TEXT WIDGETS ////////////////////////////////////////////////////////////
@@ -215,9 +215,9 @@ class image_widget : public widget {
 
   private:
 	// The image texture.
-	tr::texture texture;
+	tr::texture m_texture;
 	// A reference to the hue to apply to the widget, or nullptr to not tint the widget.
-	std::uint16_t* hue_ref;
+	std::uint16_t* m_hue_ref;
 };
 
 // Color preview widget.
@@ -235,7 +235,7 @@ class color_preview_widget : public widget {
 
   private:
 	// Reference to the hue value.
-	std::uint16_t& hue_ref;
+	std::uint16_t& m_hue_ref;
 };
 
 // Clickable arrow widget.
@@ -265,15 +265,15 @@ class arrow_widget : public widget {
 
   protected:
 	// Whether this widget is a right arrow.
-	bool right;
+	bool m_right;
 	// The tint color.
-	interpolated_rgba8 color;
+	interpolated_rgba8 m_color;
 	// Callback used to determine the status of the widget.
-	status_callback status_cb;
+	status_callback m_status_cb;
 	// Callback called when the widget is interacted with.
-	action_callback action_cb;
+	action_callback m_action_cb;
 	// Timer used when overriding the disabled color.
-	ticks override_disabled_color_left;
+	ticks m_override_disabled_color_left;
 };
 
 // Replay playback indicator widget.

@@ -15,14 +15,14 @@ constexpr int FULLSCREEN{0};
 // The minimum allowed window size.
 constexpr int MIN_WINDOW_SIZE{500};
 // The maximum supported window size.
-int max_window_size() noexcept;
+int max_window_size();
 
 // Sentinel for a native refresh rate.
 constexpr std::uint16_t NATIVE_REFRESH_RATE{0};
 // The minimum allowed refresh rate.
 constexpr std::uint16_t MIN_REFRESH_RATE{15};
 // The maximum supported refresh rate.
-std::uint16_t max_refresh_rate() noexcept;
+std::uint16_t max_refresh_rate();
 
 // Sentinel for disabled multisampled anti-aliasing.
 constexpr std::uint8_t NO_MSAA{0};
@@ -34,22 +34,22 @@ using ticks = std::uint32_t;
 // Game tickrate.
 inline constexpr ticks SECOND_TICKS{240};
 // Seconds -> Ticks literal.
-constexpr ticks operator""_s(unsigned long long seconds) noexcept
+constexpr ticks operator""_s(unsigned long long seconds)
 {
 	return static_cast<ticks>(240 * seconds);
 }
 // Seconds -> Ticks literal.
-constexpr ticks operator""_s(long double seconds) noexcept
+constexpr ticks operator""_s(long double seconds)
 {
 	return static_cast<ticks>(240 * seconds);
 }
 // Seconds -> Ticks literal (float).
-constexpr float operator""_sf(unsigned long long seconds) noexcept
+constexpr float operator""_sf(unsigned long long seconds)
 {
 	return static_cast<float>(240 * seconds);
 }
 // Seconds -> Ticks literal (float).
-constexpr float operator""_sf(long double seconds) noexcept
+constexpr float operator""_sf(long double seconds)
 {
 	return static_cast<float>(240 * seconds);
 }
@@ -88,24 +88,10 @@ constexpr glm::vec2 BOTTOM_START_POS{500, 1050};
 // Final position for screen titles.
 constexpr glm::vec2 TITLE_POS{500, 0};
 
-/////////////////////////////////////////////////////////////////// RNG ///////////////////////////////////////////////////////////////////
-
-// Global RNG.
-inline tr::xorshiftr_128p rng;
-
-////////////////////////////////////////////////////////////////// LOGGER /////////////////////////////////////////////////////////////////
-
-// Global logger.
-inline tr::logger logger;
-// Logging macro.
-#define LOG(...) TR_LOG(logger, __VA_ARGS__)
-// Logging macro.
-#define LOG_CONTINUE(...) TR_LOG_CONTINUE(logger, __VA_ARGS__)
-
 /////////////////////////////////////////////////////////////////// TIME //////////////////////////////////////////////////////////////////
 
 // Gets the current unix timestamp.
-std::int64_t unix_now() noexcept;
+std::int64_t unix_now();
 
 ////////////////////////////////////////////////////////////////// LABEL //////////////////////////////////////////////////////////////////
 
@@ -116,3 +102,17 @@ struct label {
 	// The tooltip of the label.
 	const char* tooltip;
 };
+
+////////////////////////////////////////////////////////////////// ENGINE /////////////////////////////////////////////////////////////////
+
+namespace engine {
+	// Global RNG.
+	inline tr::xorshiftr_128p rng;
+	// Global logger.
+	inline tr::logger logger;
+// Logging macro.
+#define LOG(...) TR_LOG(::engine::logger, __VA_ARGS__)
+// Logging macro.
+#define LOG_CONTINUE(...) TR_LOG_CONTINUE(::engine::logger, __VA_ARGS__)
+
+} // namespace engine

@@ -1,20 +1,20 @@
 #include "../../include/game/trail.hpp"
 
-trail::trail(const glm::vec2& value) noexcept
-	: _head{SIZE - 1}
+trail::trail(const glm::vec2& value)
+	: m_head{SIZE - 1}
 {
-	_buffer.fill(value);
+	m_buffer.fill(value);
 }
 
-const glm::vec2& trail::operator[](std::size_t i) const noexcept
+const glm::vec2& trail::operator[](std::size_t i) const
 {
 	assert(i < SIZE);
 
-	return _buffer[((_head - i) + SIZE) % SIZE];
+	return m_buffer[((m_head - i) + SIZE) % SIZE];
 }
 
-void trail::push(const glm::vec2& value) noexcept
+void trail::push(const glm::vec2& value)
 {
-	_head = (_head + 1) % SIZE;
-	_buffer[_head] = value;
+	m_head = (m_head + 1) % SIZE;
+	m_buffer[m_head] = value;
 }

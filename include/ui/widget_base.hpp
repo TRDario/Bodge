@@ -12,7 +12,7 @@ inline const tooltip_callback NO_TOOLTIP{};
 // Alias for a text widget text callback.
 using text_callback = std::function<std::string(const tr::static_string<30>&)>;
 // Default callback for text widgets: gettnig a localization std::string using the widget name as the key.
-inline const text_callback DEFAULT_TEXT_CALLBACK{[](const tr::static_string<30>& name) { return std::string{localization[name]}; }};
+inline const text_callback DEFAULT_TEXT_CALLBACK{[](const tr::static_string<30>& name) { return std::string{engine::loc[name]}; }};
 
 // Alias for a clickable widget status callback.
 using status_callback = std::function<bool()>;
@@ -125,11 +125,11 @@ class widget {
 
   private:
 	// The opacity of the widget.
-	interpolated_float opacity_;
+	interpolated_float m_opacity;
 	// Whether the widget is hoverable.
-	bool hoverable_;
+	bool m_hoverable;
 	// Whether the widget is writable.
-	bool writable_;
+	bool m_writable;
 	// The shortcuts of the widget.
-	std::vector<tr::key_chord> shortcuts;
+	std::vector<tr::key_chord> m_shortcuts;
 };

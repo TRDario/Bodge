@@ -27,13 +27,13 @@ class interpolated_float {
 
   private:
 	// The value at the start of the interpolation.
-	float start;
+	float m_start;
 	// The value at the end of the interpolated (or the current value if no interpolation is in progress).
-	float end;
+	float m_end;
 	// The length of the interpolation, or 0 to mark no ongoing interpolation.
-	std::uint16_t len{0};
+	std::uint16_t m_len{0};
 	// The current position within the interpolation.
-	std::uint16_t pos;
+	std::uint16_t m_pos;
 };
 
 // Two-dimensional vector value with support for interpolation.
@@ -62,13 +62,13 @@ class interpolated_vec2 {
 
   private:
 	// The value at the start of the interpolation.
-	glm::vec2 start;
+	glm::vec2 m_start;
 	// The value at the end of the interpolated (or the current value if no interpolation is in progress).
-	glm::vec2 end;
+	glm::vec2 m_end;
 	// The length of the interpolation, or 0 to mark no ongoing interpolation.
-	std::uint16_t len{0};
+	std::uint16_t m_len{0};
 	// The current position within the interpolation.
-	std::uint16_t pos;
+	std::uint16_t m_pos;
 };
 
 // RGBA value with support for interpolation.
@@ -97,11 +97,11 @@ class interpolated_rgba8 {
 
   private:
 	// The value at the start of the interpolation.
-	tr::rgba8 start;
+	tr::rgba8 m_start;
 	// The value at the end of the interpolated (or the current value if no interpolation is in progress).
-	tr::rgba8 end;
+	tr::rgba8 m_end;
 	// The length of the interpolation, or 0 to mark no ongoing interpolation.
-	std::uint16_t len{0};
+	std::uint16_t m_len{0};
 	// The current position within the interpolation.
-	std::uint16_t pos;
+	std::uint16_t m_pos;
 };

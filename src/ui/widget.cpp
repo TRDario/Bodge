@@ -1,6 +1,7 @@
-#include "../../include/audio.hpp"
-#include "../../include/engine.hpp"
 #include "../../include/ui/widget.hpp"
+#include "../../include/audio.hpp"
+#include "../../include/graphics.hpp"
+#include "../../include/system.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -169,10 +170,10 @@ widget::widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool h
 	, alignment{alignment}
 	, pos{pos}
 	, tooltip_cb{std::move(tooltip_cb)}
-	, opacity_{0}
-	, hoverable_{hoverable}
-	, writable_{writable}
-	, shortcuts{std::move(shortcuts)}
+	, m_opacity{0}
+	, m_hoverable{hoverable}
+	, m_writable{writable}
+	, m_shortcuts{std::move(shortcuts)}
 {
 }
 
@@ -183,37 +184,37 @@ glm::vec2 widget::tl() const
 
 float widget::opacity() const
 {
-	return opacity_;
+	return m_opacity;
 }
 
 void widget::hide()
 {
-	opacity_ = 0;
+	m_opacity = 0;
 }
 
 void widget::hide(ticks time)
 {
-	opacity_.change(0, time);
+	m_opacity.change(0, time);
 }
 
 void widget::unhide()
 {
-	opacity_ = 1;
+	m_opacity = 1;
 }
 
 void widget::unhide(ticks time)
 {
-	opacity_.change(1, time);
+	m_opacity.change(1, time);
 }
 
 bool widget::hoverable() const
 {
-	return hoverable_;
+	return m_hoverable;
 }
 
 bool widget::writable() const
 {
-	return writable_;
+	return m_writable;
 }
 
 bool widget::active() const
@@ -223,14 +224,14 @@ bool widget::active() const
 
 bool widget::is_shortcut(const tr::key_chord& chord) const
 {
-	const std::vector<tr::key_chord>::const_iterator it{std::ranges::find(shortcuts, chord)};
-	return it != shortcuts.end();
+	const std::vector<tr::key_chord>::const_iterator it{std::ranges::find(m_shortcuts, chord)};
+	return it != m_shortcuts.end();
 }
 
 void widget::update()
 {
 	pos.update();
-	opacity_.update();
+	m_opacity.update();
 }
 
 /////////////////////////////////////////////////////////////// TEXT_WIDGET ///////////////////////////////////////////////////////////////
@@ -241,11 +242,11 @@ text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignme
 	: widget{name, pos, alignment, hoverable, std::move(tooltip_cb), writable, std::move(shortcuts)}
 	, color{color}
 	, text_cb{std::move(text_cb)}
-	, font_{font}
-	, style{style}
-	, text_alignment{text_alignment}
-	, font_size{font_size}
-	, max_width{max_width}
+	, m_font{font}
+	, m_style{style}
+	, m_text_alignment{text_alignment}
+	, m_font_size{font_size}
+	, m_max_width{max_width}
 {
 }
 
@@ -262,7 +263,7 @@ text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignme
 				  pos,
 				  alignment,
 				  true,
-				  [=] { return std::string{localization[tooltip_key]}; },
+				  [=] { return std::string{engine::loc[tooltip_key]}; },
 				  false,
 				  {},
 				  font,
@@ -277,10 +278,10 @@ text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignme
 
 glm::vec2 text_widget::size() const
 {
-	if (!cached.has_value()) {
+	if (!m_cached.has_value()) {
 		update_cache();
 	}
-	return cached->size / engine::render_scale();
+	return m_cached->size / engine::render_scale();
 }
 
 void text_widget::update()
@@ -291,38 +292,38 @@ void text_widget::update()
 
 void text_widget::release_graphical_resources()
 {
-	cached.reset();
+	m_cached.reset();
 }
 
 void text_widget::add_to_renderer()
 {
 	update_cache();
 
-	tr::rgba8 color{this->color};
-	color.a = static_cast<std::uint8_t>(color.a * opacity());
+	tr::rgba8 real_color{color};
+	real_color.a = static_cast<std::uint8_t>(real_color.a * opacity());
 
-	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, cached->texture)};
+	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, m_cached->texture)};
 	tr::fill_rect_vtx(quad.positions, {tl(), text_widget::size()});
-	tr::fill_rect_vtx(quad.uvs, {{}, cached->size / glm::vec2{cached->texture.size()}});
-	std::ranges::fill(quad.tints, tr::rgba8{color});
+	tr::fill_rect_vtx(quad.uvs, {{}, m_cached->size / glm::vec2{m_cached->texture.size()}});
+	std::ranges::fill(quad.tints, tr::rgba8{real_color});
 }
 
 void text_widget::update_cache() const
 {
 	std::string text{text_cb(name)};
-	if (!cached.has_value() || cached->text != text) {
-		tr::bitmap render{fonts::render_text(text, font_, style, font_size, font_size / 12, max_width, text_alignment)};
-		if (!cached || cached->texture.size().x < render.size().x || cached->texture.size().y < render.size().y) {
-			cached.emplace(tr::texture{render}, render.size(), std::move(text));
+	if (!m_cached.has_value() || m_cached->text != text) {
+		tr::bitmap render{engine::render_text(text, m_font, m_style, m_font_size, m_font_size / 12, m_max_width, m_text_alignment)};
+		if (!m_cached || m_cached->texture.size().x < render.size().x || m_cached->texture.size().y < render.size().y) {
+			m_cached.emplace(tr::texture{render}, render.size(), std::move(text));
 			if (tr::gfx_context::debug()) {
-				cached->texture.set_label(std::format("(Bodge) Widget texture - \"{}\"", name));
+				m_cached->texture.set_label(std::format("(Bodge) Widget texture - \"{}\"", name));
 			}
 		}
 		else {
-			cached->texture.clear({});
-			cached->texture.set_region({}, render);
-			cached->size = render.size();
-			cached->text = std::move(text);
+			m_cached->texture.clear({});
+			m_cached->texture.set_region({}, render);
+			m_cached->size = render.size();
+			m_cached->text = std::move(text);
 		}
 	}
 }
@@ -346,17 +347,17 @@ clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 po
 				  tr::UNLIMITED_WIDTH,
 				  {160, 160, 160, 160},
 				  std::move(text_cb)}
-	, status_cb{std::move(status_cb)}
-	, action_cb{std::move(action_cb)}
-	, override_disabled_color_left{0}
-	, sound_{sound}
+	, m_status_cb{std::move(status_cb)}
+	, m_action_cb{std::move(action_cb)}
+	, m_override_disabled_color_left{0}
+	, m_sound{sound}
 {
 }
 
 void clickable_text_widget::update()
 {
-	if (override_disabled_color_left > 0) {
-		--override_disabled_color_left;
+	if (m_override_disabled_color_left > 0) {
+		--m_override_disabled_color_left;
 	}
 	text_widget::update();
 }
@@ -364,7 +365,7 @@ void clickable_text_widget::update()
 void clickable_text_widget::add_to_renderer()
 {
 	const interpolated_rgba8 real_color{color};
-	if (!active() && override_disabled_color_left == 0) {
+	if (!active() && m_override_disabled_color_left == 0) {
 		color = {80, 80, 80, 160};
 	}
 	text_widget::add_to_renderer();
@@ -373,14 +374,14 @@ void clickable_text_widget::add_to_renderer()
 
 bool clickable_text_widget::active() const
 {
-	return status_cb();
+	return m_status_cb();
 }
 
 void clickable_text_widget::on_hover()
 {
 	color.change("FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
-		audio::play_sound(sound::HOVER, 0.15f, 0.0f, rng.generate(0.9f, 1.1f));
+		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
 }
 
@@ -392,7 +393,7 @@ void clickable_text_widget::on_unhover()
 void clickable_text_widget::on_hold_begin()
 {
 	color = {32, 32, 32, 255};
-	audio::play_sound(sound::HOLD, 0.2f, 0.0f, rng.generate(0.9f, 1.1f));
+	engine::play_sound(sound::HOLD, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 void clickable_text_widget::on_hold_transfer_in()
@@ -408,18 +409,18 @@ void clickable_text_widget::on_hold_transfer_out()
 void clickable_text_widget::on_hold_end()
 {
 	color.change("FFFFFF"_rgba8, 0.2_s);
-	action_cb();
-	audio::play_sound(sound_, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
+	m_action_cb();
+	engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 void clickable_text_widget::on_shortcut()
 {
 	if (active()) {
-		action_cb();
+		m_action_cb();
 		color = "FFFFFF"_rgba8;
 		color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
-		override_disabled_color_left = 0.2_s;
-		audio::play_sound(sound_, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
+		m_override_disabled_color_left = 0.2_s;
+		engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
 }
 
@@ -429,7 +430,7 @@ void clickable_text_widget::on_shortcut()
 tr::bitmap load_image(std::string_view texture)
 {
 	try {
-		const std::filesystem::path path{cli_settings.datadir / "graphics" / std::format("{}.qoi", texture)};
+		const std::filesystem::path path{engine::cli_settings.datadir / "graphics" / std::format("{}.qoi", texture)};
 		tr::bitmap image{tr::load_bitmap_file(path)};
 		LOG(tr::severity::INFO, "Loaded texture '{}'.", texture);
 		LOG_CONTINUE("From: {}", path.string());
@@ -444,25 +445,25 @@ tr::bitmap load_image(std::string_view texture)
 }
 
 image_widget::image_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t* hue_ref)
-	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, texture{load_image(name)}, hue_ref{hue_ref}
+	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, m_texture{load_image(name)}, m_hue_ref{hue_ref}
 {
-	texture.set_filtering(tr::min_filter::LINEAR, tr::mag_filter::LINEAR);
+	m_texture.set_filtering(tr::min_filter::LINEAR, tr::mag_filter::LINEAR);
 }
 
 glm::vec2 image_widget::size() const
 {
-	return glm::vec2{texture.size()} / 2.0f;
+	return glm::vec2{m_texture.size()} / 2.0f;
 }
 
 void image_widget::add_to_renderer()
 {
 	tr::rgba8 color{255, 255, 255, 255};
-	if (hue_ref != nullptr) {
-		color = tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(*hue_ref), 1, 1});
+	if (m_hue_ref != nullptr) {
+		color = tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(*m_hue_ref), 1, 1});
 	}
 	color.a = static_cast<std::uint8_t>(color.a * opacity());
 
-	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, texture)};
+	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, m_texture)};
 	tr::fill_rect_vtx(quad.positions, {tl(), size()});
 	tr::fill_rect_vtx(quad.uvs, {{0, 0}, {1, 1}});
 	std::ranges::fill(quad.tints, tr::rgba8{color});
@@ -471,7 +472,7 @@ void image_widget::add_to_renderer()
 /////////////////////////////////////////////////////////// COLOR_PREVIEW_WIDGET //////////////////////////////////////////////////////////
 
 color_preview_widget::color_preview_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t& hue_ref)
-	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, hue_ref{hue_ref}
+	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, m_hue_ref{hue_ref}
 {
 }
 
@@ -482,7 +483,7 @@ glm::vec2 color_preview_widget::size() const
 
 void color_preview_widget::add_to_renderer()
 {
-	const tr::rgba8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(hue_ref), 1, 1}), tr::norm_cast<std::uint8_t>(opacity())};
+	const tr::rgba8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(m_hue_ref), 1, 1}), tr::norm_cast<std::uint8_t>(opacity())};
 	const tr::rgba8 outline_color{static_cast<std::uint8_t>(color.r / 2), static_cast<std::uint8_t>(color.g / 2),
 								  static_cast<std::uint8_t>(color.b / 2), static_cast<std::uint8_t>(color.a / 2)};
 
@@ -499,11 +500,11 @@ void color_preview_widget::add_to_renderer()
 arrow_widget::arrow_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb,
 						   action_callback action_cb, std::vector<tr::key_chord>&& chords)
 	: widget{name, pos, alignment, true, NO_TOOLTIP, false, std::move(chords)}
-	, right{right_arrow}
-	, color{{160, 160, 160, 160}}
-	, status_cb{std::move(status_cb)}
-	, action_cb{std::move(action_cb)}
-	, override_disabled_color_left{0}
+	, m_right{right_arrow}
+	, m_color{{160, 160, 160, 160}}
+	, m_status_cb{std::move(status_cb)}
+	, m_action_cb{std::move(action_cb)}
+	, m_override_disabled_color_left{0}
 {
 }
 
@@ -514,14 +515,14 @@ glm::vec2 arrow_widget::size() const
 
 void arrow_widget::add_to_renderer()
 {
-	tr::rgba8 color{this->color};
-	if (!active() && override_disabled_color_left == 0) {
+	tr::rgba8 color{m_color};
+	if (!active() && m_override_disabled_color_left == 0) {
 		color = {80, 80, 80, 160};
 	}
 	color.a *= opacity();
 
 	const glm::vec2 tl{this->tl()};
-	const std::array<glm::vec2, 15>& positions{right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
+	const std::array<glm::vec2, 15>& positions{m_right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
 	const tr::color_mesh_ref arrow{tr::renderer_2d::new_color_mesh(layer::UI, 15, tr::poly_outline_idx(5) + tr::poly_idx(5))};
 	tr::fill_poly_outline_idx(arrow.indices.begin(), 5, arrow.base_index);
 	tr::fill_poly_idx(arrow.indices.begin() + tr::poly_outline_idx(5), 5, arrow.base_index + 10);
@@ -537,39 +538,39 @@ void arrow_widget::add_to_renderer()
 
 void arrow_widget::update()
 {
-	if (override_disabled_color_left > 0) {
-		--override_disabled_color_left;
+	if (m_override_disabled_color_left > 0) {
+		--m_override_disabled_color_left;
 	}
 	// Fixes an edge case of being stuck with the disabled color after using a shortcut.
-	if (active() && color == tr::rgba8{80, 80, 80, 160}) {
-		color = tr::rgba8{160, 160, 160, 160};
+	if (active() && m_color == tr::rgba8{80, 80, 80, 160}) {
+		m_color = tr::rgba8{160, 160, 160, 160};
 	}
-	color.update();
+	m_color.update();
 	widget::update();
 }
 
 bool arrow_widget::active() const
 {
-	return status_cb();
+	return m_status_cb();
 }
 
 void arrow_widget::on_hover()
 {
-	color.change("FFFFFF"_rgba8, 0.2_s);
+	m_color.change("FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
-		audio::play_sound(sound::HOVER, 0.15f, 0.0f, rng.generate(0.9f, 1.1f));
+		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
 }
 
 void arrow_widget::on_unhover()
 {
-	color.change({160, 160, 160, 160}, 0.2_s);
+	m_color.change({160, 160, 160, 160}, 0.2_s);
 }
 
 void arrow_widget::on_hold_begin()
 {
-	color = {32, 32, 32, 255};
-	audio::play_sound(sound::HOLD, 0.2f, 0.0f, rng.generate(0.9f, 1.1f));
+	m_color = {32, 32, 32, 255};
+	engine::play_sound(sound::HOLD, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 void arrow_widget::on_hold_transfer_in()
@@ -579,24 +580,24 @@ void arrow_widget::on_hold_transfer_in()
 
 void arrow_widget::on_hold_transfer_out()
 {
-	color.change({160, 160, 160, 160}, 0.2_s);
+	m_color.change({160, 160, 160, 160}, 0.2_s);
 }
 
 void arrow_widget::on_hold_end()
 {
-	color.change("FFFFFF"_rgba8, 0.2_s);
-	action_cb();
-	audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
+	m_color.change("FFFFFF"_rgba8, 0.2_s);
+	m_action_cb();
+	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 void arrow_widget::on_shortcut()
 {
 	if (active()) {
-		action_cb();
-		color = "FFFFFF"_rgba8;
-		color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
-		override_disabled_color_left = 0.2_s;
-		audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
+		m_action_cb();
+		m_color = "FFFFFF"_rgba8;
+		m_color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
+		m_override_disabled_color_left = 0.2_s;
+		engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
 }
 
@@ -665,13 +666,13 @@ score_widget::score_widget(std::string_view name, glm::vec2 pos, tr::align align
 					  if (!str.empty()) {
 						  str.push_back('\n');
 					  }
-					  str.append(localization["exited_prematurely"]);
+					  str.append(engine::loc["exited_prematurely"]);
 				  }
 				  if (flags.modified_game_speed) {
 					  if (!str.empty()) {
 						  str.push_back('\n');
 					  }
-					  str.append(localization["modified_game_speed"]);
+					  str.append(engine::loc["modified_game_speed"]);
 				  }
 				  return str;
 			  }

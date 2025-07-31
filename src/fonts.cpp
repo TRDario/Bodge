@@ -1,7 +1,7 @@
-#include "../include/engine.hpp"
 #include "../include/fonts.hpp"
+#include "../include/graphics.hpp"
 
-namespace fonts {
+namespace engine {
 	// Structure containing the standard fonts.
 	struct standard_fonts_t {
 		// The default font.
@@ -43,13 +43,15 @@ namespace fonts {
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
+	// Loads a font.
+	tr::ttfont load_font(std::string_view name);
 	// Turns a font name into an actual font reference.
 	tr::ttfont& find_font(font font);
-} // namespace fonts
+} // namespace engine
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-tr::ttfont load_font(std::string_view name)
+tr::ttfont engine::load_font(std::string_view name)
 {
 	try {
 		std::filesystem::path path{cli_settings.datadir / "fonts" / name};
@@ -80,17 +82,17 @@ tr::ttfont load_font(std::string_view name)
 	}
 }
 
-fonts::optional_font_base& fonts::optional_font::operator*()
+engine::optional_font_base& engine::optional_font::operator*()
 {
 	return *reinterpret_cast<optional_font_base*>(&data);
 }
 
-fonts::optional_font_base* fonts::optional_font::operator->()
+engine::optional_font_base* engine::optional_font::operator->()
 {
 	return reinterpret_cast<optional_font_base*>(&data);
 }
 
-tr::ttfont& fonts::find_font(font font)
+tr::ttfont& engine::find_font(font font)
 {
 	switch (font) {
 	case font::DEFAULT:
@@ -154,7 +156,7 @@ std::vector<std::string> split_overlong_lines(std::vector<std::string>&& lines, 
 
 ///////////////////////////////////////////////////////////////// LOADING /////////////////////////////////////////////////////////////////
 
-void fonts::load()
+void engine::load_fonts()
 {
 	standard_fonts.emplace(load_font("charge_vector_b.otf"), load_font("linux_biolinum_rb.ttf"));
 	try {
@@ -178,7 +180,7 @@ void fonts::load()
 	}
 }
 
-void fonts::set_language_font()
+void engine::set_language_font()
 {
 	if (language_preview_font.state == optional_font_state::USE_LANGUAGE) {
 		return;
@@ -195,7 +197,7 @@ void fonts::set_language_font()
 	}
 }
 
-void fonts::reload_language_preview_font(const settings_t& pending)
+void engine::reload_language_preview_font(const ::settings& pending)
 {
 	const bool had_value{language_preview_font.state == optional_font_state::USE_STORED};
 	std::string new_font;
@@ -226,7 +228,7 @@ void fonts::reload_language_preview_font(const settings_t& pending)
 	}
 }
 
-void fonts::unload_all()
+void engine::unload_fonts()
 {
 	standard_fonts.reset();
 	if (language_font.state == optional_font_state::USE_STORED) {
@@ -240,7 +242,7 @@ void fonts::unload_all()
 
 /////////////////////////////////////////////////////////////// OPERATIONS ////////////////////////////////////////////////////////////////
 
-font fonts::determine_font(std::string_view text)
+font engine::determine_font(std::string_view text)
 {
 	tr::ttfont& font{find_font(font::LANGUAGE)};
 	if (std::ranges::all_of(tr::utf8::range(text), [&](tr::codepoint chr) { return chr == '\n' || font.contains(chr); })) {
@@ -251,23 +253,23 @@ font fonts::determine_font(std::string_view text)
 	}
 }
 
-float fonts::line_skip(font font, float size)
+float engine::line_skip(font font, float size)
 {
 	tr::ttfont& font_ref{find_font(font)};
-	font_ref.resize(size * engine::render_scale());
-	return font_ref.line_skip() / engine::render_scale();
+	font_ref.resize(size * render_scale());
+	return font_ref.line_skip() / render_scale();
 }
 
-glm::vec2 fonts::text_size(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
+glm::vec2 engine::text_size(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
 {
-	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
+	const int scaled_outline{static_cast<int>(outline * render_scale())};
 	if (max_w != tr::UNLIMITED_WIDTH) {
-		max_w = (max_w - 2 * outline) * engine::render_scale();
+		max_w = (max_w - 2 * outline) * render_scale();
 	}
 	const int outline_max_w{max_w != tr::UNLIMITED_WIDTH ? static_cast<int>(max_w + 2 * scaled_outline) : tr::UNLIMITED_WIDTH};
 
 	tr::ttfont& font_ref{find_font(font)};
-	font_ref.resize(size * engine::render_scale());
+	font_ref.resize(size * render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
 	glm::ivec2 text_size{0, font_ref.text_size(text, outline_max_w).y};
@@ -281,35 +283,35 @@ glm::vec2 fonts::text_size(std::string_view text, font font, tr::ttf_style style
 			text_size.x = std::max(text_size.x, result.size);
 		}
 	}
-	return static_cast<glm::vec2>(text_size) / engine::render_scale();
+	return static_cast<glm::vec2>(text_size) / render_scale();
 }
 
-std::size_t fonts::count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
+std::size_t engine::count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
 {
-	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
+	const int scaled_outline{static_cast<int>(outline * render_scale())};
 	if (max_w != tr::UNLIMITED_WIDTH) {
-		max_w = (max_w - 2 * outline) * engine::render_scale();
+		max_w = (max_w - 2 * outline) * render_scale();
 	}
 	const float outline_max_w{max_w != tr::UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : tr::UNLIMITED_WIDTH};
 
 	tr::ttfont& font_ref{find_font(font)};
-	font_ref.resize(size * engine::render_scale());
+	font_ref.resize(size * render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
 	return split_overlong_lines(split_into_lines(text), font_ref, outline_max_w).size();
 }
 
-tr::bitmap fonts::render_text(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w,
-							  tr::halign align)
+tr::bitmap engine::render_text(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w,
+							   tr::halign align)
 {
-	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
+	const int scaled_outline{static_cast<int>(outline * render_scale())};
 	if (max_w != tr::UNLIMITED_WIDTH) {
-		max_w = (max_w - 2 * outline) * engine::render_scale();
+		max_w = (max_w - 2 * outline) * render_scale();
 	}
 	const int outline_max_w{max_w != tr::UNLIMITED_WIDTH ? static_cast<int>(max_w + 2 * scaled_outline) : tr::UNLIMITED_WIDTH};
 
 	tr::ttfont& font_ref{find_font(font)};
-	font_ref.resize(size * engine::render_scale());
+	font_ref.resize(size * render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
 	tr::bitmap render{font_ref.render(text, outline_max_w, align, "80808080"_rgba8)};
@@ -319,12 +321,12 @@ tr::bitmap fonts::render_text(std::string_view text, font font, tr::ttf_style st
 	return render;
 }
 
-tr::bitmap fonts::render_gradient_glyph(std::uint32_t glyph, font font, tr::ttf_style style, float size, float outline)
+tr::bitmap engine::render_gradient_glyph(std::uint32_t glyph, font font, tr::ttf_style style, float size, float outline)
 {
-	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
+	const int scaled_outline{static_cast<int>(outline * render_scale())};
 
 	tr::ttfont& font_ref{find_font(font)};
-	font_ref.resize(size * engine::render_scale());
+	font_ref.resize(size * render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
 	tr::bitmap render{font_ref.render(glyph, "00000080"_rgba8)};

@@ -8,7 +8,7 @@ class game_state : public tr::state {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Constructs a game state.
-	game_state(std::unique_ptr<game>&& game, game_type type, bool fade_in) noexcept;
+	game_state(std::unique_ptr<game>&& game, game_type type, bool fade_in);
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
@@ -36,25 +36,25 @@ class game_state : public tr::state {
 	};
 
 	// The current game substate.
-	substate _substate;
+	substate m_substate;
 	// The current tick timestamp.
-	ticks _timer;
+	ticks m_timer;
 	// The UI manager.
-	ui_manager _ui;
+	ui_manager m_ui;
 	// The actual game.
-	std::unique_ptr<game> _game;
+	std::unique_ptr<game> m_game;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Combines a substate base and game type into a substate.
-	friend substate operator|(const substate_base& l, const game_type& r) noexcept;
+	friend substate operator|(const substate_base& l, const game_type& r);
 	// Converts a substate to a substate base.
-	friend substate_base to_base(substate state) noexcept;
+	friend substate_base to_base(substate state);
 	// Converts a substate to a game type.
-	friend game_type to_type(substate state) noexcept;
+	friend game_type to_type(substate state);
 
 	// Calculates the fade overlay opacity.
-	float fade_overlay_opacity() const noexcept;
+	float fade_overlay_opacity() const;
 
 	// Adds the replay cursor to the renderer.
 	void add_replay_cursor_to_renderer(glm::vec2 pos) const;

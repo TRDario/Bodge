@@ -1,19 +1,20 @@
 #include "../../include/game/game.hpp"
-#include "../../include/engine.hpp"
+#include "../../include/graphics.hpp"
 #include "../../include/score.hpp"
+#include "../../include/system.hpp"
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
 
 game::game(const ::gamemode& gamemode, std::uint64_t rng_seed)
-	: _gamemode{gamemode}
-	, _rng{rng_seed}
-	, _ball_size{gamemode.ball.initial_size}
-	, _ball_velocity{gamemode.ball.initial_velocity}
-	, _age{0}
-	, _last_spawn{0}
+	: m_gamemode{gamemode}
+	, m_rng{rng_seed}
+	, m_ball_size{gamemode.ball.initial_size}
+	, m_ball_velocity{gamemode.ball.initial_velocity}
+	, m_age{0}
+	, m_last_spawn{0}
 {
-	if (!_gamemode.player.autoplay()) {
-		_player.emplace(gamemode.player, scorefile.category_pb(_gamemode));
+	if (!autoplay(m_gamemode.player)) {
+		m_player.emplace(gamemode.player, pb(engine::scorefile, m_gamemode));
 	}
 
 	for (int i = 0; i < gamemode.ball.starting_count; ++i) {
@@ -21,50 +22,50 @@ game::game(const ::gamemode& gamemode, std::uint64_t rng_seed)
 	}
 }
 
-const gamemode& game::gamemode() const noexcept
+const gamemode& game::gamemode() const
 {
-	return _gamemode;
+	return m_gamemode;
 }
 
-bool game::game_over() const noexcept
+bool game::game_over() const
 {
-	return _player->game_over();
+	return m_player->game_over();
 }
 
-ticks game::result() const noexcept
+ticks game::result() const
 {
-	return _age - _player->time_since_game_over();
+	return m_age - m_player->time_since_game_over();
 }
 
-void game::update(const glm::vec2& input) noexcept
+void game::update(const glm::vec2& input)
 {
-	++_age;
-	++_last_spawn;
+	++m_age;
+	++m_last_spawn;
 
-	if (_last_spawn >= _gamemode.ball.spawn_interval && _balls.size() < _gamemode.ball.max_count) {
+	if (m_last_spawn >= m_gamemode.ball.spawn_interval && m_balls.size() < m_gamemode.ball.max_count) {
 		add_new_ball();
 	}
 
-	for (std::uint8_t i = 0; i < _balls.size(); ++i) {
-		_balls[i].update();
+	for (std::uint8_t i = 0; i < m_balls.size(); ++i) {
+		m_balls[i].update();
 
-		if (_balls[i].tangible()) {
-			for (std::uint8_t j = i + 1; j < _balls.size(); ++j) {
-				if (_balls[j].tangible() && colliding(_balls[i], _balls[j])) {
-					handle_collision(_balls[i], _balls[j]);
+		if (m_balls[i].tangible()) {
+			for (std::uint8_t j = i + 1; j < m_balls.size(); ++j) {
+				if (m_balls[j].tangible() && colliding(m_balls[i], m_balls[j])) {
+					handle_collision(m_balls[i], m_balls[j]);
 				}
 			}
 		}
 	}
 
-	if (_player.has_value()) {
-		if (_player->game_over()) {
-			_player->update();
+	if (m_player.has_value()) {
+		if (m_player->game_over()) {
+			m_player->update();
 		}
 		else {
-			_player->update(input);
-			if (colliding(*_player, _balls)) {
-				_player->hit();
+			m_player->update(input);
+			if (colliding(*m_player, m_balls)) {
+				m_player->hit();
 			}
 		}
 	}
@@ -86,37 +87,37 @@ void game::add_border_to_renderer() const
 {
 	tr::simple_color_mesh_ref border{tr::renderer_2d::new_color_outline(layer::BORDER, 4)};
 	tr::fill_rect_outline_vtx(border.positions, {{2, 2}, {996, 996}}, 4);
-	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(settings.secondary_hue), 1, 1}));
+	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.secondary_hue), 1, 1}));
 }
 
 void game::add_to_renderer() const
 {
-	if (_player.has_value()) {
-		_player->add_to_renderer();
+	if (m_player.has_value()) {
+		m_player->add_to_renderer();
 	}
-	std::ranges::for_each(_balls, &ball::add_to_renderer);
+	std::ranges::for_each(m_balls, &ball::add_to_renderer);
 	add_overlay_to_renderer();
 	add_border_to_renderer();
 }
 
-void game::add_new_ball() noexcept
+void game::add_new_ball()
 {
-	_last_spawn = 0;
-	_balls.emplace_back(_rng, _ball_size, _ball_velocity);
-	_ball_size = std::min(_ball_size + _gamemode.ball.size_step, 250.0f);
-	_ball_velocity = std::min(_ball_velocity + _gamemode.ball.velocity_step, 5000.0f);
+	m_last_spawn = 0;
+	m_balls.emplace_back(m_rng, m_ball_size, m_ball_velocity);
+	m_ball_size = std::min(m_ball_size + m_gamemode.ball.size_step, 250.0f);
+	m_ball_velocity = std::min(m_ball_velocity + m_gamemode.ball.velocity_step, 5000.0f);
 }
 
 /////////////////////////////////////////////////////////////// ACTIVE_GAME ///////////////////////////////////////////////////////////////
 
 active_game::active_game(const ::gamemode& gamemode, std::uint64_t seed)
-	: game{gamemode, seed}, _replay{gamemode, seed}
+	: game{gamemode, seed}, m_replay{gamemode, seed}
 {
 }
 
-replay& active_game::replay() noexcept
+replay& active_game::replay()
 {
-	return _replay;
+	return m_replay;
 }
 
 void active_game::update()
@@ -125,33 +126,33 @@ void active_game::update()
 	const glm::vec2 input{engine::mouse_pos()};
 	update(input);
 	if (!game_over) {
-		_replay.append(input);
+		m_replay.append(input);
 	}
 }
 
 ////////////////////////////////////////////////////////////// REPLAY_GAME ////////////////////////////////////////////////////////////////
 
 replay_game::replay_game(const ::gamemode& gamemode, replay&& replay)
-	: game{gamemode, replay.header().seed}, _replay{std::move(replay)}
+	: game{gamemode, replay.header().seed}, m_replay{std::move(replay)}
 {
 }
 
 replay_game::replay_game(const replay_game& r)
-	: replay_game{r.gamemode(), replay{r._replay}}
+	: replay_game{r.gamemode(), replay{r.m_replay}}
 {
 }
 
-bool replay_game::done() const noexcept
+bool replay_game::done() const
 {
-	return _replay.done();
+	return m_replay.done();
 }
 
-glm::vec2 replay_game::cursor_pos() const noexcept
+glm::vec2 replay_game::cursor_pos() const
 {
-	return _replay.current();
+	return m_replay.current();
 }
 
-void replay_game::update() noexcept
+void replay_game::update()
 {
-	update(done() ? _replay.current() : _replay.next());
+	update(done() ? m_replay.current() : m_replay.next());
 }

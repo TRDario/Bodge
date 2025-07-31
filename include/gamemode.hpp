@@ -13,15 +13,15 @@ struct player_settings {
 	float inertia_factor{0.1f};
 
 	bool operator==(const player_settings&) const = default;
-
-	// Gets whether the gamemode is autoplay.
-	bool autoplay() const;
 };
 template <> struct tr::binary_reader<player_settings> : tr::default_binary_reader<player_settings> {};
 template <> struct tr::binary_writer<player_settings> : tr::default_binary_writer<player_settings> {};
 
 // Sentinel for an autoplay gamemode.
 constexpr player_settings NO_PLAYER{std::numeric_limits<std::uint32_t>::max()};
+
+// Gets whether the gamemode is autoplay.
+bool autoplay(const player_settings& ps);
 
 ////////////////////////////////////////////////////////////// BALL SETTINGS //////////////////////////////////////////////////////////////
 
@@ -58,40 +58,13 @@ struct gamemode {
 	// The author of the gamemode.
 	tr::static_string<20> author{};
 	// The description of the gamemode.
-	tr::static_string<40> description;
+	tr::static_string<40> description{};
 	// Player settings.
 	player_settings player{};
 	// Ball settings.
 	ball_settings ball{};
 
-	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
-
-	// Creates a default gamemode.
-	gamemode();
-	// Creates a builtin gamemode.
-	constexpr gamemode(std::string_view name, std::string_view description, const player_settings& player, const ball_settings& ball)
-		: builtin{true}, name{name}, author{"TRDario"}, description{description}, player{player}, ball{ball}
-	{
-	}
-	// Creates a menu gamemode.
-	constexpr gamemode(const ball_settings& ball)
-		: author{"TRDario"}, player{NO_PLAYER}, ball{ball}
-	{
-	}
-	// Loads a gamemode from file.
-	gamemode(const std::filesystem::path& path);
-
-	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
-
 	bool operator==(const gamemode&) const = default;
-
-	// Gets the localization of the name of the gamemode.
-	std::string_view name_loc() const;
-	// Gets the localization of the description of the gamemode.
-	std::string_view description_loc() const;
-
-	// Saves a gamemode to file.
-	void save_to_file();
 };
 template <> struct tr::binary_reader<gamemode> {
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, gamemode& out);
@@ -100,7 +73,16 @@ template <> struct tr::binary_writer<gamemode> {
 	static void write_to_stream(std::ostream& os, const gamemode& in);
 };
 
-// Loads all found gamemodes.
-std::vector<gamemode> load_gamemodes();
 // Randomly picks a menu gamemode.
 gamemode pick_menu_gamemode();
+// Loads a gamemode from file.
+gamemode load_gamemode(const std::filesystem::path& path);
+// Loads all found gamemodes.
+std::vector<gamemode> load_gamemodes();
+// Saves a gamemode to file.
+void save_gamemode(const gamemode& gm);
+
+// Gets the localization of the name of a gamemode.
+std::string_view name(const gamemode& gm);
+// Gets the localization of the description of a gamemode.
+std::string_view description(const gamemode& gm);

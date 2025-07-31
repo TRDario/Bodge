@@ -1,6 +1,7 @@
 #include "../../include/game/ball.hpp"
 #include "../../include/audio.hpp"
-#include "../../include/engine.hpp"
+#include "../../include/graphics.hpp"
+#include "../../include/settings.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -17,17 +18,17 @@ void play_ball_sound(glm::vec2 pos, float velocity)
 {
 	const float pan{(pos.x - 500) / 500};
 	const float pitch{std::clamp(velocity / 600, 0.75f, 1.25f)};
-	audio::play_sound(sound::BOUNCE, 0.1f, pan, rng.generate(pitch - 0.2f, pitch + 0.2f));
+	engine::play_sound(sound::BOUNCE, 0.1f, pan, engine::rng.generate(pitch - 0.2f, pitch + 0.2f));
 }
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
-ball::ball(const tr::circle& hitbox, const glm::vec2& velocity) noexcept
-	: _hitbox{hitbox}, _trail{hitbox.c}, _velocity{velocity}, _age{0}, _last_collision{0}
+ball::ball(const tr::circle& hitbox, const glm::vec2& velocity)
+	: m_hitbox{hitbox}, m_trail{hitbox.c}, m_velocity{velocity}, m_age{0}, m_last_collision{0}
 {
 }
 
-ball::ball(tr::xorshiftr_128p& rng, float size, float velocity) noexcept
+ball::ball(tr::xorshiftr_128p& rng, float size, float velocity)
 	: ball{{{rng.generate(FIELD_MIN + size, FIELD_MAX - size), rng.generate(FIELD_MIN + size, FIELD_MAX - size)}, size},
 		   rng.generate_vector(velocity)}
 {
@@ -35,77 +36,77 @@ ball::ball(tr::xorshiftr_128p& rng, float size, float velocity) noexcept
 
 ///////////////////////////////////////////////////////////////// GETTERS /////////////////////////////////////////////////////////////////
 
-bool ball::tangible() const noexcept
+bool ball::tangible() const
 {
-	return _age >= BALL_SPAWN_TIME;
+	return m_age >= BALL_SPAWN_TIME;
 }
 
-const tr::circle& ball::hitbox() const noexcept
+const tr::circle& ball::hitbox() const
 {
-	return _hitbox;
+	return m_hitbox;
 }
 
-bool colliding(const ball& a, const ball& b) noexcept
+bool colliding(const ball& a, const ball& b)
 {
-	return tr::intersecting(a.hitbox(), b.hitbox()) && glm::dot(a._hitbox.c - b._hitbox.c, b._velocity - a._velocity) >= 0;
+	return tr::intersecting(a.hitbox(), b.hitbox()) && glm::dot(a.m_hitbox.c - b.m_hitbox.c, b.m_velocity - a.m_velocity) >= 0;
 }
 
 ///////////////////////////////////////////////////////////////// SETTERS /////////////////////////////////////////////////////////////////
 
-void handle_collision(ball& a, ball& b) noexcept
+void handle_collision(ball& a, ball& b)
 {
-	const glm::vec2 dist_vec{a._hitbox.c - b._hitbox.c};
-	const glm::vec2 vel_diff{a._velocity - b._velocity};
+	const glm::vec2 dist_vec{a.m_hitbox.c - b.m_hitbox.c};
+	const glm::vec2 vel_diff{a.m_velocity - b.m_velocity};
 	const glm::vec2 dist2{dist_vec.x * dist_vec.x + dist_vec.y * dist_vec.y};
-	const float a_mass{a._hitbox.r * a._hitbox.r};
-	const float b_mass{b._hitbox.r * b._hitbox.r};
+	const float a_mass{a.m_hitbox.r * a.m_hitbox.r};
+	const float b_mass{b.m_hitbox.r * b.m_hitbox.r};
 	const float total_mass{a_mass + b_mass};
 
-	play_ball_sound(b._hitbox.c + dist_vec / 2.0f, std::max(glm::length(a._velocity), glm::length(b._velocity)));
+	play_ball_sound(b.m_hitbox.c + dist_vec / 2.0f, std::max(glm::length(a.m_velocity), glm::length(b.m_velocity)));
 
-	a._velocity -= ((2 * b_mass / total_mass) * (glm::dot(dist_vec, vel_diff) / dist2) * dist_vec);
-	b._velocity -= ((2 * a_mass / total_mass) * (glm::dot(-dist_vec, -vel_diff) / dist2) * -dist_vec);
+	a.m_velocity -= ((2 * b_mass / total_mass) * (glm::dot(dist_vec, vel_diff) / dist2) * dist_vec);
+	b.m_velocity -= ((2 * a_mass / total_mass) * (glm::dot(-dist_vec, -vel_diff) / dist2) * -dist_vec);
 
-	a._last_collision = 0;
-	b._last_collision = 0;
+	a.m_last_collision = 0;
+	b.m_last_collision = 0;
 }
 
-void ball::update() noexcept
+void ball::update()
 {
-	++_age;
-	++_last_collision;
+	++m_age;
+	++m_last_collision;
 
-	if (_age >= BALL_SPAWN_TIME) {
-		_trail.push(_hitbox.c);
+	if (m_age >= BALL_SPAWN_TIME) {
+		m_trail.push(m_hitbox.c);
 
-		const glm::vec2 target{_hitbox.c + _velocity / 1_sf};
-		const glm::vec2 clamped{tr::mirror_repeat(target, glm::vec2{FIELD_MIN + _hitbox.r}, glm::vec2{FIELD_MAX - _hitbox.r})};
+		const glm::vec2 target{m_hitbox.c + m_velocity / 1_sf};
+		const glm::vec2 clamped{tr::mirror_repeat(target, glm::vec2{FIELD_MIN + m_hitbox.r}, glm::vec2{FIELD_MAX - m_hitbox.r})};
 
 		if (target == clamped) {
-			_hitbox.c = target;
+			m_hitbox.c = target;
 			return;
 		}
 
 		if (clamped.x > target.x) {
-			_velocity.x = std::abs(_velocity.x);
+			m_velocity.x = std::abs(m_velocity.x);
 		}
 		else if (clamped.x < target.x) {
-			_velocity.x = -std::abs(_velocity.x);
+			m_velocity.x = -std::abs(m_velocity.x);
 		}
 
 		if (clamped.y > target.y) {
-			_velocity.y = std::abs(_velocity.y);
+			m_velocity.y = std::abs(m_velocity.y);
 		}
 		else if (clamped.y < target.y) {
-			_velocity.y = -std::abs(_velocity.y);
+			m_velocity.y = -std::abs(m_velocity.y);
 		}
 
 		if (clamped != target) {
-			play_ball_sound(clamped, glm::length(_velocity));
+			play_ball_sound(clamped, glm::length(m_velocity));
 		}
 
-		_hitbox.c = clamped;
-		_last_collision = 0;
+		m_hitbox.c = clamped;
+		m_last_collision = 0;
 	}
 }
 
@@ -113,28 +114,28 @@ void ball::update() noexcept
 
 void ball::add_to_renderer() const
 {
-	const tr::rgb8 tint{tr::color_cast<tr::rgb8>(tr::hsv{static_cast<float>(settings.secondary_hue), 1, 1})};
-	const float raw_age_factor{std::min(static_cast<float>(_age) / BALL_SPAWN_TIME, 1.0f)};
+	const tr::rgb8 tint{tr::color_cast<tr::rgb8>(tr::hsv{static_cast<float>(engine::settings.secondary_hue), 1, 1})};
+	const float raw_age_factor{std::min(static_cast<float>(m_age) / BALL_SPAWN_TIME, 1.0f)};
 	const float eased_age_factor{raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor)};
-	const float size{_hitbox.r * (5 - 4 * eased_age_factor)};
+	const float size{m_hitbox.r * (5 - 4 * eased_age_factor)};
 	const std::size_t vertices{tr::smooth_poly_vtx(size, engine::render_scale())};
-	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(raw_age_factor)};
-	const float thickness{3 + 4 * std::max((static_cast<float>(BALL_COLLISION_TIME) - _last_collision) / BALL_COLLISION_TIME, 0.0f)};
+	const std::uint8_t base_opacity{tr::norm_cast<std::uint8_t>(raw_age_factor)};
+	const float thickness{3 + 4 * std::max((static_cast<float>(BALL_COLLISION_TIME) - m_last_collision) / BALL_COLLISION_TIME, 0.0f)};
 
 	// Add the ball.
 	const tr::simple_color_mesh_ref fill{tr::renderer_2d::new_color_fan(layer::BALLS, vertices)};
-	tr::fill_poly_vtx(fill.positions, vertices, {_hitbox.c - thickness / 2, size});
-	std::ranges::fill(fill.colors, tr::rgba8{BALL_FILL_COLOR, opacity});
+	tr::fill_poly_vtx(fill.positions, vertices, {m_hitbox.c - thickness / 2, size});
+	std::ranges::fill(fill.colors, tr::rgba8{BALL_FILL_COLOR, base_opacity});
 	const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::BALLS, vertices)};
-	tr::fill_poly_outline_vtx(outline.positions, vertices, {_hitbox.c, size}, 0_deg, thickness);
-	std::ranges::fill(outline.colors, tr::rgba8{tint, opacity});
+	tr::fill_poly_outline_vtx(outline.positions, vertices, {m_hitbox.c, size}, 0_deg, thickness);
+	std::ranges::fill(outline.colors, tr::rgba8{tint, base_opacity});
 
 	// Add the trail.
-	if (_age > BALL_SPAWN_TIME) {
+	if (m_age > BALL_SPAWN_TIME) {
 		std::size_t drawn_trails{2};
-		for (std::size_t i = 0; i < _trail.SIZE - 1; ++i) {
-			const glm::vec2 prev{i == 0 ? _hitbox.c : _trail[i - 1]};
-			if (!tr::collinear(prev, _trail[i], _trail[i + 1])) {
+		for (std::size_t i = 0; i < m_trail.SIZE - 1; ++i) {
+			const glm::vec2 prev{i == 0 ? m_hitbox.c : m_trail[i - 1]};
+			if (!tr::collinear(prev, m_trail[i], m_trail[i + 1])) {
 				++drawn_trails;
 			}
 		}
@@ -142,23 +143,23 @@ void ball::add_to_renderer() const
 		const std::size_t trail_indices{(drawn_trails - 1) * vertices * 6};
 
 		tr::color_mesh_ref trail{tr::renderer_2d::new_color_mesh(layer::BALL_TRAILS, trail_vertices, trail_indices)};
-		tr::fill_poly_vtx(trail.positions | std::views::take(vertices), vertices, _hitbox);
+		tr::fill_poly_vtx(trail.positions | std::views::take(vertices), vertices, m_hitbox);
 		std::ranges::fill(trail.colors | std::views::take(vertices), tr::rgba8{tint, tr::norm_cast<std::uint8_t>(0.4f)});
 		std::size_t trail_index{1};
 		std::vector<std::uint16_t>::iterator indices_it{trail.indices.begin()};
-		for (std::size_t i = 0; i < _trail.SIZE; ++i) {
+		for (std::size_t i = 0; i < m_trail.SIZE; ++i) {
 			// Cull unnecessary trail vertices.
-			if (i < _trail.SIZE - 1) {
-				const glm::vec2 prev{i == 0 ? _hitbox.c : _trail[i - 1]};
-				if (tr::collinear(prev, _trail[i], _trail[i + 1])) {
+			if (i < m_trail.SIZE - 1) {
+				const glm::vec2 prev{i == 0 ? m_hitbox.c : m_trail[i - 1]};
+				if (tr::collinear(prev, m_trail[i], m_trail[i + 1])) {
 					continue;
 				}
 			}
 
-			const std::uint8_t opacity{tr::norm_cast<std::uint8_t>((_trail.SIZE - i - 1) * 0.4f / _trail.SIZE)};
+			const std::uint8_t opacity{tr::norm_cast<std::uint8_t>((m_trail.SIZE - i - 1) * 0.4f / m_trail.SIZE)};
 			const auto positions{trail.positions | std::views::drop(trail_index * vertices) | std::views::take(vertices)};
 			const auto colors{trail.colors | std::views::drop(trail_index * vertices) | std::views::take(vertices)};
-			tr::fill_poly_vtx(positions, vertices, {_trail[i], _hitbox.r});
+			tr::fill_poly_vtx(positions, vertices, {m_trail[i], m_hitbox.r});
 			std::ranges::fill(colors, tr::rgba8{tint, opacity});
 			for (std::size_t j = 0; j < vertices; ++j) {
 				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + trail_index * vertices + j);

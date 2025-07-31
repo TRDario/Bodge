@@ -43,33 +43,35 @@ void tr::binary_writer<score_category>::write_to_stream(std::ostream& os, const 
 
 //////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
 
-ticks scorefile_t::category_pb(const gamemode& gamemode) const
+ticks pb(const scorefile& sf, const gamemode& gm)
 {
-	std::vector<score_category>::const_iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gamemode; })};
-	return it != categories.end() ? it->pb : 0;
+	std::vector<score_category>::const_iterator it{std::ranges::find_if(sf.categories, [&](const auto& c) { return c.gamemode == gm; })};
+	return it != sf.categories.end() ? it->pb : 0;
 }
 
-void scorefile_t::update_category(const gamemode& gamemode, ticks pb)
+void update_pb(scorefile& sf, const gamemode& gm, ticks pb)
 {
-	std::vector<score_category>::iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gamemode; })};
-	if (it == categories.end()) {
-		it = categories.insert(it, {gamemode, pb, {}});
+	std::vector<score_category>::iterator it{std::ranges::find_if(sf.categories, [&](const auto& c) { return c.gamemode == gm; })};
+	if (it == sf.categories.end()) {
+		it = sf.categories.insert(it, {gm, pb, {}});
 	}
 	else {
 		it->pb = std::max(it->pb, pb);
 	}
 }
 
-void scorefile_t::add_score(const gamemode& gamemode, const score& score)
+void add_score(scorefile& sf, const gamemode& gm, const score& s)
 {
-	std::vector<score_category>::iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gamemode; })};
-	if (it == categories.end()) {
-		it = categories.insert(it, {gamemode, 0, {}});
+	std::vector<score_category>::iterator it{std::ranges::find_if(sf.categories, [&](const auto& c) { return c.gamemode == gm; })};
+	if (it == sf.categories.end()) {
+		it = sf.categories.insert(it, {gm, 0, {}});
 	}
-	it->scores.insert(std::upper_bound(it->scores.begin(), it->scores.end(), score, std::greater<>{}), score);
+	it->scores.insert(std::upper_bound(it->scores.begin(), it->scores.end(), s, std::greater<>{}), s);
 }
 
-void scorefile_t::load_from_file()
+///////////////////////////////////////////////////////////////// ENGINE //////////////////////////////////////////////////////////////////
+
+void engine::load_scorefile()
 {
 	const std::filesystem::path path{cli_settings.userdir / "scorefile.dat"};
 	try {
@@ -82,10 +84,10 @@ void scorefile_t::load_from_file()
 		}
 		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 		std::span<const std::byte> data{raw};
-		data = tr::binary_read(data, name);
-		data = tr::binary_read(data, categories);
-		data = tr::binary_read(data, playtime);
-		data = tr::binary_read(data, last_selected_gamemode);
+		data = tr::binary_read(data, scorefile.name);
+		data = tr::binary_read(data, scorefile.categories);
+		data = tr::binary_read(data, scorefile.playtime);
+		data = tr::binary_read(data, scorefile.last_selected);
 		LOG(tr::severity::INFO, "Loaded scorefile.");
 		LOG_CONTINUE("From: '{}'", path.string());
 	}
@@ -96,16 +98,16 @@ void scorefile_t::load_from_file()
 	}
 }
 
-void scorefile_t::save_to_file()
+void engine::save_scorefile()
 {
 	const std::filesystem::path path{cli_settings.userdir / "scorefile.dat"};
 	try {
 		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
 		std::ostringstream buffer;
-		tr::binary_write(buffer, name);
-		tr::binary_write(buffer, categories);
-		tr::binary_write(buffer, playtime);
-		tr::binary_write(buffer, last_selected_gamemode);
+		tr::binary_write(buffer, scorefile.name);
+		tr::binary_write(buffer, scorefile.categories);
+		tr::binary_write(buffer, scorefile.playtime);
+		tr::binary_write(buffer, scorefile.last_selected);
 		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rng.generate<std::uint8_t>())};
 		tr::binary_write(file, SCOREFILE_VERSION);
 		tr::binary_write(file, std::span{encrypted});

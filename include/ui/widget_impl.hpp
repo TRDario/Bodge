@@ -1,6 +1,6 @@
 #pragma once
 #include "../audio.hpp"
-#include "../engine.hpp"
+#include "../graphics.hpp"
 #include "widget.hpp"
 
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
@@ -21,10 +21,10 @@ line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr
 				  font_size,
 				  tr::UNLIMITED_WIDTH,
 				  {160, 160, 160, 160},
-				  [this](auto&) { return buffer.empty() ? std::string{localization["empty"]} : std::string{buffer}; }}
-	, status_cb{std::move(status_cb)}
-	, enter_cb{std::move(enter_cb)}
-	, has_focus{false}
+				  [this](auto&) { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
+	, m_status_cb{std::move(status_cb)}
+	, m_enter_cb{std::move(enter_cb)}
+	, m_has_focus{false}
 {
 }
 
@@ -45,20 +45,20 @@ template <std::size_t S> void line_input_widget<S>::add_to_renderer()
 
 template <std::size_t S> bool line_input_widget<S>::active() const
 {
-	return status_cb();
+	return m_status_cb();
 }
 
 template <std::size_t S> void line_input_widget<S>::on_hover()
 {
-	if (!has_focus) {
+	if (!m_has_focus) {
 		color.change({220, 220, 220, 220}, 0.2_s);
-		audio::play_sound(sound::HOVER, 0.15f, 0.0f, rng.generate(0.9f, 1.1f));
+		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
 }
 
 template <std::size_t S> void line_input_widget<S>::on_unhover()
 {
-	if (!has_focus) {
+	if (!m_has_focus) {
 		color.change({160, 160, 160, 160}, 0.2_s);
 	}
 }
@@ -66,7 +66,7 @@ template <std::size_t S> void line_input_widget<S>::on_unhover()
 template <std::size_t S> void line_input_widget<S>::on_hold_begin()
 {
 	color = {32, 32, 32, 255};
-	audio::play_sound(sound::HOLD, 0.2f, 0.0f, rng.generate(0.9f, 1.1f));
+	engine::play_sound(sound::HOLD, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 template <std::size_t S> void line_input_widget<S>::on_hold_transfer_in()
@@ -81,20 +81,20 @@ template <std::size_t S> void line_input_widget<S>::on_hold_transfer_out()
 
 template <std::size_t S> void line_input_widget<S>::on_hold_end()
 {
-	has_focus = true;
+	m_has_focus = true;
 	color = "FFFFFF"_rgba8;
 }
 
 template <std::size_t S> void line_input_widget<S>::on_gain_focus()
 {
-	has_focus = true;
+	m_has_focus = true;
 	color.change("FFFFFF"_rgba8, 0.2_s);
-	audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
+	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 template <std::size_t S> void line_input_widget<S>::on_lose_focus()
 {
-	has_focus = false;
+	m_has_focus = false;
 	color.change({160, 160, 160, 160}, 0.2_s);
 }
 
@@ -102,27 +102,27 @@ template <std::size_t S> void line_input_widget<S>::on_write(std::string_view in
 {
 	if (buffer.size() + input.size() <= S) {
 		buffer.append(input);
-		audio::play_sound(sound::TYPE, 0.2f, 0.0f, rng.generate(0.75f, 1.25f));
+		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <std::size_t S> void line_input_widget<S>::on_enter()
 {
-	enter_cb();
+	m_enter_cb();
 }
 
 template <std::size_t S> void line_input_widget<S>::on_erase()
 {
 	if (!buffer.empty()) {
 		buffer.pop_back();
-		audio::play_sound(sound::TYPE, 0.2f, 0.0f, rng.generate(0.75f, 1.25f));
+		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <std::size_t S> void line_input_widget<S>::on_clear()
 {
 	buffer.clear();
-	audio::play_sound(sound::TYPE, 0.2f, 0.0f, rng.generate(0.75f, 1.25f));
+	engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 }
 
 template <std::size_t S> void line_input_widget<S>::on_copy()
@@ -136,7 +136,7 @@ template <std::size_t S> void line_input_widget<S>::on_paste()
 		std::string pasted{tr::clipboard::get()};
 		std::erase(pasted, '\n');
 		buffer += (buffer.size() + pasted.size() > S) ? std::string_view{pasted}.substr(0, S - buffer.size()) : pasted;
-		audio::play_sound(sound::TYPE, 0.2f, 0.0f, rng.generate(0.75f, 1.25f));
+		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
 
@@ -169,8 +169,8 @@ replay_widget::replay_widget(std::string_view name, glm::vec2 pos, tr::align ali
 								const auto hour{hhmmss.hours().count()};
 								const auto minute{hhmmss.minutes().count()};
 								return std::format("{} ({}: {})\n{} | {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", rpy.name,
-												   localization["by"], rpy.player, rpy.gamemode.name_loc(), result_m, result_s, result_ms,
-												   year, month, day, hour, minute);
+												   engine::loc["by"], rpy.player, ::name(rpy.gamemode), result_m, result_s, result_ms, year,
+												   month, day, hour, minute);
 							},
 							[=, this] { return base_status_cb() && this->it.has_value(); },
 							[=, this] {
@@ -192,13 +192,13 @@ replay_widget::replay_widget(std::string_view name, glm::vec2 pos, tr::align ali
 										if (!str.empty()) {
 											str.push_back('\n');
 										}
-										str.append(localization["exited_prematurely"]);
+										str.append(engine::loc["exited_prematurely"]);
 									}
 									if (header.flags.modified_game_speed) {
 										if (!str.empty()) {
 											str.push_back('\n');
 										}
-										str.append(localization["modified_game_speed"]);
+										str.append(engine::loc["modified_game_speed"]);
 									}
 									return str;
 								}
@@ -227,17 +227,17 @@ multiline_input_widget<S>::multiline_input_widget(std::string_view name, glm::ve
 				  font_size,
 				  static_cast<int>(width),
 				  {160, 160, 160, 160},
-				  [this](auto&) { return buffer.empty() ? std::string{localization["empty"]} : std::string{buffer}; }}
-	, status_cb{std::move(status_cb)}
-	, size_{width, fonts::line_skip(font::LANGUAGE, font_size) * max_lines + 4}
-	, max_lines{max_lines}
-	, has_focus{false}
+				  [this](auto&) { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
+	, m_status_cb{std::move(status_cb)}
+	, m_size{width, engine::line_skip(font::LANGUAGE, font_size) * max_lines + 4}
+	, m_max_lines{max_lines}
+	, m_has_focus{false}
 {
 }
 
 template <std::size_t S> glm::vec2 multiline_input_widget<S>::size() const
 {
-	return size_;
+	return m_size;
 }
 
 template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
@@ -267,20 +267,20 @@ template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 
 template <std::size_t S> bool multiline_input_widget<S>::active() const
 {
-	return status_cb();
+	return m_status_cb();
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_hover()
 {
-	if (!has_focus) {
+	if (!m_has_focus) {
 		color.change({220, 220, 220, 220}, 0.2_s);
-		audio::play_sound(sound::HOVER, 0.2f, 0.0f, rng.generate(0.9f, 1.1f));
+		engine::play_sound(sound::HOVER, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_unhover()
 {
-	if (!has_focus) {
+	if (!m_has_focus) {
 		color.change({160, 160, 160, 160}, 0.2_s);
 	}
 }
@@ -288,7 +288,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_unhover()
 template <std::size_t S> void multiline_input_widget<S>::on_hold_begin()
 {
 	color = {32, 32, 32, 255};
-	audio::play_sound(sound::HOLD, 0.2f, 0.0f, rng.generate(0.9f, 1.1f));
+	engine::play_sound(sound::HOLD, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_hold_transfer_in()
@@ -303,20 +303,20 @@ template <std::size_t S> void multiline_input_widget<S>::on_hold_transfer_out()
 
 template <std::size_t S> void multiline_input_widget<S>::on_hold_end()
 {
-	has_focus = true;
+	m_has_focus = true;
 	color = "FFFFFF"_rgba8;
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_gain_focus()
 {
-	has_focus = true;
+	m_has_focus = true;
 	color.change("FFFFFF"_rgba8, 0.2_s);
-	audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
+	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_lose_focus()
 {
-	has_focus = false;
+	m_has_focus = false;
 	color.change({160, 160, 160, 160}, 0.2_s);
 }
 
@@ -324,20 +324,20 @@ template <std::size_t S> void multiline_input_widget<S>::on_write(std::string_vi
 {
 	if (buffer.size() + input.size() <= S) {
 		buffer.append(input);
-		if (fonts::count_lines(buffer, font::LANGUAGE, tr::ttf_style::NORMAL, font_size, font_size / 12, size_.x) > max_lines) {
+		if (engine::count_lines(buffer, font::LANGUAGE, tr::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) > m_max_lines) {
 			buffer.pop_back();
 		}
 		else {
-			audio::play_sound(sound::TYPE, 0.2f, 0.0f, rng.generate(0.75f, 1.25f));
+			engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 		}
 	}
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_enter()
 {
-	if (fonts::count_lines(buffer, font::LANGUAGE, tr::ttf_style::NORMAL, font_size, font_size / 12, size_.x) < max_lines) {
+	if (engine::count_lines(buffer, font::LANGUAGE, tr::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
 		buffer.append('\n');
-		audio::play_sound(sound::TYPE, 0.2f, 0.0f, rng.generate(0.75f, 1.25f));
+		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
 
@@ -345,14 +345,14 @@ template <std::size_t S> void multiline_input_widget<S>::on_erase()
 {
 	if (!buffer.empty()) {
 		buffer.pop_back();
-		audio::play_sound(sound::TYPE, 0.2f, 0.0f, rng.generate(0.75f, 1.25f));
+		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_clear()
 {
 	buffer.clear();
-	audio::play_sound(sound::TYPE, 0.2f, 0.0f, rng.generate(0.75f, 1.25f));
+	engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_copy()
@@ -368,10 +368,10 @@ template <std::size_t S> void multiline_input_widget<S>::on_paste()
 			tr::static_string<S> copy{buffer};
 			copy += (buffer.size() + pasted.size() > S) ? std::string_view{pasted}.substr(0, S - buffer.size()) : pasted;
 			// Replace this with a smarter solution eventually, maybe.
-			if (fonts::count_lines(copy, font::LANGUAGE, tr::ttf_style::NORMAL, font_size, font_size / 12, size_.x) <= max_lines) {
+			if (engine::count_lines(copy, font::LANGUAGE, tr::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) <= m_max_lines) {
 				buffer = copy;
 			}
-			audio::play_sound(sound::TYPE, 0.2f, 0.0f, rng.generate(0.75f, 1.25f));
+			engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 		}
 	}
 	catch (...) {

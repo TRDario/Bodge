@@ -8,7 +8,7 @@ class start_game_state : public tr::state {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates the start game state.
-	start_game_state(std::unique_ptr<game>&& game) noexcept;
+	start_game_state(std::unique_ptr<game>&& game);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -33,20 +33,20 @@ class start_game_state : public tr::state {
 	};
 
 	// The current menu substate.
-	substate _substate;
+	substate m_substate;
 	// Internal timer.
-	ticks _timer;
+	ticks m_timer;
 	// The UI manager.
-	ui_manager _ui;
+	ui_manager m_ui;
 	// Background game.
-	std::unique_ptr<game> _game;
+	std::unique_ptr<game> m_background_game;
 	// The list of available gamemodes.
-	std::vector<gamemode> _gamemodes;
+	std::vector<gamemode> m_gamemodes;
 	// The currently-selected gamemode.
-	std::vector<gamemode>::iterator _cur;
+	std::vector<gamemode>::iterator m_selected;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Sets up the exit animation.
-	void set_up_exit_animation() noexcept;
+	void set_up_exit_animation();
 };

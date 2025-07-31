@@ -10,25 +10,25 @@ class player {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a player.
-	player(const player_settings& settings, ticks pb) noexcept;
+	player(const player_settings& settings, ticks pb);
 
 	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
 
 	// Gets whether the game is over.
-	bool game_over() const noexcept;
+	bool game_over() const;
 	// Gets the amount of time that passed since game over.
-	ticks time_since_game_over() const noexcept;
+	ticks time_since_game_over() const;
 	// Checks whether a player and any balls are colliding.
-	friend bool colliding(const player& player, const tr::static_vector<ball, 255>& balls) noexcept;
+	friend bool colliding(const player& player, const tr::static_vector<ball, 255>& balls);
 
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Hits the player.
-	void hit() noexcept;
+	void hit();
 	// Updates the player state without updating the position.
-	void update() noexcept;
+	void update();
 	// Updates the player state.
-	void update(glm::vec2 target) noexcept;
+	void update(glm::vec2 target);
 
 	////////////////////////////////////////////////////////////// GRAPHICS ///////////////////////////////////////////////////////////////
 
@@ -48,40 +48,40 @@ class player {
 		tr::angle rotvel;
 
 		// Updates the fragment.
-		void update() noexcept;
+		void update();
 	};
 
 	// The player hitbox.
-	tr::circle _hitbox;
+	tr::circle m_hitbox;
 	// Control points of the player's trail.
-	trail _trail;
+	trail m_trail;
 	// The death fragments.
-	std::array<death_fragment, 6> _fragments;
+	std::array<death_fragment, 6> m_fragments;
 	// The number of lives left.
-	int _lives;
+	int m_lives;
 	// The player's movement inertia.
-	float _inertia;
+	float m_inertia;
 	// Internal timer.
-	ticks _timer;
+	ticks m_timer;
 	// Internal timer.
-	ticks _game_over_timer;
+	ticks m_game_over_timer;
 	// The remaining invulnerability in ticks (0 if not invulnerable).
-	ticks _iframes;
+	ticks m_iframes;
 	// The accumulated time spent hovering over the lives UI.
-	ticks _lives_hover_time;
+	ticks m_lives_hover_time;
 	// The accumulated time spent hovering over the timer text.
-	ticks _timer_hover_time;
+	ticks m_timer_hover_time;
 	// An atlas holding the timer graphics.
-	tr::dyn_atlas<char> _atlas;
+	tr::dyn_atlas<char> m_atlas;
 	// Previous personal best.
-	ticks _pb;
+	ticks m_pb;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Gets the size of timer text.
-	glm::vec2 timer_text_size(const std::string& text, float scale) const noexcept;
+	glm::vec2 timer_text_size(const std::string& text, float scale) const;
 	// Sets up the fragments for the death animation.
-	void set_up_death_fragments() noexcept;
+	void set_up_death_fragments();
 
 	// Adds the player fill to the renderer.
 	void add_fill_to_renderer(std::uint8_t opacity, tr::angle rotation, float size) const;

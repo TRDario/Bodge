@@ -1,31 +1,31 @@
 #include "../../include/ui/interpolated.hpp"
 
 interpolated_float::interpolated_float(float value)
-	: start{}, end{value}, len{0}, pos{0}
+	: m_start{}, m_end{value}, m_len{0}, m_pos{0}
 {
 }
 
 interpolated_float::interpolated_float(float start, float end, std::uint16_t time)
-	: start{start}, end{end}, len{time}, pos{0}
+	: m_start{start}, m_end{end}, m_len{time}, m_pos{0}
 {
 }
 
 void interpolated_float::update()
 {
-	if (len != 0 && ++pos == len) {
-		len = 0;
+	if (m_len != 0 && ++m_pos == m_len) {
+		m_len = 0;
 	}
 }
 
 interpolated_float::operator float() const
 {
-	if (len == 0) {
-		return end;
+	if (m_len == 0) {
+		return m_end;
 	}
 	else {
-		float ratio{static_cast<float>(pos) / len};
+		float ratio{static_cast<float>(m_pos) / m_len};
 		ratio = ratio < 0.5f ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
-		return start + (end - start) * ratio;
+		return m_start + (m_end - m_start) * ratio;
 	}
 }
 
@@ -42,31 +42,31 @@ interpolated_float& interpolated_float::operator=(float r)
 //
 
 interpolated_vec2::interpolated_vec2(glm::vec2 value)
-	: start{}, end{value}, len{0}, pos{0}
+	: m_start{}, m_end{value}, m_len{0}, m_pos{0}
 {
 }
 
 interpolated_vec2::interpolated_vec2(glm::vec2 start, glm::vec2 end, std::uint16_t time)
-	: start{start}, end{end}, len{time}, pos{0}
+	: m_start{start}, m_end{end}, m_len{time}, m_pos{0}
 {
 }
 
 void interpolated_vec2::update()
 {
-	if (len != 0 && ++pos == len) {
-		len = 0;
+	if (m_len != 0 && ++m_pos == m_len) {
+		m_len = 0;
 	}
 }
 
 interpolated_vec2::operator glm::vec2() const
 {
-	if (len == 0) {
-		return end;
+	if (m_len == 0) {
+		return m_end;
 	}
 	else {
-		float ratio{static_cast<float>(pos) / len};
+		float ratio{static_cast<float>(m_pos) / m_len};
 		ratio = ratio < 0.5f ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
-		return start + (end - start) * ratio;
+		return m_start + (m_end - m_start) * ratio;
 	}
 }
 
@@ -83,32 +83,33 @@ interpolated_vec2& interpolated_vec2::operator=(glm::vec2 r)
 //
 
 interpolated_rgba8::interpolated_rgba8(tr::rgba8 value)
-	: start{}, end{value}, len{0}, pos{0}
+	: m_start{}, m_end{value}, m_len{0}, m_pos{0}
 {
 }
 
 interpolated_rgba8::interpolated_rgba8(tr::rgba8 start, tr::rgba8 end, std::uint16_t time)
-	: start{start}, end{end}, len{time}, pos{0}
+	: m_start{start}, m_end{end}, m_len{time}, m_pos{0}
 {
 }
 
 void interpolated_rgba8::update()
 {
-	if (len != 0 && ++pos == len) {
-		len = 0;
+	if (m_len != 0 && ++m_pos == m_len) {
+		m_len = 0;
 	}
 }
 
 interpolated_rgba8::operator tr::rgba8() const
 {
-	if (len == 0) {
-		return end;
+	if (m_len == 0) {
+		return m_end;
 	}
 	else {
-		float ratio{static_cast<float>(pos) / len};
-		return {
-			static_cast<std::uint8_t>(start.r + (end.r - start.r) * ratio), static_cast<std::uint8_t>(start.g + (end.g - start.g) * ratio),
-			static_cast<std::uint8_t>(start.b + (end.b - start.b) * ratio), static_cast<std::uint8_t>(start.a + (end.a - start.a) * ratio)};
+		float ratio{static_cast<float>(m_pos) / m_len};
+		return {static_cast<std::uint8_t>(m_start.r + (m_end.r - m_start.r) * ratio),
+				static_cast<std::uint8_t>(m_start.g + (m_end.g - m_start.g) * ratio),
+				static_cast<std::uint8_t>(m_start.b + (m_end.b - m_start.b) * ratio),
+				static_cast<std::uint8_t>(m_start.a + (m_end.a - m_start.a) * ratio)};
 	}
 }
 

@@ -1,5 +1,5 @@
 #include "../include/blur_renderer.hpp"
-#include "../include/engine.hpp"
+#include "../include/graphics.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -26,23 +26,23 @@ constexpr std::array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 blur_renderer::blur_renderer(int texture_size)
-	: input_texture{glm::ivec2{texture_size}}
-	, auxiliary_texture{glm::ivec2{texture_size}}
-	, pipeline{tr::vertex_shader{VERTEX_SHADER_SRC}, tr::fragment_shader{FRAGMENT_SHADER_SRC}}
-	, vertex_format{tr::vertex_attributef{tr::vertex_attributef::type::SI8, 2, false, 0, 0}}
-	, vertex_buffer{MESH}
+	: m_input_texture{glm::ivec2{texture_size}}
+	, m_auxiliary_texture{glm::ivec2{texture_size}}
+	, m_pipeline{tr::vertex_shader{VERTEX_SHADER_SRC}, tr::fragment_shader{FRAGMENT_SHADER_SRC}}
+	, m_vertex_format{tr::vertex_attributef{tr::vertex_attributef::type::SI8, 2, false, 0, 0}}
+	, m_vertex_buffer{MESH}
 {
-	texture_unit.set_texture(input_texture);
-	pipeline.fragment_shader().set_uniform(0, texture_unit);
-	pipeline.fragment_shader().set_uniform(1, static_cast<glm::vec2>(input_texture.size()));
+	m_texture_unit.set_texture(m_input_texture);
+	m_pipeline.fragment_shader().set_uniform(0, m_texture_unit);
+	m_pipeline.fragment_shader().set_uniform(1, static_cast<glm::vec2>(m_input_texture.size()));
 	if (tr::gfx_context::debug()) {
-		input_texture.set_label("(Bodge) Blur Renderer Input Texture");
-		auxiliary_texture.set_label("(Bodge) Blur Renderer Auxilliary Texture");
-		pipeline.set_label("(Bodge) Blur Renderer Pipeline");
-		pipeline.vertex_shader().set_label("(Bodge) Blur Renderer Vertex Shader");
-		pipeline.fragment_shader().set_label("(Bodge) Blur Renderer Fragment Shader");
-		vertex_format.set_label("(Bodge) Blur Renderer Vertex Format");
-		vertex_buffer.set_label("(Bodge) Blur Renderer Vertex Buffer");
+		m_input_texture.set_label("(Bodge) Blur Renderer Input Texture");
+		m_auxiliary_texture.set_label("(Bodge) Blur Renderer Auxilliary Texture");
+		m_pipeline.set_label("(Bodge) Blur Renderer Pipeline");
+		m_pipeline.vertex_shader().set_label("(Bodge) Blur Renderer Vertex Shader");
+		m_pipeline.fragment_shader().set_label("(Bodge) Blur Renderer Fragment Shader");
+		m_vertex_format.set_label("(Bodge) Blur Renderer Vertex Format");
+		m_vertex_buffer.set_label("(Bodge) Blur Renderer Vertex Buffer");
 	}
 }
 
@@ -50,8 +50,8 @@ blur_renderer::blur_renderer(int texture_size)
 
 tr::render_target blur_renderer::input()
 {
-	input_texture.clear({});
-	return input_texture;
+	m_input_texture.clear({});
+	return m_input_texture;
 }
 
 void blur_renderer::draw(float saturation, float strength)
@@ -59,19 +59,19 @@ void blur_renderer::draw(float saturation, float strength)
 	strength = std::max(std::round(strength * engine::render_scale()), 2.0f);
 
 	tr::gfx_context::set_renderer(RENDERER_ID);
-	tr::gfx_context::set_shader_pipeline(pipeline);
-	tr::gfx_context::set_vertex_format(vertex_format);
-	tr::gfx_context::set_vertex_buffer(vertex_buffer, 0, 0);
+	tr::gfx_context::set_shader_pipeline(m_pipeline);
+	tr::gfx_context::set_vertex_format(m_vertex_format);
+	tr::gfx_context::set_vertex_buffer(m_vertex_buffer, 0, 0);
 	tr::gfx_context::set_blend_mode(tr::PREMUL_ALPHA_BLENDING);
-	texture_unit.set_texture(input_texture);
-	pipeline.fragment_shader().set_uniform(2, saturation);
-	pipeline.fragment_shader().set_uniform(3, strength);
-	pipeline.fragment_shader().set_uniform(4, 0);
-	auxiliary_texture.clear({});
-	tr::gfx_context::set_render_target(auxiliary_texture);
+	m_texture_unit.set_texture(m_input_texture);
+	m_pipeline.fragment_shader().set_uniform(2, saturation);
+	m_pipeline.fragment_shader().set_uniform(3, strength);
+	m_pipeline.fragment_shader().set_uniform(4, 0);
+	m_auxiliary_texture.clear({});
+	tr::gfx_context::set_render_target(m_auxiliary_texture);
 	tr::gfx_context::draw(tr::primitive::TRI_FAN, 0, 4);
-	texture_unit.set_texture(auxiliary_texture);
-	pipeline.fragment_shader().set_uniform(4, 1);
+	m_texture_unit.set_texture(m_auxiliary_texture);
+	m_pipeline.fragment_shader().set_uniform(4, 1);
 	tr::gfx_context::set_render_target(engine::screen());
 	tr::gfx_context::draw(tr::primitive::TRI_FAN, 0, 4);
 }

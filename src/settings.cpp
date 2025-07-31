@@ -1,28 +1,38 @@
 #include "../include/settings.hpp"
 
+template <> struct tr::binary_reader<settings> : tr::default_binary_reader<settings> {};
+template <> struct tr::binary_writer<settings> : tr::default_binary_writer<settings> {};
+
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings file version identifier.
 constexpr std::uint8_t SETTINGS_VERSION{0};
 
-////////////////////////////////////////////////////////////// CLI SETTINGS ///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-void cli_settings_t::parse(int argc, const char** argv)
+namespace engine {
+	void raw_load_settings();
+	void validate_settings();
+} // namespace engine
+
+///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
+
+void engine::parse_command_line(int argc, const char** argv)
 {
 	for (int i = 1; i < argc; ++i) {
 		const std::string_view arg{argv[i]};
 
 		if (arg == "--datadir" && ++i < argc) {
-			datadir = argv[i];
+			cli_settings.datadir = argv[i];
 		}
 		else if (arg == "--userdir" && ++i < argc) {
-			userdir = argv[i];
+			cli_settings.userdir = argv[i];
 		}
 		else if (arg == "--gamespeed" && ++i < argc) {
-			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), game_speed);
+			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.game_speed);
 		}
 		else if (arg == "--debug") {
-			debug_mode = true;
+			cli_settings.debug_mode = true;
 		}
 		else if (arg == "--help") {
 			std::cout << "Bodge v0.1.0 by TRDario, 2025.\n"
@@ -35,31 +45,29 @@ void cli_settings_t::parse(int argc, const char** argv)
 		}
 	}
 
-	if (datadir.empty()) {
-		datadir = tr::executable_dir() / "data";
+	if (cli_settings.datadir.empty()) {
+		cli_settings.datadir = tr::executable_dir() / "data";
 	}
-	if (userdir.empty()) {
-		userdir = tr::user_dir();
+	if (cli_settings.userdir.empty()) {
+		cli_settings.userdir = tr::user_dir();
 	}
 
 	constexpr std::array<const char*, 4> DIRECTORIES{"localization", "fonts", "replays", "gamemodes"};
 	for (const char* directory : DIRECTORIES) {
-		const std::filesystem::path path{userdir / directory};
+		const std::filesystem::path path{cli_settings.userdir / directory};
 		if (!std::filesystem::is_directory(path)) {
 			std::filesystem::create_directory(path);
 		}
 	}
 
-	if (debug_mode) {
-		tr::log = tr::logger{"tr", userdir / "tr.log"};
-		tr::gfx_context::log = tr::logger{"gl", userdir / "gl.log"};
-		logger = tr::logger{"Bodge", userdir / "Bodge.log"};
+	if (cli_settings.debug_mode) {
+		tr::log = tr::logger{"tr", cli_settings.userdir / "tr.log"};
+		tr::gfx_context::log = tr::logger{"gl", cli_settings.userdir / "gl.log"};
+		logger = tr::logger{"Bodge", cli_settings.userdir / "Bodge.log"};
 	}
 }
 
-//////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
-
-void settings_t::raw_load_from_file()
+void engine::raw_load_settings()
 {
 	const std::filesystem::path path{cli_settings.userdir / "settings.dat"};
 	try {
@@ -72,7 +80,7 @@ void settings_t::raw_load_from_file()
 			LOG_CONTINUE("Wrong settings file version.");
 			return;
 		}
-		tr::binary_read(data, *this);
+		tr::binary_read(data, settings);
 		LOG(tr::severity::INFO, "Loaded settings.");
 		LOG_CONTINUE("From: '{}'", path.string());
 	}
@@ -83,61 +91,61 @@ void settings_t::raw_load_from_file()
 	}
 }
 
-void settings_t::validate()
+void engine::validate_settings()
 {
-	if (window_size != FULLSCREEN) {
-		const int clamped{std::clamp(window_size, MIN_WINDOW_SIZE, max_window_size())};
-		if (clamped != window_size) {
-			LOG(tr::severity::WARN, "Clamped window size from {} to {}.", window_size, clamped);
-			window_size = clamped;
+	if (settings.window_size != FULLSCREEN) {
+		const int clamped{std::clamp(settings.window_size, MIN_WINDOW_SIZE, max_window_size())};
+		if (clamped != settings.window_size) {
+			LOG(tr::severity::WARN, "Clamped window size from {} to {}.", settings.window_size, clamped);
+			settings.window_size = clamped;
 		}
 	}
-	if (refresh_rate != NATIVE_REFRESH_RATE) {
-		const std::uint16_t clamped{std::clamp(refresh_rate, MIN_REFRESH_RATE, max_refresh_rate())};
-		if (clamped != refresh_rate) {
-			LOG(tr::severity::WARN, "Clamped refresh rate from {} to {}.", refresh_rate, clamped);
-			refresh_rate = clamped;
+	if (settings.refresh_rate != NATIVE_REFRESH_RATE) {
+		const std::uint16_t clamped{std::clamp(settings.refresh_rate, MIN_REFRESH_RATE, max_refresh_rate())};
+		if (clamped != settings.refresh_rate) {
+			LOG(tr::severity::WARN, "Clamped refresh rate from {} to {}.", settings.refresh_rate, clamped);
+			settings.refresh_rate = clamped;
 		}
 	}
-	const std::uint8_t adjusted{std::clamp(msaa, NO_MSAA, tr::max_msaa())};
-	if (adjusted != msaa) {
-		LOG(tr::severity::WARN, "Adjusted MSAA from x{:d} to x{:d}.", msaa, adjusted);
-		msaa = adjusted;
+	const std::uint8_t adjusted{std::clamp(settings.msaa, NO_MSAA, tr::max_msaa())};
+	if (adjusted != settings.msaa) {
+		LOG(tr::severity::WARN, "Adjusted MSAA from x{:d} to x{:d}.", settings.msaa, adjusted);
+		settings.msaa = adjusted;
 	}
-	if (primary_hue >= 360) {
-		const std::uint16_t clamped{static_cast<std::uint16_t>(primary_hue % 360)};
-		LOG(tr::severity::WARN, "Clamped primary hue from {} to {}.", primary_hue, clamped);
-		primary_hue = clamped;
+	if (settings.primary_hue >= 360) {
+		const std::uint16_t clamped{static_cast<std::uint16_t>(settings.primary_hue % 360)};
+		LOG(tr::severity::WARN, "Clamped primary hue from {} to {}.", settings.primary_hue, clamped);
+		settings.primary_hue = clamped;
 	}
-	if (secondary_hue >= 360) {
-		const std::uint16_t clamped{static_cast<std::uint16_t>(secondary_hue % 360)};
-		LOG(tr::severity::WARN, "Clamped secondary hue from {} to {}.", secondary_hue, clamped);
-		secondary_hue = clamped;
+	if (settings.secondary_hue >= 360) {
+		const std::uint16_t clamped{static_cast<std::uint16_t>(settings.secondary_hue % 360)};
+		LOG(tr::severity::WARN, "Clamped secondary hue from {} to {}.", settings.secondary_hue, clamped);
+		settings.secondary_hue = clamped;
 	}
-	if (sfx_volume > 100) {
-		LOG(tr::severity::WARN, "Clamped SFX volume from {}% to 100%.", sfx_volume);
-		sfx_volume = 100;
+	if (settings.sfx_volume > 100) {
+		LOG(tr::severity::WARN, "Clamped SFX volume from {}% to 100%.", settings.sfx_volume);
+		settings.sfx_volume = 100;
 	}
-	if (music_volume > 100) {
-		LOG(tr::severity::WARN, "Clamped music volume from {}% to 100%.", music_volume);
-		music_volume = 100;
+	if (settings.music_volume > 100) {
+		LOG(tr::severity::WARN, "Clamped music volume from {}% to 100%.", settings.music_volume);
+		settings.music_volume = 100;
 	}
 }
 
-void settings_t::load_from_file()
+void engine::load_settings()
 {
-	raw_load_from_file();
-	validate();
+	raw_load_settings();
+	validate_settings();
 }
 
-void settings_t::save_to_file()
+void engine::save_settings()
 {
 	const std::filesystem::path path{cli_settings.userdir / "settings.dat"};
 	try {
 		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
 		std::ostringstream buffer;
 		tr::binary_write(buffer, SETTINGS_VERSION);
-		tr::binary_write(buffer, *this);
+		tr::binary_write(buffer, settings);
 		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rng.generate<std::uint8_t>())};
 		tr::binary_write(file, std::span{encrypted});
 		LOG(tr::severity::INFO, "Saved settings.");

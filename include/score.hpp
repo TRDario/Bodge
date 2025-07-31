@@ -61,7 +61,7 @@ template <> struct tr::binary_writer<score_category> {
 //////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
 
 // File containing score information.
-struct scorefile_t {
+struct scorefile {
 	// The name of the player.
 	tr::static_string<20> name;
 	// Score tables.
@@ -69,20 +69,22 @@ struct scorefile_t {
 	// The total recorded playtime.
 	ticks playtime{0};
 	// The last selected gamemode.
-	gamemode last_selected_gamemode;
-
-	// Finds the personal best result for a given gamemode.
-	ticks category_pb(const gamemode& gamemode) const;
-	// Updates the personal best if the current result is better.
-	void update_category(const gamemode& gamemode, ticks pb);
-
-	// Adds a new score to the scorefile.
-	void add_score(const gamemode& gamemode, const score& score);
-	// Loads the scorefile from file.
-	void load_from_file();
-	// Saves the scorefile to file.
-	void save_to_file();
+	gamemode last_selected;
 };
+// Finds the personal best result for a given gamemode.
+ticks pb(const scorefile& sf, const gamemode& gm);
+// Updates the personal best for a given gamemode.
+void update_pb(scorefile& sf, const gamemode& gm, ticks pb);
+// Adds a new score to the scorefile.
+void add_score(scorefile& sf, const gamemode& gm, const score& s);
 
-// The active scorefile.
-inline scorefile_t scorefile{};
+///////////////////////////////////////////////////////////////// ENGINE //////////////////////////////////////////////////////////////////
+
+namespace engine {
+	// The loaded scorefile.
+	inline scorefile scorefile;
+	// Loads the scorefile from file.
+	void load_scorefile();
+	// Saves the scorefile to file.
+	void save_scorefile();
+} // namespace engine

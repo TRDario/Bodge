@@ -31,26 +31,26 @@ class save_replay_state : public tr::state {
 	};
 
 	// The current menu substate.
-	substate _substate;
+	substate m_substate;
 	// Internal timer.
-	ticks _timer;
+	ticks m_timer;
 	// The UI manager.
-	ui_manager _ui;
+	ui_manager m_ui;
 	// Background game.
-	std::unique_ptr<active_game> _game;
+	std::unique_ptr<active_game> m_game;
 	// Header of the replay that will be saved.
-	replay_header _replay;
+	replay_header m_replay;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Combines a base substate and flags into a substate.
-	friend substate operator|(const substate_base& l, const save_screen_flags& r) noexcept;
+	friend substate operator|(const substate_base& l, const save_screen_flags& r);
 	// Converts a substate to a base substate.
-	friend substate_base to_base(substate state) noexcept;
+	friend substate_base to_base(substate state);
 	// Converts a substate to save screen flags.
-	friend save_screen_flags to_flags(substate state) noexcept;
+	friend save_screen_flags to_flags(substate state);
 	// Calculates the fade overlay opacity.
-	float fade_overlay_opacity() const noexcept;
+	float fade_overlay_opacity() const;
 	// Sets up the exit animation.
-	void set_up_exit_animation() noexcept;
+	void set_up_exit_animation();
 };

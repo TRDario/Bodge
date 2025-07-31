@@ -8,7 +8,7 @@ class game_over_state : public tr::state {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Constructs a game over state.
-	game_over_state(std::unique_ptr<active_game>&& game, bool blur_in, ticks prev_pb) noexcept;
+	game_over_state(std::unique_ptr<active_game>&& game, bool blur_in, ticks prev_pb);
 
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
@@ -37,23 +37,23 @@ class game_over_state : public tr::state {
 	};
 
 	// The current game substate.
-	substate _substate;
+	substate m_substate;
 	// The current tick timestamp.
-	ticks _timer;
+	ticks m_timer;
 	// The UI manager.
-	ui_manager _ui;
+	ui_manager m_ui;
 	// The gamestate.
-	std::unique_ptr<active_game> _game;
+	std::unique_ptr<active_game> m_game;
 	// Cached information about the previous personal best.
-	ticks _prev_pb;
+	ticks m_prev_pb;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Gets the saturation factor to pass to the background shader.
-	float saturation_factor() const noexcept;
+	float saturation_factor() const;
 	// Gets the blur strength to pass to the background shader.
-	float blur_strength() const noexcept;
+	float blur_strength() const;
 
 	// Sets up the exit animation.
-	void set_up_exit_animation() noexcept;
+	void set_up_exit_animation();
 };

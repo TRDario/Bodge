@@ -31,11 +31,11 @@ class name_entry_state : public tr::state {
 	};
 
 	// The current substate of the menu.
-	substate _substate;
+	substate m_substate;
 	// Internal timer.
-	ticks _timer;
+	ticks m_timer;
 	// The UI manager.
-	ui_manager _ui;
+	ui_manager m_ui;
 	// The background game.
-	std::unique_ptr<game> _game;
+	std::unique_ptr<game> m_background_game;
 };

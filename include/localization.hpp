@@ -13,16 +13,16 @@ struct language {
 	std::string font;
 };
 
-//////////////////////////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// ENGINE //////////////////////////////////////////////////////////////////
 
-// Loads the language list.
-void load_languages();
-// Loads localization from file.
-void load_localization();
+namespace engine {
+	// Global language list.
+	inline std::map<language_code, language> languages;
+	// Loads the language list.
+	void load_languages();
 
-///////////////////////////////////////////////////////////////// GLOBALS /////////////////////////////////////////////////////////////////
-
-// Global language list.
-inline std::map<language_code, language> languages;
-// Global localization map.
-inline tr::localization_map localization;
+	// Global localization map.
+	inline tr::localization_map loc;
+	// Loads localization from file.
+	void load_localization();
+} // namespace engine

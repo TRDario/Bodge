@@ -29,22 +29,22 @@ class settings_state : public tr::state {
 	};
 
 	// The current menu substate.
-	substate _substate;
+	substate m_substate;
 	// Internal timer.
-	ticks _timer;
+	ticks m_timer;
 	// The UI manager.
-	ui_manager _ui;
+	ui_manager m_ui;
 	// Background game.
-	std::unique_ptr<game> _game;
+	std::unique_ptr<game> m_background_game;
 	// The pending settings.
-	settings_t _pending;
+	settings m_pending;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Updates the window size buttons based on the pending settings.
-	void update_window_size_buttons() noexcept;
+	void update_window_size_buttons();
 	// Updates the refresh rate buttons based on the pending settings.
-	void update_refresh_rate_buttons() noexcept;
+	void update_refresh_rate_buttons();
 	// Sets up the exit animation.
-	void set_up_exit_animation() noexcept;
+	void set_up_exit_animation();
 };

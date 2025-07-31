@@ -55,29 +55,29 @@ class save_score_state : public tr::state {
 	};
 
 	// The current menu substate.
-	substate _substate;
+	substate m_substate;
 	// Substate-specific data.
-	substate_data _substate_data;
+	substate_data m_substate_data;
 	// Internal timer.
-	ticks _timer;
+	ticks m_timer;
 	// The UI manager.
-	ui_manager _ui;
+	ui_manager m_ui;
 	// Background game.
-	std::unique_ptr<active_game> _game;
+	std::unique_ptr<active_game> m_game;
 	// The score that will be saved.
-	score _score;
+	score m_score;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Combines a base substate and flags into a substate.
-	friend substate operator|(const substate_base& l, const save_screen_flags& r) noexcept;
+	friend substate operator|(const substate_base& l, const save_screen_flags& r);
 	// Converts a substate to a base substate.
-	friend substate_base to_base(substate state) noexcept;
+	friend substate_base to_base(substate state);
 	// Converts a substate to save screen flags.
-	friend save_screen_flags to_flags(substate state) noexcept;
+	friend save_screen_flags to_flags(substate state);
 
 	// Sets up the UI.
 	void set_up_ui();
 	// Sets up the exit animation.
-	void set_up_exit_animation() noexcept;
+	void set_up_exit_animation();
 };

@@ -2,7 +2,7 @@
 #include "localization.hpp"
 
 // Settings gotten from command-line arguments.
-struct cli_settings_t {
+struct cli_settings {
 	// The path to the data directroy.
 	std::filesystem::path datadir;
 	// The path to the save directory.
@@ -16,15 +16,10 @@ struct cli_settings_t {
 	// Whether debug mode should be enabled.
 	bool debug_mode{false};
 #endif
-
-	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
-
-	// Parses the settings from the argument list.
-	void parse(int argc, const char** argv);
 };
 
 // Main program settings.
-struct settings_t {
+struct settings {
 	// The size of the window to use or FULLSCREEN.
 	int window_size{500};
 	// The number of MSAA samples to use.
@@ -44,27 +39,21 @@ struct settings_t {
 	// The volume of the music as a percentage.
 	std::uint8_t music_volume{100};
 
-	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
-
-	bool operator==(const settings_t&) const = default;
-
-	// Loads settings from file.
-	void load_from_file();
-	// Saves settings to file.
-	void save_to_file();
-
-  private:
-	// Loads settings from file.
-	void raw_load_from_file();
-	// Validates loaded settings.
-	void validate();
+	bool operator==(const settings&) const = default;
 };
-template <> struct tr::binary_reader<settings_t> : tr::default_binary_reader<settings_t> {};
-template <> struct tr::binary_writer<settings_t> : tr::default_binary_writer<settings_t> {};
 
-///////////////////////////////////////////////////////////////// GLOBALS /////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// ENGINE //////////////////////////////////////////////////////////////////
 
-// Global instance of the command-line settings.
-inline cli_settings_t cli_settings{};
-// Currently active settings.
-inline settings_t settings{};
+namespace engine {
+	// Global instance of the command-line settings.
+	inline cli_settings cli_settings{};
+	// Parses CLI settings from the argument list.
+	void parse_command_line(int argc, const char** argv);
+
+	// Currently active settings.
+	inline settings settings{};
+	// Loads settings from file.
+	void load_settings();
+	// Saves settings to file.
+	void save_settings();
+} // namespace engine

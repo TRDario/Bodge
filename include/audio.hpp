@@ -42,10 +42,10 @@ enum class song {
 constexpr tr::fsecs SKIP_MENU_SONG_INTRO{103769 / 44100.0f};
 
 // Audio system.
-namespace audio {
+namespace engine {
 	// Initializes the audio system.
 	// Note that the program has a high tolerance to audio errors and will even survive a complete failure.
-	void initialize();
+	void initialize_audio();
 	// Plays a sound effect.
 	void play_sound(sound sound, float volume, float pan, float pitch = 1);
 	// Plays a song.
@@ -57,7 +57,7 @@ namespace audio {
 	// Fades the current song out.
 	void fade_song_out(tr::fsecs time);
 	// Applies new settings.
-	void apply_settings();
+	void apply_audio_settings();
 	// Shuts the audio system down.
-	void shut_down();
-}; // namespace audio
+	void shut_down_audio();
+}; // namespace engine

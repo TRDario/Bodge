@@ -63,11 +63,11 @@ class replay {
 
   private:
 	// The replay header.
-	replay_header header_;
+	replay_header m_header;
 	// The inputs of the replay.
-	std::vector<glm::vec2> inputs;
+	std::vector<glm::vec2> m_inputs;
 	// Iterator to the next input.
-	std::vector<glm::vec2>::iterator next_it;
+	std::vector<glm::vec2>::iterator m_next_it;
 };
 
 // Loads all found replay headers.

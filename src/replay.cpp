@@ -35,34 +35,34 @@ void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const r
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 replay::replay(const gamemode& gamemode, std::uint64_t seed)
-	: header_{}
+	: m_header{}
 {
-	header_.player = scorefile.name;
-	header_.gamemode = gamemode;
-	header_.seed = seed;
+	m_header.player = engine::scorefile.name;
+	m_header.gamemode = gamemode;
+	m_header.seed = seed;
 }
 
 replay::replay(const std::string& filename)
 {
-	const std::filesystem::path path{cli_settings.userdir / "replays" / filename};
+	const std::filesystem::path path{engine::cli_settings.userdir / "replays" / filename};
 	std::vector<std::byte> encrypted;
 	std::vector<std::byte> decrypted;
 	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 
 	tr::binary_read(file, encrypted);
 	tr::decrypt_to(decrypted, encrypted);
-	tr::binary_read(decrypted, header_);
+	tr::binary_read(decrypted, m_header);
 
 	tr::binary_read(file, encrypted);
 	tr::decrypt_to(decrypted, encrypted);
-	tr::binary_read(decrypted, inputs);
-	next_it = inputs.begin();
-	LOG(tr::severity::INFO, "Loaded replay '{}'.", header_.name);
+	tr::binary_read(decrypted, m_inputs);
+	m_next_it = m_inputs.begin();
+	LOG(tr::severity::INFO, "Loaded replay '{}'.", m_header.name);
 	LOG_CONTINUE("From: '{}'", path.string());
 }
 
 replay::replay(const replay& r)
-	: header_{r.header_}, inputs{r.inputs}, next_it{inputs.begin()}
+	: m_header{r.m_header}, m_inputs{r.m_inputs}, m_next_it{m_inputs.begin()}
 {
 }
 
@@ -70,20 +70,20 @@ replay::replay(const replay& r)
 
 void replay::append(glm::vec2 input)
 {
-	inputs.push_back(input);
+	m_inputs.push_back(input);
 }
 
 void replay::set_header(const score& header, std::string_view name)
 {
-	static_cast<score&>(header_) = header;
-	header_.name = name;
+	static_cast<score&>(m_header) = header;
+	m_header.name = name;
 }
 
 void replay::save_to_file() const
 {
 	try {
-		std::string filename{to_filename(header_.name)};
-		std::filesystem::path path{cli_settings.userdir / "replays" / std::format("{}.dat", filename)};
+		std::string filename{to_filename(m_header.name)};
+		std::filesystem::path path{engine::cli_settings.userdir / "replays" / std::format("{}.dat", filename)};
 		std::ofstream file;
 		if (!std::filesystem::exists(path)) {
 			file = tr::open_file_w(path, std::ios::binary);
@@ -91,22 +91,22 @@ void replay::save_to_file() const
 		else {
 			int index{0};
 			do {
-				path = cli_settings.userdir / "replays" / std::format("{}({}).dat", filename, index++);
+				path = engine::cli_settings.userdir / "replays" / std::format("{}({}).dat", filename, index++);
 			} while (std::filesystem::exists(path));
 			file = tr::open_file_w(path, std::ios::binary);
 		}
 
 		std::ostringstream bufstream{std::ios::binary};
 		std::vector<std::byte> buffer;
-		tr::binary_write(bufstream, header_);
-		tr::encrypt_to(buffer, bufstream.view(), rng.generate<std::uint8_t>());
+		tr::binary_write(bufstream, m_header);
+		tr::encrypt_to(buffer, bufstream.view(), engine::rng.generate<std::uint8_t>());
 		tr::binary_write(file, buffer);
 
 		bufstream.str({});
-		tr::binary_write(bufstream, inputs);
-		tr::encrypt_to(buffer, bufstream.view(), rng.generate<std::uint8_t>());
+		tr::binary_write(bufstream, m_inputs);
+		tr::encrypt_to(buffer, bufstream.view(), engine::rng.generate<std::uint8_t>());
 		tr::binary_write(file, buffer);
-		LOG(tr::severity::INFO, "Saved replay '{}'.", header_.name);
+		LOG(tr::severity::INFO, "Saved replay '{}'.", m_header.name);
 		LOG_CONTINUE("To: '{}'", path.string());
 	}
 	catch (std::exception& err) {
@@ -119,29 +119,29 @@ void replay::save_to_file() const
 
 const replay_header& replay::header() const
 {
-	return header_;
+	return m_header;
 }
 
 bool replay::done() const
 {
-	return next_it == inputs.end();
+	return m_next_it == m_inputs.end();
 }
 
 glm::vec2 replay::next()
 {
-	return *next_it++;
+	return *m_next_it++;
 }
 
 glm::vec2 replay::current() const
 {
-	return done() ? *std::prev(next_it) : *next_it;
+	return done() ? *std::prev(m_next_it) : *m_next_it;
 }
 
 std::map<std::string, replay_header> load_replay_headers()
 {
 	std::map<std::string, replay_header> replays;
 	try {
-		const std::filesystem::path replay_dir{cli_settings.userdir / "replays"};
+		const std::filesystem::path replay_dir{engine::cli_settings.userdir / "replays"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{replay_dir}) {
 			const std::filesystem::path path{file};
 			if (!file.is_regular_file() || path.extension() != ".dat") {

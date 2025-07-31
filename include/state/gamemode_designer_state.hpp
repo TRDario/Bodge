@@ -39,25 +39,25 @@ class gamemode_designer_state : public tr::state {
 	};
 
 	// The current menu substate.
-	substate _substate;
+	substate m_substate;
 	// Internal timer.
-	ticks _timer;
+	ticks m_timer;
 	// The UI manager.
-	ui_manager _ui;
+	ui_manager m_ui;
 	// Background game.
-	std::unique_ptr<game> _game;
+	std::unique_ptr<game> m_background_game;
 	// The pending gamemode.
-	gamemode _gamemode;
+	gamemode m_pending;
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
 	// Calculates the fade overlay opacity.
-	float fade_overlay_opacity() const noexcept;
+	float fade_overlay_opacity() const;
 
 	// Sets up the UI.
 	void set_up_ui(bool returning_from_subscreen);
 	// Sets up the animation for entering a sub-screen.
-	void set_up_subscreen_animation() noexcept;
+	void set_up_subscreen_animation();
 	// Sets up the exit animation.
-	void set_up_exit_animation() noexcept;
+	void set_up_exit_animation();
 };
