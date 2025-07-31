@@ -42,22 +42,22 @@ enum class song {
 constexpr tr::fsecs SKIP_MENU_SONG_INTRO{103769 / 44100.0f};
 
 // Audio system.
-struct audio {
+namespace audio {
 	// Initializes the audio system.
 	// Note that the program has a high tolerance to audio errors and will even survive a complete failure.
-	static void initialize() noexcept;
+	void initialize();
 	// Plays a sound effect.
-	static void play_sound(sound sound, float volume, float pan, float pitch = 1) noexcept;
+	void play_sound(sound sound, float volume, float pan, float pitch = 1);
 	// Plays a song.
-	static void play_song(song song, tr::fsecs fade_in) noexcept;
+	void play_song(song song, tr::fsecs fade_in);
 	// Plays a song starting at an offset.
-	static void play_song(song song, tr::fsecs offset, tr::fsecs fade_in) noexcept;
+	void play_song(song song, tr::fsecs offset, tr::fsecs fade_in);
 	// Pauses the current song.
-	static void pause_song() noexcept;
+	void pause_song();
 	// Fades the current song out.
-	static void fade_song_out(tr::fsecs time) noexcept;
+	void fade_song_out(tr::fsecs time);
 	// Applies new settings.
-	static void apply_settings() noexcept;
+	void apply_settings();
 	// Shuts the audio system down.
-	static void shut_down() noexcept;
-};
+	void shut_down();
+}; // namespace audio

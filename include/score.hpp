@@ -15,6 +15,8 @@ struct score_flags {
 	// Flag for a game with a modified game speed.
 	std::uint32_t modified_game_speed : 1;
 };
+template <> struct tr::binary_reader<score_flags> : tr::default_binary_reader<score_flags> {};
+template <> struct tr::binary_writer<score_flags> : tr::default_binary_writer<score_flags> {};
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
 
@@ -31,13 +33,9 @@ struct score {
 
 	friend std::strong_ordering operator<=>(const score& l, const score& r);
 };
-
-// Score binary reader.
 template <> struct tr::binary_reader<score> {
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, score& out);
 };
-
-// Score binary writer.
 template <> struct tr::binary_writer<score> {
 	static void write_to_stream(std::ostream& os, const score& in);
 };
@@ -53,13 +51,9 @@ struct score_category {
 	// The scores in the category.
 	std::vector<score> scores;
 };
-
-// Score category binary reader.
 template <> struct tr::binary_reader<score_category> {
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, score_category& out);
 };
-
-// Score category binary writer.
 template <> struct tr::binary_writer<score_category> {
 	static void write_to_stream(std::ostream& os, const score_category& in);
 };

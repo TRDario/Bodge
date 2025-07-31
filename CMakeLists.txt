@@ -13,7 +13,7 @@ FetchContent_MakeAvailable(tr)
 add_executable(
     Bodge
     src/main.cpp
-    src/audio.cpp src/blur_renderer.cpp src/engine.cpp src/font_manager.cpp src/tooltip.cpp
+    src/audio.cpp src/blur_renderer.cpp src/engine.cpp src/fonts.cpp src/tooltip.cpp
     src/game/ball.cpp src/game/game.cpp src/game/player.cpp src/game/trail.cpp
     src/state/ball_settings_editor_state.cpp src/state/game_over_state.cpp src/state/game_state.cpp src/state/gamemode_designer_state.cpp
         src/state/name_entry_state.cpp src/state/pause_state.cpp src/state/player_settings_editor_state.cpp src/state/replays_state.cpp

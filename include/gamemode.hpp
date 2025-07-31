@@ -17,6 +17,8 @@ struct player_settings {
 	// Gets whether the gamemode is autoplay.
 	bool autoplay() const;
 };
+template <> struct tr::binary_reader<player_settings> : tr::default_binary_reader<player_settings> {};
+template <> struct tr::binary_writer<player_settings> : tr::default_binary_writer<player_settings> {};
 
 // Sentinel for an autoplay gamemode.
 constexpr player_settings NO_PLAYER{std::numeric_limits<std::uint32_t>::max()};
@@ -42,6 +44,8 @@ struct ball_settings {
 
 	bool operator==(const ball_settings&) const = default;
 };
+template <> struct tr::binary_reader<ball_settings> : tr::default_binary_reader<ball_settings> {};
+template <> struct tr::binary_writer<ball_settings> : tr::default_binary_writer<ball_settings> {};
 
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
 
@@ -89,13 +93,9 @@ struct gamemode {
 	// Saves a gamemode to file.
 	void save_to_file();
 };
-
-// Gamemode binary reader.
 template <> struct tr::binary_reader<gamemode> {
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, gamemode& out);
 };
-
-// Gamemode binary writer.
 template <> struct tr::binary_writer<gamemode> {
 	static void write_to_stream(std::ostream& os, const gamemode& in);
 };

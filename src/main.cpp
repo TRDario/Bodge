@@ -1,6 +1,6 @@
 #include "../include/audio.hpp"
 #include "../include/engine.hpp"
-#include "../include/font_manager.hpp"
+#include "../include/fonts.hpp"
 #include "../include/global.hpp"
 #include "../include/score.hpp"
 #include "../include/settings.hpp"
@@ -14,7 +14,7 @@ int main(int argc, const char** argv)
 		scorefile.load_from_file();
 		load_languages();
 		load_localization();
-		font_manager.load_fonts();
+		fonts::load();
 		audio::initialize();
 		engine::initialize();
 		engine::set_main_menu_state();
@@ -24,7 +24,7 @@ int main(int argc, const char** argv)
 		}
 		engine::shut_down();
 		audio::shut_down();
-		font_manager.unload_all();
+		fonts::unload_all();
 		scorefile.save_to_file();
 		settings.save_to_file();
 	}

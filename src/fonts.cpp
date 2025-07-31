@@ -1,5 +1,51 @@
-#include "../include/font_manager.hpp"
 #include "../include/engine.hpp"
+#include "../include/fonts.hpp"
+
+namespace fonts {
+	// Structure containing the standard fonts.
+	struct standard_fonts_t {
+		// The default font.
+		tr::ttfont default_font;
+		// The fallback font.
+		tr::ttfont fallback_font;
+	};
+
+	enum class optional_font_state {
+		USE_STORED,
+		USE_DEFAULT,
+		USE_FALLBACK,
+		USE_LANGUAGE
+	};
+	// Custom font used by a specific language.
+	struct optional_font_base {
+		// The actual font.
+		tr::ttfont font;
+		// The name of the font.
+		std::string name;
+	};
+	// Janky optional-esque thing for fonts.
+	struct optional_font {
+		// Storage for the actual font.
+		alignas(optional_font_base) std::byte data[sizeof(optional_font_base)]{};
+		// The state of the font object.
+		optional_font_state state{optional_font_state::USE_DEFAULT};
+
+		optional_font_base& operator*();
+		optional_font_base* operator->();
+	};
+
+	// Standard fonts.
+	std::optional<standard_fonts_t> standard_fonts;
+	// Optional additional language-specific font.
+	optional_font language_font;
+	// Optional additional language name preview font.
+	optional_font language_preview_font;
+
+	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
+
+	// Turns a font name into an actual font reference.
+	tr::ttfont& find_font(font font);
+} // namespace fonts
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
@@ -34,41 +80,41 @@ tr::ttfont load_font(std::string_view name)
 	}
 }
 
-font_manager_t::optional_font_base& font_manager_t::optional_font::operator*() noexcept
+fonts::optional_font_base& fonts::optional_font::operator*()
 {
 	return *reinterpret_cast<optional_font_base*>(&data);
 }
 
-font_manager_t::optional_font_base* font_manager_t::optional_font::operator->() noexcept
+fonts::optional_font_base* fonts::optional_font::operator->()
 {
 	return reinterpret_cast<optional_font_base*>(&data);
 }
 
-tr::ttfont& font_manager_t::find_font(font font) noexcept
+tr::ttfont& fonts::find_font(font font)
 {
 	switch (font) {
 	case font::DEFAULT:
-		return _standard_fonts->default_font;
+		return standard_fonts->default_font;
 	case font::FALLBACK:
-		return _standard_fonts->fallback_font;
+		return standard_fonts->fallback_font;
 	case font::LANGUAGE:
-		switch (_language_font.state) {
+		switch (language_font.state) {
 		case optional_font_state::USE_STORED:
-			return _language_font->font;
+			return language_font->font;
 		case optional_font_state::USE_DEFAULT:
-			return _standard_fonts->default_font;
+			return standard_fonts->default_font;
 		case optional_font_state::USE_LANGUAGE:
 		case optional_font_state::USE_FALLBACK:
-			return _standard_fonts->fallback_font;
+			return standard_fonts->fallback_font;
 		}
 	case font::LANGUAGE_PREVIEW:
-		switch (_language_preview_font.state) {
+		switch (language_preview_font.state) {
 		case optional_font_state::USE_STORED:
-			return _language_preview_font->font;
+			return language_preview_font->font;
 		case optional_font_state::USE_DEFAULT:
-			return _standard_fonts->default_font;
+			return standard_fonts->default_font;
 		case optional_font_state::USE_FALLBACK:
-			return _standard_fonts->fallback_font;
+			return standard_fonts->fallback_font;
 		case optional_font_state::USE_LANGUAGE:
 			return find_font(font::LANGUAGE);
 		}
@@ -108,92 +154,93 @@ std::vector<std::string> split_overlong_lines(std::vector<std::string>&& lines, 
 
 ///////////////////////////////////////////////////////////////// LOADING /////////////////////////////////////////////////////////////////
 
-void font_manager_t::load_fonts()
+void fonts::load()
 {
-	_standard_fonts.emplace(load_font("charge_vector_b.otf"), load_font("linux_biolinum_rb.ttf"));
+	standard_fonts.emplace(load_font("charge_vector_b.otf"), load_font("linux_biolinum_rb.ttf"));
 	try {
-		std::string language_font{languages.contains(settings.language) ? languages.at(settings.language).font : std::string{}};
-		if (language_font.empty() || language_font == "charge_vector_b.otf") {
-			_language_font.state = optional_font_state::USE_DEFAULT;
+		std::string language_font_file{languages.contains(settings.language) ? languages.at(settings.language).font : std::string{}};
+		if (language_font_file.empty() || language_font_file == "charge_vector_b.otf") {
+			language_font.state = optional_font_state::USE_DEFAULT;
 		}
-		else if (language_font == "linux_biolinum_rb.ttf") {
-			_language_font.state = optional_font_state::USE_FALLBACK;
+		else if (language_font_file == "linux_biolinum_rb.ttf") {
+			language_font.state = optional_font_state::USE_FALLBACK;
 		}
 		else {
-			new (_language_font.data) optional_font_base{load_font(language_font), std::move(language_font)};
-			_language_font.state = optional_font_state::USE_STORED;
+			new (language_font.data) optional_font_base{load_font(language_font_file), std::move(language_font_file)};
+			language_font.state = optional_font_state::USE_STORED;
 		}
-		_language_preview_font.state = optional_font_state::USE_LANGUAGE;
+		language_preview_font.state = optional_font_state::USE_LANGUAGE;
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Falling back to linux_biolinum_rb.ttf.", err.what());
-		_language_font.state = optional_font_state::USE_FALLBACK;
+		LOG(tr::severity::ERROR, "Falling back to linux_biolinum_rb.ttf.");
+		LOG_CONTINUE("{}", err.what());
+		language_font.state = optional_font_state::USE_FALLBACK;
 	}
 }
 
-void font_manager_t::set_language_font()
+void fonts::set_language_font()
 {
-	if (_language_preview_font.state == optional_font_state::USE_LANGUAGE) {
+	if (language_preview_font.state == optional_font_state::USE_LANGUAGE) {
 		return;
 	}
 
-	if (_language_font.state == optional_font_state::USE_STORED) {
-		_language_font->~optional_font_base();
+	if (language_font.state == optional_font_state::USE_STORED) {
+		language_font->~optional_font_base();
 	}
-	_language_font.state = _language_preview_font.state;
-	if (_language_font.state == optional_font_state::USE_STORED) {
-		new (_language_font.data) optional_font_base{std::move(*_language_preview_font)};
-		_language_preview_font->~optional_font_base();
-		_language_preview_font.state = optional_font_state::USE_LANGUAGE;
+	language_font.state = language_preview_font.state;
+	if (language_font.state == optional_font_state::USE_STORED) {
+		new (language_font.data) optional_font_base{std::move(*language_preview_font)};
+		language_preview_font->~optional_font_base();
+		language_preview_font.state = optional_font_state::USE_LANGUAGE;
 	}
 }
 
-void font_manager_t::reload_language_preview_font(const settings_t& pending)
+void fonts::reload_language_preview_font(const settings_t& pending)
 {
-	const bool had_value{_language_preview_font.state == optional_font_state::USE_STORED};
+	const bool had_value{language_preview_font.state == optional_font_state::USE_STORED};
 	std::string new_font;
 	try {
 		new_font = languages.at(pending.language).font;
 		if (new_font.empty() || new_font == "charge_vector_b.otf") {
-			_language_preview_font.state = optional_font_state::USE_DEFAULT;
+			language_preview_font.state = optional_font_state::USE_DEFAULT;
 		}
 		else if (new_font == "linux_biolinum_rb.ttf") {
-			_language_preview_font.state = optional_font_state::USE_FALLBACK;
+			language_preview_font.state = optional_font_state::USE_FALLBACK;
 		}
-		else if (_language_font.state == optional_font_state::USE_STORED && new_font == _language_font->name) {
-			_language_preview_font.state = optional_font_state::USE_LANGUAGE;
+		else if (language_font.state == optional_font_state::USE_STORED && new_font == language_font->name) {
+			language_preview_font.state = optional_font_state::USE_LANGUAGE;
 		}
 		else {
-			_language_preview_font.state = optional_font_state::USE_STORED;
+			language_preview_font.state = optional_font_state::USE_STORED;
 		}
 	}
 	catch (...) {
-		_language_preview_font.state = optional_font_state::USE_FALLBACK;
+		language_preview_font.state = optional_font_state::USE_FALLBACK;
 	}
 
-	if (had_value && (_language_preview_font.state != optional_font_state::USE_STORED || new_font != _language_preview_font->name)) {
-		_language_preview_font->~optional_font_base();
-		if (_language_preview_font.state == optional_font_state::USE_STORED) {
-			new (_language_preview_font.data) optional_font_base{load_font(new_font), std::move(new_font)};
+	if (had_value && (language_preview_font.state != optional_font_state::USE_STORED || new_font != language_preview_font->name)) {
+		language_preview_font->~optional_font_base();
+		if (language_preview_font.state == optional_font_state::USE_STORED) {
+			new (language_preview_font.data) optional_font_base{load_font(new_font), std::move(new_font)};
 		}
 	}
 }
 
-void font_manager_t::unload_all() noexcept
+void fonts::unload_all()
 {
-	_standard_fonts.reset();
-	if (_language_font.state == optional_font_state::USE_STORED) {
-		_language_font->~optional_font_base();
+	standard_fonts.reset();
+	if (language_font.state == optional_font_state::USE_STORED) {
+		language_font->~optional_font_base();
 	}
-	if (_language_preview_font.state == optional_font_state::USE_STORED) {
-		_language_preview_font->~optional_font_base();
+	if (language_preview_font.state == optional_font_state::USE_STORED) {
+		language_preview_font->~optional_font_base();
 	}
 	LOG(tr::severity::INFO, "Unloaded all fonts.");
 }
 
 /////////////////////////////////////////////////////////////// OPERATIONS ////////////////////////////////////////////////////////////////
 
-font font_manager_t::determine_font(std::string_view text) noexcept
+font fonts::determine_font(std::string_view text)
 {
 	tr::ttfont& font{find_font(font::LANGUAGE)};
 	if (std::ranges::all_of(tr::utf8::range(text), [&](tr::codepoint chr) { return chr == '\n' || font.contains(chr); })) {
@@ -204,14 +251,14 @@ font font_manager_t::determine_font(std::string_view text) noexcept
 	}
 }
 
-float font_manager_t::font_line_skip(font font, float size)
+float fonts::line_skip(font font, float size)
 {
 	tr::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * engine::render_scale());
 	return font_ref.line_skip() / engine::render_scale();
 }
 
-glm::vec2 font_manager_t::text_size(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
+glm::vec2 fonts::text_size(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
 	if (max_w != tr::UNLIMITED_WIDTH) {
@@ -237,7 +284,7 @@ glm::vec2 font_manager_t::text_size(std::string_view text, font font, tr::ttf_st
 	return static_cast<glm::vec2>(text_size) / engine::render_scale();
 }
 
-std::size_t font_manager_t::count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
+std::size_t fonts::count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
 	if (max_w != tr::UNLIMITED_WIDTH) {
@@ -252,8 +299,8 @@ std::size_t font_manager_t::count_lines(std::string_view text, font font, tr::tt
 	return split_overlong_lines(split_into_lines(text), font_ref, outline_max_w).size();
 }
 
-tr::bitmap font_manager_t::render_text(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w,
-									   tr::halign align)
+tr::bitmap fonts::render_text(std::string_view text, font font, tr::ttf_style style, float size, float outline, float max_w,
+							  tr::halign align)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
 	if (max_w != tr::UNLIMITED_WIDTH) {
@@ -272,7 +319,7 @@ tr::bitmap font_manager_t::render_text(std::string_view text, font font, tr::ttf
 	return render;
 }
 
-tr::bitmap font_manager_t::render_gradient_glyph(std::uint32_t glyph, font font, tr::ttf_style style, float size, float outline)
+tr::bitmap fonts::render_gradient_glyph(std::uint32_t glyph, font font, tr::ttf_style style, float size, float outline)
 {
 	const int scaled_outline{static_cast<int>(outline * engine::render_scale())};
 

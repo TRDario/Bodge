@@ -32,7 +32,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	title.unhide(0.5_s);
 
 	const float time_h{(500 - (BUTTONS.size() - 0.75f) * 30) -
-					   (font_manager.font_line_skip(font::LANGUAGE, 48) + 4 + font_manager.font_line_skip(font::LANGUAGE, 24)) / 2};
+					   (fonts::line_skip(font::LANGUAGE, 48) + 4 + fonts::line_skip(font::LANGUAGE, 24)) / 2};
 	const ticks time_ticks{_game->result()};
 	text_callback time_text_cb{[time = timer_text(time_ticks)](const auto&) { return time; }};
 	widget& time{_ui.emplace<text_widget>("time", glm::vec2{400, time_h}, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64,
@@ -40,7 +40,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	time.pos.change({500, time_h}, 0.5_s);
 	time.unhide(0.5_s);
 
-	const float pb_h{time_h + font_manager.font_line_skip(font::LANGUAGE, 48) + 4};
+	const float pb_h{time_h + fonts::line_skip(font::LANGUAGE, 48) + 4};
 	text_callback pb_text_cb;
 	if (_prev_pb < _game->result()) {
 		pb_text_cb = [](const auto&) -> std::string { return std::string{localization["new_pb"]}; };

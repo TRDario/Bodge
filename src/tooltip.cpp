@@ -1,12 +1,12 @@
-#include "../include/tooltip.hpp"
 #include "../include/engine.hpp"
-#include "../include/font_manager.hpp"
+#include "../include/fonts.hpp"
+#include "../include/tooltip.hpp"
 
 void tooltip_manager::render(std::string_view text)
 {
-	const tr::bitmap render{font_manager.render_text(text, font_manager.determine_font(text), tr::ttf_style::NORMAL, 20, 0, 800)};
+	const tr::bitmap render{fonts::render_text(text, fonts::determine_font(text), tr::ttf_style::NORMAL, 20, 0, 800)};
 	last_text = text;
-	last_size = font_manager.text_size(text, font_manager.determine_font(text), tr::ttf_style::NORMAL, 20, 0, 800);
+	last_size = fonts::text_size(text, fonts::determine_font(text), tr::ttf_style::NORMAL, 20, 0, 800);
 	const glm::vec2 scaled_last_size{last_size * engine::render_scale()};
 
 	if (texture.size().x < scaled_last_size.x || texture.size().y < scaled_last_size.y) {

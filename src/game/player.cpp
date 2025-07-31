@@ -1,8 +1,8 @@
-#include "../../include/game/player.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
-#include "../../include/font_manager.hpp"
+#include "../../include/fonts.hpp"
 #include "../../include/game/ball.hpp"
+#include "../../include/game/player.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -29,7 +29,7 @@ tr::dyn_atlas<char> create_timer_atlas()
 {
 	tr::dyn_atlas<char> atlas;
 	for (char chr : std::string_view{"0123456789:"}) {
-		atlas.add(chr, font_manager.render_gradient_glyph(chr, font::DEFAULT, tr::ttf_style::NORMAL, 64, 5));
+		atlas.add(chr, fonts::render_gradient_glyph(chr, font::DEFAULT, tr::ttf_style::NORMAL, 64, 5));
 	}
 	if (tr::gfx_context::debug()) {
 		atlas.set_label("(Bodge) Timer Atlas");

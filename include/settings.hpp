@@ -59,6 +59,8 @@ struct settings_t {
 	// Validates loaded settings.
 	void validate();
 };
+template <> struct tr::binary_reader<settings_t> : tr::default_binary_reader<settings_t> {};
+template <> struct tr::binary_writer<settings_t> : tr::default_binary_writer<settings_t> {};
 
 ///////////////////////////////////////////////////////////////// GLOBALS /////////////////////////////////////////////////////////////////
 

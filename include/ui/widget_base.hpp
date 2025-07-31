@@ -29,9 +29,9 @@ class widget {
   public:
 	// Creates a widget.
 	widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
-		   std::vector<tr::key_chord>&& shortcuts) noexcept;
+		   std::vector<tr::key_chord>&& shortcuts);
 	// Virtual destructor.
-	virtual ~widget() noexcept = default;
+	virtual ~widget() = default;
 
 	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
 
@@ -49,29 +49,29 @@ class widget {
 	// Gets the size of the widget.
 	virtual glm::vec2 size() const = 0;
 	// Gets the top-left corner of the widget.
-	glm::vec2 tl() const noexcept;
+	glm::vec2 tl() const;
 
 	/////////////////////////////////////////////////////////////// OPACITY ///////////////////////////////////////////////////////////////
 
 	// Gets the opacity of the widget.
-	float opacity() const noexcept;
+	float opacity() const;
 	// Hides the widget instantly.
-	void hide() noexcept;
+	void hide();
 	// Hides the widget gradually.
-	void hide(ticks time) noexcept;
+	void hide(ticks time);
 	// Unhides the widget instantly.
-	void unhide() noexcept;
+	void unhide();
 	// Unhides the widget gradually.
-	void unhide(ticks time) noexcept;
+	void unhide(ticks time);
 
 	/////////////////////////////////////////////////////////////// STATUS ////////////////////////////////////////////////////////////////
 
 	// Gets whether the widget is hoverable.
-	bool hoverable() const noexcept;
+	bool hoverable() const;
 	// Gets whether the widget is writable.
-	bool writable() const noexcept;
+	bool writable() const;
 	// Gets whether the widget is active.
-	virtual bool active() const noexcept;
+	virtual bool active() const;
 
 	////////////////////////////////////////////////////////// MOUSE INTERACTION //////////////////////////////////////////////////////////
 
@@ -91,7 +91,7 @@ class widget {
 	//////////////////////////////////////////////////////// SHORTCUT INTERACTION /////////////////////////////////////////////////////////
 
 	// Gets whether a chord is a valid shortcut for this widget.
-	bool is_shortcut(const tr::key_chord& chord) const noexcept;
+	bool is_shortcut(const tr::key_chord& chord) const;
 	// Callback for one of the widget's shortcuts being pressed.
 	virtual void on_shortcut() {}
 
@@ -119,17 +119,17 @@ class widget {
 	// Updates the widget.
 	virtual void update();
 	// Instructs the widget to release its graphical resources.
-	virtual void release_graphical_resources() noexcept {}
+	virtual void release_graphical_resources() {}
 	// Adds the widget to the renderer.
 	virtual void add_to_renderer() = 0;
 
   private:
 	// The opacity of the widget.
-	interpolated_float _opacity;
+	interpolated_float opacity_;
 	// Whether the widget is hoverable.
-	bool _hoverable;
+	bool hoverable_;
 	// Whether the widget is writable.
-	bool _writable;
+	bool writable_;
 	// The shortcuts of the widget.
-	std::vector<tr::key_chord> _shortcuts;
+	std::vector<tr::key_chord> shortcuts;
 };

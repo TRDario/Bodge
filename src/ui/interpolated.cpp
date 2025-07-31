@@ -1,124 +1,123 @@
 #include "../../include/ui/interpolated.hpp"
 
-interpolated_float::interpolated_float(float value) noexcept
-	: _start{}, _end{value}, _len{0}, _pos{0}
+interpolated_float::interpolated_float(float value)
+	: start{}, end{value}, len{0}, pos{0}
 {
 }
 
-interpolated_float::interpolated_float(float start, float end, std::uint16_t time) noexcept
-	: _start{start}, _end{end}, _len{time}, _pos{0}
+interpolated_float::interpolated_float(float start, float end, std::uint16_t time)
+	: start{start}, end{end}, len{time}, pos{0}
 {
 }
 
-void interpolated_float::update() noexcept
+void interpolated_float::update()
 {
-	if (_len != 0 && ++_pos == _len) {
-		_len = 0;
+	if (len != 0 && ++pos == len) {
+		len = 0;
 	}
 }
 
-interpolated_float::operator float() const noexcept
+interpolated_float::operator float() const
 {
-	if (_len == 0) {
-		return _end;
+	if (len == 0) {
+		return end;
 	}
 	else {
-		float ratio{static_cast<float>(_pos) / _len};
+		float ratio{static_cast<float>(pos) / len};
 		ratio = ratio < 0.5f ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
-		return _start + (_end - _start) * ratio;
+		return start + (end - start) * ratio;
 	}
 }
 
-void interpolated_float::change(float end, ticks time) noexcept
+void interpolated_float::change(float end, ticks time)
 {
 	*this = interpolated_float{*this, end, static_cast<std::uint16_t>(time)};
 }
 
-interpolated_float& interpolated_float::operator=(float r) noexcept
+interpolated_float& interpolated_float::operator=(float r)
 {
 	return *this = interpolated_float{r};
 }
 
 //
 
-interpolated_vec2::interpolated_vec2(glm::vec2 value) noexcept
-	: _start{}, _end{value}, _len{0}, _pos{0}
+interpolated_vec2::interpolated_vec2(glm::vec2 value)
+	: start{}, end{value}, len{0}, pos{0}
 {
 }
 
-interpolated_vec2::interpolated_vec2(glm::vec2 start, glm::vec2 end, std::uint16_t time) noexcept
-	: _start{start}, _end{end}, _len{time}, _pos{0}
+interpolated_vec2::interpolated_vec2(glm::vec2 start, glm::vec2 end, std::uint16_t time)
+	: start{start}, end{end}, len{time}, pos{0}
 {
 }
 
-void interpolated_vec2::update() noexcept
+void interpolated_vec2::update()
 {
-	if (_len != 0 && ++_pos == _len) {
-		_len = 0;
+	if (len != 0 && ++pos == len) {
+		len = 0;
 	}
 }
 
-interpolated_vec2::operator glm::vec2() const noexcept
+interpolated_vec2::operator glm::vec2() const
 {
-	if (_len == 0) {
-		return _end;
+	if (len == 0) {
+		return end;
 	}
 	else {
-		float ratio{static_cast<float>(_pos) / _len};
+		float ratio{static_cast<float>(pos) / len};
 		ratio = ratio < 0.5f ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
-		return _start + (_end - _start) * ratio;
+		return start + (end - start) * ratio;
 	}
 }
 
-void interpolated_vec2::change(glm::vec2 end, ticks time) noexcept
+void interpolated_vec2::change(glm::vec2 end, ticks time)
 {
 	*this = interpolated_vec2{*this, end, static_cast<std::uint16_t>(time)};
 }
 
-interpolated_vec2& interpolated_vec2::operator=(glm::vec2 r) noexcept
+interpolated_vec2& interpolated_vec2::operator=(glm::vec2 r)
 {
 	return *this = interpolated_vec2{r};
 }
 
 //
 
-interpolated_rgba8::interpolated_rgba8(tr::rgba8 value) noexcept
-	: _start{}, _end{value}, _len{0}, _pos{0}
+interpolated_rgba8::interpolated_rgba8(tr::rgba8 value)
+	: start{}, end{value}, len{0}, pos{0}
 {
 }
 
-interpolated_rgba8::interpolated_rgba8(tr::rgba8 start, tr::rgba8 end, std::uint16_t time) noexcept
-	: _start{start}, _end{end}, _len{time}, _pos{0}
+interpolated_rgba8::interpolated_rgba8(tr::rgba8 start, tr::rgba8 end, std::uint16_t time)
+	: start{start}, end{end}, len{time}, pos{0}
 {
 }
 
-void interpolated_rgba8::update() noexcept
+void interpolated_rgba8::update()
 {
-	if (_len != 0 && ++_pos == _len) {
-		_len = 0;
+	if (len != 0 && ++pos == len) {
+		len = 0;
 	}
 }
 
-interpolated_rgba8::operator tr::rgba8() const noexcept
+interpolated_rgba8::operator tr::rgba8() const
 {
-	if (_len == 0) {
-		return _end;
+	if (len == 0) {
+		return end;
 	}
 	else {
-		float ratio{static_cast<float>(_pos) / _len};
-		return {static_cast<std::uint8_t>(_start.r + (_end.r - _start.r) * ratio),
-				static_cast<std::uint8_t>(_start.g + (_end.g - _start.g) * ratio),
-				static_cast<std::uint8_t>(_start.b + (_end.b - _start.b) * ratio),
-				static_cast<std::uint8_t>(_start.a + (_end.a - _start.a) * ratio)};
+		float ratio{static_cast<float>(pos) / len};
+		return {
+			static_cast<std::uint8_t>(start.r + (end.r - start.r) * ratio), static_cast<std::uint8_t>(start.g + (end.g - start.g) * ratio),
+			static_cast<std::uint8_t>(start.b + (end.b - start.b) * ratio), static_cast<std::uint8_t>(start.a + (end.a - start.a) * ratio)};
 	}
 }
 
-void interpolated_rgba8::change(tr::rgba8 end, ticks time) noexcept
+void interpolated_rgba8::change(tr::rgba8 end, ticks time)
 {
 	*this = interpolated_rgba8{*this, end, static_cast<std::uint16_t>(time)};
 }
 
-interpolated_rgba8& interpolated_rgba8::operator=(tr::rgba8 r) noexcept
+interpolated_rgba8& interpolated_rgba8::operator=(tr::rgba8 r)
 {
 	return *this = interpolated_rgba8{r};
 }

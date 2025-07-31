@@ -38,7 +38,7 @@ std::optional<tr::audio_buffer> load_audio_file(const char* filename) noexcept
 
 ////////////////////////////////////////////////////////////////// AUDIO //////////////////////////////////////////////////////////////////
 
-void audio::initialize() noexcept
+void audio::initialize()
 {
 	try {
 		tr::audio_system::initialize();
@@ -56,13 +56,9 @@ void audio::initialize() noexcept
 		LOG(tr::severity::ERROR, "Failed to initialize the audio system.");
 		LOG_CONTINUE("{}", err.description());
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to initialize the audio system.");
-		LOG_CONTINUE("{}", err.what());
-	}
 }
 
-void audio::play_sound(sound sound, float volume, float pan, float pitch) noexcept
+void audio::play_sound(sound sound, float volume, float pan, float pitch)
 {
 	if (tr::audio_system::active() && sounds[static_cast<int>(sound)].has_value()) {
 		try {
@@ -82,12 +78,12 @@ void audio::play_sound(sound sound, float volume, float pan, float pitch) noexce
 	}
 }
 
-void audio::play_song(song song, tr::fsecs fade_in) noexcept
+void audio::play_song(song song, tr::fsecs fade_in)
 {
 	play_song(song, 0s, fade_in);
 }
 
-void audio::play_song(song song, tr::fsecs offset, tr::fsecs fade_in) noexcept
+void audio::play_song(song song, tr::fsecs offset, tr::fsecs fade_in)
 {
 	const char* const filename{SONG_FILENAMES[static_cast<int>(song)]};
 	const std::filesystem::path& path{cli_settings.datadir / "music" / filename};
@@ -110,21 +106,21 @@ void audio::play_song(song song, tr::fsecs offset, tr::fsecs fade_in) noexcept
 	}
 }
 
-void audio::pause_song() noexcept
+void audio::pause_song()
 {
 	if (current_song.has_value()) {
 		current_song->pause();
 	}
 }
 
-void audio::fade_song_out(tr::fsecs time) noexcept
+void audio::fade_song_out(tr::fsecs time)
 {
 	if (current_song.has_value()) {
 		current_song->set_gain(0, time);
 	}
 }
 
-void audio::apply_settings() noexcept
+void audio::apply_settings()
 {
 	if (tr::audio_system::active()) {
 		tr::audio_system::set_class_gain(0, settings.sfx_volume / 100.0f);
@@ -132,7 +128,7 @@ void audio::apply_settings() noexcept
 	}
 }
 
-void audio::shut_down() noexcept
+void audio::shut_down()
 {
 	if (tr::audio_system::active()) {
 		current_song.reset();

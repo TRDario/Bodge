@@ -4,8 +4,8 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Minified version of src/shaders/pause_menu_background.vert.
-constexpr const char* VERTEX_SHADER_SRC{
-	"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;out gl_PerVertex{vec4 gl_Position;};L(0)out vec2 P;void main(){P=p;gl_Position=vec4(p,0,1);}"};
+constexpr const char* VERTEX_SHADER_SRC{"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;out gl_PerVertex{vec4 "
+										"gl_Position;};L(0)out vec2 P;void main(){P=p;gl_Position=vec4(p,0,1);}"};
 // Minified version of src/shaders/pause_menu_background.frag.
 constexpr const char* FRAGMENT_SHADER_SRC{
 	"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;L(0)out vec4 C;L(0)uniform sampler2D t;L(1)uniform vec2 S;L(2)uniform "
@@ -26,52 +26,52 @@ constexpr std::array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 blur_renderer::blur_renderer(int texture_size)
-	: _input_tex{glm::ivec2{texture_size}}
-	, _aux_tex{glm::ivec2{texture_size}}
-	, _pipeline{tr::vertex_shader{VERTEX_SHADER_SRC}, tr::fragment_shader{FRAGMENT_SHADER_SRC}}
-	, _vformat{tr::vertex_attributef{tr::vertex_attributef::type::SI8, 2, false, 0, 0}}
-	, _vbuffer{MESH}
+	: input_texture{glm::ivec2{texture_size}}
+	, auxiliary_texture{glm::ivec2{texture_size}}
+	, pipeline{tr::vertex_shader{VERTEX_SHADER_SRC}, tr::fragment_shader{FRAGMENT_SHADER_SRC}}
+	, vertex_format{tr::vertex_attributef{tr::vertex_attributef::type::SI8, 2, false, 0, 0}}
+	, vertex_buffer{MESH}
 {
-	_tex_unit.set_texture(_input_tex);
-	_pipeline.fragment_shader().set_uniform(0, _tex_unit);
-	_pipeline.fragment_shader().set_uniform(1, static_cast<glm::vec2>(_input_tex.size()));
+	texture_unit.set_texture(input_texture);
+	pipeline.fragment_shader().set_uniform(0, texture_unit);
+	pipeline.fragment_shader().set_uniform(1, static_cast<glm::vec2>(input_texture.size()));
 	if (tr::gfx_context::debug()) {
-		_input_tex.set_label("(Bodge) Blur Renderer Input Texture");
-		_aux_tex.set_label("(Bodge) Blur Renderer Auxilliary Texture");
-		_pipeline.set_label("(Bodge) Blur Renderer Pipeline");
-		_pipeline.vertex_shader().set_label("(Bodge) Blur Renderer Vertex Shader");
-		_pipeline.fragment_shader().set_label("(Bodge) Blur Renderer Fragment Shader");
-		_vformat.set_label("(Bodge) Blur Renderer Vertex Format");
-		_vbuffer.set_label("(Bodge) Blur Renderer Vertex Buffer");
+		input_texture.set_label("(Bodge) Blur Renderer Input Texture");
+		auxiliary_texture.set_label("(Bodge) Blur Renderer Auxilliary Texture");
+		pipeline.set_label("(Bodge) Blur Renderer Pipeline");
+		pipeline.vertex_shader().set_label("(Bodge) Blur Renderer Vertex Shader");
+		pipeline.fragment_shader().set_label("(Bodge) Blur Renderer Fragment Shader");
+		vertex_format.set_label("(Bodge) Blur Renderer Vertex Format");
+		vertex_buffer.set_label("(Bodge) Blur Renderer Vertex Buffer");
 	}
 }
 
 ///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
 
-tr::render_target blur_renderer::input() noexcept
+tr::render_target blur_renderer::input()
 {
-	_input_tex.clear({});
-	return _input_tex;
+	input_texture.clear({});
+	return input_texture;
 }
 
-void blur_renderer::draw(float saturation, float strength) noexcept
+void blur_renderer::draw(float saturation, float strength)
 {
 	strength = std::max(std::round(strength * engine::render_scale()), 2.0f);
 
 	tr::gfx_context::set_renderer(RENDERER_ID);
-	tr::gfx_context::set_shader_pipeline(_pipeline);
-	tr::gfx_context::set_vertex_format(_vformat);
-	tr::gfx_context::set_vertex_buffer(_vbuffer, 0, 0);
+	tr::gfx_context::set_shader_pipeline(pipeline);
+	tr::gfx_context::set_vertex_format(vertex_format);
+	tr::gfx_context::set_vertex_buffer(vertex_buffer, 0, 0);
 	tr::gfx_context::set_blend_mode(tr::PREMUL_ALPHA_BLENDING);
-	_tex_unit.set_texture(_input_tex);
-	_pipeline.fragment_shader().set_uniform(2, saturation);
-	_pipeline.fragment_shader().set_uniform(3, strength);
-	_pipeline.fragment_shader().set_uniform(4, 0);
-	_aux_tex.clear({});
-	tr::gfx_context::set_render_target(_aux_tex);
+	texture_unit.set_texture(input_texture);
+	pipeline.fragment_shader().set_uniform(2, saturation);
+	pipeline.fragment_shader().set_uniform(3, strength);
+	pipeline.fragment_shader().set_uniform(4, 0);
+	auxiliary_texture.clear({});
+	tr::gfx_context::set_render_target(auxiliary_texture);
 	tr::gfx_context::draw(tr::primitive::TRI_FAN, 0, 4);
-	_tex_unit.set_texture(_aux_tex);
-	_pipeline.fragment_shader().set_uniform(4, 1);
+	texture_unit.set_texture(auxiliary_texture);
+	pipeline.fragment_shader().set_uniform(4, 1);
 	tr::gfx_context::set_render_target(engine::screen());
 	tr::gfx_context::draw(tr::primitive::TRI_FAN, 0, 4);
 }

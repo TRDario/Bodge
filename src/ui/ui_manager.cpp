@@ -1,36 +1,36 @@
-#include "../../include/ui/ui_manager.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/ui/ui_manager.hpp"
 
 //
 
-void ui_manager::clear() noexcept
+void ui_manager::clear()
 {
-	_objects.clear();
-	_hovered = _objects.end();
-	_input = _objects.end();
+	objects.clear();
+	hovered = objects.end();
+	input = objects.end();
 }
 
 //
 
-void ui_manager::move_input_focus_forward() noexcept
+void ui_manager::move_input_focus_forward()
 {
-	if (_input == _objects.end()) {
-		for (std::list<std::unique_ptr<widget>>::iterator it = _objects.begin(); it != _objects.end(); ++it) {
+	if (input == objects.end()) {
+		for (std::list<std::unique_ptr<widget>>::iterator it = objects.begin(); it != objects.end(); ++it) {
 			if ((*it)->writable()) {
 				tr::event_queue::enable_text_input_events();
 				(*it)->on_gain_focus();
-				_input = it;
+				input = it;
 				return;
 			}
 		}
 	}
 	else {
 		// Search to the end of the vector.
-		for (std::list<std::unique_ptr<widget>>::iterator it = std::next(_input); it != _objects.end(); ++it) {
+		for (std::list<std::unique_ptr<widget>>::iterator it = std::next(input); it != objects.end(); ++it) {
 			if ((*it)->writable()) {
-				(*_input)->on_lose_focus();
+				(*input)->on_lose_focus();
 				(*it)->on_gain_focus();
-				_input = it;
+				input = it;
 				return;
 			}
 		}
@@ -39,24 +39,24 @@ void ui_manager::move_input_focus_forward() noexcept
 	}
 }
 
-void ui_manager::move_input_focus_backward() noexcept
+void ui_manager::move_input_focus_backward()
 {
-	if (_input == _objects.end()) {
-		for (auto it = _objects.rbegin(); it != _objects.rend(); ++it) {
+	if (input == objects.end()) {
+		for (auto it = objects.rbegin(); it != objects.rend(); ++it) {
 			if ((*it)->writable()) {
 				(*it)->on_gain_focus();
-				_input = --(it.base());
+				input = --(it.base());
 				return;
 			}
 		}
 	}
 	else {
 		// Search to the end of the vector.
-		for (auto it = std::next(std::make_reverse_iterator(_input)); it != _objects.rend(); ++it) {
+		for (auto it = std::next(std::make_reverse_iterator(input)); it != objects.rend(); ++it) {
 			if ((*it)->writable()) {
 				(*it)->on_gain_focus();
-				(*_input)->on_lose_focus();
-				_input = --(it.base());
+				(*input)->on_lose_focus();
+				input = --(it.base());
 				return;
 			}
 		}
@@ -65,28 +65,28 @@ void ui_manager::move_input_focus_backward() noexcept
 	}
 }
 
-void ui_manager::clear_input_focus() noexcept
+void ui_manager::clear_input_focus()
 {
-	if (_input != _objects.end()) {
+	if (input != objects.end()) {
 		tr::event_queue::disable_text_input_events();
-		(*_input)->on_lose_focus();
-		_input = _objects.end();
+		(*input)->on_lose_focus();
+		input = objects.end();
 		audio::play_sound(sound::CANCEL, 0.5f, 0.0f);
 	}
 }
 
 //
 
-void ui_manager::hide_all(ticks time) noexcept
+void ui_manager::hide_all(ticks time)
 {
-	for (std::unique_ptr<widget>& p : _objects) {
+	for (std::unique_ptr<widget>& p : objects) {
 		p->hide(time);
 	}
 }
 
-void ui_manager::release_graphical_resources() noexcept
+void ui_manager::release_graphical_resources()
 {
-	for (std::unique_ptr<widget>& p : _objects) {
+	for (std::unique_ptr<widget>& p : objects) {
 		p->release_graphical_resources();
 	}
 }
@@ -97,19 +97,19 @@ void ui_manager::handle_event(const tr::event& event)
 {
 	switch (event.type()) {
 	case tr::mouse_motion_event::ID: {
-		const std::list<std::unique_ptr<widget>>::iterator old_hovered_it{_hovered};
+		const std::list<std::unique_ptr<widget>>::iterator old_hovered_it{hovered};
 
-		_hovered = _objects.end();
-		for (std::list<std::unique_ptr<widget>>::iterator it = _objects.begin(); it != _objects.end(); ++it) {
+		hovered = objects.end();
+		for (std::list<std::unique_ptr<widget>>::iterator it = objects.begin(); it != objects.end(); ++it) {
 			if ((*it)->hoverable() && tr::frect2{(*it)->tl(), (*it)->size()}.contains(engine::mouse_pos())) {
-				if (_hovered == _objects.end() || !(*_hovered)->active()) {
-					_hovered = it;
+				if (hovered == objects.end() || !(*hovered)->active()) {
+					hovered = it;
 				}
 			}
 		}
 
-		if (old_hovered_it != _hovered) {
-			if (old_hovered_it != _objects.end()) {
+		if (old_hovered_it != hovered) {
+			if (old_hovered_it != objects.end()) {
 				if (engine::held_buttons() == tr::mouse_button::LEFT && (*old_hovered_it)->active()) {
 					(*old_hovered_it)->on_hold_transfer_out();
 				}
@@ -117,46 +117,46 @@ void ui_manager::handle_event(const tr::event& event)
 					(*old_hovered_it)->on_unhover();
 				}
 			}
-			if (_hovered != _objects.end()) {
-				if (engine::held_buttons() == tr::mouse_button::LEFT && (*_hovered)->active()) {
-					(*_hovered)->on_hold_transfer_in();
+			if (hovered != objects.end()) {
+				if (engine::held_buttons() == tr::mouse_button::LEFT && (*hovered)->active()) {
+					(*hovered)->on_hold_transfer_in();
 				}
 				else {
-					(*_hovered)->on_hover();
+					(*hovered)->on_hover();
 				}
 			}
 		}
 	} break;
 	case tr::mouse_down_event::ID: {
 		if (tr::mouse_down_event{event}.button == tr::mouse_button::LEFT) {
-			const bool something_had_input_focus{_input != _objects.end()};
+			const bool something_had_input_focus{input != objects.end()};
 			if (something_had_input_focus) {
 				tr::event_queue::disable_text_input_events();
-				(*_input)->on_lose_focus();
-				_input = _objects.end();
+				(*input)->on_lose_focus();
+				input = objects.end();
 			}
 
-			const std::list<std::unique_ptr<widget>>::iterator old_hovered_it{_hovered};
-			_hovered = _objects.end();
-			for (std::list<std::unique_ptr<widget>>::iterator it = _objects.begin(); it != _objects.end(); ++it) {
+			const std::list<std::unique_ptr<widget>>::iterator old_hovered_it{hovered};
+			hovered = objects.end();
+			for (std::list<std::unique_ptr<widget>>::iterator it = objects.begin(); it != objects.end(); ++it) {
 				if ((*it)->hoverable() && tr::frect2{(*it)->tl(), (*it)->size()}.contains(engine::mouse_pos())) {
-					if (_hovered == _objects.end() || !(*_hovered)->active()) {
-						_hovered = it;
+					if (hovered == objects.end() || !(*hovered)->active()) {
+						hovered = it;
 					}
 				}
 			}
 
-			if (old_hovered_it != _hovered) {
-				if (old_hovered_it != _objects.end()) {
+			if (old_hovered_it != hovered) {
+				if (old_hovered_it != objects.end()) {
 					(*old_hovered_it)->on_unhover();
 				}
-				if (_hovered != _objects.end()) {
-					(*_hovered)->on_hover();
+				if (hovered != objects.end()) {
+					(*hovered)->on_hover();
 				}
 			}
 
-			if (_hovered != _objects.end() && (*_hovered)->active()) {
-				(*_hovered)->on_hold_begin();
+			if (hovered != objects.end() && (*hovered)->active()) {
+				(*hovered)->on_hold_begin();
 			}
 			else if (something_had_input_focus) {
 				audio::play_sound(sound::CANCEL, 0.5f, 0.0f);
@@ -166,12 +166,12 @@ void ui_manager::handle_event(const tr::event& event)
 	case tr::mouse_up_event::ID: {
 		const tr::mouse_up_event mouse_up{event};
 		if (mouse_up.button == tr::mouse_button::LEFT) {
-			if (_hovered != _objects.end() && (*_hovered)->active()) {
-				(*_hovered)->on_hold_end();
-				if ((*_hovered)->writable()) {
+			if (hovered != objects.end() && (*hovered)->active()) {
+				(*hovered)->on_hold_end();
+				if ((*hovered)->writable()) {
 					tr::event_queue::enable_text_input_events();
-					_input = _hovered;
-					(*_hovered)->on_gain_focus();
+					input = hovered;
+					(*hovered)->on_gain_focus();
 				}
 			}
 		}
@@ -179,7 +179,7 @@ void ui_manager::handle_event(const tr::event& event)
 	case tr::key_down_event::ID: {
 		const tr::key_down_event key_down{event};
 
-		if (_input != _objects.end()) {
+		if (input != objects.end()) {
 			if (key_down.key == tr::keycode::ESCAPE) {
 				clear_input_focus();
 			}
@@ -191,27 +191,27 @@ void ui_manager::handle_event(const tr::event& event)
 					move_input_focus_forward();
 				}
 			}
-			else if ((*_input)->active()) {
+			else if ((*input)->active()) {
 				if (key_down.mods == tr::keymod::CTRL && key_down.key == tr::keycode::C) {
-					(*_input)->on_copy();
+					(*input)->on_copy();
 				}
 				else if (key_down.mods == tr::keymod::CTRL && key_down.key == tr::keycode::X) {
-					(*_input)->on_copy();
-					(*_input)->on_clear();
+					(*input)->on_copy();
+					(*input)->on_clear();
 				}
 				else if (key_down.mods == tr::keymod::CTRL && key_down.key == tr::keycode::V) {
-					(*_input)->on_paste();
+					(*input)->on_paste();
 				}
 				else if (key_down.key == tr::keycode::BACKSPACE || key_down.key == tr::keycode::DELETE) {
 					if (key_down.mods & tr::keymod::CTRL) {
-						(*_input)->on_clear();
+						(*input)->on_clear();
 					}
 					else {
-						(*_input)->on_erase();
+						(*input)->on_erase();
 					}
 				}
 				else if (key_down.key == tr::keycode::ENTER) {
-					(*_input)->on_enter();
+					(*input)->on_enter();
 				}
 			}
 		}
@@ -225,7 +225,7 @@ void ui_manager::handle_event(const tr::event& event)
 				}
 			}
 			else {
-				for (std::unique_ptr<widget>& p : _objects) {
+				for (std::unique_ptr<widget>& p : objects) {
 					if (p->is_shortcut({key_down.key, key_down.mods})) {
 						p->on_shortcut();
 					}
@@ -234,32 +234,32 @@ void ui_manager::handle_event(const tr::event& event)
 		}
 	} break;
 	case tr::text_input_event::ID:
-		if (_input != _objects.end() && (*_input)->active()) {
-			(*_input)->on_write(tr::text_input_event{event}.text);
+		if (input != objects.end() && (*input)->active()) {
+			(*input)->on_write(tr::text_input_event{event}.text);
 		}
 		break;
 	}
 }
 
-void ui_manager::update() noexcept
+void ui_manager::update()
 {
-	for (std::unique_ptr<widget>& p : _objects) {
+	for (std::unique_ptr<widget>& p : objects) {
 		p->update();
 	}
 
-	if (_input != _objects.end() && !(*_input)->active()) {
+	if (input != objects.end() && !(*input)->active()) {
 		clear_input_focus();
 	}
 }
 
-void ui_manager::add_to_renderer() noexcept
+void ui_manager::add_to_renderer()
 {
-	for (std::unique_ptr<widget>& p : _objects) {
+	for (std::unique_ptr<widget>& p : objects) {
 		p->add_to_renderer();
 	}
-	if (_hovered != _objects.end()) {
-		if ((*_hovered)->tooltip_cb) {
-			const std::string tooltip{(*_hovered)->tooltip_cb()};
+	if (hovered != objects.end()) {
+		if ((*hovered)->tooltip_cb) {
+			const std::string tooltip{(*hovered)->tooltip_cb()};
 			if (!tooltip.empty()) {
 				engine::tooltip().add_to_renderer(tooltip);
 			}

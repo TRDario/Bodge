@@ -1,6 +1,6 @@
-#include "../../include/ui/widget.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -164,73 +164,73 @@ void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, fl
 ///////////////////////////////////////////////////////////////// WIDGET //////////////////////////////////////////////////////////////////
 
 widget::widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
-			   std::vector<tr::key_chord>&& shortcuts) noexcept
+			   std::vector<tr::key_chord>&& shortcuts)
 	: name{name}
 	, alignment{alignment}
 	, pos{pos}
 	, tooltip_cb{std::move(tooltip_cb)}
-	, _opacity{0}
-	, _hoverable{hoverable}
-	, _writable{writable}
-	, _shortcuts{std::move(shortcuts)}
+	, opacity_{0}
+	, hoverable_{hoverable}
+	, writable_{writable}
+	, shortcuts{std::move(shortcuts)}
 {
 }
 
-glm::vec2 widget::tl() const noexcept
+glm::vec2 widget::tl() const
 {
 	return tr::tl(glm::vec2{pos}, size(), alignment);
 }
 
-float widget::opacity() const noexcept
+float widget::opacity() const
 {
-	return _opacity;
+	return opacity_;
 }
 
-void widget::hide() noexcept
+void widget::hide()
 {
-	_opacity = 0;
+	opacity_ = 0;
 }
 
-void widget::hide(ticks time) noexcept
+void widget::hide(ticks time)
 {
-	_opacity.change(0, time);
+	opacity_.change(0, time);
 }
 
-void widget::unhide() noexcept
+void widget::unhide()
 {
-	_opacity = 1;
+	opacity_ = 1;
 }
 
-void widget::unhide(ticks time) noexcept
+void widget::unhide(ticks time)
 {
-	_opacity.change(1, time);
+	opacity_.change(1, time);
 }
 
-bool widget::hoverable() const noexcept
+bool widget::hoverable() const
 {
-	return _hoverable;
+	return hoverable_;
 }
 
-bool widget::writable() const noexcept
+bool widget::writable() const
 {
-	return _writable;
+	return writable_;
 }
 
-bool widget::active() const noexcept
+bool widget::active() const
 {
 	return false;
 }
 
-bool widget::is_shortcut(const tr::key_chord& chord) const noexcept
+bool widget::is_shortcut(const tr::key_chord& chord) const
 {
-	const std::vector<tr::key_chord>::const_iterator it{std::ranges::find(_shortcuts, chord)};
-	return it != _shortcuts.end();
+	const std::vector<tr::key_chord>::const_iterator it{std::ranges::find(shortcuts, chord)};
+	return it != shortcuts.end();
 }
 
 void widget::update()
 {
 	pos.update();
-	_opacity.update();
+	opacity_.update();
 }
 
 /////////////////////////////////////////////////////////////// TEXT_WIDGET ///////////////////////////////////////////////////////////////
@@ -241,11 +241,11 @@ text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignme
 	: widget{name, pos, alignment, hoverable, std::move(tooltip_cb), writable, std::move(shortcuts)}
 	, color{color}
 	, text_cb{std::move(text_cb)}
-	, _font{font}
-	, _style{style}
-	, _text_alignment{text_alignment}
-	, _font_size{font_size}
-	, _max_width{max_width}
+	, font_{font}
+	, style{style}
+	, text_alignment{text_alignment}
+	, font_size{font_size}
+	, max_width{max_width}
 {
 }
 
@@ -277,21 +277,21 @@ text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignme
 
 glm::vec2 text_widget::size() const
 {
-	if (!_cached.has_value()) {
+	if (!cached.has_value()) {
 		update_cache();
 	}
-	return _cached->size / engine::render_scale();
+	return cached->size / engine::render_scale();
 }
 
-void text_widget::update() noexcept
+void text_widget::update()
 {
 	widget::update();
 	color.update();
 }
 
-void text_widget::release_graphical_resources() noexcept
+void text_widget::release_graphical_resources()
 {
-	_cached.reset();
+	cached.reset();
 }
 
 void text_widget::add_to_renderer()
@@ -301,28 +301,28 @@ void text_widget::add_to_renderer()
 	tr::rgba8 color{this->color};
 	color.a = static_cast<std::uint8_t>(color.a * opacity());
 
-	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, _cached->texture)};
+	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, cached->texture)};
 	tr::fill_rect_vtx(quad.positions, {tl(), text_widget::size()});
-	tr::fill_rect_vtx(quad.uvs, {{}, _cached->size / glm::vec2{_cached->texture.size()}});
+	tr::fill_rect_vtx(quad.uvs, {{}, cached->size / glm::vec2{cached->texture.size()}});
 	std::ranges::fill(quad.tints, tr::rgba8{color});
 }
 
 void text_widget::update_cache() const
 {
 	std::string text{text_cb(name)};
-	if (!_cached.has_value() || _cached->text != text) {
-		tr::bitmap render{font_manager.render_text(text, _font, _style, _font_size, _font_size / 12, _max_width, _text_alignment)};
-		if (!_cached || _cached->texture.size().x < render.size().x || _cached->texture.size().y < render.size().y) {
-			_cached.emplace(tr::texture{render}, render.size(), std::move(text));
+	if (!cached.has_value() || cached->text != text) {
+		tr::bitmap render{fonts::render_text(text, font_, style, font_size, font_size / 12, max_width, text_alignment)};
+		if (!cached || cached->texture.size().x < render.size().x || cached->texture.size().y < render.size().y) {
+			cached.emplace(tr::texture{render}, render.size(), std::move(text));
 			if (tr::gfx_context::debug()) {
-				_cached->texture.set_label(std::format("(Bodge) Widget texture - \"{}\"", name));
+				cached->texture.set_label(std::format("(Bodge) Widget texture - \"{}\"", name));
 			}
 		}
 		else {
-			_cached->texture.clear({});
-			_cached->texture.set_region({}, render);
-			_cached->size = render.size();
-			_cached->text = std::move(text);
+			cached->texture.clear({});
+			cached->texture.set_region({}, render);
+			cached->size = render.size();
+			cached->text = std::move(text);
 		}
 	}
 }
@@ -331,7 +331,7 @@ void text_widget::update_cache() const
 
 clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size,
 											 text_callback text_cb, status_callback status_cb, action_callback action_cb,
-											 tooltip_callback tooltip_cb, std::vector<tr::key_chord>&& shortcuts, sound sound) noexcept
+											 tooltip_callback tooltip_cb, std::vector<tr::key_chord>&& shortcuts, sound sound)
 	: text_widget{name,
 				  pos,
 				  alignment,
@@ -346,17 +346,17 @@ clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 po
 				  tr::UNLIMITED_WIDTH,
 				  {160, 160, 160, 160},
 				  std::move(text_cb)}
-	, _status_cb{std::move(status_cb)}
-	, _action_cb{std::move(action_cb)}
-	, _override_disabled_color_left{0}
-	, _sound{sound}
+	, status_cb{std::move(status_cb)}
+	, action_cb{std::move(action_cb)}
+	, override_disabled_color_left{0}
+	, sound_{sound}
 {
 }
 
-void clickable_text_widget::update() noexcept
+void clickable_text_widget::update()
 {
-	if (_override_disabled_color_left > 0) {
-		--_override_disabled_color_left;
+	if (override_disabled_color_left > 0) {
+		--override_disabled_color_left;
 	}
 	text_widget::update();
 }
@@ -364,19 +364,19 @@ void clickable_text_widget::update() noexcept
 void clickable_text_widget::add_to_renderer()
 {
 	const interpolated_rgba8 real_color{color};
-	if (!active() && _override_disabled_color_left == 0) {
+	if (!active() && override_disabled_color_left == 0) {
 		color = {80, 80, 80, 160};
 	}
 	text_widget::add_to_renderer();
 	color = real_color;
 }
 
-bool clickable_text_widget::active() const noexcept
+bool clickable_text_widget::active() const
 {
-	return _status_cb();
+	return status_cb();
 }
 
-void clickable_text_widget::on_hover() noexcept
+void clickable_text_widget::on_hover()
 {
 	color.change("FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
@@ -384,49 +384,49 @@ void clickable_text_widget::on_hover() noexcept
 	}
 }
 
-void clickable_text_widget::on_unhover() noexcept
+void clickable_text_widget::on_unhover()
 {
 	color.change({160, 160, 160, 160}, 0.2_s);
 }
 
-void clickable_text_widget::on_hold_begin() noexcept
+void clickable_text_widget::on_hold_begin()
 {
 	color = {32, 32, 32, 255};
 	audio::play_sound(sound::HOLD, 0.2f, 0.0f, rng.generate(0.9f, 1.1f));
 }
 
-void clickable_text_widget::on_hold_transfer_in() noexcept
+void clickable_text_widget::on_hold_transfer_in()
 {
 	on_hold_begin();
 }
 
-void clickable_text_widget::on_hold_transfer_out() noexcept
+void clickable_text_widget::on_hold_transfer_out()
 {
 	color.change({160, 160, 160, 160}, 0.2_s);
 }
 
-void clickable_text_widget::on_hold_end() noexcept
+void clickable_text_widget::on_hold_end()
 {
 	color.change("FFFFFF"_rgba8, 0.2_s);
-	_action_cb();
-	audio::play_sound(_sound, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
+	action_cb();
+	audio::play_sound(sound_, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
 }
 
-void clickable_text_widget::on_shortcut() noexcept
+void clickable_text_widget::on_shortcut()
 {
 	if (active()) {
-		_action_cb();
+		action_cb();
 		color = "FFFFFF"_rgba8;
 		color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
-		_override_disabled_color_left = 0.2_s;
-		audio::play_sound(_sound, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
+		override_disabled_color_left = 0.2_s;
+		audio::play_sound(sound_, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
 	}
 }
 
 /////////////////////////////////////////////////////////////// IMAGE_WIDGET //////////////////////////////////////////////////////////////
 
 // Loads an image and returns a fallback texture if loading fails.
-tr::bitmap load_image(std::string_view texture) noexcept
+tr::bitmap load_image(std::string_view texture)
 {
 	try {
 		const std::filesystem::path path{cli_settings.datadir / "graphics" / std::format("{}.qoi", texture)};
@@ -444,25 +444,25 @@ tr::bitmap load_image(std::string_view texture) noexcept
 }
 
 image_widget::image_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t* hue_ref)
-	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, _texture{load_image(name)}, _hue_ref{hue_ref}
+	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, texture{load_image(name)}, hue_ref{hue_ref}
 {
-	_texture.set_filtering(tr::min_filter::LINEAR, tr::mag_filter::LINEAR);
+	texture.set_filtering(tr::min_filter::LINEAR, tr::mag_filter::LINEAR);
 }
 
-glm::vec2 image_widget::size() const noexcept
+glm::vec2 image_widget::size() const
 {
-	return glm::vec2{_texture.size()} / 2.0f;
+	return glm::vec2{texture.size()} / 2.0f;
 }
 
 void image_widget::add_to_renderer()
 {
 	tr::rgba8 color{255, 255, 255, 255};
-	if (_hue_ref != nullptr) {
-		color = tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(*_hue_ref), 1, 1});
+	if (hue_ref != nullptr) {
+		color = tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(*hue_ref), 1, 1});
 	}
 	color.a = static_cast<std::uint8_t>(color.a * opacity());
 
-	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, _texture)};
+	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, texture)};
 	tr::fill_rect_vtx(quad.positions, {tl(), size()});
 	tr::fill_rect_vtx(quad.uvs, {{0, 0}, {1, 1}});
 	std::ranges::fill(quad.tints, tr::rgba8{color});
@@ -470,19 +470,19 @@ void image_widget::add_to_renderer()
 
 /////////////////////////////////////////////////////////// COLOR_PREVIEW_WIDGET //////////////////////////////////////////////////////////
 
-color_preview_widget::color_preview_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t& hue_ref) noexcept
-	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, _hue_ref{hue_ref}
+color_preview_widget::color_preview_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t& hue_ref)
+	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, hue_ref{hue_ref}
 {
 }
 
-glm::vec2 color_preview_widget::size() const noexcept
+glm::vec2 color_preview_widget::size() const
 {
 	return {48, 48};
 }
 
 void color_preview_widget::add_to_renderer()
 {
-	const tr::rgba8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(_hue_ref), 1, 1}), tr::norm_cast<std::uint8_t>(opacity())};
+	const tr::rgba8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(hue_ref), 1, 1}), tr::norm_cast<std::uint8_t>(opacity())};
 	const tr::rgba8 outline_color{static_cast<std::uint8_t>(color.r / 2), static_cast<std::uint8_t>(color.g / 2),
 								  static_cast<std::uint8_t>(color.b / 2), static_cast<std::uint8_t>(color.a / 2)};
 
@@ -497,31 +497,31 @@ void color_preview_widget::add_to_renderer()
 /////////////////////////////////////////////////////////////// ARROW_WIDGET //////////////////////////////////////////////////////////////
 
 arrow_widget::arrow_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb,
-						   action_callback action_cb, std::vector<tr::key_chord>&& chords) noexcept
+						   action_callback action_cb, std::vector<tr::key_chord>&& chords)
 	: widget{name, pos, alignment, true, NO_TOOLTIP, false, std::move(chords)}
-	, _right{right_arrow}
-	, _color{{160, 160, 160, 160}}
-	, _status_cb{std::move(status_cb)}
-	, _action_cb{std::move(action_cb)}
-	, _override_disabled_color_left{0}
+	, right{right_arrow}
+	, color{{160, 160, 160, 160}}
+	, status_cb{std::move(status_cb)}
+	, action_cb{std::move(action_cb)}
+	, override_disabled_color_left{0}
 {
 }
 
-glm::vec2 arrow_widget::size() const noexcept
+glm::vec2 arrow_widget::size() const
 {
 	return {30, 48};
 }
 
 void arrow_widget::add_to_renderer()
 {
-	tr::rgba8 color{_color};
-	if (!active() && _override_disabled_color_left == 0) {
+	tr::rgba8 color{this->color};
+	if (!active() && override_disabled_color_left == 0) {
 		color = {80, 80, 80, 160};
 	}
 	color.a *= opacity();
 
 	const glm::vec2 tl{this->tl()};
-	const std::array<glm::vec2, 15>& positions{_right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
+	const std::array<glm::vec2, 15>& positions{right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
 	const tr::color_mesh_ref arrow{tr::renderer_2d::new_color_mesh(layer::UI, 15, tr::poly_outline_idx(5) + tr::poly_idx(5))};
 	tr::fill_poly_outline_idx(arrow.indices.begin(), 5, arrow.base_index);
 	tr::fill_poly_idx(arrow.indices.begin() + tr::poly_outline_idx(5), 5, arrow.base_index + 10);
@@ -535,67 +535,67 @@ void arrow_widget::add_to_renderer()
 					  arrow.colors.begin());
 }
 
-void arrow_widget::update() noexcept
+void arrow_widget::update()
 {
-	if (_override_disabled_color_left > 0) {
-		--_override_disabled_color_left;
+	if (override_disabled_color_left > 0) {
+		--override_disabled_color_left;
 	}
 	// Fixes an edge case of being stuck with the disabled color after using a shortcut.
-	if (active() && _color == tr::rgba8{80, 80, 80, 160}) {
-		_color = tr::rgba8{160, 160, 160, 160};
+	if (active() && color == tr::rgba8{80, 80, 80, 160}) {
+		color = tr::rgba8{160, 160, 160, 160};
 	}
-	_color.update();
+	color.update();
 	widget::update();
 }
 
-bool arrow_widget::active() const noexcept
+bool arrow_widget::active() const
 {
-	return _status_cb();
+	return status_cb();
 }
 
-void arrow_widget::on_hover() noexcept
+void arrow_widget::on_hover()
 {
-	_color.change("FFFFFF"_rgba8, 0.2_s);
+	color.change("FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
 		audio::play_sound(sound::HOVER, 0.15f, 0.0f, rng.generate(0.9f, 1.1f));
 	}
 }
 
-void arrow_widget::on_unhover() noexcept
+void arrow_widget::on_unhover()
 {
-	_color.change({160, 160, 160, 160}, 0.2_s);
+	color.change({160, 160, 160, 160}, 0.2_s);
 }
 
-void arrow_widget::on_hold_begin() noexcept
+void arrow_widget::on_hold_begin()
 {
-	_color = {32, 32, 32, 255};
+	color = {32, 32, 32, 255};
 	audio::play_sound(sound::HOLD, 0.2f, 0.0f, rng.generate(0.9f, 1.1f));
 }
 
-void arrow_widget::on_hold_transfer_in() noexcept
+void arrow_widget::on_hold_transfer_in()
 {
 	on_hold_begin();
 }
 
-void arrow_widget::on_hold_transfer_out() noexcept
+void arrow_widget::on_hold_transfer_out()
 {
-	_color.change({160, 160, 160, 160}, 0.2_s);
+	color.change({160, 160, 160, 160}, 0.2_s);
 }
 
-void arrow_widget::on_hold_end() noexcept
+void arrow_widget::on_hold_end()
 {
-	_color.change("FFFFFF"_rgba8, 0.2_s);
-	_action_cb();
+	color.change("FFFFFF"_rgba8, 0.2_s);
+	action_cb();
 	audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
 }
 
-void arrow_widget::on_shortcut() noexcept
+void arrow_widget::on_shortcut()
 {
 	if (active()) {
-		_action_cb();
-		_color = "FFFFFF"_rgba8;
-		_color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
-		_override_disabled_color_left = 0.2_s;
+		action_cb();
+		color = "FFFFFF"_rgba8;
+		color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
+		override_disabled_color_left = 0.2_s;
 		audio::play_sound(sound::CONFIRM, 0.5f, 0.0f, rng.generate(0.9f, 1.1f));
 	}
 }
@@ -603,12 +603,12 @@ void arrow_widget::on_shortcut() noexcept
 ////////////////////////////////////////////////////// REPLAY_PLAYBACK_INDICATOR_WIDGET ///////////////////////////////////////////////////
 
 // Creates a replay playback indicator widget.
-replay_playback_indicator_widget::replay_playback_indicator_widget(std::string_view name, glm::vec2 pos, tr::align alignment) noexcept
+replay_playback_indicator_widget::replay_playback_indicator_widget(std::string_view name, glm::vec2 pos, tr::align alignment)
 	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}
 {
 }
 
-glm::vec2 replay_playback_indicator_widget::size() const noexcept
+glm::vec2 replay_playback_indicator_widget::size() const
 {
 	return {48, 48};
 }
@@ -645,7 +645,7 @@ void replay_playback_indicator_widget::add_to_renderer()
 
 ////////////////////////////////////////////////////////////// SCORE WIDGET ///////////////////////////////////////////////////////////////
 
-score_widget::score_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::size_t rank, ::score* score) noexcept
+score_widget::score_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::size_t rank, ::score* score)
 	: text_widget{
 		  name,
 		  pos,
@@ -717,7 +717,7 @@ score_widget::score_widget(std::string_view name, glm::vec2 pos, tr::align align
 {
 }
 
-glm::vec2 score_widget::size() const noexcept
+glm::vec2 score_widget::size() const
 {
 	if (score != nullptr) {
 		const auto icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
@@ -757,7 +757,7 @@ void score_widget::add_to_renderer()
 
 ////////////////////////////////////////////////////////////// REPLAY_WIDGET //////////////////////////////////////////////////////////////
 
-glm::vec2 replay_widget::size() const noexcept
+glm::vec2 replay_widget::size() const
 {
 	if (it.has_value()) {
 		const score_flags flags{(*it)->second.flags};

@@ -1,6 +1,6 @@
-#include "../../include/state/settings_state.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/engine.hpp"
+#include "../../include/state/settings_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -175,12 +175,12 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 			it = languages.begin();
 		}
 		_pending.language = it->first;
-		font_manager.reload_language_preview_font(_pending);
+		fonts::reload_language_preview_font(_pending);
 	}};
 	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_action_cbs{
 		[this] {
 			_pending = settings;
-			font_manager.reload_language_preview_font(_pending);
+			fonts::reload_language_preview_font(_pending);
 			update_window_size_buttons();
 			update_refresh_rate_buttons();
 		},
@@ -195,7 +195,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 			}
 			if (languages[old_settings.language].font != languages[settings.language].font) {
 				_ui.release_graphical_resources();
-				font_manager.set_language_font();
+				fonts::set_language_font();
 			}
 			if (old_settings.sfx_volume != settings.sfx_volume || old_settings.music_volume != settings.music_volume) {
 				audio::apply_settings();
