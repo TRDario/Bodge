@@ -31,14 +31,14 @@ namespace engine {
 	// Gets the height of a line of text.
 	float line_skip(font font, float size);
 	// Gets the size of a text string in window coordinates.
-	glm::vec2 text_size(std::string_view text, font font, tr::ttf_style style, float size, float outline,
-						float max_w = tr::UNLIMITED_WIDTH);
+	glm::vec2 text_size(std::string_view text, font font, tr::system::ttf_style style, float size, float outline,
+						float max_w = tr::system::UNLIMITED_WIDTH);
 	// Gets the number of lines in a text string.
-	std::size_t count_lines(std::string_view text, font font, tr::ttf_style style, float size, float outline,
-							float max_w = tr::UNLIMITED_WIDTH);
+	std::size_t count_lines(std::string_view text, font font, tr::system::ttf_style style, float size, float outline,
+							float max_w = tr::system::UNLIMITED_WIDTH);
 	// Renders text.
-	tr::bitmap render_text(std::string_view text, font font, tr::ttf_style style, float size, float outline,
-						   float max_w = tr::UNLIMITED_WIDTH, tr::halign align = tr::halign::LEFT);
+	tr::bitmap render_text(std::string_view text, font font, tr::system::ttf_style style, float size, float outline,
+						   float max_w = tr::system::UNLIMITED_WIDTH, tr::halign align = tr::halign::LEFT);
 	// Renders a gradient glyph.
-	tr::bitmap render_gradient_glyph(std::uint32_t glyph, font font, tr::ttf_style style, float size, float outline);
+	tr::bitmap render_gradient_glyph(std::uint32_t glyph, font font, tr::system::ttf_style style, float size, float outline);
 }; // namespace engine

@@ -9,7 +9,7 @@
 int main(int argc, const char** argv)
 {
 	try {
-		tr::initialize_application("TRDario", "Bodge");
+		tr::system::initialize("TRDario", "Bodge");
 		engine::parse_command_line(argc, argv);
 		engine::load_settings();
 		engine::load_scorefile();
@@ -33,7 +33,7 @@ int main(int argc, const char** argv)
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::FATAL, err);
-		tr::show_fatal_error_message_box(err);
+		tr::system::show_fatal_error_message_box(err);
 		std::exit(EXIT_FAILURE);
 	}
 }

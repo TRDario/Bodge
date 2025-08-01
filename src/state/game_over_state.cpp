@@ -9,14 +9,14 @@
 // The pause screen buttons.
 constexpr std::array<const char*, 4> BUTTONS{"save_and_restart", "restart", "save_and_quit", "quit"};
 // Shortcuts of the buttons.
-constexpr std::array<std::initializer_list<tr::key_chord>, BUTTONS.size()> SHORTCUTS{{
-	{{tr::keycode::R, tr::keymod::SHIFT}, {tr::keycode::TOP_ROW_1}},
-	{{tr::keycode::R}, {tr::keycode::TOP_ROW_2}},
-	{{tr::keycode::ESCAPE, tr::keymod::SHIFT},
-	 {tr::keycode::Q, tr::keymod::SHIFT},
-	 {tr::keycode::E, tr::keymod::SHIFT},
-	 {tr::keycode::TOP_ROW_3}},
-	{{tr::keycode::ESCAPE}, {tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::TOP_ROW_4}},
+constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS.size()> SHORTCUTS{{
+	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, {tr::system::keycode::TOP_ROW_1}},
+	{{tr::system::keycode::R}, {tr::system::keycode::TOP_ROW_2}},
+	{{tr::system::keycode::ESCAPE, tr::system::keymod::SHIFT},
+	 {tr::system::keycode::Q, tr::system::keymod::SHIFT},
+	 {tr::system::keycode::E, tr::system::keymod::SHIFT},
+	 {tr::system::keycode::TOP_ROW_3}},
+	{{tr::system::keycode::ESCAPE}, {tr::system::keycode::Q}, {tr::system::keycode::E}, {tr::system::keycode::TOP_ROW_4}},
 }};
 
 // The height of the title text.
@@ -28,7 +28,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	: m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}, m_timer{0}, m_game{std::move(game)}, m_prev_pb{prev_pb}
 {
 	widget& title{m_ui.emplace<text_widget>("game_over", glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
-											tr::ttf_style::NORMAL, 64)};
+											tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change({500, TITLE_Y}, 0.5_s);
 	title.unhide(0.5_s);
 
@@ -36,8 +36,8 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 					   (engine::line_skip(font::LANGUAGE, 48) + 4 + engine::line_skip(font::LANGUAGE, 24)) / 2};
 	const ticks time_ticks{m_game->result()};
 	text_callback time_text_cb{[time = timer_text(time_ticks)](const auto&) { return time; }};
-	widget& time{m_ui.emplace<text_widget>("time", glm::vec2{400, time_h}, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64,
-										   std::move(time_text_cb), "FFFF00C0"_rgba8)};
+	widget& time{m_ui.emplace<text_widget>("time", glm::vec2{400, time_h}, tr::align::TOP_CENTER, font::LANGUAGE,
+										   tr::system::ttf_style::NORMAL, 64, std::move(time_text_cb), "FFFF00C0"_rgba8)};
 	time.pos.change({500, time_h}, 0.5_s);
 	time.unhide(0.5_s);
 
@@ -51,8 +51,8 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 			return str;
 		};
 	}
-	widget& pb{m_ui.emplace<text_widget>("pb", glm::vec2{600, pb_h}, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 24,
-										 std::move(pb_text_cb), "FFFF00C0"_rgba8)};
+	widget& pb{m_ui.emplace<text_widget>("pb", glm::vec2{600, pb_h}, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+										 24, std::move(pb_text_cb), "FFFF00C0"_rgba8)};
 	pb.pos.change({500, pb_h}, 0.5_s);
 	if (prev_pb >= m_game->result()) {
 		pb.unhide(0.5_s);
@@ -95,7 +95,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 
 ///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> game_over_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> game_over_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -146,11 +146,11 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 void game_over_state::draw()
 {
 	m_game->add_to_renderer();
-	tr::renderer_2d::draw(engine::blur().input());
+	tr::gfx::renderer_2d::draw(engine::blur().input());
 	engine::blur().draw(saturation_factor(), blur_strength());
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(m_substate == substate::RESTARTING || m_substate == substate::QUITTING ? m_timer / 0.5_sf : 0);
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

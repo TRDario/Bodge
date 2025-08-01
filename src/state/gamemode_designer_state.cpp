@@ -7,16 +7,21 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Shortcuts of the ball settings button.
-constexpr std::initializer_list<tr::key_chord> BALL_SETTINGS_SHORTCUTS{{tr::keycode::B}, {tr::keycode::TOP_ROW_1}};
+constexpr std::initializer_list<tr::system::key_chord> BALL_SETTINGS_SHORTCUTS{{tr::system::keycode::B}, {tr::system::keycode::TOP_ROW_1}};
 // Shortcuts of the player settings button.
-constexpr std::initializer_list<tr::key_chord> PLAYER_SETTINGS_SHORTCUTS{{tr::keycode::P}, {tr::keycode::TOP_ROW_2}};
+constexpr std::initializer_list<tr::system::key_chord> PLAYER_SETTINGS_SHORTCUTS{{tr::system::keycode::P},
+																				 {tr::system::keycode::TOP_ROW_2}};
 // Buttons at the bottom of the screen.
 constexpr std::array<const char*, 3> BOTTOM_BUTTONS{"test", "save", "discard"};
 // Shortcuts of the bottom buttons.
-constexpr std::array<std::initializer_list<tr::key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
-	{{tr::keycode::T}, {tr::keycode::TOP_ROW_3}},
-	{{tr::keycode::S}, {tr::keycode::ENTER}, {tr::keycode::TOP_ROW_4}},
-	{{tr::keycode::C}, {tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::ESCAPE}, {tr::keycode::TOP_ROW_5}},
+constexpr std::array<std::initializer_list<tr::system::key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
+	{{tr::system::keycode::T}, {tr::system::keycode::TOP_ROW_3}},
+	{{tr::system::keycode::S}, {tr::system::keycode::ENTER}, {tr::system::keycode::TOP_ROW_4}},
+	{{tr::system::keycode::C},
+	 {tr::system::keycode::Q},
+	 {tr::system::keycode::E},
+	 {tr::system::keycode::ESCAPE},
+	 {tr::system::keycode::TOP_ROW_5}},
 }};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
@@ -39,7 +44,7 @@ gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> gamemode_designer_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> gamemode_designer_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -77,7 +82,7 @@ void gamemode_designer_state::draw()
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
@@ -157,30 +162,30 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	//
 
 	if (returning_from_subscreen) {
-		widget& title{
-			m_ui.emplace<text_widget>("gamemode_designer", TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+		widget& title{m_ui.emplace<text_widget>("gamemode_designer", TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE,
+												tr::system::ttf_style::NORMAL, 64)};
 		title.unhide();
 	}
 	else {
 		widget& title{m_ui.emplace<text_widget>("gamemode_designer", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
-												tr::ttf_style::NORMAL, 64)};
+												tr::system::ttf_style::NORMAL, 64)};
 		title.pos.change(TITLE_POS, 0.5_s);
 		title.unhide(0.5_s);
 	}
 
-	line_input_widget<12>& name{m_ui.emplace<line_input_widget<12>>("name", glm::vec2{400, 340}, tr::align::CENTER, tr::ttf_style::NORMAL,
-																	120, status_cb, name_enter_cb)};
+	line_input_widget<12>& name{m_ui.emplace<line_input_widget<12>>("name", glm::vec2{400, 340}, tr::align::CENTER,
+																	tr::system::ttf_style::NORMAL, 120, status_cb, name_enter_cb)};
 	name.buffer = m_pending.name;
 	name.pos.change({500, 340}, 0.5_s);
 	name.unhide(0.5_s);
 
-	widget& author{m_ui.emplace<text_widget>("author", glm::vec2{600, 415}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 32,
-											 std::move(author_text_cb))};
+	widget& author{m_ui.emplace<text_widget>("author", glm::vec2{600, 415}, tr::align::CENTER, font::LANGUAGE,
+											 tr::system::ttf_style::NORMAL, 32, std::move(author_text_cb))};
 	author.pos.change({500, 415}, 0.5_s);
 	author.unhide(0.5_s);
 
-	line_input_widget<40>& description{m_ui.emplace<line_input_widget<40>>("description", glm::vec2{400, 465}, tr::align::CENTER,
-																		   tr::ttf_style::ITALIC, 32, status_cb, description_enter_cb)};
+	line_input_widget<40>& description{m_ui.emplace<line_input_widget<40>>(
+		"description", glm::vec2{400, 465}, tr::align::CENTER, tr::system::ttf_style::ITALIC, 32, status_cb, description_enter_cb)};
 	description.buffer = m_pending.description;
 	description.pos.change({500, 465}, 0.5_s);
 	description.unhide(0.5_s);

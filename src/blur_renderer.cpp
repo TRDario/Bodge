@@ -19,7 +19,7 @@ constexpr const char* FRAGMENT_SHADER_SRC{
 	"(2*R));k+=texture(t,p)*w;}C=k;}else{for(d=1/S.y,y=-r,p.y+=y*d;y<=r;y++,p.y+=d){w=W*exp((-y*y)/"
 	"(2*R));k+=texture(t,p)*w;}vec3 g=H(k.rgb);C=vec4(G(vec3(g.x,g.y*s,g.z)),1);}}"};
 // The renderer ID of the pause menu background renderer.
-const std::uint32_t RENDERER_ID{tr::alloc_renderer_id()};
+const std::uint32_t RENDERER_ID{tr::gfx::alloc_renderer_id()};
 // The mesh used for drawing the pause menu background.
 constexpr std::array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 
@@ -28,14 +28,14 @@ constexpr std::array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 blur_renderer::blur_renderer(int texture_size)
 	: m_input_texture{glm::ivec2{texture_size}}
 	, m_auxiliary_texture{glm::ivec2{texture_size}}
-	, m_pipeline{tr::vertex_shader{VERTEX_SHADER_SRC}, tr::fragment_shader{FRAGMENT_SHADER_SRC}}
-	, m_vertex_format{tr::vertex_attributef{tr::vertex_attributef::type::SI8, 2, false, 0, 0}}
+	, m_pipeline{tr::gfx::vertex_shader{VERTEX_SHADER_SRC}, tr::gfx::fragment_shader{FRAGMENT_SHADER_SRC}}
+	, m_vertex_format{tr::gfx::vertex_attributef{tr::gfx::vertex_attributef::type::SI8, 2, false, 0, 0}}
 	, m_vertex_buffer{MESH}
 {
 	m_texture_unit.set_texture(m_input_texture);
 	m_pipeline.fragment_shader().set_uniform(0, m_texture_unit);
 	m_pipeline.fragment_shader().set_uniform(1, static_cast<glm::vec2>(m_input_texture.size()));
-	if (tr::gfx_context::debug()) {
+	if (tr::gfx::debug()) {
 		m_input_texture.set_label("(Bodge) Blur Renderer Input Texture");
 		m_auxiliary_texture.set_label("(Bodge) Blur Renderer Auxilliary Texture");
 		m_pipeline.set_label("(Bodge) Blur Renderer Pipeline");
@@ -48,7 +48,7 @@ blur_renderer::blur_renderer(int texture_size)
 
 ///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
 
-tr::render_target blur_renderer::input()
+tr::gfx::render_target blur_renderer::input()
 {
 	m_input_texture.clear({});
 	return m_input_texture;
@@ -58,20 +58,20 @@ void blur_renderer::draw(float saturation, float strength)
 {
 	strength = std::max(std::round(strength * engine::render_scale()), 2.0f);
 
-	tr::gfx_context::set_renderer(RENDERER_ID);
-	tr::gfx_context::set_shader_pipeline(m_pipeline);
-	tr::gfx_context::set_vertex_format(m_vertex_format);
-	tr::gfx_context::set_vertex_buffer(m_vertex_buffer, 0, 0);
-	tr::gfx_context::set_blend_mode(tr::PREMUL_ALPHA_BLENDING);
+	tr::gfx::set_renderer(RENDERER_ID);
+	tr::gfx::set_shader_pipeline(m_pipeline);
+	tr::gfx::set_vertex_format(m_vertex_format);
+	tr::gfx::set_vertex_buffer(m_vertex_buffer, 0, 0);
+	tr::gfx::set_blend_mode(tr::gfx::PREMUL_ALPHA_BLENDING);
 	m_texture_unit.set_texture(m_input_texture);
 	m_pipeline.fragment_shader().set_uniform(2, saturation);
 	m_pipeline.fragment_shader().set_uniform(3, strength);
 	m_pipeline.fragment_shader().set_uniform(4, 0);
 	m_auxiliary_texture.clear({});
-	tr::gfx_context::set_render_target(m_auxiliary_texture);
-	tr::gfx_context::draw(tr::primitive::TRI_FAN, 0, 4);
+	tr::gfx::set_render_target(m_auxiliary_texture);
+	tr::gfx::draw(tr::gfx::primitive::TRI_FAN, 0, 4);
 	m_texture_unit.set_texture(m_auxiliary_texture);
 	m_pipeline.fragment_shader().set_uniform(4, 1);
-	tr::gfx_context::set_render_target(engine::screen());
-	tr::gfx_context::draw(tr::primitive::TRI_FAN, 0, 4);
+	tr::gfx::set_render_target(engine::screen());
+	tr::gfx::draw(tr::gfx::primitive::TRI_FAN, 0, 4);
 }

@@ -72,7 +72,7 @@ class player {
 	// The accumulated time spent hovering over the timer text.
 	ticks m_timer_hover_time;
 	// An atlas holding the timer graphics.
-	tr::dyn_atlas<char> m_atlas;
+	tr::gfx::dyn_atlas<char> m_atlas;
 	// Previous personal best.
 	ticks m_pb;
 

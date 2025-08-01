@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Shortcuts of the confirm button.
-constexpr std::initializer_list<tr::key_chord> CONFIRM_SHORTCUTS{{tr::keycode::ENTER}};
+constexpr std::initializer_list<tr::system::key_chord> CONFIRM_SHORTCUTS{{tr::system::keycode::ENTER}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -30,12 +30,12 @@ name_entry_state::name_entry_state()
 		}
 	}};
 
-	widget& title{
-		m_ui.emplace<text_widget>("enter_your_name", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>("enter_your_name", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
+											tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change({500, 0}, 1.0_s);
 	title.unhide(1.0_s);
 
-	widget& input{m_ui.emplace<line_input_widget<20>>("input", glm::vec2{500, 500}, tr::align::CENTER, tr::ttf_style::NORMAL, 64,
+	widget& input{m_ui.emplace<line_input_widget<20>>("input", glm::vec2{500, 500}, tr::align::CENTER, tr::system::ttf_style::NORMAL, 64,
 													  input_status_cb, action_cb)};
 	input.unhide(1.0_s);
 
@@ -48,7 +48,7 @@ name_entry_state::name_entry_state()
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> name_entry_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> name_entry_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -80,5 +80,5 @@ void name_entry_state::draw()
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(m_substate == substate::ENTERING_GAME ? 1 - m_timer / 1.0_sf : 0);
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }

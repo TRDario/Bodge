@@ -13,18 +13,20 @@ constexpr std::array<const char*, 5> BUTTONS_REGULAR{"unpause", "save_and_restar
 // The special pause screen buttons.
 constexpr std::array<const char*, 3> BUTTONS_SPECIAL{"unpause", "restart", "quit"};
 // Shortcuts of the regular button set.
-constexpr std::array<std::initializer_list<tr::key_chord>, BUTTONS_REGULAR.size()> SHORTCUTS_REGULAR{{
-	{{tr::keycode::ESCAPE}, {tr::keycode::TOP_ROW_1}},
-	{{tr::keycode::R, tr::keymod::SHIFT}, {tr::keycode::TOP_ROW_2}},
-	{{tr::keycode::R}, {tr::keycode::TOP_ROW_3}},
-	{{tr::keycode::Q, tr::keymod::SHIFT}, {tr::keycode::E, tr::keymod::SHIFT}, {tr::keycode::TOP_ROW_4}},
-	{{tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::TOP_ROW_5}},
+constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS_REGULAR.size()> SHORTCUTS_REGULAR{{
+	{{tr::system::keycode::ESCAPE}, {tr::system::keycode::TOP_ROW_1}},
+	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, {tr::system::keycode::TOP_ROW_2}},
+	{{tr::system::keycode::R}, {tr::system::keycode::TOP_ROW_3}},
+	{{tr::system::keycode::Q, tr::system::keymod::SHIFT},
+	 {tr::system::keycode::E, tr::system::keymod::SHIFT},
+	 {tr::system::keycode::TOP_ROW_4}},
+	{{tr::system::keycode::Q}, {tr::system::keycode::E}, {tr::system::keycode::TOP_ROW_5}},
 }};
 // Shortcuts of the special button set.
-constexpr std::array<std::initializer_list<tr::key_chord>, BUTTONS_SPECIAL.size()> SHORTCUTS_SPECIAL{{
-	{{tr::keycode::ESCAPE}, {tr::keycode::TOP_ROW_1}},
-	{{tr::keycode::R}, {tr::keycode::TOP_ROW_2}},
-	{{tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::TOP_ROW_3}},
+constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS_SPECIAL.size()> SHORTCUTS_SPECIAL{{
+	{{tr::system::keycode::ESCAPE}, {tr::system::keycode::TOP_ROW_1}},
+	{{tr::system::keycode::R}, {tr::system::keycode::TOP_ROW_2}},
+	{{tr::system::keycode::Q}, {tr::system::keycode::E}, {tr::system::keycode::TOP_ROW_3}},
 }};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
@@ -37,7 +39,7 @@ pause_state::pause_state(std::unique_ptr<game>&& game, game_type type, glm::vec2
 {
 	if (blur_in) {
 		m_game->add_to_renderer();
-		tr::renderer_2d::draw(engine::blur().input());
+		tr::gfx::renderer_2d::draw(engine::blur().input());
 	}
 
 	if (type == game_type::REGULAR) {
@@ -50,7 +52,7 @@ pause_state::pause_state(std::unique_ptr<game>&& game, game_type type, glm::vec2
 
 ///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> pause_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> pause_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -81,7 +83,7 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 		if (m_timer < 0.5_s) {
 			return nullptr;
 		}
-		tr::renderer_2d::set_default_transform(TRANSFORM);
+		tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
 		switch (to_type(m_substate)) {
 		case game_type::REGULAR:
 		case game_type::TEST:
@@ -105,7 +107,7 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 		if (m_timer < 0.5_s) {
 			return nullptr;
 		}
-		tr::renderer_2d::set_default_transform(TRANSFORM);
+		tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
 		switch (to_type(m_substate)) {
 		case game_type::REGULAR:
 			return std::make_unique<title_state>();
@@ -123,7 +125,7 @@ void pause_state::draw()
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(
 		to_base(m_substate) == substate_base::RESTARTING || to_base(m_substate) == substate_base::QUITTING ? m_timer / 0.5_sf : 0);
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
@@ -178,8 +180,8 @@ float pause_state::blur_strength() const
 void pause_state::set_up_full_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
-	widget& title{
-		m_ui.emplace<text_widget>("paused", glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>("paused", glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
+											tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change({500, TITLE_Y}, 0.5_s);
 	title.unhide(0.5_s);
 
@@ -234,8 +236,8 @@ void pause_state::set_up_limited_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
 	const char* const title_tag{to_type(m_substate) == game_type::REPLAY ? "replay_paused" : "test_paused"};
-	widget& title{
-		m_ui.emplace<text_widget>(title_tag, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>(title_tag, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
+											tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change({500, TITLE_Y}, 0.5_s);
 	title.unhide(0.5_s);
 

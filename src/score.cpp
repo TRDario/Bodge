@@ -94,7 +94,7 @@ void engine::load_scorefile()
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to load scorefile.");
 		LOG_CONTINUE("From: '{}'", path.string());
-		LOG_CONTINUE("{}", err.what());
+		LOG_CONTINUE(err);
 	}
 }
 
@@ -117,6 +117,6 @@ void engine::save_scorefile()
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to save scorefile.");
 		LOG_CONTINUE("To: '{}'", path.string());
-		LOG_CONTINUE("{}", err.what());
+		LOG_CONTINUE(err);
 	}
 }

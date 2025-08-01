@@ -42,7 +42,7 @@ namespace engine {
 	// Gets the rendering scale factor.
 	float render_scale();
 	// Gets the screen rendering target.
-	const tr::render_target& screen();
+	const tr::gfx::render_target& screen();
 
 	// Adds the menu game overlay to the renderer.
 	void add_menu_game_overlay_to_renderer();

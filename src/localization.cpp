@@ -29,7 +29,7 @@ void engine::load_languages()
 	catch (std::exception& err) {
 		languages.clear();
 		LOG(tr::severity::ERROR, "Failed to load language list.");
-		LOG_CONTINUE("{}", err.what());
+		LOG_CONTINUE(err);
 	}
 }
 
@@ -66,6 +66,6 @@ void engine::load_localization()
 	catch (std::exception& err) {
 		loc = std::move(old);
 		LOG(tr::severity::ERROR, "Failed to load '{}' localization.", name);
-		LOG_CONTINUE("{}", err.what());
+		LOG_CONTINUE(err);
 	}
 }

@@ -20,7 +20,7 @@ using status_callback = std::function<bool()>;
 using action_callback = std::function<void()>;
 
 // Sentinel for no shortcuts.
-constexpr std::initializer_list<tr::key_chord> NO_SHORTCUTS{};
+constexpr std::initializer_list<tr::system::key_chord> NO_SHORTCUTS{};
 
 ////////////////////////////////////////////////////////////////// WIDGET /////////////////////////////////////////////////////////////////
 
@@ -29,7 +29,7 @@ class widget {
   public:
 	// Creates a widget.
 	widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
-		   std::vector<tr::key_chord>&& shortcuts);
+		   std::vector<tr::system::key_chord>&& shortcuts);
 	// Virtual destructor.
 	virtual ~widget() = default;
 
@@ -91,7 +91,7 @@ class widget {
 	//////////////////////////////////////////////////////// SHORTCUT INTERACTION /////////////////////////////////////////////////////////
 
 	// Gets whether a chord is a valid shortcut for this widget.
-	bool is_shortcut(const tr::key_chord& chord) const;
+	bool is_shortcut(const tr::system::key_chord& chord) const;
 	// Callback for one of the widget's shortcuts being pressed.
 	virtual void on_shortcut() {}
 
@@ -131,5 +131,5 @@ class widget {
 	// Whether the widget is writable.
 	bool m_writable;
 	// The shortcuts of the widget.
-	std::vector<tr::key_chord> m_shortcuts;
+	std::vector<tr::system::key_chord> m_shortcuts;
 };

@@ -11,9 +11,9 @@ class tooltip_manager {
 
   private:
 	// Texture unit used for tooltip rendering.
-	tr::texture_unit m_tex_unit;
+	tr::gfx::texture_unit m_tex_unit;
 	// The tooltip text texture.
-	tr::texture m_texture{{128, 64}};
+	tr::gfx::texture m_texture{{128, 64}};
 	// The last drawn text string.
 	std::string m_last_text;
 	// The size of the last drawn text string.

@@ -46,10 +46,10 @@ void engine::parse_command_line(int argc, const char** argv)
 	}
 
 	if (cli_settings.datadir.empty()) {
-		cli_settings.datadir = tr::executable_dir() / "data";
+		cli_settings.datadir = tr::system::executable_dir() / "data";
 	}
 	if (cli_settings.userdir.empty()) {
-		cli_settings.userdir = tr::user_dir();
+		cli_settings.userdir = tr::system::user_dir();
 	}
 
 	constexpr std::array<const char*, 4> DIRECTORIES{"localization", "fonts", "replays", "gamemodes"};
@@ -62,7 +62,7 @@ void engine::parse_command_line(int argc, const char** argv)
 
 	if (cli_settings.debug_mode) {
 		tr::log = tr::logger{"tr", cli_settings.userdir / "tr.log"};
-		tr::gfx_context::log = tr::logger{"gl", cli_settings.userdir / "gl.log"};
+		tr::gfx::log = tr::logger{"gl", cli_settings.userdir / "gl.log"};
 		logger = tr::logger{"Bodge", cli_settings.userdir / "Bodge.log"};
 	}
 }
@@ -87,7 +87,7 @@ void engine::raw_load_settings()
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to load settings.", path.string());
 		LOG_CONTINUE("From: '{}'", path.string());
-		LOG_CONTINUE("{}", err.what());
+		LOG_CONTINUE(err);
 	}
 }
 
@@ -107,7 +107,7 @@ void engine::validate_settings()
 			settings.refresh_rate = clamped;
 		}
 	}
-	const std::uint8_t adjusted{std::clamp(settings.msaa, NO_MSAA, tr::max_msaa())};
+	const std::uint8_t adjusted{std::clamp(settings.msaa, NO_MSAA, tr::system::max_msaa())};
 	if (adjusted != settings.msaa) {
 		LOG(tr::severity::WARN, "Adjusted MSAA from x{:d} to x{:d}.", settings.msaa, adjusted);
 		settings.msaa = adjusted;
@@ -154,6 +154,6 @@ void engine::save_settings()
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to save settings.");
 		LOG_CONTINUE("To: '{}'", path.string());
-		LOG_CONTINUE("{}", err.what());
+		LOG_CONTINUE(err);
 	}
 }

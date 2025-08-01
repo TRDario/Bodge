@@ -5,9 +5,9 @@
 
 void tooltip_manager::render(std::string_view text)
 {
-	const tr::bitmap render{engine::render_text(text, engine::determine_font(text), tr::ttf_style::NORMAL, 20, 0, 800)};
+	const tr::bitmap render{engine::render_text(text, engine::determine_font(text), tr::system::ttf_style::NORMAL, 20, 0, 800)};
 	m_last_text = text;
-	m_last_size = engine::text_size(text, engine::determine_font(text), tr::ttf_style::NORMAL, 20, 0, 800);
+	m_last_size = engine::text_size(text, engine::determine_font(text), tr::system::ttf_style::NORMAL, 20, 0, 800);
 	const glm::vec2 scaled_last_size{m_last_size * engine::render_scale()};
 
 	if (m_texture.size().x < scaled_last_size.x || m_texture.size().y < scaled_last_size.y) {
@@ -15,14 +15,14 @@ void tooltip_manager::render(std::string_view text)
 			static_cast<int>(std::bit_ceil(static_cast<std::uint32_t>(scaled_last_size.x))),
 			static_cast<int>(std::bit_ceil(static_cast<std::uint32_t>(scaled_last_size.y))),
 		};
-		std::exchange(m_texture, tr::texture{new_size});
+		std::exchange(m_texture, tr::gfx::texture{new_size});
 		m_texture.set_region({}, render.sub({{}, scaled_last_size}));
 	}
 	else {
 		m_texture.clear({});
 		m_texture.set_region({}, render.sub({{}, scaled_last_size}));
 	}
-	tr::renderer_2d::set_default_layer_texture(layer::TOOLTIP, m_texture);
+	tr::gfx::renderer_2d::set_default_layer_texture(layer::TOOLTIP, m_texture);
 }
 
 void tooltip_manager::add_to_renderer(std::string_view text)
@@ -35,13 +35,13 @@ void tooltip_manager::add_to_renderer(std::string_view text)
 	constexpr float PADDING{4};
 	const glm::vec2 tl{glm::min(engine::mouse_pos(), 1000.0f - m_last_size - 2 * OUTLINE - 2 * PADDING)};
 
-	const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::TOOLTIP, 4)};
+	const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::TOOLTIP, 4)};
 	tr::fill_rect_outline_vtx(outline.positions, {tl + OUTLINE / 2, m_last_size + OUTLINE + 2 * PADDING}, OUTLINE);
 	std::ranges::fill(outline.colors, "808080"_rgba8);
-	const tr::simple_color_mesh_ref fill{tr::renderer_2d::new_color_fan(layer::TOOLTIP, 4)};
+	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::TOOLTIP, 4)};
 	tr::fill_rect_vtx(fill.positions, {tl + OUTLINE, m_last_size + 2 * PADDING});
 	std::ranges::fill(fill.colors, "000000"_rgba8);
-	const tr::simple_textured_mesh_ref uv{tr::renderer_2d::new_textured_fan(layer::TOOLTIP, 4)};
+	const tr::gfx::simple_textured_mesh_ref uv{tr::gfx::renderer_2d::new_textured_fan(layer::TOOLTIP, 4)};
 	tr::fill_rect_vtx(uv.positions, {tl + OUTLINE / 2 + PADDING, m_last_size});
 	tr::fill_rect_vtx(uv.uvs, {{}, m_last_size * engine::render_scale() / glm::vec2{m_texture.size()}});
 	std::ranges::fill(uv.tints, "FFFFFF"_rgba8);

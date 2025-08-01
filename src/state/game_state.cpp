@@ -12,8 +12,8 @@ game_state::game_state(std::unique_ptr<game>&& game, game_type type, bool fade_i
 	: m_substate{(fade_in ? substate_base::STARTING : substate_base::ONGOING) | type}, m_timer{0}, m_game{std::move(game)}
 {
 	if (type == game_type::REPLAY) {
-		widget& replay{
-			m_ui.emplace<text_widget>("replay", glm::vec2{4, 1000}, tr::align::BOTTOM_LEFT, font::LANGUAGE, tr::ttf_style::NORMAL, 48)};
+		widget& replay{m_ui.emplace<text_widget>("replay", glm::vec2{4, 1000}, tr::align::BOTTOM_LEFT, font::LANGUAGE,
+												 tr::system::ttf_style::NORMAL, 48)};
 		replay.unhide();
 		widget& indicator{m_ui.emplace<replay_playback_indicator_widget>("indicator", glm::vec2{992, 994}, tr::align::BOTTOM_RIGHT)};
 		indicator.unhide();
@@ -22,9 +22,9 @@ game_state::game_state(std::unique_ptr<game>&& game, game_type type, bool fade_i
 
 ///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> game_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> game_state::handle_event(const tr::system::event& event)
 {
-	if (event.type() == tr::key_down_event::ID && tr::key_down_event{event}.key == tr::keycode::ESCAPE) {
+	if (event.type() == tr::system::key_down_event::ID && tr::system::key_down_event{event}.key == tr::system::keycode::ESCAPE) {
 		engine::play_sound(sound::PAUSE, 0.8f, 0.0f);
 		return std::make_unique<pause_state>(std::move(m_game), to_type(m_substate), engine::mouse_pos(), true);
 	}
@@ -44,12 +44,12 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 		return nullptr;
 	case substate_base::ONGOING:
 		if (to_type(m_substate) == game_type::REPLAY) {
-			if (engine::held_keymods() & tr::keymod::SHIFT) {
+			if (engine::held_keymods() & tr::system::keymod::SHIFT) {
 				if (m_timer % 4 == 0) {
 					m_game->update();
 				}
 			}
-			else if (engine::held_keymods() & tr::keymod::CTRL) {
+			else if (engine::held_keymods() & tr::system::keymod::CTRL) {
 				for (int i = 0; i < 4; ++i) {
 					m_game->update();
 					if (static_cast<replay_game*>(m_game.get())->done()) {
@@ -83,7 +83,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 	case substate_base::GAME_OVER:
 		m_game->update();
 		if (m_timer >= 0.75_s) {
-			tr::renderer_2d::set_default_transform(TRANSFORM);
+			tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
 			switch (to_type(m_substate)) {
 			case game_type::REGULAR: {
 				const ticks prev_pb{pb(engine::scorefile, m_game->gamemode())};
@@ -101,7 +101,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 		return nullptr;
 	case substate_base::EXITING:
 		if (m_timer >= 1_s) {
-			tr::renderer_2d::set_default_transform(TRANSFORM);
+			tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
 			if (to_type(m_substate) == game_type::REPLAY) {
 				return std::make_unique<replays_state>();
 			}
@@ -121,7 +121,7 @@ void game_state::draw()
 		add_replay_cursor_to_renderer(static_cast<replay_game*>(m_game.get())->cursor_pos());
 	}
 	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
@@ -156,10 +156,10 @@ float game_state::fade_overlay_opacity() const
 
 void game_state::add_replay_cursor_to_renderer(glm::vec2 pos) const
 {
-	tr::simple_color_mesh_ref quad{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	tr::gfx::simple_color_mesh_ref quad{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, 45_deg);
 	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 1, 1}));
-	quad = tr::renderer_2d::new_color_fan(layer::UI, 4);
+	quad = tr::gfx::renderer_2d::new_color_fan(layer::UI, 4);
 	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, -45_deg);
 	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 1, 1}));
 }

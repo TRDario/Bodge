@@ -48,7 +48,7 @@ class ui_manager {
 	///////////////////////////////////////////////////////////// OPERATIONS //////////////////////////////////////////////////////////////
 
 	// Handles an event.
-	void handle_event(const tr::event& event);
+	void handle_event(const tr::system::event& event);
 	// Updates the UI.
 	void update();
 	// Adds the UI to the renderer.

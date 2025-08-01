@@ -20,8 +20,9 @@ constexpr std::array<const char*, 21> RIGHT_WIDGETS{
 	"velocity_step_inc",
 };
 // Shortcuts of the exit button.
-constexpr std::initializer_list<tr::key_chord> EXIT_SHORTCUTS{
-	{tr::keycode::C}, {tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::ESCAPE}, {tr::keycode::TOP_ROW_2},
+constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
+	{tr::system::keycode::C},      {tr::system::keycode::Q},         {tr::system::keycode::E},
+	{tr::system::keycode::ESCAPE}, {tr::system::keycode::TOP_ROW_2},
 };
 
 // Starting position of the starting count widgets.
@@ -155,12 +156,12 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 
 	//
 
-	widget& title{
-		m_ui.emplace<text_widget>("gamemode_designer", TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>("gamemode_designer", TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE,
+											tr::system::ttf_style::NORMAL, 64)};
 	title.unhide();
 
-	widget& subtitle{
-		m_ui.emplace<text_widget>("ball_settings", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 32)};
+	widget& subtitle{m_ui.emplace<text_widget>("ball_settings", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
+											   tr::system::ttf_style::NORMAL, 32)};
 	subtitle.pos.change({500, TITLE_POS.y + 64}, 0.5_s);
 	subtitle.unhide(0.5_s);
 
@@ -169,7 +170,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	widget& starting_count_inc{m_ui.emplace<arrow_widget>("starting_count_inc", STARTING_COUNT_START_POS, tr::align::CENTER_RIGHT, true,
 														  starting_count_inc_status_cb, starting_count_inc_action_cb)};
 	widget& cur_starting_count{m_ui.emplace<text_widget>("cur_starting_count", STARTING_COUNT_START_POS, tr::align::CENTER, font::LANGUAGE,
-														 tr::ttf_style::NORMAL, 48, cur_starting_count_text_cb)};
+														 tr::system::ttf_style::NORMAL, 48, cur_starting_count_text_cb)};
 	starting_count_dec.pos.change({765, STARTING_COUNT_START_POS.y}, 0.5_s);
 	starting_count_inc.pos.change({985, STARTING_COUNT_START_POS.y}, 0.5_s);
 	cur_starting_count.pos.change({875.5, STARTING_COUNT_START_POS.y}, 0.5_s);
@@ -182,7 +183,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	widget& max_count_inc{m_ui.emplace<arrow_widget>("max_count_inc", MAX_COUNT_START_POS, tr::align::CENTER_RIGHT, true,
 													 max_count_inc_status_cb, max_count_inc_action_cb)};
 	widget& cur_max_count{m_ui.emplace<text_widget>("cur_max_count", MAX_COUNT_START_POS, tr::align::CENTER, font::LANGUAGE,
-													tr::ttf_style::NORMAL, 48, cur_max_count_text_cb)};
+													tr::system::ttf_style::NORMAL, 48, cur_max_count_text_cb)};
 	max_count_dec.pos.change({765, MAX_COUNT_START_POS.y}, 0.5_s);
 	max_count_inc.pos.change({985, MAX_COUNT_START_POS.y}, 0.5_s);
 	cur_max_count.pos.change({875.5, MAX_COUNT_START_POS.y}, 0.5_s);
@@ -195,7 +196,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	widget& spawn_interval_inc{m_ui.emplace<arrow_widget>("spawn_interval_inc", SPAWN_INTERVAL_START_POS, tr::align::CENTER_RIGHT, true,
 														  spawn_interval_inc_status_cb, spawn_interval_inc_action_cb)};
 	widget& cur_spawn_interval{m_ui.emplace<text_widget>("cur_spawn_interval", SPAWN_INTERVAL_START_POS, tr::align::CENTER, font::LANGUAGE,
-														 tr::ttf_style::NORMAL, 48, cur_spawn_interval_text_cb)};
+														 tr::system::ttf_style::NORMAL, 48, cur_spawn_interval_text_cb)};
 	spawn_interval_dec.pos.change({765, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
 	spawn_interval_inc.pos.change({985, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
 	cur_spawn_interval.pos.change({875.5, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
@@ -208,7 +209,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	widget& initial_size_inc{m_ui.emplace<arrow_widget>("initial_size_inc", INITIAL_SIZE_START_POS, tr::align::CENTER_RIGHT, true,
 														initial_size_inc_status_cb, initial_size_inc_action_cb)};
 	widget& cur_initial_size{m_ui.emplace<text_widget>("cur_initial_size", INITIAL_SIZE_START_POS, tr::align::CENTER, font::LANGUAGE,
-													   tr::ttf_style::NORMAL, 48, cur_initial_size_text_cb)};
+													   tr::system::ttf_style::NORMAL, 48, cur_initial_size_text_cb)};
 	initial_size_dec.pos.change({765, INITIAL_SIZE_START_POS.y}, 0.5_s);
 	initial_size_inc.pos.change({985, INITIAL_SIZE_START_POS.y}, 0.5_s);
 	cur_initial_size.pos.change({875.5, INITIAL_SIZE_START_POS.y}, 0.5_s);
@@ -221,7 +222,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	widget& size_step_inc{m_ui.emplace<arrow_widget>("size_step_inc", SIZE_STEP_START_POS, tr::align::CENTER_RIGHT, true,
 													 size_step_inc_status_cb, size_step_inc_action_cb)};
 	widget& cur_size_step{m_ui.emplace<text_widget>("cur_size_step", SIZE_STEP_START_POS, tr::align::CENTER, font::LANGUAGE,
-													tr::ttf_style::NORMAL, 48, cur_size_step_text_cb)};
+													tr::system::ttf_style::NORMAL, 48, cur_size_step_text_cb)};
 	size_step_dec.pos.change({765, SIZE_STEP_START_POS.y}, 0.5_s);
 	size_step_inc.pos.change({985, SIZE_STEP_START_POS.y}, 0.5_s);
 	cur_size_step.pos.change({875.5, SIZE_STEP_START_POS.y}, 0.5_s);
@@ -234,7 +235,8 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	widget& initial_velocity_inc{m_ui.emplace<arrow_widget>("initial_velocity_inc", INITIAL_VELOCITY_START_POS, tr::align::CENTER_RIGHT,
 															true, initial_velocity_inc_status_cb, initial_velocity_inc_action_cb)};
 	widget& cur_initial_velocity{m_ui.emplace<text_widget>("cur_initial_velocity", INITIAL_VELOCITY_START_POS, tr::align::CENTER,
-														   font::LANGUAGE, tr::ttf_style::NORMAL, 48, cur_initial_velocity_text_cb)};
+														   font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
+														   cur_initial_velocity_text_cb)};
 	initial_velocity_dec.pos.change({765, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
 	initial_velocity_inc.pos.change({985, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
 	cur_initial_velocity.pos.change({875.5, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
@@ -247,7 +249,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	widget& velocity_step_inc{m_ui.emplace<arrow_widget>("velocity_step_inc", VELOCITY_STEP_START_POS, tr::align::CENTER_RIGHT, true,
 														 velocity_step_inc_status_cb, velocity_step_inc_action_cb)};
 	widget& cur_velocity_step{m_ui.emplace<text_widget>("cur_velocity_step", VELOCITY_STEP_START_POS, tr::align::CENTER, font::LANGUAGE,
-														tr::ttf_style::NORMAL, 48, cur_velocity_step_text_cb)};
+														tr::system::ttf_style::NORMAL, 48, cur_velocity_step_text_cb)};
 	velocity_step_dec.pos.change({765, VELOCITY_STEP_START_POS.y}, 0.5_s);
 	velocity_step_inc.pos.change({985, VELOCITY_STEP_START_POS.y}, 0.5_s);
 	cur_velocity_step.pos.change({875.5, VELOCITY_STEP_START_POS.y}, 0.5_s);
@@ -259,7 +261,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 		const label& label{LABELS[i]};
 		const glm::vec2 pos{-50, 298 + i * 75};
 		widget& widget{m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
-												 tr::ttf_style::NORMAL, 48)};
+												 tr::system::ttf_style::NORMAL, 48)};
 		widget.pos.change({15, 298 + i * 75}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -273,7 +275,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> ball_settings_editor_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> ball_settings_editor_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -298,7 +300,7 @@ void ball_settings_editor_state::draw()
 	m_background_game->add_to_renderer();
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

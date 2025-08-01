@@ -13,7 +13,7 @@ class game_over_state : public tr::state {
 	/////////////////////////////////////////////////////////////// METHODS ///////////////////////////////////////////////////////////////
 
 	// Handles an event.
-	std::unique_ptr<tr::state> handle_event(const tr::event& event) override;
+	std::unique_ptr<tr::state> handle_event(const tr::system::event& event) override;
 	// Updates the state.
 	std::unique_ptr<tr::state> update(tr::duration) override;
 	// Draws the state.

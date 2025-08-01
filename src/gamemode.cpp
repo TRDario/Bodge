@@ -76,13 +76,13 @@ std::vector<gamemode> load_gamemodes()
 			catch (std::exception& err) {
 				LOG(tr::severity::ERROR, "Failed to load gamemode.");
 				LOG_CONTINUE("From: '{}'", path.string());
-				LOG_CONTINUE("{}", err.what());
+				LOG_CONTINUE(err);
 			}
 		}
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::INFO, "Failed to load gamemodes.");
-		LOG_CONTINUE("{}", err.what());
+		LOG_CONTINUE(err);
 	}
 	return gamemodes;
 }
@@ -110,7 +110,7 @@ void save_gamemode(const gamemode& gm)
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to save gamemode '{}'.", gm.name);
 		LOG_CONTINUE("To: '{}'", path.string());
-		LOG_CONTINUE("{}", err.what());
+		LOG_CONTINUE(err);
 	}
 }
 

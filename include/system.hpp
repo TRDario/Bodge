@@ -22,7 +22,7 @@ namespace engine {
 	// Redraws the screen if needed.
 	void redraw_if_needed();
 	// Gets the held keyboard modifiers.
-	tr::keymod held_keymods();
+	tr::system::keymod held_keymods();
 	// Chooses one out of 3 options based on the held keymods.
 	template <class T> T keymods_choose(T min, T mid, T max);
 	// Gets the normalized mouse position.
@@ -30,17 +30,17 @@ namespace engine {
 	// Sets the normalized mouse position.
 	void set_mouse_pos(glm::vec2 pos);
 	// Gets the held mouse buttons.
-	tr::mouse_button held_buttons();
+	tr::system::mouse_button held_buttons();
 }; // namespace engine
 
 ///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
 
 template <class T> T engine::keymods_choose(T min, T mid, T max)
 {
-	if (held_keymods() & tr::keymod::CTRL) {
+	if (held_keymods() & tr::system::keymod::CTRL) {
 		return max;
 	}
-	else if (held_keymods() & tr::keymod::SHIFT) {
+	else if (held_keymods() & tr::system::keymod::SHIFT) {
 		return mid;
 	}
 	else {

@@ -7,15 +7,16 @@
 // The number of scores per page.
 constexpr std::size_t SCORES_PER_PAGE{8};
 // Shortcuts of the exit button.
-constexpr std::initializer_list<tr::key_chord> EXIT_SHORTCUTS{{tr::keycode::ESCAPE}, {tr::keycode::Q}, {tr::keycode::E}};
+constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
+	{tr::system::keycode::ESCAPE}, {tr::system::keycode::Q}, {tr::system::keycode::E}};
 // Shortcuts of the gamemode decrement button.
-constexpr std::initializer_list<tr::key_chord> GAMEMODE_DEC_SHORTCUTS{{tr::keycode::LEFT, tr::keymod::SHIFT}};
+constexpr std::initializer_list<tr::system::key_chord> GAMEMODE_DEC_SHORTCUTS{{tr::system::keycode::LEFT, tr::system::keymod::SHIFT}};
 // Shortcuts of the gamemode increment button.
-constexpr std::initializer_list<tr::key_chord> GAMEMODE_INC_SHORTCUTS{{tr::keycode::RIGHT, tr::keymod::SHIFT}};
+constexpr std::initializer_list<tr::system::key_chord> GAMEMODE_INC_SHORTCUTS{{tr::system::keycode::RIGHT, tr::system::keymod::SHIFT}};
 // Shortcuts of the page decrement button.
-constexpr std::initializer_list<tr::key_chord> PAGE_DEC_SHORTCUTS{{tr::keycode::LEFT}};
+constexpr std::initializer_list<tr::system::key_chord> PAGE_DEC_SHORTCUTS{{tr::system::keycode::LEFT}};
 // Shortcuts of the page increment button.
-constexpr std::initializer_list<tr::key_chord> PAGE_INC_SHORTCUTS{{tr::keycode::RIGHT}};
+constexpr std::initializer_list<tr::system::key_chord> PAGE_INC_SHORTCUTS{{tr::system::keycode::RIGHT}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -92,12 +93,12 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	//
 
 	widget& title{
-		m_ui.emplace<text_widget>("scoreboards", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+		m_ui.emplace<text_widget>("scoreboards", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change({500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
 	widget& player_info{m_ui.emplace<text_widget>("player_info", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
-												  tr::ttf_style::NORMAL, 32, player_info_text_cb)};
+												  tr::system::ttf_style::NORMAL, 32, player_info_text_cb)};
 	player_info.pos.change({500, 64}, 0.5_s);
 	player_info.unhide(0.5_s);
 
@@ -109,7 +110,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 
 	if (engine::scorefile.categories.empty()) {
 		widget& no_scores_found{m_ui.emplace<text_widget>("no_scores_found", glm::vec2{600, 483}, tr::align::TOP_CENTER, font::LANGUAGE,
-														  tr::ttf_style::NORMAL, 64, DEFAULT_TEXT_CALLBACK, "80808080"_rgba8)};
+														  tr::system::ttf_style::NORMAL, 64, DEFAULT_TEXT_CALLBACK, "80808080"_rgba8)};
 		no_scores_found.pos.change({500, 483}, 0.5_s);
 		no_scores_found.unhide(0.5_s);
 		return;
@@ -124,9 +125,10 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	}
 
 	const tooltip_callback cur_gamemode_tooltip_cb{[this] { return std::string{description(m_selected->gamemode)}; }};
-	widget& cur_gamemode{m_ui.emplace<text_widget>(
-		"cur_gamemode", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, true, cur_gamemode_tooltip_cb, false, std::vector<tr::key_chord>{},
-		font::LANGUAGE, tr::ttf_style::NORMAL, tr::halign::CENTER, 48, tr::UNLIMITED_WIDTH, "A0A0A0A0"_rgba8, cur_gamemode_text_cb)};
+	widget& cur_gamemode{m_ui.emplace<text_widget>("cur_gamemode", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, true,
+												   cur_gamemode_tooltip_cb, false, std::vector<tr::system::key_chord>{}, font::LANGUAGE,
+												   tr::system::ttf_style::NORMAL, tr::halign::CENTER, 48, tr::system::UNLIMITED_WIDTH,
+												   "A0A0A0A0"_rgba8, cur_gamemode_text_cb)};
 	cur_gamemode.pos.change({500, 900}, 0.5_s);
 	cur_gamemode.unhide(0.5_s);
 
@@ -141,7 +143,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	gamemode_inc.unhide(0.5_s);
 
 	widget& cur_page{m_ui.emplace<text_widget>("cur_page", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
-											   tr::ttf_style::NORMAL, 48, cur_page_text_cb)};
+											   tr::system::ttf_style::NORMAL, 48, cur_page_text_cb)};
 	cur_page.pos.change({500, 950}, 0.5_s);
 	cur_page.unhide(0.5_s);
 
@@ -158,7 +160,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> scoreboards_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> scoreboards_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -200,7 +202,7 @@ void scoreboards_state::draw()
 	m_background_game->add_to_renderer();
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

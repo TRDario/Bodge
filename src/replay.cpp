@@ -111,7 +111,7 @@ void replay::save_to_file() const
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to save replay:");
-		LOG_CONTINUE("{}", err.what());
+		LOG_CONTINUE(err);
 	}
 }
 
@@ -158,14 +158,14 @@ std::map<std::string, replay_header> load_replay_headers()
 			catch (std::exception& err) {
 				LOG(tr::severity::ERROR, "Failed to load replay header.");
 				LOG_CONTINUE("From: '{}'", path.string());
-				LOG_CONTINUE("{}", err.what());
+				LOG_CONTINUE(err);
 			}
 		}
 		LOG(tr::severity::INFO, "Loaded replay headers.");
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to load replay headers.");
-		LOG_CONTINUE("{}", err.what());
+		LOG_CONTINUE(err);
 	}
 	return replays;
 }

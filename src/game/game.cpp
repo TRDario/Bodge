@@ -78,14 +78,14 @@ void game::update()
 
 void game::add_overlay_to_renderer() const
 {
-	tr::simple_color_mesh_ref overlay{tr::renderer_2d::new_color_fan(layer::BALL_TRAILS_OVERLAY, 4)};
+	tr::gfx::simple_color_mesh_ref overlay{tr::gfx::renderer_2d::new_color_fan(layer::BALL_TRAILS_OVERLAY, 4)};
 	std::ranges::copy(OVERLAY_POSITIONS, overlay.positions.begin());
 	std::ranges::fill(overlay.colors, "00000000"_rgba8);
 }
 
 void game::add_border_to_renderer() const
 {
-	tr::simple_color_mesh_ref border{tr::renderer_2d::new_color_outline(layer::BORDER, 4)};
+	tr::gfx::simple_color_mesh_ref border{tr::gfx::renderer_2d::new_color_outline(layer::BORDER, 4)};
 	tr::fill_rect_outline_vtx(border.positions, {{2, 2}, {996, 996}}, 4);
 	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.secondary_hue), 1, 1}));
 }

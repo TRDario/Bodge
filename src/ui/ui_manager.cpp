@@ -17,7 +17,7 @@ void ui_manager::move_input_focus_forward()
 	if (m_input == m_objects.end()) {
 		for (std::list<std::unique_ptr<widget>>::iterator it = m_objects.begin(); it != m_objects.end(); ++it) {
 			if ((*it)->writable()) {
-				tr::event_queue::enable_text_input_events();
+				tr::system::enable_text_input_events();
 				(*it)->on_gain_focus();
 				m_input = it;
 				return;
@@ -68,7 +68,7 @@ void ui_manager::move_input_focus_backward()
 void ui_manager::clear_input_focus()
 {
 	if (m_input != m_objects.end()) {
-		tr::event_queue::disable_text_input_events();
+		tr::system::disable_text_input_events();
 		(*m_input)->on_lose_focus();
 		m_input = m_objects.end();
 		engine::play_sound(sound::CANCEL, 0.5f, 0.0f);
@@ -93,10 +93,10 @@ void ui_manager::release_graphical_resources()
 
 //
 
-void ui_manager::handle_event(const tr::event& event)
+void ui_manager::handle_event(const tr::system::event& event)
 {
 	switch (event.type()) {
-	case tr::mouse_motion_event::ID: {
+	case tr::system::mouse_motion_event::ID: {
 		const std::list<std::unique_ptr<widget>>::iterator old_hovered_it{m_hovered};
 
 		m_hovered = m_objects.end();
@@ -110,7 +110,7 @@ void ui_manager::handle_event(const tr::event& event)
 
 		if (old_hovered_it != m_hovered) {
 			if (old_hovered_it != m_objects.end()) {
-				if (engine::held_buttons() == tr::mouse_button::LEFT && (*old_hovered_it)->active()) {
+				if (engine::held_buttons() == tr::system::mouse_button::LEFT && (*old_hovered_it)->active()) {
 					(*old_hovered_it)->on_hold_transfer_out();
 				}
 				else {
@@ -118,7 +118,7 @@ void ui_manager::handle_event(const tr::event& event)
 				}
 			}
 			if (m_hovered != m_objects.end()) {
-				if (engine::held_buttons() == tr::mouse_button::LEFT && (*m_hovered)->active()) {
+				if (engine::held_buttons() == tr::system::mouse_button::LEFT && (*m_hovered)->active()) {
 					(*m_hovered)->on_hold_transfer_in();
 				}
 				else {
@@ -127,11 +127,11 @@ void ui_manager::handle_event(const tr::event& event)
 			}
 		}
 	} break;
-	case tr::mouse_down_event::ID: {
-		if (tr::mouse_down_event{event}.button == tr::mouse_button::LEFT) {
+	case tr::system::mouse_down_event::ID: {
+		if (tr::system::mouse_down_event{event}.button == tr::system::mouse_button::LEFT) {
 			const bool something_had_input_focus{m_input != m_objects.end()};
 			if (something_had_input_focus) {
-				tr::event_queue::disable_text_input_events();
+				tr::system::disable_text_input_events();
 				(*m_input)->on_lose_focus();
 				m_input = m_objects.end();
 			}
@@ -163,28 +163,28 @@ void ui_manager::handle_event(const tr::event& event)
 			}
 		}
 	} break;
-	case tr::mouse_up_event::ID: {
-		const tr::mouse_up_event mouse_up{event};
-		if (mouse_up.button == tr::mouse_button::LEFT) {
+	case tr::system::mouse_up_event::ID: {
+		const tr::system::mouse_up_event mouse_up{event};
+		if (mouse_up.button == tr::system::mouse_button::LEFT) {
 			if (m_hovered != m_objects.end() && (*m_hovered)->active()) {
 				(*m_hovered)->on_hold_end();
 				if ((*m_hovered)->writable()) {
-					tr::event_queue::enable_text_input_events();
+					tr::system::enable_text_input_events();
 					m_input = m_hovered;
 					(*m_hovered)->on_gain_focus();
 				}
 			}
 		}
 	} break;
-	case tr::key_down_event::ID: {
-		const tr::key_down_event key_down{event};
+	case tr::system::key_down_event::ID: {
+		const tr::system::key_down_event key_down{event};
 
 		if (m_input != m_objects.end()) {
-			if (key_down.key == tr::keycode::ESCAPE) {
+			if (key_down.key == tr::system::keycode::ESCAPE) {
 				clear_input_focus();
 			}
-			else if (key_down.key == tr::keycode::TAB) {
-				if (key_down.mods == tr::keymod::SHIFT) {
+			else if (key_down.key == tr::system::keycode::TAB) {
+				if (key_down.mods == tr::system::keymod::SHIFT) {
 					move_input_focus_backward();
 				}
 				else {
@@ -192,32 +192,32 @@ void ui_manager::handle_event(const tr::event& event)
 				}
 			}
 			else if ((*m_input)->active()) {
-				if (key_down.mods == tr::keymod::CTRL && key_down.key == tr::keycode::C) {
+				if (key_down.mods == tr::system::keymod::CTRL && key_down.key == tr::system::keycode::C) {
 					(*m_input)->on_copy();
 				}
-				else if (key_down.mods == tr::keymod::CTRL && key_down.key == tr::keycode::X) {
+				else if (key_down.mods == tr::system::keymod::CTRL && key_down.key == tr::system::keycode::X) {
 					(*m_input)->on_copy();
 					(*m_input)->on_clear();
 				}
-				else if (key_down.mods == tr::keymod::CTRL && key_down.key == tr::keycode::V) {
+				else if (key_down.mods == tr::system::keymod::CTRL && key_down.key == tr::system::keycode::V) {
 					(*m_input)->on_paste();
 				}
-				else if (key_down.key == tr::keycode::BACKSPACE || key_down.key == tr::keycode::DELETE) {
-					if (key_down.mods & tr::keymod::CTRL) {
+				else if (key_down.key == tr::system::keycode::BACKSPACE || key_down.key == tr::system::keycode::DELETE) {
+					if (key_down.mods & tr::system::keymod::CTRL) {
 						(*m_input)->on_clear();
 					}
 					else {
 						(*m_input)->on_erase();
 					}
 				}
-				else if (key_down.key == tr::keycode::ENTER) {
+				else if (key_down.key == tr::system::keycode::ENTER) {
 					(*m_input)->on_enter();
 				}
 			}
 		}
 		else {
-			if (key_down.key == tr::keycode::TAB) {
-				if (key_down.mods == tr::keymod::SHIFT) {
+			if (key_down.key == tr::system::keycode::TAB) {
+				if (key_down.mods == tr::system::keymod::SHIFT) {
 					move_input_focus_backward();
 				}
 				else {
@@ -233,9 +233,9 @@ void ui_manager::handle_event(const tr::event& event)
 			}
 		}
 	} break;
-	case tr::text_input_event::ID:
+	case tr::system::text_input_event::ID:
 		if (m_input != m_objects.end() && (*m_input)->active()) {
-			(*m_input)->on_write(tr::text_input_event{event}.text);
+			(*m_input)->on_write(tr::system::text_input_event{event}.text);
 		}
 		break;
 	}

@@ -15,8 +15,9 @@ constexpr std::array<const char*, 9> RIGHT_WIDGETS{"starting_lives_dec", "cur_st
 												   "hitbox_radius_dec",  "cur_hitbox_radius",  "hitbox_radius_inc",
 												   "inertia_factor_dec", "cur_inertia_factor", "inertia_factor_inc"};
 // Shortcuts of the exit button.
-constexpr std::initializer_list<tr::key_chord> EXIT_SHORTCUTS{
-	{tr::keycode::C}, {tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::ESCAPE}, {tr::keycode::TOP_ROW_2},
+constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
+	{tr::system::keycode::C},      {tr::system::keycode::Q},         {tr::system::keycode::E},
+	{tr::system::keycode::ESCAPE}, {tr::system::keycode::TOP_ROW_2},
 };
 
 // Starting position of the starting lives widgets.
@@ -81,12 +82,12 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 
 	//
 
-	widget& title{
-		m_ui.emplace<text_widget>("gamemode_designer", TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>("gamemode_designer", TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE,
+											tr::system::ttf_style::NORMAL, 64)};
 	title.unhide();
 
-	widget& subtitle{
-		m_ui.emplace<text_widget>("player_settings", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 32)};
+	widget& subtitle{m_ui.emplace<text_widget>("player_settings", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
+											   tr::system::ttf_style::NORMAL, 32)};
 	subtitle.pos.change({500, TITLE_POS.y + 64}, 0.5_s);
 	subtitle.unhide(0.5_s);
 
@@ -95,7 +96,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 	widget& starting_lives_inc{m_ui.emplace<arrow_widget>("starting_lives_inc", STARTING_LIVES_START_POS, tr::align::CENTER_RIGHT, true,
 														  starting_lives_inc_status_cb, starting_lives_inc_action_cb)};
 	widget& cur_starting_lives{m_ui.emplace<text_widget>("cur_starting_lives", STARTING_LIVES_START_POS, tr::align::CENTER, font::LANGUAGE,
-														 tr::ttf_style::NORMAL, 48, cur_starting_lives_text_cb)};
+														 tr::system::ttf_style::NORMAL, 48, cur_starting_lives_text_cb)};
 	starting_lives_dec.pos.change({790, STARTING_LIVES_START_POS.y}, 0.5_s);
 	starting_lives_inc.pos.change({985, STARTING_LIVES_START_POS.y}, 0.5_s);
 	cur_starting_lives.pos.change({887.5, STARTING_LIVES_START_POS.y}, 0.5_s);
@@ -108,7 +109,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 	widget& hitbox_radius_inc{m_ui.emplace<arrow_widget>("hitbox_radius_inc", HITBOX_RADIUS_START_POS, tr::align::CENTER_RIGHT, true,
 														 hitbox_radius_inc_status_cb, hitbox_radius_inc_action_cb)};
 	widget& cur_hitbox_radius{m_ui.emplace<text_widget>("cur_hitbox_radius", HITBOX_RADIUS_START_POS, tr::align::CENTER, font::LANGUAGE,
-														tr::ttf_style::NORMAL, 48, cur_hitbox_radius_text_cb)};
+														tr::system::ttf_style::NORMAL, 48, cur_hitbox_radius_text_cb)};
 	hitbox_radius_dec.pos.change({790, HITBOX_RADIUS_START_POS.y}, 0.5_s);
 	hitbox_radius_inc.pos.change({985, HITBOX_RADIUS_START_POS.y}, 0.5_s);
 	cur_hitbox_radius.pos.change({887.5, HITBOX_RADIUS_START_POS.y}, 0.5_s);
@@ -121,7 +122,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 	widget& inertia_factor_inc{m_ui.emplace<arrow_widget>("inertia_factor_inc", INERTIA_FACTOR_START_POS, tr::align::CENTER_RIGHT, true,
 														  inertia_factor_inc_status_cb, inertia_factor_inc_action_cb)};
 	widget& cur_inertia_factor{m_ui.emplace<text_widget>("cur_inertia_factor", INERTIA_FACTOR_START_POS, tr::align::CENTER, font::LANGUAGE,
-														 tr::ttf_style::NORMAL, 48, cur_inertia_factor_text_cb)};
+														 tr::system::ttf_style::NORMAL, 48, cur_inertia_factor_text_cb)};
 	inertia_factor_dec.pos.change({790, INERTIA_FACTOR_START_POS.y}, 0.5_s);
 	inertia_factor_inc.pos.change({985, INERTIA_FACTOR_START_POS.y}, 0.5_s);
 	cur_inertia_factor.pos.change({887.5, INERTIA_FACTOR_START_POS.y}, 0.5_s);
@@ -133,7 +134,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 		const label& label{LABELS[i]};
 		const glm::vec2 pos{-50, 450 + i * 75};
 		widget& widget{m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
-												 tr::ttf_style::NORMAL, 48)};
+												 tr::system::ttf_style::NORMAL, 48)};
 		widget.pos.change({15, 450 + i * 75}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -147,7 +148,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> player_settings_editor_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> player_settings_editor_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -172,7 +173,7 @@ void player_settings_editor_state::draw()
 	m_background_game->add_to_renderer();
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

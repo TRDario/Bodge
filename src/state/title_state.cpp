@@ -12,14 +12,14 @@
 // Title screen buttons.
 constexpr std::array<const char*, 7> BUTTONS{"start_game", "gamemode_designer", "scoreboards", "replays", "settings", "credits", "exit"};
 // Shortcuts of the title screen buttons.
-constexpr std::array<std::initializer_list<tr::key_chord>, BUTTONS.size()> SHORTCUTS{{
-	{{tr::keycode::ENTER}, {tr::keycode::TOP_ROW_1}},
-	{{tr::keycode::G}, {tr::keycode::TOP_ROW_2}},
-	{{tr::keycode::B}, {tr::keycode::TOP_ROW_3}},
-	{{tr::keycode::R}, {tr::keycode::TOP_ROW_4}},
-	{{tr::keycode::S}, {tr::keycode::TOP_ROW_5}},
-	{{tr::keycode::C}, {tr::keycode::TOP_ROW_6}},
-	{{tr::keycode::ESCAPE}, {tr::keycode::Q}, {tr::keycode::E}, {tr::keycode::TOP_ROW_7}},
+constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS.size()> SHORTCUTS{{
+	{{tr::system::keycode::ENTER}, {tr::system::keycode::TOP_ROW_1}},
+	{{tr::system::keycode::G}, {tr::system::keycode::TOP_ROW_2}},
+	{{tr::system::keycode::B}, {tr::system::keycode::TOP_ROW_3}},
+	{{tr::system::keycode::R}, {tr::system::keycode::TOP_ROW_4}},
+	{{tr::system::keycode::S}, {tr::system::keycode::TOP_ROW_5}},
+	{{tr::system::keycode::C}, {tr::system::keycode::TOP_ROW_6}},
+	{{tr::system::keycode::ESCAPE}, {tr::system::keycode::Q}, {tr::system::keycode::E}, {tr::system::keycode::TOP_ROW_7}},
 }};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ title_state::title_state(std::unique_ptr<game>&& game)
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> title_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> title_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -85,7 +85,7 @@ void title_state::draw()
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
@@ -120,11 +120,11 @@ void title_state::set_up_ui()
 	logo_ball.unhide(2.5_s);
 
 	widget& copyright{
-		m_ui.emplace<text_widget>("copyright", glm::vec2{4, 1000}, tr::align::TOP_LEFT, font::DEFAULT, tr::ttf_style::NORMAL, 24)};
+		m_ui.emplace<text_widget>("copyright", glm::vec2{4, 1000}, tr::align::TOP_LEFT, font::DEFAULT, tr::system::ttf_style::NORMAL, 24)};
 	copyright.pos.change({4, 998 - copyright.size().y}, 1_s);
 	copyright.unhide(1_s);
 	widget& version{
-		m_ui.emplace<text_widget>("version", glm::vec2{996, 1000}, tr::align::TOP_RIGHT, font::DEFAULT, tr::ttf_style::NORMAL, 24)};
+		m_ui.emplace<text_widget>("version", glm::vec2{996, 1000}, tr::align::TOP_RIGHT, font::DEFAULT, tr::system::ttf_style::NORMAL, 24)};
 	version.pos.change({996, 998 - version.size().y}, 1_s);
 	version.unhide(1_s);
 

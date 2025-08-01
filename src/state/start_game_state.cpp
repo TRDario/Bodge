@@ -7,17 +7,17 @@
 // Gamemode display widgets.
 constexpr std::array<const char*, 4> GAMEMODE_WIDGETS{"name", "author", "description", "pb"};
 // Shortcuts of the previous gamemode button.
-constexpr std::initializer_list<tr::key_chord> PREV_CHORDS{{tr::keycode::LEFT}};
+constexpr std::initializer_list<tr::system::key_chord> PREV_CHORDS{{tr::system::keycode::LEFT}};
 // Shortcuts of the next gamemode button.
-constexpr std::initializer_list<tr::key_chord> NEXT_CHORDS{{tr::keycode::RIGHT}};
+constexpr std::initializer_list<tr::system::key_chord> NEXT_CHORDS{{tr::system::keycode::RIGHT}};
 // Shortcuts of the start button.
-constexpr std::initializer_list<tr::key_chord> START_CHORDS{{tr::keycode::ENTER}, {tr::keycode::TOP_ROW_1}};
+constexpr std::initializer_list<tr::system::key_chord> START_CHORDS{{tr::system::keycode::ENTER}, {tr::system::keycode::TOP_ROW_1}};
 // Shortcuts of the exit button.
-constexpr std::initializer_list<tr::key_chord> EXIT_CHORDS{
-	{tr::keycode::ESCAPE},
-	{tr::keycode::Q},
-	{tr::keycode::E},
-	{tr::keycode::TOP_ROW_2},
+constexpr std::initializer_list<tr::system::key_chord> EXIT_CHORDS{
+	{tr::system::keycode::ESCAPE},
+	{tr::system::keycode::Q},
+	{tr::system::keycode::E},
+	{tr::system::keycode::TOP_ROW_2},
 };
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
@@ -36,31 +36,32 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 
 	const status_callback status_cb{[this] { return m_substate == substate::IN_START_GAME; }};
 
-	widget& title{m_ui.emplace<text_widget>("start_game", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+	widget& title{
+		m_ui.emplace<text_widget>("start_game", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change({500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
 	text_callback name_text_cb{[name = std::string{::name(*m_selected)}](auto&) { return name; }};
-	widget& name{m_ui.emplace<text_widget>("name", glm::vec2{500, 275}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 120,
-										   std::move(name_text_cb))};
+	widget& name{m_ui.emplace<text_widget>("name", glm::vec2{500, 275}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+										   120, std::move(name_text_cb))};
 	name.pos.change({500, 375}, 0.5_s);
 	name.unhide(0.5_s);
 
 	text_callback author_text_cb{[str = std::format("{}: {}", engine::loc["by"], m_selected->author)](auto&) { return str; }};
-	widget& author{m_ui.emplace<text_widget>("author", glm::vec2{400, 450}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 32,
-											 std::move(author_text_cb))};
+	widget& author{m_ui.emplace<text_widget>("author", glm::vec2{400, 450}, tr::align::CENTER, font::LANGUAGE,
+											 tr::system::ttf_style::NORMAL, 32, std::move(author_text_cb))};
 	author.pos.change({500, 450}, 0.5_s);
 	author.unhide(0.5_s);
 
 	text_callback description_text_cb{[desc = std::string{description(*m_selected)}](auto&) { return desc; }};
 	widget& description{m_ui.emplace<text_widget>("description", glm::vec2{600, 500}, tr::align::CENTER, font::LANGUAGE,
-												  tr::ttf_style::ITALIC, 32, std::move(description_text_cb), "80808080"_rgba8)};
+												  tr::system::ttf_style::ITALIC, 32, std::move(description_text_cb), "80808080"_rgba8)};
 	description.pos.change({500, 500}, 0.5_s);
 	description.unhide(0.5_s);
 
 	text_callback pb_text_cb{
 		[pb = std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))](const auto&) { return pb; }};
-	widget& pb{m_ui.emplace<text_widget>("pb", glm::vec2{500, 695}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 48,
+	widget& pb{m_ui.emplace<text_widget>("pb", glm::vec2{500, 695}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
 										 std::move(pb_text_cb), "FFFF00C0"_rgba8)};
 	pb.pos.change({500, 595}, 0.5_s);
 	pb.unhide(0.5_s);
@@ -124,7 +125,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> start_game_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> start_game_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -174,7 +175,7 @@ void start_game_state::draw()
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(m_substate == substate::ENTERING_GAME ? m_timer / 0.5_sf : 0);
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

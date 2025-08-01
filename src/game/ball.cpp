@@ -123,10 +123,10 @@ void ball::add_to_renderer() const
 	const float thickness{3 + 4 * std::max((static_cast<float>(BALL_COLLISION_TIME) - m_last_collision) / BALL_COLLISION_TIME, 0.0f)};
 
 	// Add the ball.
-	const tr::simple_color_mesh_ref fill{tr::renderer_2d::new_color_fan(layer::BALLS, vertices)};
+	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::BALLS, vertices)};
 	tr::fill_poly_vtx(fill.positions, vertices, {m_hitbox.c - thickness / 2, size});
 	std::ranges::fill(fill.colors, tr::rgba8{BALL_FILL_COLOR, base_opacity});
-	const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::BALLS, vertices)};
+	const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::BALLS, vertices)};
 	tr::fill_poly_outline_vtx(outline.positions, vertices, {m_hitbox.c, size}, 0_deg, thickness);
 	std::ranges::fill(outline.colors, tr::rgba8{tint, base_opacity});
 
@@ -142,7 +142,7 @@ void ball::add_to_renderer() const
 		const std::size_t trail_vertices{drawn_trails * vertices};
 		const std::size_t trail_indices{(drawn_trails - 1) * vertices * 6};
 
-		tr::color_mesh_ref trail{tr::renderer_2d::new_color_mesh(layer::BALL_TRAILS, trail_vertices, trail_indices)};
+		tr::gfx::color_mesh_ref trail{tr::gfx::renderer_2d::new_color_mesh(layer::BALL_TRAILS, trail_vertices, trail_indices)};
 		tr::fill_poly_vtx(trail.positions | std::views::take(vertices), vertices, m_hitbox);
 		std::ranges::fill(trail.colors | std::views::take(vertices), tr::rgba8{tint, tr::norm_cast<std::uint8_t>(0.4f)});
 		std::size_t trail_index{1};

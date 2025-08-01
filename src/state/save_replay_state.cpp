@@ -5,9 +5,11 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Shortcuts of the save button.
-constexpr std::initializer_list<tr::key_chord> SAVE_SHORTCUTS{{tr::keycode::ENTER}, {tr::keycode::S}, {tr::keycode::TOP_ROW_1}};
+constexpr std::initializer_list<tr::system::key_chord> SAVE_SHORTCUTS{
+	{tr::system::keycode::ENTER}, {tr::system::keycode::S}, {tr::system::keycode::TOP_ROW_1}};
 // Shortcuts of the don't save button.
-constexpr std::initializer_list<tr::key_chord> DONT_SAVE_SHORTCUTS{{tr::keycode::ESCAPE}, {tr::keycode::C}, {tr::keycode::TOP_ROW_2}};
+constexpr std::initializer_list<tr::system::key_chord> DONT_SAVE_SHORTCUTS{
+	{tr::system::keycode::ESCAPE}, {tr::system::keycode::C}, {tr::system::keycode::TOP_ROW_2}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -17,23 +19,23 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 	const status_callback status_cb{[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }};
 
 	widget& title{
-		m_ui.emplace<text_widget>("save_replay", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+		m_ui.emplace<text_widget>("save_replay", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change({500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
 	widget& name_label{
-		m_ui.emplace<text_widget>("name", glm::vec2{400, 200}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 48)};
+		m_ui.emplace<text_widget>("name", glm::vec2{400, 200}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48)};
 	name_label.pos.change({500, 200}, 0.5_s);
 	name_label.unhide(0.5_s);
 
 	const action_callback name_action_cb{[this] { m_ui.move_input_focus_forward(); }};
-	widget& name{m_ui.emplace<line_input_widget<20>>("name_input", glm::vec2{400, 235}, tr::align::TOP_CENTER, tr::ttf_style::NORMAL, 64,
-													 status_cb, name_action_cb)};
+	widget& name{m_ui.emplace<line_input_widget<20>>("name_input", glm::vec2{400, 235}, tr::align::TOP_CENTER,
+													 tr::system::ttf_style::NORMAL, 64, status_cb, name_action_cb)};
 	name.pos.change({500, 235}, 0.5_s);
 	name.unhide(0.5_s);
 
-	widget& description_label{
-		m_ui.emplace<text_widget>("description", glm::vec2{600, 440}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 48)};
+	widget& description_label{m_ui.emplace<text_widget>("description", glm::vec2{600, 440}, tr::align::CENTER, font::LANGUAGE,
+														tr::system::ttf_style::NORMAL, 48)};
 	description_label.pos.change({500, 440}, 0.5_s);
 	description_label.unhide(0.5_s);
 
@@ -75,7 +77,7 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> save_replay_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> save_replay_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -90,7 +92,7 @@ std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
 	}
 
 	if (m_timer >= 0.5_s && to_base(m_substate) == substate_base::EXITING) {
-		tr::renderer_2d::set_default_transform(TRANSFORM);
+		tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
 		if (to_flags(m_substate) & save_screen_flags::RESTARTING) {
 			return std::make_unique<game_state>(std::make_unique<active_game>(m_game->gamemode()), game_type::REGULAR, true);
 		}
@@ -107,12 +109,12 @@ void save_replay_state::draw()
 {
 	if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
 		m_game->add_to_renderer();
-		tr::renderer_2d::draw(engine::blur().input());
+		tr::gfx::renderer_2d::draw(engine::blur().input());
 	}
 	engine::blur().draw(0.35f, 10.0f);
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

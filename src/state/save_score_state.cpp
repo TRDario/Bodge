@@ -6,9 +6,11 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Shortcuts of the save button.
-constexpr std::initializer_list<tr::key_chord> SAVE_SHORTCUTS{{tr::keycode::ENTER}, {tr::keycode::S}, {tr::keycode::TOP_ROW_1}};
+constexpr std::initializer_list<tr::system::key_chord> SAVE_SHORTCUTS{
+	{tr::system::keycode::ENTER}, {tr::system::keycode::S}, {tr::system::keycode::TOP_ROW_1}};
 // Shortcuts of the cancel button.
-constexpr std::initializer_list<tr::key_chord> CANCEL_SHORTCUTS{{tr::keycode::ESCAPE}, {tr::keycode::C}, {tr::keycode::TOP_ROW_2}};
+constexpr std::initializer_list<tr::system::key_chord> CANCEL_SHORTCUTS{
+	{tr::system::keycode::ESCAPE}, {tr::system::keycode::C}, {tr::system::keycode::TOP_ROW_2}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -34,7 +36,7 @@ save_score_state::save_score_state(std::unique_ptr<active_game>&& game, ticks pr
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> save_score_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> save_score_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -73,11 +75,11 @@ void save_score_state::draw()
 {
 	if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
 		m_game->add_to_renderer();
-		tr::renderer_2d::draw(engine::blur().input());
+		tr::gfx::renderer_2d::draw(engine::blur().input());
 	}
 	engine::blur().draw(0.35f, 10.0f);
 	m_ui.add_to_renderer();
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
@@ -115,12 +117,13 @@ void save_score_state::set_up_ui()
 		set_up_exit_animation();
 	}};
 
-	widget& title{m_ui.emplace<text_widget>("save_score", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+	widget& title{
+		m_ui.emplace<text_widget>("save_score", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change({500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
 	widget& preview_label{
-		m_ui.emplace<text_widget>("preview", glm::vec2{400, 200}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 48)};
+		m_ui.emplace<text_widget>("preview", glm::vec2{400, 200}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48)};
 	preview_label.pos.change({500, 200}, 0.5_s);
 	preview_label.unhide(0.5_s);
 
@@ -129,8 +132,8 @@ void save_score_state::set_up_ui()
 	preview.pos.change({500, 235}, 0.5_s);
 	preview.unhide(0.5_s);
 
-	widget& description_label{
-		m_ui.emplace<text_widget>("description", glm::vec2{600, 440}, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 48)};
+	widget& description_label{m_ui.emplace<text_widget>("description", glm::vec2{600, 440}, tr::align::CENTER, font::LANGUAGE,
+														tr::system::ttf_style::NORMAL, 48)};
 	description_label.pos.change({500, 440}, 0.5_s);
 	description_label.unhide(0.5_s);
 

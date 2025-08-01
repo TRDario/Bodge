@@ -13,16 +13,16 @@ class text_widget : public widget {
 
 	// Creates a text widget.
 	text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
-				std::vector<tr::key_chord>&& shortcuts, font font, tr::ttf_style style, tr::halign text_alignment, float font_size,
-				int max_width, tr::rgba8 color, text_callback text_cb);
+				std::vector<tr::system::key_chord>&& shortcuts, font font, tr::system::ttf_style style, tr::halign text_alignment,
+				float font_size, int max_width, tr::rgba8 color, text_callback text_cb);
 
 	// Creates a common type of text widget: non-interactible, single-line.
-	text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, tr::ttf_style style, float font_size,
+	text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, tr::system::ttf_style style, float font_size,
 				text_callback text_cb = DEFAULT_TEXT_CALLBACK, tr::rgba8 color = "A0A0A0A0"_rgba8);
 
 	// Creates a common type of text widget: non-interactible, tooltippable, single-line.
-	text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::string_view tooltip_key, font font, tr::ttf_style style,
-				float font_size, text_callback text_cb = DEFAULT_TEXT_CALLBACK);
+	text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::string_view tooltip_key, font font,
+				tr::system::ttf_style style, float font_size, text_callback text_cb = DEFAULT_TEXT_CALLBACK);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
@@ -45,7 +45,7 @@ class text_widget : public widget {
   protected:
 	struct cached_t {
 		// The texture of the text.
-		tr::texture texture;
+		tr::gfx::texture texture;
 		// The amount of texture that's actually being used.
 		glm::vec2 size;
 		// The text in the texture.
@@ -55,7 +55,7 @@ class text_widget : public widget {
 	// The font used when drawing the text.
 	font m_font;
 	// The style used when drawing the font.
-	tr::ttf_style m_style;
+	tr::system::ttf_style m_style;
 	// The alignment the text is drawn with.
 	tr::halign m_text_alignment;
 	// The font size used when drawing the text.
@@ -77,7 +77,7 @@ class clickable_text_widget : public text_widget {
 	// Creates a clickable text widget.
 	clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size, text_callback text_cb,
 						  status_callback status_cb, action_callback action_cb, tooltip_callback tooltip_cb = NO_TOOLTIP,
-						  std::vector<tr::key_chord>&& shortcuts = {}, sound sound = sound::CONFIRM);
+						  std::vector<tr::system::key_chord>&& shortcuts = {}, sound sound = sound::CONFIRM);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -111,7 +111,7 @@ template <std::size_t S> class line_input_widget : public text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a text line input wiget.
-	line_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, tr::ttf_style style, float font_size,
+	line_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, tr::system::ttf_style style, float font_size,
 					  status_callback status_cb, action_callback enter_cb);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
@@ -215,7 +215,7 @@ class image_widget : public widget {
 
   private:
 	// The image texture.
-	tr::texture m_texture;
+	tr::gfx::texture m_texture;
 	// A reference to the hue to apply to the widget, or nullptr to not tint the widget.
 	std::uint16_t* m_hue_ref;
 };
@@ -245,7 +245,7 @@ class arrow_widget : public widget {
 
 	// Creates an arrow widget.
 	arrow_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb,
-				 action_callback action_cb, std::vector<tr::key_chord>&& chords = {});
+				 action_callback action_cb, std::vector<tr::system::key_chord>&& chords = {});
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -321,7 +321,7 @@ struct replay_widget : public clickable_text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	replay_widget(std::string_view name, glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
-				  std::optional<std::map<std::string, replay_header>::iterator> it, tr::keycode shortcut);
+				  std::optional<std::map<std::string, replay_header>::iterator> it, tr::system::keycode shortcut);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 

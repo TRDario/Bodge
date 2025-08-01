@@ -129,16 +129,16 @@ void add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, flo
 {
 	color = {color.r, color.g, color.b, static_cast<std::uint8_t>(color.a * opacity)};
 
-	tr::simple_color_mesh_ref mesh{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
 	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<std::uint8_t>(opacity)});
-	mesh = tr::renderer_2d::new_color_outline(layer::UI, 4);
+	mesh = tr::gfx::renderer_2d::new_color_outline(layer::UI, 4);
 	tr::fill_rect_outline_vtx(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2.0f);
 	std::ranges::fill(mesh.colors, color);
-	mesh = tr::renderer_2d::new_color_fan(layer::UI, 4);
+	mesh = tr::gfx::renderer_2d::new_color_fan(layer::UI, 4);
 	fill_rotated_rect_vtx(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, 45_deg);
 	std::ranges::fill(mesh.colors, color);
-	mesh = tr::renderer_2d::new_color_fan(layer::UI, 4);
+	mesh = tr::gfx::renderer_2d::new_color_fan(layer::UI, 4);
 	fill_rotated_rect_vtx(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, -45_deg);
 	std::ranges::fill(mesh.colors, color);
 }
@@ -148,16 +148,16 @@ void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, fl
 {
 	color = {color.r, color.g, color.b, static_cast<std::uint8_t>(color.a * opacity)};
 
-	tr::simple_color_mesh_ref mesh{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
 	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<std::uint8_t>(opacity)});
-	mesh = tr::renderer_2d::new_color_outline(layer::UI, 4);
+	mesh = tr::gfx::renderer_2d::new_color_outline(layer::UI, 4);
 	tr::fill_rect_outline_vtx(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2);
 	std::ranges::fill(mesh.colors, color);
-	mesh = tr::renderer_2d::new_color_outline(layer::UI, 8);
+	mesh = tr::gfx::renderer_2d::new_color_outline(layer::UI, 8);
 	tr::fill_poly_outline_vtx(mesh.positions, 8, {pos + glm::vec2{10, 10}, 7}, 25_deg, 2);
 	std::ranges::fill(mesh.colors, color);
-	mesh = tr::renderer_2d::new_color_fan(layer::UI, 4);
+	mesh = tr::gfx::renderer_2d::new_color_fan(layer::UI, 4);
 	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{9, 5}, {2, 5}});
 	std::ranges::fill(mesh.colors, color);
 }
@@ -165,7 +165,7 @@ void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, fl
 ///////////////////////////////////////////////////////////////// WIDGET //////////////////////////////////////////////////////////////////
 
 widget::widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
-			   std::vector<tr::key_chord>&& shortcuts)
+			   std::vector<tr::system::key_chord>&& shortcuts)
 	: name{name}
 	, alignment{alignment}
 	, pos{pos}
@@ -222,9 +222,9 @@ bool widget::active() const
 	return false;
 }
 
-bool widget::is_shortcut(const tr::key_chord& chord) const
+bool widget::is_shortcut(const tr::system::key_chord& chord) const
 {
-	const std::vector<tr::key_chord>::const_iterator it{std::ranges::find(m_shortcuts, chord)};
+	const std::vector<tr::system::key_chord>::const_iterator it{std::ranges::find(m_shortcuts, chord)};
 	return it != m_shortcuts.end();
 }
 
@@ -237,8 +237,8 @@ void widget::update()
 /////////////////////////////////////////////////////////////// TEXT_WIDGET ///////////////////////////////////////////////////////////////
 
 text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb,
-						 bool writable, std::vector<tr::key_chord>&& shortcuts, font font, tr::ttf_style style, tr::halign text_alignment,
-						 float font_size, int max_width, tr::rgba8 color, text_callback text_cb)
+						 bool writable, std::vector<tr::system::key_chord>&& shortcuts, font font, tr::system::ttf_style style,
+						 tr::halign text_alignment, float font_size, int max_width, tr::rgba8 color, text_callback text_cb)
 	: widget{name, pos, alignment, hoverable, std::move(tooltip_cb), writable, std::move(shortcuts)}
 	, color{color}
 	, text_cb{std::move(text_cb)}
@@ -250,15 +250,20 @@ text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignme
 {
 }
 
-text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, tr::ttf_style style, float font_size,
+text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, tr::system::ttf_style style, float font_size,
 						 text_callback text_cb, tr::rgba8 color)
-	: text_widget{name, pos,   alignment,          false,     NO_TOOLTIP,          false, {},
-				  font, style, tr::halign::CENTER, font_size, tr::UNLIMITED_WIDTH, color, std::move(text_cb)}
+	: text_widget{name,       pos,
+				  alignment,  false,
+				  NO_TOOLTIP, false,
+				  {},         font,
+				  style,      tr::halign::CENTER,
+				  font_size,  tr::system::UNLIMITED_WIDTH,
+				  color,      std::move(text_cb)}
 {
 }
 
 text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::string_view tooltip_key, font font,
-						 tr::ttf_style style, float font_size, text_callback text_cb)
+						 tr::system::ttf_style style, float font_size, text_callback text_cb)
 	: text_widget{name,
 				  pos,
 				  alignment,
@@ -270,7 +275,7 @@ text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignme
 				  style,
 				  tr::halign::CENTER,
 				  font_size,
-				  tr::UNLIMITED_WIDTH,
+				  tr::system::UNLIMITED_WIDTH,
 				  {160, 160, 160, 160},
 				  std::move(text_cb)}
 {
@@ -302,7 +307,7 @@ void text_widget::add_to_renderer()
 	tr::rgba8 real_color{color};
 	real_color.a = static_cast<std::uint8_t>(real_color.a * opacity());
 
-	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, m_cached->texture)};
+	const tr::gfx::simple_textured_mesh_ref quad{tr::gfx::renderer_2d::new_textured_fan(layer::UI, 4, m_cached->texture)};
 	tr::fill_rect_vtx(quad.positions, {tl(), text_widget::size()});
 	tr::fill_rect_vtx(quad.uvs, {{}, m_cached->size / glm::vec2{m_cached->texture.size()}});
 	std::ranges::fill(quad.tints, tr::rgba8{real_color});
@@ -314,8 +319,8 @@ void text_widget::update_cache() const
 	if (!m_cached.has_value() || m_cached->text != text) {
 		tr::bitmap render{engine::render_text(text, m_font, m_style, m_font_size, m_font_size / 12, m_max_width, m_text_alignment)};
 		if (!m_cached || m_cached->texture.size().x < render.size().x || m_cached->texture.size().y < render.size().y) {
-			m_cached.emplace(tr::texture{render}, render.size(), std::move(text));
-			if (tr::gfx_context::debug()) {
+			m_cached.emplace(tr::gfx::texture{render}, render.size(), std::move(text));
+			if (tr::gfx::debug()) {
 				m_cached->texture.set_label(std::format("(Bodge) Widget texture - \"{}\"", name));
 			}
 		}
@@ -332,7 +337,7 @@ void text_widget::update_cache() const
 
 clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size,
 											 text_callback text_cb, status_callback status_cb, action_callback action_cb,
-											 tooltip_callback tooltip_cb, std::vector<tr::key_chord>&& shortcuts, sound sound)
+											 tooltip_callback tooltip_cb, std::vector<tr::system::key_chord>&& shortcuts, sound sound)
 	: text_widget{name,
 				  pos,
 				  alignment,
@@ -341,10 +346,10 @@ clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 po
 				  false,
 				  std::move(shortcuts),
 				  font,
-				  tr::ttf_style::NORMAL,
+				  tr::system::ttf_style::NORMAL,
 				  tr::halign::CENTER,
 				  font_size,
-				  tr::UNLIMITED_WIDTH,
+				  tr::system::UNLIMITED_WIDTH,
 				  {160, 160, 160, 160},
 				  std::move(text_cb)}
 	, m_status_cb{std::move(status_cb)}
@@ -447,7 +452,7 @@ tr::bitmap load_image(std::string_view texture)
 image_widget::image_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t* hue_ref)
 	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, m_texture{load_image(name)}, m_hue_ref{hue_ref}
 {
-	m_texture.set_filtering(tr::min_filter::LINEAR, tr::mag_filter::LINEAR);
+	m_texture.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
 }
 
 glm::vec2 image_widget::size() const
@@ -463,7 +468,7 @@ void image_widget::add_to_renderer()
 	}
 	color.a = static_cast<std::uint8_t>(color.a * opacity());
 
-	const tr::simple_textured_mesh_ref quad{tr::renderer_2d::new_textured_fan(layer::UI, 4, m_texture)};
+	const tr::gfx::simple_textured_mesh_ref quad{tr::gfx::renderer_2d::new_textured_fan(layer::UI, 4, m_texture)};
 	tr::fill_rect_vtx(quad.positions, {tl(), size()});
 	tr::fill_rect_vtx(quad.uvs, {{0, 0}, {1, 1}});
 	std::ranges::fill(quad.tints, tr::rgba8{color});
@@ -487,10 +492,10 @@ void color_preview_widget::add_to_renderer()
 	const tr::rgba8 outline_color{static_cast<std::uint8_t>(color.r / 2), static_cast<std::uint8_t>(color.g / 2),
 								  static_cast<std::uint8_t>(color.b / 2), static_cast<std::uint8_t>(color.a / 2)};
 
-	const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::UI, 4)};
+	const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::UI, 4)};
 	tr::fill_rect_outline_vtx(outline.positions, {tl() + 2.0f, size() - 4.0f}, 4.0f);
 	std::ranges::fill(outline.colors, outline_color);
-	const tr::simple_color_mesh_ref fill{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(fill.positions, {tl() + 4.0f, size() - 8.0f});
 	std::ranges::fill(fill.colors, color);
 }
@@ -498,7 +503,7 @@ void color_preview_widget::add_to_renderer()
 /////////////////////////////////////////////////////////////// ARROW_WIDGET //////////////////////////////////////////////////////////////
 
 arrow_widget::arrow_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb,
-						   action_callback action_cb, std::vector<tr::key_chord>&& chords)
+						   action_callback action_cb, std::vector<tr::system::key_chord>&& chords)
 	: widget{name, pos, alignment, true, NO_TOOLTIP, false, std::move(chords)}
 	, m_right{right_arrow}
 	, m_color{{160, 160, 160, 160}}
@@ -523,7 +528,7 @@ void arrow_widget::add_to_renderer()
 
 	const glm::vec2 tl{this->tl()};
 	const std::array<glm::vec2, 15>& positions{m_right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
-	const tr::color_mesh_ref arrow{tr::renderer_2d::new_color_mesh(layer::UI, 15, tr::poly_outline_idx(5) + tr::poly_idx(5))};
+	const tr::gfx::color_mesh_ref arrow{tr::gfx::renderer_2d::new_color_mesh(layer::UI, 15, tr::poly_outline_idx(5) + tr::poly_idx(5))};
 	tr::fill_poly_outline_idx(arrow.indices.begin(), 5, arrow.base_index);
 	tr::fill_poly_idx(arrow.indices.begin() + tr::poly_outline_idx(5), 5, arrow.base_index + 10);
 	std::ranges::copy(positions | std::views::transform([&](glm::vec2 p) { return p + tl; }), arrow.positions.begin());
@@ -618,16 +623,16 @@ void replay_playback_indicator_widget::add_to_renderer()
 {
 	const glm::vec2 tl{this->tl()};
 
-	if (engine::held_keymods() & tr::keymod::SHIFT) {
-		const tr::color_mesh_ref mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
+	if (engine::held_keymods() & tr::system::keymod::SHIFT) {
+		const tr::gfx::color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
 		tr::fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
 		tr::fill_poly_idx(mesh.indices.begin() + tr::poly_outline_idx(3), 3, mesh.base_index + 6);
 		std::ranges::copy(SLOW_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),
 						  mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 	}
-	else if (engine::held_keymods() & tr::keymod::CTRL) {
-		const tr::color_mesh_ref mesh{tr::renderer_2d::new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
+	else if (engine::held_keymods() & tr::system::keymod::CTRL) {
+		const tr::gfx::color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
 		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),
 						  mesh.positions.begin());
 		std::ranges::copy(FAST_SPEED_COLORS, mesh.colors.begin());
@@ -635,7 +640,7 @@ void replay_playback_indicator_widget::add_to_renderer()
 						  mesh.indices.begin());
 	}
 	else {
-		const tr::color_mesh_ref mesh{tr::renderer_2d::new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
+		const tr::gfx::color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
 		tr::fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
 		tr::fill_poly_idx(mesh.indices.begin() + tr::poly_outline_idx(3), 3, mesh.base_index + 6);
 		std::ranges::copy(NORMAL_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),
@@ -680,10 +685,10 @@ score_widget::score_widget(std::string_view name, glm::vec2 pos, tr::align align
 		  false,
 		  {},
 		  font::LANGUAGE,
-		  tr::ttf_style::NORMAL,
+		  tr::system::ttf_style::NORMAL,
 		  tr::halign::CENTER,
 		  48,
-		  tr::UNLIMITED_WIDTH,
+		  tr::system::UNLIMITED_WIDTH,
 		  {160, 160, 160, 160},
 		  [this](auto&) {
 			  if (this->score == nullptr) {

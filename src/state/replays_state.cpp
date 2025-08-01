@@ -9,11 +9,12 @@
 constexpr std::size_t REPLAYS_PER_PAGE{5};
 
 // Shortcuts of the exit button.
-constexpr std::initializer_list<tr::key_chord> EXIT_SHORTCUTS{{tr::keycode::ESCAPE}, {tr::keycode::Q}, {tr::keycode::E}};
+constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
+	{tr::system::keycode::ESCAPE}, {tr::system::keycode::Q}, {tr::system::keycode::E}};
 // Shortcuts of the page decrement button.
-constexpr std::initializer_list<tr::key_chord> PAGE_DEC_SHORTCUTS{{tr::keycode::LEFT}};
+constexpr std::initializer_list<tr::system::key_chord> PAGE_DEC_SHORTCUTS{{tr::system::keycode::LEFT}};
 // Shortcuts of the page increment button.
-constexpr std::initializer_list<tr::key_chord> PAGE_INC_SHORTCUTS{{tr::keycode::RIGHT}};
+constexpr std::initializer_list<tr::system::key_chord> PAGE_INC_SHORTCUTS{{tr::system::keycode::RIGHT}};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -36,7 +37,7 @@ replays_state::replays_state(std::unique_ptr<game>&& game)
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> replays_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> replays_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -89,7 +90,7 @@ void replays_state::draw()
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
@@ -147,7 +148,8 @@ void replays_state::set_up_ui()
 
 	//
 
-	widget& title{m_ui.emplace<text_widget>("replays", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+	widget& title{
+		m_ui.emplace<text_widget>("replays", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change({500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
@@ -159,7 +161,7 @@ void replays_state::set_up_ui()
 
 	if (m_replays.empty()) {
 		widget& no_replays_found{m_ui.emplace<text_widget>("no_replays_found", glm::vec2{600, 467}, tr::align::TOP_CENTER, font::LANGUAGE,
-														   tr::ttf_style::NORMAL, 64, DEFAULT_TEXT_CALLBACK, "80808080"_rgba8)};
+														   tr::system::ttf_style::NORMAL, 64, DEFAULT_TEXT_CALLBACK, "80808080"_rgba8)};
 		no_replays_found.pos.change({500, 467}, 0.5_s);
 		no_replays_found.unhide(0.5_s);
 		return;
@@ -171,7 +173,7 @@ void replays_state::set_up_ui()
 																										 : std::nullopt};
 		const glm::vec2 pos{i % 2 == 0 ? 400 : 600, 183 + 150 * i};
 		widget& widget{m_ui.emplace<replay_widget>(std::format("replay{}", i), pos, tr::align::CENTER, status_cb, replay_action_cb, opt_it,
-												   tr::make_top_row_keycode(i + 1))};
+												   tr::system::make_top_row_keycode(i + 1))};
 		widget.pos.change({500, 183 + 150 * i}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -179,7 +181,7 @@ void replays_state::set_up_ui()
 	const text_callback cur_page_text_cb{
 		[this](auto&) { return std::format("{}/{}", m_page + 1, std::max(m_replays.size() - 1, std::size_t{0}) / REPLAYS_PER_PAGE + 1); }};
 	widget& cur_page{m_ui.emplace<text_widget>("cur_page", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
-											   tr::ttf_style::NORMAL, 48, cur_page_text_cb)};
+											   tr::system::ttf_style::NORMAL, 48, cur_page_text_cb)};
 	cur_page.pos.change({500, 950}, 0.5_s);
 	cur_page.unhide(0.5_s);
 

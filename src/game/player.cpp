@@ -25,13 +25,13 @@ inline constexpr ticks SCREEN_SHAKE_TIME{2_s / 3};
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-tr::dyn_atlas<char> create_timer_atlas()
+tr::gfx::dyn_atlas<char> create_timer_atlas()
 {
-	tr::dyn_atlas<char> atlas;
+	tr::gfx::dyn_atlas<char> atlas;
 	for (char chr : std::string_view{"0123456789:"}) {
-		atlas.add(chr, engine::render_gradient_glyph(chr, font::DEFAULT, tr::ttf_style::NORMAL, 64, 5));
+		atlas.add(chr, engine::render_gradient_glyph(chr, font::DEFAULT, tr::system::ttf_style::NORMAL, 64, 5));
 	}
-	if (tr::gfx_context::debug()) {
+	if (tr::gfx::debug()) {
 		atlas.set_label("(Bodge) Timer Atlas");
 	}
 	return atlas;
@@ -65,14 +65,14 @@ void player::death_fragment::update()
 
 void player::add_fill_to_renderer(std::uint8_t opacity, tr::angle rotation, float size) const
 {
-	const tr::simple_color_mesh_ref fill{tr::renderer_2d::new_color_fan(layer::PLAYER, 6)};
+	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::PLAYER, 6)};
 	tr::fill_poly_vtx(fill.positions, 6, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, opacity});
 }
 
 void player::add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::angle rotation, float size) const
 {
-	const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::PLAYER, 6)};
+	const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::PLAYER, 6)};
 	tr::fill_poly_outline_vtx(outline.positions, 6, {m_hitbox.c, size}, rotation, 4.0f);
 	std::ranges::fill(outline.colors | std::views::take(6), tr::rgba8{tint, opacity});
 	std::ranges::fill(outline.colors | std::views::drop(6), tr::rgba8{0, 0, 0, opacity});
@@ -83,7 +83,7 @@ void player::add_trail_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::angl
 	constexpr std::size_t VERTICES{6 * (trail::SIZE + 1)};
 	constexpr std::size_t INDICES{tr::poly_outline_idx(6) * trail::SIZE};
 
-	tr::color_mesh_ref trail_mesh{tr::renderer_2d::new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
+	tr::gfx::color_mesh_ref trail_mesh{tr::gfx::renderer_2d::new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
 	tr::fill_poly_vtx(trail_mesh.positions | std::views::take(6), 6, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(trail_mesh.colors, tr::rgba8{tint, opacity});
 
@@ -117,7 +117,7 @@ void player::add_lives_to_renderer() const
 		const glm::ivec2 grid_pos{i % LIVES_PER_LINE, i / LIVES_PER_LINE};
 		const glm::vec2 pos{(static_cast<glm::vec2>(grid_pos) + 0.5f) * 2.5f * life_size + 8.0f};
 
-		const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::GAME_OVERLAY, 6)};
+		const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::GAME_OVERLAY, 6)};
 		tr::fill_poly_outline_vtx(outline.positions, 6, {pos, life_size}, rotation, 4.0f);
 		std::ranges::fill(outline.colors | std::views::take(6), tr::rgba8{color, opacity});
 		std::ranges::fill(outline.colors | std::views::drop(6), tr::rgba8{0, 0, 0, opacity});
@@ -145,7 +145,7 @@ void player::add_timer_to_renderer() const
 
 	glm::vec2 tl{TIMER_TEXT_POS - timer_text_size(text, scale) / 2.0f};
 	for (char chr : text) {
-		tr::simple_textured_mesh_ref character{tr::renderer_2d::new_textured_fan(layer::GAME_OVERLAY, 4)};
+		tr::gfx::simple_textured_mesh_ref character{tr::gfx::renderer_2d::new_textured_fan(layer::GAME_OVERLAY, 4)};
 		tr::fill_rect_vtx(character.positions, {tl, glm::vec2{m_atlas.unnormalized(chr).size} / engine::render_scale() * scale});
 		tr::fill_rect_vtx(character.uvs, m_atlas[chr]);
 		std::ranges::fill(character.tints, tint);
@@ -159,7 +159,7 @@ void player::set_screen_shake() const
 	if (screen_shake_left >= 0) {
 		const glm::vec2 tl{tr::magth(40.0f * screen_shake_left / SCREEN_SHAKE_TIME, engine::rng.generate_angle())};
 		const glm::mat4 mat{tr::ortho(tr::frect2{tl, glm::vec2{1000}})};
-		tr::renderer_2d::set_default_transform(mat);
+		tr::gfx::renderer_2d::set_default_transform(mat);
 	}
 }
 
@@ -171,7 +171,7 @@ void player::add_death_wave_to_renderer() const
 	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(0.5f * std::sqrt(1 - t))};
 
 	const std::size_t indices{tr::smooth_poly_vtx(scale, engine::render_scale()) + 2};
-	const tr::simple_color_mesh_ref fan{tr::renderer_2d::new_color_fan(layer::PLAYER_TRAIL, indices)};
+	const tr::gfx::simple_color_mesh_ref fan{tr::gfx::renderer_2d::new_color_fan(layer::PLAYER_TRAIL, indices)};
 	fan.positions[0] = m_hitbox.c;
 	fan.colors[0] = {color, 0};
 	tr::fill_poly_vtx(fan.positions | std::views::drop(1), fan.positions.size() - 2, {m_hitbox.c, scale});
@@ -187,7 +187,7 @@ void player::add_death_fragments_to_renderer() const
 	const float length{2 * m_hitbox.r * tr::degs(30.0f).tan()};
 
 	for (const death_fragment& fragment : m_fragments) {
-		const tr::simple_color_mesh_ref mesh{tr::renderer_2d::new_color_fan(layer::PLAYER, 4)};
+		const tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_fan(layer::PLAYER, 4)};
 		tr::fill_rotated_rect_vtx(mesh.positions, fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
@@ -208,7 +208,7 @@ player::player(const player_settings& settings, ticks pb)
 	, m_atlas{create_timer_atlas()}
 	, m_pb{pb}
 {
-	tr::renderer_2d::set_default_layer_texture(layer::GAME_OVERLAY, m_atlas);
+	tr::gfx::renderer_2d::set_default_layer_texture(layer::GAME_OVERLAY, m_atlas);
 }
 
 ///////////////////////////////////////////////////////////////// GETTERS /////////////////////////////////////////////////////////////////

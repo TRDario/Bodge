@@ -50,10 +50,10 @@ constexpr std::array<label, 8> LABELS{{
 // Settings screen bottom buttons.
 constexpr std::array<const char*, 3> BOTTOM_BUTTONS{"revert", "apply", "exit"};
 // Shortcuts of the bottom buttons.
-constexpr std::array<std::initializer_list<tr::key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
-	{{tr::keycode::Z, tr::keymod::CTRL}},
-	{{tr::keycode::S, tr::keymod::CTRL}},
-	{{tr::keycode::ESCAPE}},
+constexpr std::array<std::initializer_list<tr::system::key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
+	{{tr::system::keycode::Z, tr::system::keymod::CTRL}},
+	{{tr::system::keycode::S, tr::system::keymod::CTRL}},
+	{{tr::system::keycode::ESCAPE}},
 }};
 
 // Starting position of the window size widgets.
@@ -97,7 +97,8 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	}};
 	const status_callback cur_refresh_rate_status_cb{[this] { return m_substate != substate::ENTERING_TITLE; }};
 	const status_callback msaa_dec_status_cb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != NO_MSAA; }};
-	const status_callback msaa_inc_status_cb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != tr::max_msaa(); }};
+	const status_callback msaa_inc_status_cb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != tr::system::max_msaa(); }};
 	const status_callback hue_arrow_status_cb{[this] { return m_substate != substate::ENTERING_TITLE; }};
 	const status_callback sfx_volume_dec_status_cb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume > 0; }};
 	const status_callback sfx_volume_inc_status_cb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume < 100; }};
@@ -227,17 +228,19 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	//
 
-	widget& title{m_ui.emplace<text_widget>("settings", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 64)};
+	widget& title{
+		m_ui.emplace<text_widget>("settings", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change(TITLE_POS, 0.5_s);
 	title.unhide(0.5_s);
 
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
 		const label& label{LABELS[i]};
 		const glm::vec2 pos{-50, 196 + i * 75};
-		widget& widget{label.tooltip != NO_TOOLTIP_STR
-						   ? m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
-													   tr::ttf_style::NORMAL, 48)
-						   : m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, font::LANGUAGE, tr::ttf_style::NORMAL, 48)};
+		widget& widget{
+			label.tooltip != NO_TOOLTIP_STR
+				? m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
+											tr::system::ttf_style::NORMAL, 48)
+				: m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48)};
 		widget.pos.change({15, 196 + i * 75}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -281,8 +284,8 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		m_ui.emplace<arrow_widget>("msaa_dec", MSAA_START_POS, tr::align::CENTER_LEFT, false, msaa_dec_status_cb, msaa_dec_action_cb)};
 	widget& msaa_inc{
 		m_ui.emplace<arrow_widget>("msaa_inc", MSAA_START_POS, tr::align::CENTER_RIGHT, true, msaa_inc_status_cb, msaa_inc_action_cb)};
-	widget& cur_msaa{m_ui.emplace<text_widget>("cur_msaa", MSAA_START_POS, tr::align::CENTER, font::LANGUAGE, tr::ttf_style::NORMAL, 48,
-											   cur_msaa_text_cb)};
+	widget& cur_msaa{m_ui.emplace<text_widget>("cur_msaa", MSAA_START_POS, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											   48, cur_msaa_text_cb)};
 	msaa_dec.pos.change({830, MSAA_START_POS.y}, 0.5_s);
 	msaa_inc.pos.change({985, MSAA_START_POS.y}, 0.5_s);
 	cur_msaa.pos.change({907.5, MSAA_START_POS.y}, 0.5_s);
@@ -295,7 +298,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	widget& primary_hue_inc{m_ui.emplace<arrow_widget>("primary_hue_inc", PRIMARY_HUE_START_POS, tr::align::CENTER_RIGHT, true,
 													   hue_arrow_status_cb, primary_hue_inc_action_cb)};
 	widget& cur_primary_hue{m_ui.emplace<text_widget>("cur_primary_hue", PRIMARY_HUE_START_POS, tr::align::CENTER, font::LANGUAGE,
-													  tr::ttf_style::NORMAL, 48, cur_primary_hue_text_cb)};
+													  tr::system::ttf_style::NORMAL, 48, cur_primary_hue_text_cb)};
 	widget& primary_hue_preview{
 		m_ui.emplace<color_preview_widget>("primary_hue_preview", PRIMARY_HUE_START_POS, tr::align::CENTER_RIGHT, m_pending.primary_hue)};
 	primary_hue_dec.pos.change({745, PRIMARY_HUE_START_POS.y}, 0.5_s);
@@ -312,7 +315,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	widget& secondary_hue_inc{m_ui.emplace<arrow_widget>("secondary_hue_inc", SECONDARY_HUE_START_POS, tr::align::CENTER_RIGHT, true,
 														 hue_arrow_status_cb, secondary_hue_inc_action_cb)};
 	widget& cur_secondary_hue{m_ui.emplace<text_widget>("cur_secondary_hue", SECONDARY_HUE_START_POS, tr::align::CENTER, font::LANGUAGE,
-														tr::ttf_style::NORMAL, 48, cur_secondary_hue_text_cb)};
+														tr::system::ttf_style::NORMAL, 48, cur_secondary_hue_text_cb)};
 	widget& secondary_hue_preview{m_ui.emplace<color_preview_widget>("secondary_hue_preview", SECONDARY_HUE_START_POS,
 																	 tr::align::CENTER_RIGHT, m_pending.secondary_hue)};
 	secondary_hue_dec.pos.change({745, SECONDARY_HUE_START_POS.y}, 0.5_s);
@@ -329,7 +332,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	widget& sfx_volume_inc{m_ui.emplace<arrow_widget>("sfx_volume_inc", SFX_VOLUME_START_POS, tr::align::CENTER_RIGHT, true,
 													  sfx_volume_inc_status_cb, sfx_volume_inc_action_cb)};
 	widget& cur_sound_volume{m_ui.emplace<text_widget>("cur_sound_volume", SFX_VOLUME_START_POS, tr::align::CENTER, font::LANGUAGE,
-													   tr::ttf_style::NORMAL, 48, cur_sound_volume_text_cb)};
+													   tr::system::ttf_style::NORMAL, 48, cur_sound_volume_text_cb)};
 	sfx_volume_dec.pos.change({765, SFX_VOLUME_START_POS.y}, 0.5_s);
 	sfx_volume_inc.pos.change({985, SFX_VOLUME_START_POS.y}, 0.5_s);
 	cur_sound_volume.pos.change({875, SFX_VOLUME_START_POS.y}, 0.5_s);
@@ -342,7 +345,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	widget& music_volume_inc{m_ui.emplace<arrow_widget>("music_volume_inc", MUSIC_VOLUME_START_POS, tr::align::CENTER_RIGHT, true,
 														music_volume_inc_status_cb, music_volume_inc_action_cb)};
 	widget& cur_music_volume{m_ui.emplace<text_widget>("cur_music_volume", MUSIC_VOLUME_START_POS, tr::align::CENTER, font::LANGUAGE,
-													   tr::ttf_style::NORMAL, 48, cur_music_volume_text_cb)};
+													   tr::system::ttf_style::NORMAL, 48, cur_music_volume_text_cb)};
 	music_volume_dec.pos.change({765, MUSIC_VOLUME_START_POS.y}, 0.5_s);
 	music_volume_inc.pos.change({985, MUSIC_VOLUME_START_POS.y}, 0.5_s);
 	cur_music_volume.pos.change({875, MUSIC_VOLUME_START_POS.y}, 0.5_s);
@@ -368,7 +371,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> settings_state::handle_event(const tr::event& event)
+std::unique_ptr<tr::state> settings_state::handle_event(const tr::system::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -393,7 +396,7 @@ void settings_state::draw()
 	m_background_game->add_to_renderer();
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
-	tr::renderer_2d::draw(engine::screen());
+	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

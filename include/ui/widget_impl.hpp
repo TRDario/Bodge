@@ -6,8 +6,8 @@
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
 template <std::size_t S>
-line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, tr::ttf_style style, float font_size,
-										status_callback status_cb, action_callback enter_cb)
+line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, tr::system::ttf_style style,
+										float font_size, status_callback status_cb, action_callback enter_cb)
 	: text_widget{name,
 				  pos,
 				  alignment,
@@ -19,7 +19,7 @@ line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr
 				  style,
 				  tr::halign::CENTER,
 				  font_size,
-				  tr::UNLIMITED_WIDTH,
+				  tr::system::UNLIMITED_WIDTH,
 				  {160, 160, 160, 160},
 				  [this](auto&) { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
 	, m_status_cb{std::move(status_cb)}
@@ -127,13 +127,13 @@ template <std::size_t S> void line_input_widget<S>::on_clear()
 
 template <std::size_t S> void line_input_widget<S>::on_copy()
 {
-	tr::clipboard::set(std::string{buffer});
+	tr::system::set_clipboard_text(std::string{buffer});
 }
 
 template <std::size_t S> void line_input_widget<S>::on_paste()
 {
-	if (!tr::clipboard::empty()) {
-		std::string pasted{tr::clipboard::get()};
+	if (!tr::system::clipboard_empty()) {
+		std::string pasted{tr::system::clipboard_text()};
 		std::erase(pasted, '\n');
 		buffer += (buffer.size() + pasted.size() > S) ? std::string_view{pasted}.substr(0, S - buffer.size()) : pasted;
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
@@ -143,7 +143,7 @@ template <std::size_t S> void line_input_widget<S>::on_paste()
 ////////////////////////////////////////////////////////////// REPLAY WIDGET //////////////////////////////////////////////////////////////
 
 replay_widget::replay_widget(std::string_view name, glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
-							 std::optional<std::map<std::string, replay_header>::iterator> it, tr::keycode shortcut)
+							 std::optional<std::map<std::string, replay_header>::iterator> it, tr::system::keycode shortcut)
 	: clickable_text_widget{name,
 							pos,
 							alignment,
@@ -222,7 +222,7 @@ multiline_input_widget<S>::multiline_input_widget(std::string_view name, glm::ve
 				  true,
 				  {},
 				  font::LANGUAGE,
-				  tr::ttf_style::NORMAL,
+				  tr::system::ttf_style::NORMAL,
 				  text_alignment,
 				  font_size,
 				  static_cast<int>(width),
@@ -245,10 +245,10 @@ template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 	tr::rgba color{active() ? tr::rgba8{this->color} : "505050A0"_rgba8};
 	color.a *= opacity();
 
-	const tr::simple_color_mesh_ref outline{tr::renderer_2d::new_color_outline(layer::UI, 4)};
+	const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::UI, 4)};
 	tr::fill_rect_outline_vtx(outline.positions, {tl() + 1.0f, size() - 2.0f}, 2.0f);
 	std::ranges::fill(outline.colors, color);
-	const tr::simple_color_mesh_ref fill{tr::renderer_2d::new_color_fan(layer::UI, 4)};
+	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(fill.positions, {tl() + 2.0f, size() - 4.0f});
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, static_cast<std::uint8_t>(160 * opacity())});
 
@@ -324,7 +324,8 @@ template <std::size_t S> void multiline_input_widget<S>::on_write(std::string_vi
 {
 	if (buffer.size() + input.size() <= S) {
 		buffer.append(input);
-		if (engine::count_lines(buffer, font::LANGUAGE, tr::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) > m_max_lines) {
+		if (engine::count_lines(buffer, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) >
+			m_max_lines) {
 			buffer.pop_back();
 		}
 		else {
@@ -335,7 +336,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_write(std::string_vi
 
 template <std::size_t S> void multiline_input_widget<S>::on_enter()
 {
-	if (engine::count_lines(buffer, font::LANGUAGE, tr::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
+	if (engine::count_lines(buffer, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
 		buffer.append('\n');
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
@@ -357,18 +358,19 @@ template <std::size_t S> void multiline_input_widget<S>::on_clear()
 
 template <std::size_t S> void multiline_input_widget<S>::on_copy()
 {
-	tr::clipboard::set(std::string{buffer}.c_str());
+	tr::system::set_clipboard_text(std::string{buffer}.c_str());
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_paste()
 {
 	try {
-		if (!tr::clipboard::empty()) {
-			std::string pasted{tr::clipboard::get()};
+		if (!tr::system::clipboard_empty()) {
+			std::string pasted{tr::system::clipboard_text()};
 			tr::static_string<S> copy{buffer};
 			copy += (buffer.size() + pasted.size() > S) ? std::string_view{pasted}.substr(0, S - buffer.size()) : pasted;
 			// Replace this with a smarter solution eventually, maybe.
-			if (engine::count_lines(copy, font::LANGUAGE, tr::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) <= m_max_lines) {
+			if (engine::count_lines(copy, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) <=
+				m_max_lines) {
 				buffer = copy;
 			}
 			engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
