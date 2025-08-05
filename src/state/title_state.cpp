@@ -1,3 +1,4 @@
+#include "../../include/state/title_state.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
@@ -5,7 +6,6 @@
 #include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/settings_state.hpp"
 #include "../../include/state/start_game_state.hpp"
-#include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -30,7 +30,7 @@ title_state::title_state()
 	, m_background_game{std::make_unique<game>(pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
 {
 	set_up_ui();
-	engine::play_song(song::MENU, 1.0s);
+	engine::play_song("menu", 1.0s);
 }
 
 title_state::title_state(std::unique_ptr<game>&& game)

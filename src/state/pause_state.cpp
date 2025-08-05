@@ -40,6 +40,7 @@ pause_state::pause_state(std::unique_ptr<game>&& game, game_type type, glm::vec2
 	if (blur_in) {
 		m_game->add_to_renderer();
 		tr::gfx::renderer_2d::draw(engine::blur().input());
+		engine::pause_song();
 	}
 
 	if (type == game_type::REGULAR) {

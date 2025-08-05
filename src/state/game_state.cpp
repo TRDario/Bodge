@@ -11,6 +11,10 @@
 game_state::game_state(std::unique_ptr<game>&& game, game_type type, bool fade_in)
 	: m_substate{(fade_in ? substate_base::STARTING : substate_base::ONGOING) | type}, m_timer{0}, m_game{std::move(game)}
 {
+	if (!fade_in) {
+		engine::unpause_song();
+	}
+
 	if (type == game_type::REPLAY) {
 		widget& replay{m_ui.emplace<text_widget>("replay", glm::vec2{4, 1000}, tr::align::BOTTOM_LEFT, font::LANGUAGE,
 												 tr::system::ttf_style::NORMAL, 48)};
@@ -24,7 +28,8 @@ game_state::game_state(std::unique_ptr<game>&& game, game_type type, bool fade_i
 
 std::unique_ptr<tr::state> game_state::handle_event(const tr::system::event& event)
 {
-	if (event.type() == tr::system::key_down_event::ID && tr::system::key_down_event{event}.key == tr::system::keycode::ESCAPE) {
+	if (to_base(m_substate) != substate_base::STARTING && event.type() == tr::system::key_down_event::ID &&
+		tr::system::key_down_event{event}.key == tr::system::keycode::ESCAPE) {
 		engine::play_sound(sound::PAUSE, 0.8f, 0.0f);
 		return std::make_unique<pause_state>(std::move(m_game), to_type(m_substate), engine::mouse_pos(), true);
 	}
@@ -40,6 +45,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 		if (m_timer >= 0.5_s) {
 			m_substate = substate_base::ONGOING | to_type(m_substate);
 			m_timer = 0;
+			engine::play_song(m_game->gamemode().song, 0.5s);
 		}
 		return nullptr;
 	case substate_base::ONGOING:
@@ -62,7 +68,13 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 			}
 
 			if (static_cast<replay_game*>(m_game.get())->done()) {
-				m_substate = (m_game->game_over() ? substate_base::GAME_OVER : substate_base::EXITING) | game_type::REPLAY;
+				if (m_game->game_over()) {
+					m_substate = substate_base::GAME_OVER | game_type::REPLAY;
+					engine::fade_song_out(0.5s);
+				}
+				else {
+					m_substate = substate_base::EXITING | game_type::REPLAY;
+				}
 				m_timer = 0;
 			}
 			else if (m_timer % 120 == 60) {
@@ -77,6 +89,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 			if (m_game->game_over()) {
 				m_substate = substate_base::GAME_OVER | to_type(m_substate);
 				m_timer = 0;
+				engine::fade_song_out(0.5s);
 			}
 		}
 		return nullptr;

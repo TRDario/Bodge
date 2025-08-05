@@ -1,6 +1,6 @@
+#include "../../include/state/replays_state.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/replays_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ replays_state::replays_state()
 	, m_replays{load_replay_headers()}
 {
 	set_up_ui();
-	engine::play_song(song::MENU, SKIP_MENU_SONG_INTRO, 0.5s);
+	engine::play_song("menu", SKIP_MENU_SONG_INTRO, 0.5s);
 }
 
 replays_state::replays_state(std::unique_ptr<game>&& game)

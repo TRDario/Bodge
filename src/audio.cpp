@@ -8,21 +8,29 @@ namespace engine {
 		"unpause.ogg", "tick.ogg", "bounce.ogg",  "hit.ogg",    "game_over.ogg",
 	};
 
-	// The filenames of the music audio files.
-	std::array<const char*, static_cast<int>(sound::COUNT)> SONG_FILENAMES{
-		"menu.ogg",
-	};
-
 	// Sound effect audio buffers.
 	std::array<std::optional<tr::audio::buffer>, static_cast<int>(sound::COUNT)> sounds;
 	// The song audio source.
 	std::optional<tr::audio::source> current_song;
 
+	// Tries to find a path to an audio file for a song.
+	std::filesystem::path find_song_path(std::string_view name);
 	// Tries to load an audio file.
 	std::optional<tr::audio::buffer> load_audio_file(const char* filename);
 } // namespace engine
 
-// Tries to load an audio file.
+std::filesystem::path engine::find_song_path(std::string_view name)
+{
+	std::filesystem::path path{cli_settings.datadir / "music" / std::format("{}.ogg", name)};
+	if (!std::filesystem::exists(path)) {
+		path = cli_settings.userdir / "music" / std::format("{}.ogg", name);
+		if (!std::filesystem::exists(path)) {
+			return {};
+		}
+	}
+	return path;
+}
+
 std::optional<tr::audio::buffer> engine::load_audio_file(const char* filename)
 {
 	try {
@@ -75,16 +83,20 @@ void engine::play_sound(sound sound, float volume, float pan, float pitch)
 	}
 }
 
-void engine::play_song(song song, tr::fsecs fade_in)
+void engine::play_song(std::string_view name, tr::fsecs fade_in)
 {
-	play_song(song, 0s, fade_in);
+	play_song(name, 0s, fade_in);
 }
 
-void engine::play_song(song song, tr::fsecs offset, tr::fsecs fade_in)
+void engine::play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_in)
 {
-	const char* const filename{SONG_FILENAMES[static_cast<int>(song)]};
-	const std::filesystem::path& path{cli_settings.datadir / "music" / filename};
 	if (current_song.has_value()) {
+		const std::filesystem::path& path{find_song_path(name)};
+		if (path.empty()) {
+			LOG(tr::severity::ERROR, "Failed to play song '{}'.", name);
+			LOG_CONTINUE("File not found in neither data nor user directory.");
+			return;
+		}
 		try {
 			current_song->stop();
 			current_song->use(tr::audio::open_file(path));
@@ -92,11 +104,11 @@ void engine::play_song(song song, tr::fsecs offset, tr::fsecs fade_in)
 			current_song->set_gain(0.25f);
 			current_song->set_gain(0.75f, fade_in);
 			current_song->play();
-			LOG(tr::severity::INFO, "Playing song '{}'.", filename);
+			LOG(tr::severity::INFO, "Playing song '{}'.", name);
 			LOG_CONTINUE("From: '{}'", path.string());
 		}
-		catch (std::exception& err) {
-			LOG(tr::severity::ERROR, "Failed to play song '{}'.", filename);
+		catch (tr::exception& err) {
+			LOG(tr::severity::ERROR, "Failed to play song '{}'.", name);
 			LOG_CONTINUE("From: '{}'", path.string());
 			LOG_CONTINUE(err);
 		}
@@ -107,6 +119,15 @@ void engine::pause_song()
 {
 	if (current_song.has_value()) {
 		current_song->pause();
+	}
+}
+
+void engine::unpause_song()
+{
+	if (current_song.has_value()) {
+		current_song->play();
+		current_song->set_gain(0);
+		current_song->set_gain(0.75f, 0.5s);
 	}
 }
 

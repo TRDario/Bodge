@@ -39,7 +39,7 @@ gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 	, m_pending{gamemode}
 {
 	set_up_ui(false);
-	engine::play_song(song::MENU, SKIP_MENU_SONG_INTRO, 0.5s);
+	engine::play_song("menu", SKIP_MENU_SONG_INTRO, 0.5s);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

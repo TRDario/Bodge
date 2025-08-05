@@ -13,6 +13,8 @@ name_entry_state::name_entry_state()
 	, m_timer{0}
 	, m_background_game{std::make_unique<game>(pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
 {
+	engine::play_song("menu", 1.0s);
+
 	const status_callback input_status_cb{[this] { return m_substate != substate::ENTERING_TITLE; }};
 	const status_callback confirm_status_cb{
 		[this] { return m_substate != substate::ENTERING_TITLE && !m_ui.get<line_input_widget<20>>("input").buffer.empty(); }};

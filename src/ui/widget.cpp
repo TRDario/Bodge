@@ -439,7 +439,7 @@ tr::bitmap load_image(std::string_view texture)
 		const std::filesystem::path path{engine::cli_settings.datadir / "graphics" / std::format("{}.qoi", texture)};
 		tr::bitmap image{tr::load_bitmap_file(path)};
 		LOG(tr::severity::INFO, "Loaded texture '{}'.", texture);
-		LOG_CONTINUE("From: {}", path.string());
+		LOG_CONTINUE("From: '{}'", path.string());
 		return image;
 	}
 	catch (tr::bitmap_load_error& err) {

@@ -29,15 +29,6 @@ enum class sound {
 	COUNT,
 };
 
-// Songs.
-enum class song {
-	// Menu theme.
-	MENU,
-
-	// The total number of songs.
-	COUNT
-};
-
 // Timestamp that skips the menu song intro.
 constexpr tr::fsecs SKIP_MENU_SONG_INTRO{103769 / 44100.0f};
 
@@ -49,11 +40,13 @@ namespace engine {
 	// Plays a sound effect.
 	void play_sound(sound sound, float volume, float pan, float pitch = 1);
 	// Plays a song.
-	void play_song(song song, tr::fsecs fade_in);
+	void play_song(std::string_view name, tr::fsecs fade_in);
 	// Plays a song starting at an offset.
-	void play_song(song song, tr::fsecs offset, tr::fsecs fade_in);
+	void play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_in);
 	// Pauses the current song.
 	void pause_song();
+	// Unpauses the current song.
+	void unpause_song();
 	// Fades the current song out.
 	void fade_song_out(tr::fsecs time);
 	// Applies new settings.
