@@ -242,11 +242,11 @@ void engine::unload_fonts()
 
 /////////////////////////////////////////////////////////////// OPERATIONS ////////////////////////////////////////////////////////////////
 
-font engine::determine_font(std::string_view text)
+font engine::determine_font(std::string_view text, font preferred)
 {
-	tr::system::ttfont& font{find_font(font::LANGUAGE)};
+	tr::system::ttfont& font{find_font(preferred)};
 	if (std::ranges::all_of(tr::utf8::range(text), [&](tr::codepoint chr) { return chr == '\n' || font.contains(chr); })) {
-		return font::LANGUAGE;
+		return preferred;
 	}
 	else {
 		return font::FALLBACK;

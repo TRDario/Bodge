@@ -6,9 +6,9 @@
 // The replay header.
 struct replay_header : score {
 	// The name of the replay.
-	tr::static_string<20> name;
+	tr::static_string<20 * 4> name;
 	// The player who created the replay.
-	tr::static_string<20> player;
+	tr::static_string<20 * 4> player;
 	// The game gamemode.
 	gamemode gamemode;
 	// The game seed.

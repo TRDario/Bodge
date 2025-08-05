@@ -27,7 +27,7 @@ namespace engine {
 	void unload_fonts();
 
 	// Tries to determine if a string can be drawn with the language font, or if it should be delegated to the fallback font.
-	font determine_font(std::string_view text);
+	font determine_font(std::string_view text, font preferred = font::LANGUAGE);
 	// Gets the height of a line of text.
 	float line_skip(font font, float size);
 	// Gets the size of a text string in window coordinates.

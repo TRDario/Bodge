@@ -100,7 +100,7 @@ template <std::size_t S> void line_input_widget<S>::on_lose_focus()
 
 template <std::size_t S> void line_input_widget<S>::on_write(std::string_view input)
 {
-	if (buffer.size() + input.size() <= S) {
+	if (tr::utf8::length(buffer) + tr::utf8::length(input) <= S) {
 		buffer.append(input);
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
@@ -114,7 +114,7 @@ template <std::size_t S> void line_input_widget<S>::on_enter()
 template <std::size_t S> void line_input_widget<S>::on_erase()
 {
 	if (!buffer.empty()) {
-		buffer.pop_back();
+		tr::utf8::pop_back(buffer);
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
@@ -132,10 +132,13 @@ template <std::size_t S> void line_input_widget<S>::on_copy()
 
 template <std::size_t S> void line_input_widget<S>::on_paste()
 {
-	if (!tr::system::clipboard_empty()) {
+	const std::size_t buffer_length{tr::utf8::length(buffer)};
+	if (!tr::system::clipboard_empty() && buffer_length < S) {
 		std::string pasted{tr::system::clipboard_text()};
 		std::erase(pasted, '\n');
-		buffer += (buffer.size() + pasted.size() > S) ? std::string_view{pasted}.substr(0, S - buffer.size()) : pasted;
+		buffer += (buffer_length + tr::utf8::length(pasted) > S)
+					  ? std::string_view{pasted.begin(), tr::utf8::next(pasted.begin(), S - buffer_length)}
+					  : pasted;
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
@@ -322,11 +325,11 @@ template <std::size_t S> void multiline_input_widget<S>::on_lose_focus()
 
 template <std::size_t S> void multiline_input_widget<S>::on_write(std::string_view input)
 {
-	if (buffer.size() + input.size() <= S) {
+	if (tr::utf8::length(buffer) + tr::utf8::length(input) <= S) {
 		buffer.append(input);
 		if (engine::count_lines(buffer, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) >
 			m_max_lines) {
-			buffer.pop_back();
+			buffer.resize(buffer.size() - input.size());
 		}
 		else {
 			engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
@@ -336,7 +339,8 @@ template <std::size_t S> void multiline_input_widget<S>::on_write(std::string_vi
 
 template <std::size_t S> void multiline_input_widget<S>::on_enter()
 {
-	if (engine::count_lines(buffer, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
+	if (tr::utf8::length(buffer) < S &&
+		engine::count_lines(buffer, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
 		buffer.append('\n');
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
@@ -345,7 +349,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_enter()
 template <std::size_t S> void multiline_input_widget<S>::on_erase()
 {
 	if (!buffer.empty()) {
-		buffer.pop_back();
+		tr::utf8::pop_back(buffer);
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
@@ -366,8 +370,11 @@ template <std::size_t S> void multiline_input_widget<S>::on_paste()
 	try {
 		if (!tr::system::clipboard_empty()) {
 			std::string pasted{tr::system::clipboard_text()};
-			tr::static_string<S> copy{buffer};
-			copy += (buffer.size() + pasted.size() > S) ? std::string_view{pasted}.substr(0, S - buffer.size()) : pasted;
+			tr::static_string<S * 4> copy{buffer};
+			const std::size_t buffer_length{tr::utf8::length(buffer)};
+			copy += (buffer_length + tr::utf8::length(pasted) > S)
+						? std::string_view{pasted.begin(), tr::utf8::next(pasted.begin(), S - buffer_length)}
+						: pasted;
 			// Replace this with a smarter solution eventually, maybe.
 			if (engine::count_lines(copy, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) <=
 				m_max_lines) {

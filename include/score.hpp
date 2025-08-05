@@ -23,7 +23,7 @@ template <> struct tr::binary_writer<score_flags> : tr::default_binary_writer<sc
 // Scoreboard entry.
 struct score {
 	// The description of the score.
-	std::string description;
+	tr::static_string<255 * 4> description;
 	// The timestamp of the score (seconds since UNIX epoch).
 	std::int64_t timestamp;
 	// The actual score value.
@@ -63,7 +63,7 @@ template <> struct tr::binary_writer<score_category> {
 // File containing score information.
 struct scorefile {
 	// The name of the player.
-	std::string name;
+	tr::static_string<20 * 4> name;
 	// Score tables.
 	std::vector<score_category> categories;
 	// The total recorded playtime.

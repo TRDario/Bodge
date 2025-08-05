@@ -317,7 +317,8 @@ void text_widget::update_cache() const
 {
 	std::string text{text_cb(name)};
 	if (!m_cached.has_value() || m_cached->text != text) {
-		tr::bitmap render{engine::render_text(text, m_font, m_style, m_font_size, m_font_size / 12, m_max_width, m_text_alignment)};
+		tr::bitmap render{engine::render_text(text, engine::determine_font(text, m_font), m_style, m_font_size, m_font_size / 12,
+											  m_max_width, m_text_alignment)};
 		if (!m_cached || m_cached->texture.size().x < render.size().x || m_cached->texture.size().y < render.size().y) {
 			m_cached.emplace(tr::gfx::texture{render}, render.size(), std::move(text));
 			if (tr::gfx::debug()) {

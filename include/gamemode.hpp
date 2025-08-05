@@ -54,11 +54,11 @@ struct gamemode {
 	// Flag marking the gamemode as a special, built-in gamemode.
 	bool builtin{false};
 	// The name of the gamemode.
-	std::string name{};
+	tr::static_string<12 * 4> name{};
 	// The author of the gamemode.
-	std::string author{};
+	tr::static_string<20 * 4> author{};
 	// The description of the gamemode.
-	std::string description{};
+	tr::static_string<40 * 4> description{};
 	// Player settings.
 	player_settings player{};
 	// Ball settings.
