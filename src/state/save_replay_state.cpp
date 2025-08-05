@@ -1,5 +1,5 @@
-#include "../../include/state/save_replay_state.hpp"
 #include "../../include/state/game_state.hpp"
+#include "../../include/state/save_replay_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 		m_timer = 0;
 		set_up_exit_animation();
 		m_game->replay().set_header(
-			{m_ui.get<multiline_input_widget<255>>("description_input").buffer, unix_now(), m_game->result(), flags},
+			{std::string{m_ui.get<multiline_input_widget<255>>("description_input").buffer}, unix_now(), m_game->result(), flags},
 			m_ui.get<line_input_widget<20>>("name_input").buffer);
 		m_game->replay().save_to_file();
 	}};
