@@ -5,8 +5,8 @@
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
 
-game::game(struct gamemode gamemode, std::uint64_t rng_seed)
-	: m_gamemode{std::move(gamemode)}
+game::game(const ::gamemode& gamemode, std::uint64_t rng_seed)
+	: m_gamemode{gamemode}
 	, m_rng{rng_seed}
 	, m_ball_size{gamemode.ball.initial_size}
 	, m_ball_velocity{gamemode.ball.initial_velocity}
@@ -14,10 +14,10 @@ game::game(struct gamemode gamemode, std::uint64_t rng_seed)
 	, m_last_spawn{0}
 {
 	if (!autoplay(m_gamemode.player)) {
-		m_player.emplace(m_gamemode.player, pb(engine::scorefile, m_gamemode));
+		m_player.emplace(gamemode.player, pb(engine::scorefile, m_gamemode));
 	}
 
-	for (int i = 0; i < m_gamemode.ball.starting_count; ++i) {
+	for (int i = 0; i < gamemode.ball.starting_count; ++i) {
 		add_new_ball();
 	}
 }
@@ -110,8 +110,8 @@ void game::add_new_ball()
 
 /////////////////////////////////////////////////////////////// ACTIVE_GAME ///////////////////////////////////////////////////////////////
 
-active_game::active_game(struct gamemode gamemode, std::uint64_t seed)
-	: game{std::move(gamemode), seed}, m_replay{game::gamemode(), seed}
+active_game::active_game(const ::gamemode& gamemode, std::uint64_t seed)
+	: game{gamemode, seed}, m_replay{gamemode, seed}
 {
 }
 
@@ -132,13 +132,13 @@ void active_game::update()
 
 ////////////////////////////////////////////////////////////// REPLAY_GAME ////////////////////////////////////////////////////////////////
 
-replay_game::replay_game(struct gamemode gamemode, replay replay)
-	: game{std::move(gamemode), replay.header().seed}, m_replay{std::move(replay)}
+replay_game::replay_game(const ::gamemode& gamemode, replay&& replay)
+	: game{gamemode, replay.header().seed}, m_replay{std::move(replay)}
 {
 }
 
 replay_game::replay_game(const replay_game& r)
-	: replay_game{::gamemode{r.gamemode()}, replay{r.m_replay}}
+	: replay_game{r.gamemode(), replay{r.m_replay}}
 {
 }
 

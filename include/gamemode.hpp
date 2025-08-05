@@ -59,12 +59,12 @@ struct gamemode {
 	tr::static_string<20 * 4> author{};
 	// The description of the gamemode.
 	tr::static_string<40 * 4> description{};
+	// The name of the gamemode's song.
+	tr::static_string<12 * 4> song{};
 	// Player settings.
 	player_settings player{};
 	// Ball settings.
 	ball_settings ball{};
-	// The name of the song used for the gamemode.
-	std::string song{};
 
 	bool operator==(const gamemode&) const = default;
 };

@@ -5,15 +5,15 @@
 
 // The gamemodes that can appear in the main menu background.
 const std::array<gamemode, 3> BUILTIN_GAMEMODES{
-	gamemode{true, "gm_classic", "TRDario", "gm_classic_d", player_settings{}, ball_settings{1, 50, 10_s, 25, 0, 450, 25}, "classic"},
-	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", player_settings{}, ball_settings{5, 20, 15_s, 75, 0, 350, 25}, "chonk"},
-	gamemode{true, "gm_swarm", "TRDario", "gm_swarm_d", player_settings{2, 20, 0.05f}, ball_settings{15, 50, 2.5_s, 10, 0, 250, 10},
-			 "swarm"},
+	gamemode{true, "gm_classic", "TRDario", "gm_classic_d", "classic", player_settings{}, ball_settings{1, 50, 10_s, 25, 0, 450, 25}},
+	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", "chonk", player_settings{}, ball_settings{5, 20, 15_s, 75, 0, 350, 25}},
+	gamemode{true, "gm_swarm", "TRDario", "gm_swarm_d", "swarm", player_settings{2, 20, 0.05f},
+			 ball_settings{15, 50, 2.5_s, 10, 0, 250, 10}},
 };
 // The gamemodes that can appear in the main menu background.
 constexpr std::array<gamemode, 2> MENU_GAMEMODES{
-	gamemode{false, "gm_chonk", "TRDario", "gm_chonk_d", NO_PLAYER, ball_settings{5, 20, 15_s, 75, 0, 350, 25}},
-	gamemode{false, "gm_swarm", "TRDario", "gm_swarm_d", NO_PLAYER, ball_settings{15, 50, 2.5_s, 10, 0, 250, 10}},
+	gamemode{false, "gm_chonk", "TRDario", "gm_chonk_d", {}, NO_PLAYER, ball_settings{5, 20, 15_s, 75, 0, 350, 25}},
+	gamemode{false, "gm_swarm", "TRDario", "gm_swarm_d", {}, NO_PLAYER, ball_settings{15, 50, 2.5_s, 10, 0, 250, 10}},
 };
 
 ///////////////////////////////////////////////////////////// PLAYER SETTINGS /////////////////////////////////////////////////////////////
@@ -31,9 +31,9 @@ std::span<const std::byte> tr::binary_reader<gamemode>::read_from_span(std::span
 	span = tr::binary_read(span, out.name);
 	span = tr::binary_read(span, out.author);
 	span = tr::binary_read(span, out.description);
+	span = tr::binary_read(span, out.song);
 	span = tr::binary_read(span, out.player);
-	span = tr::binary_read(span, out.ball);
-	return tr::binary_read(span, out.song);
+	return tr::binary_read(span, out.ball);
 }
 
 void tr::binary_writer<gamemode>::write_to_stream(std::ostream& os, const gamemode& in)
@@ -42,9 +42,9 @@ void tr::binary_writer<gamemode>::write_to_stream(std::ostream& os, const gamemo
 	tr::binary_write(os, in.name);
 	tr::binary_write(os, in.author);
 	tr::binary_write(os, in.description);
+	tr::binary_write(os, in.song);
 	tr::binary_write(os, in.player);
 	tr::binary_write(os, in.ball);
-	tr::binary_write(os, in.song);
 }
 
 gamemode pick_menu_gamemode()

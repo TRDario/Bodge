@@ -37,7 +37,7 @@ void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const r
 replay::replay(const gamemode& gamemode, std::uint64_t seed)
 	: m_header{}
 {
-	m_header.player = std::string_view{engine::scorefile.name};
+	m_header.player = engine::scorefile.name;
 	m_header.gamemode = gamemode;
 	m_header.seed = seed;
 }

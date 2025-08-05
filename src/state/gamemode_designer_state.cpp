@@ -1,6 +1,6 @@
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/ball_settings_editor_state.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/title_state.hpp"
 
@@ -175,7 +175,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 
 	line_input_widget<12>& name{m_ui.emplace<line_input_widget<12>>("name", glm::vec2{400, 340}, tr::align::CENTER,
 																	tr::system::ttf_style::NORMAL, 120, status_cb, name_enter_cb)};
-	name.buffer = std::string_view{m_pending.name};
+	name.buffer = m_pending.name;
 	name.pos.change({500, 340}, 0.5_s);
 	name.unhide(0.5_s);
 
@@ -186,7 +186,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 
 	line_input_widget<40>& description{m_ui.emplace<line_input_widget<40>>(
 		"description", glm::vec2{400, 465}, tr::align::CENTER, tr::system::ttf_style::ITALIC, 32, status_cb, description_enter_cb)};
-	description.buffer = std::string_view{m_pending.description};
+	description.buffer = m_pending.description;
 	description.pos.change({500, 465}, 0.5_s);
 	description.unhide(0.5_s);
 
