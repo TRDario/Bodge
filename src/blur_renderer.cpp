@@ -29,7 +29,7 @@ blur_renderer::blur_renderer(int texture_size)
 	: m_input_texture{glm::ivec2{texture_size}}
 	, m_auxiliary_texture{glm::ivec2{texture_size}}
 	, m_pipeline{tr::gfx::vertex_shader{VERTEX_SHADER_SRC}, tr::gfx::fragment_shader{FRAGMENT_SHADER_SRC}}
-	, m_vertex_format{tr::gfx::vertex_attributef{tr::gfx::vertex_attributef::type::SI8, 2, false, 0, 0}}
+	, m_vertex_format{{tr::gfx::NOT_INSTANCED, {tr::gfx::vertex_attributef{tr::gfx::vertex_attributef::type::SI8, 2, false, 0}}}}
 	, m_vertex_buffer{MESH}
 {
 	m_texture_unit.set_texture(m_input_texture);
