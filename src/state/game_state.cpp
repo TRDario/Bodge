@@ -45,7 +45,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 		if (m_timer >= 0.5_s) {
 			m_substate = substate_base::ONGOING | to_type(m_substate);
 			m_timer = 0;
-			engine::play_song(m_game->gamemode().song, 0.5s);
+			engine::play_song(m_game->gamemode().song, 0.1s);
 		}
 		return nullptr;
 	case substate_base::ONGOING:

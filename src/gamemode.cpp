@@ -7,8 +7,8 @@
 const std::array<gamemode, 3> BUILTIN_GAMEMODES{
 	gamemode{true, "gm_classic", "TRDario", "gm_classic_d", "classic", player_settings{}, ball_settings{3, 50, 8.33_s, 30, 0, 400, 10}},
 	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", "chonk", player_settings{}, ball_settings{5, 20, 15_s, 75, 0, 350, 25}},
-	gamemode{true, "gm_swarm", "TRDario", "gm_swarm_d", "swarm", player_settings{2, 20, 0.05f},
-			 ball_settings{15, 50, 2.5_s, 10, 0, 250, 10}},
+	gamemode{true, "gm_swarm", "TRDario", "gm_swarm_d", "swarm", player_settings{2, 15, 0.05f},
+			 ball_settings{15, 50, 3.42857143_s, 10, 0, 250, 10}},
 };
 // The gamemodes that can appear in the main menu background.
 constexpr std::array<gamemode, 2> MENU_GAMEMODES{

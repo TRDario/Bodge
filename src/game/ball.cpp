@@ -18,7 +18,7 @@ void play_ball_sound(glm::vec2 pos, float velocity)
 {
 	const float pan{(pos.x - 500) / 500};
 	const float pitch{std::clamp(velocity / 600, 0.75f, 1.25f)};
-	engine::play_sound(sound::BOUNCE, 0.1f, pan, engine::rng.generate(pitch - 0.2f, pitch + 0.2f));
+	engine::play_sound(sound::BOUNCE, 0.15f, pan, engine::rng.generate(pitch - 0.2f, pitch + 0.2f));
 }
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
