@@ -194,7 +194,7 @@ void widget::hide()
 
 void widget::hide(ticks time)
 {
-	m_opacity.change(0, time);
+	m_opacity.change(interp_mode::CUBE, 0, time);
 }
 
 void widget::unhide()
@@ -204,7 +204,7 @@ void widget::unhide()
 
 void widget::unhide(ticks time)
 {
-	m_opacity.change(1, time);
+	m_opacity.change(interp_mode::CUBE, 1, time);
 }
 
 bool widget::hoverable() const
@@ -370,7 +370,7 @@ void clickable_text_widget::update()
 
 void clickable_text_widget::add_to_renderer()
 {
-	const interpolated_rgba8 real_color{color};
+	const interpolator<tr::rgba8> real_color{color};
 	if (!active() && m_override_disabled_color_left == 0) {
 		color = {80, 80, 80, 160};
 	}
@@ -385,7 +385,7 @@ bool clickable_text_widget::active() const
 
 void clickable_text_widget::on_hover()
 {
-	color.change("FFFFFF"_rgba8, 0.2_s);
+	color.change(interp_mode::LERP, "FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
 		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
@@ -393,7 +393,7 @@ void clickable_text_widget::on_hover()
 
 void clickable_text_widget::on_unhover()
 {
-	color.change({160, 160, 160, 160}, 0.2_s);
+	color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
 void clickable_text_widget::on_hold_begin()
@@ -409,12 +409,12 @@ void clickable_text_widget::on_hold_transfer_in()
 
 void clickable_text_widget::on_hold_transfer_out()
 {
-	color.change({160, 160, 160, 160}, 0.2_s);
+	color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
 void clickable_text_widget::on_hold_end()
 {
-	color.change("FFFFFF"_rgba8, 0.2_s);
+	color.change(interp_mode::LERP, "FFFFFF"_rgba8, 0.2_s);
 	m_action_cb();
 	engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
@@ -424,7 +424,7 @@ void clickable_text_widget::on_shortcut()
 	if (active()) {
 		m_action_cb();
 		color = "FFFFFF"_rgba8;
-		color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
+		color.change(interp_mode::LERP, active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
 		m_override_disabled_color_left = 0.2_s;
 		engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
@@ -562,7 +562,7 @@ bool arrow_widget::active() const
 
 void arrow_widget::on_hover()
 {
-	m_color.change("FFFFFF"_rgba8, 0.2_s);
+	m_color.change(interp_mode::LERP, "FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
 		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
@@ -570,7 +570,7 @@ void arrow_widget::on_hover()
 
 void arrow_widget::on_unhover()
 {
-	m_color.change({160, 160, 160, 160}, 0.2_s);
+	m_color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
 void arrow_widget::on_hold_begin()
@@ -586,12 +586,12 @@ void arrow_widget::on_hold_transfer_in()
 
 void arrow_widget::on_hold_transfer_out()
 {
-	m_color.change({160, 160, 160, 160}, 0.2_s);
+	m_color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
 void arrow_widget::on_hold_end()
 {
-	m_color.change("FFFFFF"_rgba8, 0.2_s);
+	m_color.change(interp_mode::LERP, "FFFFFF"_rgba8, 0.2_s);
 	m_action_cb();
 	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
@@ -601,7 +601,7 @@ void arrow_widget::on_shortcut()
 	if (active()) {
 		m_action_cb();
 		m_color = "FFFFFF"_rgba8;
-		m_color.change(active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
+		m_color.change(interp_mode::LERP, active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
 		m_override_disabled_color_left = 0.2_s;
 		engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
@@ -737,7 +737,7 @@ glm::vec2 score_widget::size() const
 
 void score_widget::add_to_renderer()
 {
-	const interpolated_rgba8 real_color{color};
+	const interpolator<tr::rgba8> real_color{color};
 	if (score == nullptr) {
 		color = {80, 80, 80, 160};
 	}
@@ -778,7 +778,7 @@ glm::vec2 replay_widget::size() const
 
 void replay_widget::add_to_renderer()
 {
-	const interpolated_rgba8 real_color{color};
+	const interpolator<tr::rgba8> real_color{color};
 	if (!it.has_value()) {
 		color = {80, 80, 80, 160};
 	}

@@ -19,7 +19,7 @@ add_executable(
         src/state/name_entry_state.cpp src/state/pause_state.cpp src/state/player_settings_editor_state.cpp src/state/replays_state.cpp
         src/state/save_score_state.cpp src/state/save_replay_state.cpp src/state/scoreboards_state.cpp src/state/settings_state.cpp
         src/state/start_game_state.cpp src/state/title_state.cpp
-    src/ui/interpolated.cpp src/ui/ui_manager.cpp src/ui/widget.cpp
+    src/ui/ui_manager.cpp src/ui/widget.cpp
     src/gamemode.cpp src/global.cpp src/localization.cpp src/replay.cpp src/score.cpp src/settings.cpp
 )
 target_compile_features(Bodge PUBLIC cxx_std_20)

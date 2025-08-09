@@ -110,22 +110,22 @@ float title_state::fade_overlay_opacity() const
 void title_state::set_up_ui()
 {
 	widget& logo_text{m_ui.emplace<image_widget>("logo_text", glm::vec2{500, 100}, tr::align::CENTER)};
-	logo_text.pos.change({500, 160}, 2.5_s);
+	logo_text.pos.change(interp_mode::CUBE, {500, 160}, 2.5_s);
 	logo_text.unhide(2.5_s);
 	widget& logo_overlay{m_ui.emplace<image_widget>("logo_overlay", glm::vec2{500, 100}, tr::align::CENTER, &engine::settings.primary_hue)};
-	logo_overlay.pos.change({500, 160}, 2.5_s);
+	logo_overlay.pos.change(interp_mode::CUBE, {500, 160}, 2.5_s);
 	logo_overlay.unhide(2.5_s);
 	widget& logo_ball{m_ui.emplace<image_widget>("logo_ball", glm::vec2{-180, 644}, tr::align::CENTER, &engine::settings.secondary_hue)};
-	logo_ball.pos.change({327, 217}, 2.5_s);
+	logo_ball.pos.change(interp_mode::CUBE, {327, 217}, 2.5_s);
 	logo_ball.unhide(2.5_s);
 
 	widget& copyright{
 		m_ui.emplace<text_widget>("copyright", glm::vec2{4, 1000}, tr::align::TOP_LEFT, font::DEFAULT, tr::system::ttf_style::NORMAL, 24)};
-	copyright.pos.change({4, 998 - copyright.size().y}, 1_s);
+	copyright.pos.change(interp_mode::CUBE, {4, 998 - copyright.size().y}, 1_s);
 	copyright.unhide(1_s);
 	widget& version{
 		m_ui.emplace<text_widget>("version", glm::vec2{996, 1000}, tr::align::TOP_RIGHT, font::DEFAULT, tr::system::ttf_style::NORMAL, 24)};
-	version.pos.change({996, 998 - version.size().y}, 1_s);
+	version.pos.change(interp_mode::CUBE, {996, 998 - version.size().y}, 1_s);
 	version.unhide(1_s);
 
 	const status_callback status_cb{[this] { return m_substate == substate::IN_TITLE || m_substate == substate::ENTERING_GAME; }};
@@ -171,7 +171,7 @@ void title_state::set_up_ui()
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER_RIGHT, font::LANGUAGE, 48,
 														   DEFAULT_TEXT_CALLBACK, status_cb, action_cbs[i], NO_TOOLTIP, SHORTCUTS[i],
 														   i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL)};
-		widget.pos.change(end_pos, 1_s);
+		widget.pos.change(interp_mode::CUBE, end_pos, 1_s);
 		widget.unhide(1_s);
 		end_pos += glm::vec2{-25, 50};
 	}
@@ -183,12 +183,12 @@ void title_state::set_up_exit_animation()
 	for (const char* tag : BUTTONS) {
 		const float offset{(i++ % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(35.0f, 75.0f)};
 		widget& widget{m_ui.get(tag)};
-		widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
+		widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}
-	m_ui.get("logo_text").pos.change({500, 220}, 0.5_s);
-	m_ui.get("logo_overlay").pos.change({500, 220}, 0.5_s);
-	m_ui.get("logo_ball").pos.change({487, 57}, 0.5_s);
-	m_ui.get("copyright").pos.change({4, 1000}, 0.5_s);
-	m_ui.get("version").pos.change({996, 1000}, 0.5_s);
+	m_ui.get("logo_text").pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
+	m_ui.get("logo_overlay").pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
+	m_ui.get("logo_ball").pos.change(interp_mode::CUBE, {487, 57}, 0.5_s);
+	m_ui.get("copyright").pos.change(interp_mode::CUBE, {4, 1000}, 0.5_s);
+	m_ui.get("version").pos.change(interp_mode::CUBE, {996, 1000}, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

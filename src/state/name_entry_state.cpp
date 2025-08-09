@@ -24,8 +24,8 @@ name_entry_state::name_entry_state()
 		if (!input.buffer.empty()) {
 			m_timer = 0;
 			m_substate = substate::ENTERING_TITLE;
-			m_ui.get("enter_your_name").pos.change(TOP_START_POS, 1.0_s);
-			m_ui.get("confirm").pos.change(BOTTOM_START_POS, 1.0_s);
+			m_ui.get("enter_your_name").pos.change(interp_mode::CUBE, TOP_START_POS, 1.0_s);
+			m_ui.get("confirm").pos.change(interp_mode::CUBE, BOTTOM_START_POS, 1.0_s);
 			m_ui.hide_all(1.0_s);
 			engine::play_sound(sound::CONFIRM, 0.5f, 0.0f);
 			engine::scorefile.name = input.buffer;
@@ -34,7 +34,7 @@ name_entry_state::name_entry_state()
 
 	widget& title{m_ui.emplace<text_widget>("enter_your_name", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
 											tr::system::ttf_style::NORMAL, 64)};
-	title.pos.change({500, 0}, 1.0_s);
+	title.pos.change(interp_mode::CUBE, {500, 0}, 1.0_s);
 	title.unhide(1.0_s);
 
 	widget& input{m_ui.emplace<line_input_widget<20>>("input", glm::vec2{500, 500}, tr::align::CENTER, tr::system::ttf_style::NORMAL, 64,
@@ -44,7 +44,7 @@ name_entry_state::name_entry_state()
 	widget& confirm{m_ui.emplace<clickable_text_widget>("confirm", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 														DEFAULT_TEXT_CALLBACK, confirm_status_cb, action_cb, NO_TOOLTIP,
 														CONFIRM_SHORTCUTS)};
-	confirm.pos.change({500, 1000}, 1.0_s);
+	confirm.pos.change(interp_mode::CUBE, {500, 1000}, 1.0_s);
 	confirm.unhide(1.0_s);
 }
 

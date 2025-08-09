@@ -30,7 +30,7 @@ line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr
 
 template <std::size_t S> void line_input_widget<S>::add_to_renderer()
 {
-	const interpolated_rgba8 real_color{color};
+	const interpolator<tr::rgba8> real_color{color};
 	if (!active()) {
 		color = {80, 80, 80, 160};
 	}
@@ -51,7 +51,7 @@ template <std::size_t S> bool line_input_widget<S>::active() const
 template <std::size_t S> void line_input_widget<S>::on_hover()
 {
 	if (!m_has_focus) {
-		color.change({220, 220, 220, 220}, 0.2_s);
+		color.change(interp_mode::LERP, {220, 220, 220, 220}, 0.2_s);
 		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
 }
@@ -59,7 +59,7 @@ template <std::size_t S> void line_input_widget<S>::on_hover()
 template <std::size_t S> void line_input_widget<S>::on_unhover()
 {
 	if (!m_has_focus) {
-		color.change({160, 160, 160, 160}, 0.2_s);
+		color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
 	}
 }
 
@@ -88,14 +88,14 @@ template <std::size_t S> void line_input_widget<S>::on_hold_end()
 template <std::size_t S> void line_input_widget<S>::on_gain_focus()
 {
 	m_has_focus = true;
-	color.change("FFFFFF"_rgba8, 0.2_s);
+	color.change(interp_mode::LERP, "FFFFFF"_rgba8, 0.2_s);
 	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 template <std::size_t S> void line_input_widget<S>::on_lose_focus()
 {
 	m_has_focus = false;
-	color.change({160, 160, 160, 160}, 0.2_s);
+	color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
 template <std::size_t S> void line_input_widget<S>::on_write(std::string_view input)
@@ -255,7 +255,7 @@ template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 	tr::fill_rect_vtx(fill.positions, {tl() + 2.0f, size() - 4.0f});
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, static_cast<std::uint8_t>(160 * opacity())});
 
-	const interpolated_rgba8 real_color{this->color};
+	const interpolator<tr::rgba8> real_color{this->color};
 	if (!active()) {
 		this->color = {80, 80, 80, 160};
 	}
@@ -276,7 +276,7 @@ template <std::size_t S> bool multiline_input_widget<S>::active() const
 template <std::size_t S> void multiline_input_widget<S>::on_hover()
 {
 	if (!m_has_focus) {
-		color.change({220, 220, 220, 220}, 0.2_s);
+		color.change(interp_mode::LERP, {220, 220, 220, 220}, 0.2_s);
 		engine::play_sound(sound::HOVER, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
 }
@@ -284,7 +284,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_hover()
 template <std::size_t S> void multiline_input_widget<S>::on_unhover()
 {
 	if (!m_has_focus) {
-		color.change({160, 160, 160, 160}, 0.2_s);
+		color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
 	}
 }
 
@@ -313,14 +313,14 @@ template <std::size_t S> void multiline_input_widget<S>::on_hold_end()
 template <std::size_t S> void multiline_input_widget<S>::on_gain_focus()
 {
 	m_has_focus = true;
-	color.change("FFFFFF"_rgba8, 0.2_s);
+	color.change(interp_mode::LERP, "FFFFFF"_rgba8, 0.2_s);
 	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_lose_focus()
 {
 	m_has_focus = false;
-	color.change({160, 160, 160, 160}, 0.2_s);
+	color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_write(std::string_view input)

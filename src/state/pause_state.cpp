@@ -183,7 +183,7 @@ void pause_state::set_up_full_ui()
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
 	widget& title{m_ui.emplace<text_widget>("paused", glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
 											tr::system::ttf_style::NORMAL, 64)};
-	title.pos.change({500, TITLE_Y}, 0.5_s);
+	title.pos.change(interp_mode::CUBE, {500, TITLE_Y}, 0.5_s);
 	title.unhide(0.5_s);
 
 	const status_callback status_cb{
@@ -228,7 +228,7 @@ void pause_state::set_up_full_ui()
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS_REGULAR[i], pos, tr::align::CENTER, font::LANGUAGE, 48,
 														   DEFAULT_TEXT_CALLBACK, i == 0 ? unpause_status_cb : status_cb,
 														   std::move(action_cbs[i]), NO_TOOLTIP, SHORTCUTS_REGULAR[i])};
-		widget.pos.change({500, pos.y}, 0.5_s);
+		widget.pos.change(interp_mode::CUBE, {500, pos.y}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
 }
@@ -239,7 +239,7 @@ void pause_state::set_up_limited_ui()
 	const char* const title_tag{to_type(m_substate) == game_type::REPLAY ? "replay_paused" : "test_paused"};
 	widget& title{m_ui.emplace<text_widget>(title_tag, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
 											tr::system::ttf_style::NORMAL, 64)};
-	title.pos.change({500, TITLE_Y}, 0.5_s);
+	title.pos.change(interp_mode::CUBE, {500, TITLE_Y}, 0.5_s);
 	title.unhide(0.5_s);
 
 	const status_callback status_cb{
@@ -269,7 +269,7 @@ void pause_state::set_up_limited_ui()
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS_SPECIAL[i], pos, tr::align::CENTER, font::LANGUAGE, 48,
 														   DEFAULT_TEXT_CALLBACK, i == 0 ? unpause_status_cb : status_cb,
 														   std::move(action_cbs[i]), NO_TOOLTIP, SHORTCUTS_SPECIAL[i])};
-		widget.pos.change({500, pos.y}, 0.5_s);
+		widget.pos.change(interp_mode::CUBE, {500, pos.y}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
 }
@@ -277,20 +277,20 @@ void pause_state::set_up_limited_ui()
 void pause_state::set_up_exit_animation()
 {
 	if (to_type(m_substate) == game_type::REGULAR) {
-		m_ui.get("paused").pos.change({500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
+		m_ui.get("paused").pos.change(interp_mode::CUBE, {500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
 		for (std::size_t i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 			widget& widget{m_ui.get(BUTTONS_REGULAR[i])};
-			widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
+			widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}
 	}
 	else {
 		widget& title{m_ui.get(to_type(m_substate) == game_type::TEST ? "test_paused" : "replay_paused")};
-		title.pos.change({500, 400 - (BUTTONS_SPECIAL.size() + 1) * 30}, 0.5_s);
+		title.pos.change(interp_mode::CUBE, {500, 400 - (BUTTONS_SPECIAL.size() + 1) * 30}, 0.5_s);
 		for (std::size_t i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 			widget& widget{m_ui.get(BUTTONS_SPECIAL[i])};
-			widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
+			widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}
 	}
 

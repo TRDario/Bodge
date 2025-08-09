@@ -27,7 +27,7 @@ class text_widget : public widget {
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
 	// The text tint color.
-	interpolated_rgba8 color;
+	interpolator<tr::rgba8> color;
 	// The callback used to get the text.
 	text_callback text_cb;
 
@@ -267,7 +267,7 @@ class arrow_widget : public widget {
 	// Whether this widget is a right arrow.
 	bool m_right;
 	// The tint color.
-	interpolated_rgba8 m_color;
+	interpolator<tr::rgba8> m_color;
 	// Callback used to determine the status of the widget.
 	status_callback m_status_cb;
 	// Callback called when the widget is interacted with.

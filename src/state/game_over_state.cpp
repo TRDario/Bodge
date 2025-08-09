@@ -29,7 +29,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 {
 	widget& title{m_ui.emplace<text_widget>("game_over", glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
 											tr::system::ttf_style::NORMAL, 64)};
-	title.pos.change({500, TITLE_Y}, 0.5_s);
+	title.pos.change(interp_mode::CUBE, {500, TITLE_Y}, 0.5_s);
 	title.unhide(0.5_s);
 
 	const float time_h{(500 - (BUTTONS.size() - 0.75f) * 30) -
@@ -38,7 +38,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	text_callback time_text_cb{[time = timer_text(time_ticks)](const auto&) { return time; }};
 	widget& time{m_ui.emplace<text_widget>("time", glm::vec2{400, time_h}, tr::align::TOP_CENTER, font::LANGUAGE,
 										   tr::system::ttf_style::NORMAL, 64, std::move(time_text_cb), "FFFF00C0"_rgba8)};
-	time.pos.change({500, time_h}, 0.5_s);
+	time.pos.change(interp_mode::CUBE, {500, time_h}, 0.5_s);
 	time.unhide(0.5_s);
 
 	const float pb_h{time_h + engine::line_skip(font::LANGUAGE, 48) + 4};
@@ -53,7 +53,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	}
 	widget& pb{m_ui.emplace<text_widget>("pb", glm::vec2{600, pb_h}, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
 										 24, std::move(pb_text_cb), "FFFF00C0"_rgba8)};
-	pb.pos.change({500, pb_h}, 0.5_s);
+	pb.pos.change(interp_mode::CUBE, {500, pb_h}, 0.5_s);
 	if (prev_pb >= m_game->result()) {
 		pb.unhide(0.5_s);
 	}
@@ -88,7 +88,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 		const glm::vec2 pos{500 + offset, 500 - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER, font::LANGUAGE, 48, DEFAULT_TEXT_CALLBACK,
 														   status_cb, std::move(action_cbs[i]), NO_TOOLTIP, SHORTCUTS[i])};
-		widget.pos.change({500, pos.y}, 0.5_s);
+		widget.pos.change(interp_mode::CUBE, {500, pos.y}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
 }
@@ -185,15 +185,15 @@ float game_over_state::blur_strength() const
 
 void game_over_state::set_up_exit_animation()
 {
-	m_ui.get("game_over").pos.change({500, TITLE_Y - 100}, 0.5_s);
+	m_ui.get("game_over").pos.change(interp_mode::CUBE, {500, TITLE_Y - 100}, 0.5_s);
 	widget& time{m_ui.get("time")};
 	widget& pb{m_ui.get("pb")};
-	time.pos.change({400, glm::vec2{time.pos}.y}, 0.5_s);
-	pb.pos.change({600, glm::vec2{pb.pos}.y}, 0.5_s);
+	time.pos.change(interp_mode::CUBE, {400, glm::vec2{time.pos}.y}, 0.5_s);
+	pb.pos.change(interp_mode::CUBE, {600, glm::vec2{pb.pos}.y}, 0.5_s);
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		widget& widget{m_ui.get(BUTTONS[i])};
-		widget.pos.change(glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
+		widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }

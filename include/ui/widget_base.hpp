@@ -1,6 +1,6 @@
 #pragma once
 #include "../localization.hpp"
-#include "interpolated.hpp"
+#include "interpolator.hpp"
 
 ////////////////////////////////////////////////////////////////// TYPES //////////////////////////////////////////////////////////////////
 
@@ -40,7 +40,7 @@ class widget {
 	// The alignment of the widget.
 	tr::align alignment;
 	// The position of the widget.
-	interpolated_vec2 pos;
+	interpolator<glm::vec2> pos;
 	// An optional tooltip callback (the widget must be hoverable for it to be used).
 	tooltip_callback tooltip_cb;
 
@@ -125,7 +125,7 @@ class widget {
 
   private:
 	// The opacity of the widget.
-	interpolated_float m_opacity;
+	interpolator<float> m_opacity;
 	// Whether the widget is hoverable.
 	bool m_hoverable;
 	// Whether the widget is writable.

@@ -169,37 +169,37 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	else {
 		widget& title{m_ui.emplace<text_widget>("gamemode_designer", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
 												tr::system::ttf_style::NORMAL, 64)};
-		title.pos.change(TITLE_POS, 0.5_s);
+		title.pos.change(interp_mode::CUBE, TITLE_POS, 0.5_s);
 		title.unhide(0.5_s);
 	}
 
 	line_input_widget<12>& name{m_ui.emplace<line_input_widget<12>>("name", glm::vec2{400, 340}, tr::align::CENTER,
 																	tr::system::ttf_style::NORMAL, 120, status_cb, name_enter_cb)};
 	name.buffer = m_pending.name;
-	name.pos.change({500, 340}, 0.5_s);
+	name.pos.change(interp_mode::CUBE, {500, 340}, 0.5_s);
 	name.unhide(0.5_s);
 
 	widget& author{m_ui.emplace<text_widget>("author", glm::vec2{600, 415}, tr::align::CENTER, font::LANGUAGE,
 											 tr::system::ttf_style::NORMAL, 32, std::move(author_text_cb))};
-	author.pos.change({500, 415}, 0.5_s);
+	author.pos.change(interp_mode::CUBE, {500, 415}, 0.5_s);
 	author.unhide(0.5_s);
 
 	line_input_widget<40>& description{m_ui.emplace<line_input_widget<40>>(
 		"description", glm::vec2{400, 465}, tr::align::CENTER, tr::system::ttf_style::ITALIC, 32, status_cb, description_enter_cb)};
 	description.buffer = m_pending.description;
-	description.pos.change({500, 465}, 0.5_s);
+	description.pos.change(interp_mode::CUBE, {500, 465}, 0.5_s);
 	description.unhide(0.5_s);
 
 	widget& ball_settings{m_ui.emplace<clickable_text_widget>("ball_settings", glm::vec2{600, 550}, tr::align::CENTER, font::LANGUAGE, 64,
 															  DEFAULT_TEXT_CALLBACK, status_cb, ball_settings_action_cb, NO_TOOLTIP,
 															  BALL_SETTINGS_SHORTCUTS)};
-	ball_settings.pos.change({500, 550}, 0.5_s);
+	ball_settings.pos.change(interp_mode::CUBE, {500, 550}, 0.5_s);
 	ball_settings.unhide(0.5_s);
 
 	widget& player_settings{m_ui.emplace<clickable_text_widget>("player_settings", glm::vec2{400, 650}, tr::align::CENTER, font::LANGUAGE,
 																64, DEFAULT_TEXT_CALLBACK, status_cb, player_settings_action_cb, NO_TOOLTIP,
 																PLAYER_SETTINGS_SHORTCUTS)};
-	player_settings.pos.change({500, 650}, 0.5_s);
+	player_settings.pos.change(interp_mode::CUBE, {500, 650}, 0.5_s);
 	player_settings.unhide(0.5_s);
 
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
@@ -207,7 +207,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 		widget& widget{m_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
 														   48, DEFAULT_TEXT_CALLBACK, bottom_status_cbs[i], bottom_action_cbs[i],
 														   NO_TOOLTIP, BOTTOM_SHORTCUTS[i], sound)};
-		widget.pos.change({500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s);
+		widget.pos.change(interp_mode::CUBE, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
 }
@@ -219,38 +219,38 @@ void gamemode_designer_state::set_up_subscreen_animation()
 	widget& description{m_ui.get("description")};
 	widget& ball_settings{m_ui.get("ball_settings")};
 	widget& player_settings{m_ui.get("player_settings")};
-	name.pos.change({600, glm::vec2{name.pos}.y}, 0.5_s);
+	name.pos.change(interp_mode::CUBE, {600, glm::vec2{name.pos}.y}, 0.5_s);
 	name.hide(0.5_s);
-	author.pos.change({400, glm::vec2{author.pos}.y}, 0.5_s);
+	author.pos.change(interp_mode::CUBE, {400, glm::vec2{author.pos}.y}, 0.5_s);
 	author.hide(0.5_s);
-	description.pos.change({600, glm::vec2{description.pos}.y}, 0.5_s);
+	description.pos.change(interp_mode::CUBE, {600, glm::vec2{description.pos}.y}, 0.5_s);
 	description.hide(0.5_s);
-	ball_settings.pos.change({400, glm::vec2{ball_settings.pos}.y}, 0.5_s);
+	ball_settings.pos.change(interp_mode::CUBE, {400, glm::vec2{ball_settings.pos}.y}, 0.5_s);
 	ball_settings.hide(0.5_s);
-	player_settings.pos.change({600, glm::vec2{player_settings.pos}.y}, 0.5_s);
+	player_settings.pos.change(interp_mode::CUBE, {600, glm::vec2{player_settings.pos}.y}, 0.5_s);
 	player_settings.hide(0.5_s);
 	for (const char* tag : BOTTOM_BUTTONS) {
 		widget& widget{m_ui.get(tag)};
-		widget.pos.change(BOTTOM_START_POS, 0.5_s);
+		widget.pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 		widget.hide(0.5_s);
 	}
 }
 
 void gamemode_designer_state::set_up_exit_animation()
 {
-	m_ui.get("gamemode_designer").pos.change(TOP_START_POS, 0.5_s);
+	m_ui.get("gamemode_designer").pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
 	widget& name{m_ui.get("name")};
 	widget& author{m_ui.get("author")};
 	widget& description{m_ui.get("description")};
 	widget& ball_settings{m_ui.get("ball_settings")};
 	widget& player_settings{m_ui.get("player_settings")};
-	name.pos.change({600, glm::vec2{name.pos}.y}, 0.5_s);
-	author.pos.change({400, glm::vec2{author.pos}.y}, 0.5_s);
-	description.pos.change({600, glm::vec2{description.pos}.y}, 0.5_s);
-	ball_settings.pos.change({400, glm::vec2{ball_settings.pos}.y}, 0.5_s);
-	player_settings.pos.change({600, glm::vec2{player_settings.pos}.y}, 0.5_s);
+	name.pos.change(interp_mode::CUBE, {600, glm::vec2{name.pos}.y}, 0.5_s);
+	author.pos.change(interp_mode::CUBE, {400, glm::vec2{author.pos}.y}, 0.5_s);
+	description.pos.change(interp_mode::CUBE, {600, glm::vec2{description.pos}.y}, 0.5_s);
+	ball_settings.pos.change(interp_mode::CUBE, {400, glm::vec2{ball_settings.pos}.y}, 0.5_s);
+	player_settings.pos.change(interp_mode::CUBE, {600, glm::vec2{player_settings.pos}.y}, 0.5_s);
 	for (const char* tag : BOTTOM_BUTTONS) {
-		m_ui.get(tag).pos.change(BOTTOM_START_POS, 0.5_s);
+		m_ui.get(tag).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }

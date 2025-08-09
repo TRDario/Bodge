@@ -162,7 +162,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 
 	widget& subtitle{m_ui.emplace<text_widget>("ball_settings", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
 											   tr::system::ttf_style::NORMAL, 32)};
-	subtitle.pos.change({500, TITLE_POS.y + 64}, 0.5_s);
+	subtitle.pos.change(interp_mode::CUBE, {500, TITLE_POS.y + 64}, 0.5_s);
 	subtitle.unhide(0.5_s);
 
 	widget& starting_count_dec{m_ui.emplace<arrow_widget>("starting_count_dec", STARTING_COUNT_START_POS, tr::align::CENTER_LEFT, false,
@@ -171,9 +171,9 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 														  starting_count_inc_status_cb, starting_count_inc_action_cb)};
 	widget& cur_starting_count{m_ui.emplace<text_widget>("cur_starting_count", STARTING_COUNT_START_POS, tr::align::CENTER, font::LANGUAGE,
 														 tr::system::ttf_style::NORMAL, 48, cur_starting_count_text_cb)};
-	starting_count_dec.pos.change({765, STARTING_COUNT_START_POS.y}, 0.5_s);
-	starting_count_inc.pos.change({985, STARTING_COUNT_START_POS.y}, 0.5_s);
-	cur_starting_count.pos.change({875.5, STARTING_COUNT_START_POS.y}, 0.5_s);
+	starting_count_dec.pos.change(interp_mode::CUBE, {765, STARTING_COUNT_START_POS.y}, 0.5_s);
+	starting_count_inc.pos.change(interp_mode::CUBE, {985, STARTING_COUNT_START_POS.y}, 0.5_s);
+	cur_starting_count.pos.change(interp_mode::CUBE, {875.5, STARTING_COUNT_START_POS.y}, 0.5_s);
 	starting_count_dec.unhide(0.5_s);
 	starting_count_inc.unhide(0.5_s);
 	cur_starting_count.unhide(0.5_s);
@@ -184,9 +184,9 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 													 max_count_inc_status_cb, max_count_inc_action_cb)};
 	widget& cur_max_count{m_ui.emplace<text_widget>("cur_max_count", MAX_COUNT_START_POS, tr::align::CENTER, font::LANGUAGE,
 													tr::system::ttf_style::NORMAL, 48, cur_max_count_text_cb)};
-	max_count_dec.pos.change({765, MAX_COUNT_START_POS.y}, 0.5_s);
-	max_count_inc.pos.change({985, MAX_COUNT_START_POS.y}, 0.5_s);
-	cur_max_count.pos.change({875.5, MAX_COUNT_START_POS.y}, 0.5_s);
+	max_count_dec.pos.change(interp_mode::CUBE, {765, MAX_COUNT_START_POS.y}, 0.5_s);
+	max_count_inc.pos.change(interp_mode::CUBE, {985, MAX_COUNT_START_POS.y}, 0.5_s);
+	cur_max_count.pos.change(interp_mode::CUBE, {875.5, MAX_COUNT_START_POS.y}, 0.5_s);
 	max_count_dec.unhide(0.5_s);
 	max_count_inc.unhide(0.5_s);
 	cur_max_count.unhide(0.5_s);
@@ -197,9 +197,9 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 														  spawn_interval_inc_status_cb, spawn_interval_inc_action_cb)};
 	widget& cur_spawn_interval{m_ui.emplace<text_widget>("cur_spawn_interval", SPAWN_INTERVAL_START_POS, tr::align::CENTER, font::LANGUAGE,
 														 tr::system::ttf_style::NORMAL, 48, cur_spawn_interval_text_cb)};
-	spawn_interval_dec.pos.change({765, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
-	spawn_interval_inc.pos.change({985, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
-	cur_spawn_interval.pos.change({875.5, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
+	spawn_interval_dec.pos.change(interp_mode::CUBE, {765, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
+	spawn_interval_inc.pos.change(interp_mode::CUBE, {985, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
+	cur_spawn_interval.pos.change(interp_mode::CUBE, {875.5, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
 	spawn_interval_dec.unhide(0.5_s);
 	spawn_interval_inc.unhide(0.5_s);
 	cur_spawn_interval.unhide(0.5_s);
@@ -210,9 +210,9 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 														initial_size_inc_status_cb, initial_size_inc_action_cb)};
 	widget& cur_initial_size{m_ui.emplace<text_widget>("cur_initial_size", INITIAL_SIZE_START_POS, tr::align::CENTER, font::LANGUAGE,
 													   tr::system::ttf_style::NORMAL, 48, cur_initial_size_text_cb)};
-	initial_size_dec.pos.change({765, INITIAL_SIZE_START_POS.y}, 0.5_s);
-	initial_size_inc.pos.change({985, INITIAL_SIZE_START_POS.y}, 0.5_s);
-	cur_initial_size.pos.change({875.5, INITIAL_SIZE_START_POS.y}, 0.5_s);
+	initial_size_dec.pos.change(interp_mode::CUBE, {765, INITIAL_SIZE_START_POS.y}, 0.5_s);
+	initial_size_inc.pos.change(interp_mode::CUBE, {985, INITIAL_SIZE_START_POS.y}, 0.5_s);
+	cur_initial_size.pos.change(interp_mode::CUBE, {875.5, INITIAL_SIZE_START_POS.y}, 0.5_s);
 	initial_size_dec.unhide(0.5_s);
 	initial_size_inc.unhide(0.5_s);
 	cur_initial_size.unhide(0.5_s);
@@ -223,9 +223,9 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 													 size_step_inc_status_cb, size_step_inc_action_cb)};
 	widget& cur_size_step{m_ui.emplace<text_widget>("cur_size_step", SIZE_STEP_START_POS, tr::align::CENTER, font::LANGUAGE,
 													tr::system::ttf_style::NORMAL, 48, cur_size_step_text_cb)};
-	size_step_dec.pos.change({765, SIZE_STEP_START_POS.y}, 0.5_s);
-	size_step_inc.pos.change({985, SIZE_STEP_START_POS.y}, 0.5_s);
-	cur_size_step.pos.change({875.5, SIZE_STEP_START_POS.y}, 0.5_s);
+	size_step_dec.pos.change(interp_mode::CUBE, {765, SIZE_STEP_START_POS.y}, 0.5_s);
+	size_step_inc.pos.change(interp_mode::CUBE, {985, SIZE_STEP_START_POS.y}, 0.5_s);
+	cur_size_step.pos.change(interp_mode::CUBE, {875.5, SIZE_STEP_START_POS.y}, 0.5_s);
 	size_step_dec.unhide(0.5_s);
 	size_step_inc.unhide(0.5_s);
 	cur_size_step.unhide(0.5_s);
@@ -237,9 +237,9 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	widget& cur_initial_velocity{m_ui.emplace<text_widget>("cur_initial_velocity", INITIAL_VELOCITY_START_POS, tr::align::CENTER,
 														   font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
 														   cur_initial_velocity_text_cb)};
-	initial_velocity_dec.pos.change({765, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
-	initial_velocity_inc.pos.change({985, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
-	cur_initial_velocity.pos.change({875.5, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
+	initial_velocity_dec.pos.change(interp_mode::CUBE, {765, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
+	initial_velocity_inc.pos.change(interp_mode::CUBE, {985, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
+	cur_initial_velocity.pos.change(interp_mode::CUBE, {875.5, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
 	initial_velocity_dec.unhide(0.5_s);
 	initial_velocity_inc.unhide(0.5_s);
 	cur_initial_velocity.unhide(0.5_s);
@@ -250,9 +250,9 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 														 velocity_step_inc_status_cb, velocity_step_inc_action_cb)};
 	widget& cur_velocity_step{m_ui.emplace<text_widget>("cur_velocity_step", VELOCITY_STEP_START_POS, tr::align::CENTER, font::LANGUAGE,
 														tr::system::ttf_style::NORMAL, 48, cur_velocity_step_text_cb)};
-	velocity_step_dec.pos.change({765, VELOCITY_STEP_START_POS.y}, 0.5_s);
-	velocity_step_inc.pos.change({985, VELOCITY_STEP_START_POS.y}, 0.5_s);
-	cur_velocity_step.pos.change({875.5, VELOCITY_STEP_START_POS.y}, 0.5_s);
+	velocity_step_dec.pos.change(interp_mode::CUBE, {765, VELOCITY_STEP_START_POS.y}, 0.5_s);
+	velocity_step_inc.pos.change(interp_mode::CUBE, {985, VELOCITY_STEP_START_POS.y}, 0.5_s);
+	cur_velocity_step.pos.change(interp_mode::CUBE, {875.5, VELOCITY_STEP_START_POS.y}, 0.5_s);
 	velocity_step_dec.unhide(0.5_s);
 	velocity_step_inc.unhide(0.5_s);
 	cur_velocity_step.unhide(0.5_s);
@@ -262,14 +262,14 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 		const glm::vec2 pos{-50, 298 + i * 75};
 		widget& widget{m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
 												 tr::system::ttf_style::NORMAL, 48)};
-		widget.pos.change({15, 298 + i * 75}, 0.5_s);
+		widget.pos.change(interp_mode::CUBE, {15, 298 + i * 75}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
 
 	widget& exit{m_ui.emplace<clickable_text_widget>("exit", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 													 DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
 													 sound::CANCEL)};
-	exit.pos.change({500, 1000}, 0.5_s);
+	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 }
 
@@ -309,18 +309,18 @@ void ball_settings_editor_state::set_up_exit_animation()
 {
 	widget& subtitle{m_ui.get("ball_settings")};
 	widget& exit{m_ui.get("exit")};
-	subtitle.pos.change(TOP_START_POS, 0.5_s);
+	subtitle.pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
 	subtitle.hide(0.5_s);
 	for (const char* tag : tr::project(LABELS, &label::tag)) {
 		widget& widget{m_ui.get(tag)};
-		widget.pos.change({-50, glm::vec2{widget.pos}.y}, 0.5_s);
+		widget.pos.change(interp_mode::CUBE, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
 		widget.hide(0.5_s);
 	}
 	for (const char* tag : RIGHT_WIDGETS) {
 		widget& widget{m_ui.get(tag)};
-		widget.pos.change({1050, glm::vec2{widget.pos}.y}, 0.5_s);
+		widget.pos.change(interp_mode::CUBE, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
 		widget.hide(0.5_s);
 	}
-	exit.pos.change(BOTTOM_START_POS, 0.5_s);
+	exit.pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	exit.hide(0.5_s);
 }
