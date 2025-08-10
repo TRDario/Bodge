@@ -12,17 +12,17 @@ class text_widget : public widget {
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a text widget.
-	text_widget(::tag tag, glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable,
+	text_widget(glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable,
 				std::vector<tr::system::key_chord>&& shortcuts, font font, tr::system::ttf_style style, tr::halign text_alignment,
 				float font_size, int max_width, tr::rgba8 color, text_callback text_cb);
 
 	// Creates a common type of text widget: non-interactible, single-line.
-	text_widget(::tag tag, glm::vec2 pos, tr::align alignment, font font, tr::system::ttf_style style, float font_size,
-				text_callback text_cb, tr::rgba8 color = "A0A0A0A0"_rgba8);
+	text_widget(glm::vec2 pos, tr::align alignment, font font, tr::system::ttf_style style, float font_size, text_callback text_cb,
+				tr::rgba8 color = "A0A0A0A0"_rgba8);
 
 	// Creates a common type of text widget: non-interactible, tooltippable, single-line.
-	text_widget(::tag tag, glm::vec2 pos, tr::align alignment, const char* tooltip_key, font font, tr::system::ttf_style style,
-				float font_size, text_callback text_cb);
+	text_widget(glm::vec2 pos, tr::align alignment, const char* tooltip_key, font font, tr::system::ttf_style style, float font_size,
+				text_callback text_cb);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
@@ -75,8 +75,8 @@ class clickable_text_widget : public text_widget {
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a clickable text widget.
-	clickable_text_widget(::tag tag, glm::vec2 pos, tr::align alignment, font font, float font_size, text_callback text_cb,
-						  status_callback status_cb, action_callback action_cb, text_callback tooltip_cb = NO_TOOLTIP,
+	clickable_text_widget(glm::vec2 pos, tr::align alignment, font font, float font_size, text_callback text_cb, status_callback status_cb,
+						  action_callback action_cb, text_callback tooltip_cb = NO_TOOLTIP,
 						  std::vector<tr::system::key_chord>&& shortcuts = {}, sound sound = sound::CONFIRM);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
@@ -111,8 +111,8 @@ template <std::size_t S> class line_input_widget : public text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a text line input wiget.
-	line_input_widget(::tag tag, glm::vec2 pos, tr::align alignment, tr::system::ttf_style style, float font_size,
-					  status_callback status_cb, action_callback enter_cb);
+	line_input_widget(glm::vec2 pos, tr::align alignment, tr::system::ttf_style style, float font_size, status_callback status_cb,
+					  action_callback enter_cb);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
@@ -154,7 +154,7 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a multiline input wiget.
-	multiline_input_widget(::tag tag, glm::vec2 pos, tr::align alignment, float width, std::uint8_t max_lines, tr::halign text_alignment,
+	multiline_input_widget(glm::vec2 pos, tr::align alignment, float width, std::uint8_t max_lines, tr::halign text_alignment,
 						   float font_size, status_callback status_cb);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
@@ -202,7 +202,7 @@ class image_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates an image widget.
-	image_widget(::tag tag, glm::vec2 pos, tr::align alignment, std::uint16_t* hue_ref = nullptr);
+	image_widget(glm::vec2 pos, tr::align alignment, std::string_view file, std::uint16_t* hue_ref = nullptr);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -226,7 +226,7 @@ class color_preview_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a color preview widget.
-	color_preview_widget(::tag tag, glm::vec2 pos, tr::align alignment, std::uint16_t& hue_ref);
+	color_preview_widget(glm::vec2 pos, tr::align alignment, std::uint16_t& hue_ref);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -244,7 +244,7 @@ class arrow_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates an arrow widget.
-	arrow_widget(::tag tag, glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb, action_callback action_cb,
+	arrow_widget(glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb, action_callback action_cb,
 				 std::vector<tr::system::key_chord>&& chords = {});
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
@@ -281,7 +281,7 @@ struct replay_playback_indicator_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a replay playback indicator widget.
-	replay_playback_indicator_widget(::tag tag, glm::vec2 pos, tr::align alignment);
+	replay_playback_indicator_widget(glm::vec2 pos, tr::align alignment);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -301,7 +301,7 @@ struct score_widget : public text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a score widget.
-	score_widget(::tag tag, glm::vec2 pos, tr::align alignment, std::size_t rank, score* score);
+	score_widget(glm::vec2 pos, tr::align alignment, std::size_t rank, score* score);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
@@ -320,7 +320,7 @@ struct score_widget : public text_widget {
 struct replay_widget : public clickable_text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	replay_widget(::tag tag, glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
+	replay_widget(glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
 				  std::optional<std::map<std::string, replay_header>::iterator> it, tr::system::keycode shortcut);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////

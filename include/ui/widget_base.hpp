@@ -34,15 +34,13 @@ constexpr std::initializer_list<tr::system::key_chord> NO_SHORTCUTS{};
 class widget {
   public:
 	// Creates a widget.
-	widget(tag tag, glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable,
+	widget(glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable,
 		   std::vector<tr::system::key_chord>&& shortcuts);
 	// Virtual destructor.
 	virtual ~widget() = default;
 
 	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
 
-	// The tag of the widget.
-	tag tag;
 	// The alignment of the widget.
 	tr::align alignment;
 	// The position of the widget.

@@ -6,10 +6,9 @@
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
 template <std::size_t S>
-line_input_widget<S>::line_input_widget(::tag tag, glm::vec2 pos, tr::align alignment, tr::system::ttf_style style, float font_size,
+line_input_widget<S>::line_input_widget(glm::vec2 pos, tr::align alignment, tr::system::ttf_style style, float font_size,
 										status_callback status_cb, action_callback enter_cb)
-	: text_widget{tag,
-				  pos,
+	: text_widget{pos,
 				  alignment,
 				  true,
 				  NO_TOOLTIP,
@@ -145,10 +144,9 @@ template <std::size_t S> void line_input_widget<S>::on_paste()
 
 ////////////////////////////////////////////////////////////// REPLAY WIDGET //////////////////////////////////////////////////////////////
 
-replay_widget::replay_widget(::tag tag, glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
+replay_widget::replay_widget(glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
 							 std::optional<std::map<std::string, replay_header>::iterator> it, tr::system::keycode shortcut)
-	: clickable_text_widget{tag,
-							pos,
+	: clickable_text_widget{pos,
 							alignment,
 							font::LANGUAGE,
 							40,
@@ -214,10 +212,9 @@ replay_widget::replay_widget(::tag tag, glm::vec2 pos, tr::align alignment, auto
 ////////////////////////////////////////////////////////// MULTILINE TEXT INPUT ///////////////////////////////////////////////////////////
 
 template <std::size_t S>
-multiline_input_widget<S>::multiline_input_widget(::tag tag, glm::vec2 pos, tr::align alignment, float width, std::uint8_t max_lines,
+multiline_input_widget<S>::multiline_input_widget(glm::vec2 pos, tr::align alignment, float width, std::uint8_t max_lines,
 												  tr::halign text_alignment, float font_size, status_callback status_cb)
-	: text_widget{tag,
-				  pos,
+	: text_widget{pos,
 				  alignment,
 				  true,
 				  NO_TOOLTIP,

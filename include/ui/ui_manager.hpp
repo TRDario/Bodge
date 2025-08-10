@@ -21,9 +21,9 @@ class ui_manager {
 	// Emplaces a new widget into the UI.
 	template <class T, class... Args>
 		requires(std::constructible_from<T, Args...>)
-	T& emplace(Args&&... args)
+	T& emplace(tag tag, Args&&... args)
 	{
-		return *static_cast<T*>(m_objects.emplace_back(std::make_unique<T>(std::forward<Args>(args)...)).get());
+		return *static_cast<T*>(m_widgets.emplace(tag, std::make_unique<T>(std::forward<Args>(args)...)).first->second.get());
 	}
 	// Clears the UI.
 	void clear();
@@ -54,10 +54,13 @@ class ui_manager {
 	void add_to_renderer();
 
   private:
-	// The list of widgets.
-	std::list<std::unique_ptr<widget>> m_objects;
-	// Iterator to the widget being hovered over, or end().
-	std::list<std::unique_ptr<widget>>::iterator m_hovered{m_objects.end()};
-	// Pointer to the widget with input focus, or end().
-	std::list<std::unique_ptr<widget>>::iterator m_input{m_objects.end()};
+	// Tag-widget pair.
+	using kv_pair = std::pair<const tag, std::unique_ptr<widget>>;
+
+	// The widget list.
+	std::unordered_map<tag, std::unique_ptr<widget>> m_widgets;
+	// Pointer to the widget being hovered over, or nullptr.
+	kv_pair* m_hovered{nullptr};
+	// Pointer to the widget with input focus, or nullptr.
+	kv_pair* m_input{nullptr};
 };

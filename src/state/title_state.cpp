@@ -124,14 +124,15 @@ float title_state::fade_overlay_opacity() const
 
 void title_state::set_up_ui()
 {
-	widget& logo_text{m_ui.emplace<image_widget>(TAG_LOGO_TEXT, glm::vec2{500, 100}, tr::align::CENTER)};
+	widget& logo_text{m_ui.emplace<image_widget>(TAG_LOGO_TEXT, glm::vec2{500, 100}, tr::align::CENTER, "logo_text")};
 	logo_text.pos.change(interp_mode::CUBE, {500, 160}, 2.5_s);
 	logo_text.unhide(2.5_s);
-	widget& logo_overlay{
-		m_ui.emplace<image_widget>(TAG_LOGO_OVERLAY, glm::vec2{500, 100}, tr::align::CENTER, &engine::settings.primary_hue)};
+	widget& logo_overlay{m_ui.emplace<image_widget>(TAG_LOGO_OVERLAY, glm::vec2{500, 100}, tr::align::CENTER, "logo_overlay",
+													&engine::settings.primary_hue)};
 	logo_overlay.pos.change(interp_mode::CUBE, {500, 160}, 2.5_s);
 	logo_overlay.unhide(2.5_s);
-	widget& logo_ball{m_ui.emplace<image_widget>(TAG_LOGO_BALL, glm::vec2{-180, 644}, tr::align::CENTER, &engine::settings.secondary_hue)};
+	widget& logo_ball{
+		m_ui.emplace<image_widget>(TAG_LOGO_BALL, glm::vec2{-180, 644}, tr::align::CENTER, "logo_ball", &engine::settings.secondary_hue)};
 	logo_ball.pos.change(interp_mode::CUBE, {327, 217}, 2.5_s);
 	logo_ball.unhide(2.5_s);
 
