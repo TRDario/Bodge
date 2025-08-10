@@ -18,8 +18,6 @@ constexpr tag TAG_SCORE_4{"score4"};
 constexpr tag TAG_SCORE_5{"score5"};
 constexpr tag TAG_SCORE_6{"score6"};
 constexpr tag TAG_SCORE_7{"score7"};
-constexpr std::array<const char*, SCORES_PER_PAGE> SCORE_TAGS{TAG_SCORE_0, TAG_SCORE_1, TAG_SCORE_2, TAG_SCORE_3,
-															  TAG_SCORE_4, TAG_SCORE_5, TAG_SCORE_6, TAG_SCORE_7};
 constexpr tag TAG_GAMEMODE_DEC{"gamemode_dec"};
 constexpr tag TAG_CUR_GAMEMODE{"cur_gamemode"};
 constexpr tag TAG_GAMEMODE_INC{"gamemode_inc"};
@@ -27,6 +25,10 @@ constexpr tag TAG_PAGE_DEC{"page_dec"};
 constexpr tag TAG_CUR_PAGE{"cur_page"};
 constexpr tag TAG_PAGE_INC{"page_inc"};
 constexpr tag TAG_EXIT{"exit"};
+
+constexpr std::array<tag, SCORES_PER_PAGE> SCORE_TAGS{
+	TAG_SCORE_0, TAG_SCORE_1, TAG_SCORE_2, TAG_SCORE_3, TAG_SCORE_4, TAG_SCORE_5, TAG_SCORE_6, TAG_SCORE_7,
+};
 
 // Shortcuts of the exit button.
 constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
@@ -101,21 +103,21 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 
 	// TEXT CALLBACKS
 
-	const text_callback player_info_text_cb{[](auto&) {
+	const text_callback player_info_text_cb{[] {
 		return std::format("{} {}: {}:{:02}:{:02}", engine::loc["total_playtime"], engine::scorefile.name,
 						   engine::scorefile.playtime / (SECOND_TICKS * 3600),
 						   (engine::scorefile.playtime % (SECOND_TICKS * 3600)) / (SECOND_TICKS * 60),
 						   (engine::scorefile.playtime % (SECOND_TICKS * 60) / SECOND_TICKS));
 	}};
-	const text_callback cur_gamemode_text_cb{[this](auto&) { return std::string{name(m_selected->gamemode)}; }};
-	const text_callback cur_page_text_cb{[this](auto&) {
+	const text_callback cur_gamemode_text_cb{[this] { return std::string{name(m_selected->gamemode)}; }};
+	const text_callback cur_page_text_cb{[this] {
 		return std::format("{}/{}", m_page + 1, std::max(std::ssize(m_selected->scores) - 1, std::ptrdiff_t{0}) / SCORES_PER_PAGE + 1);
 	}};
 
 	//
 
-	widget& title{
-		m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											64, loc_text_callback{TAG_TITLE})};
 	title.pos.change(interp_mode::CUBE, {500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
@@ -125,14 +127,15 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	player_info.unhide(0.5_s);
 
 	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
+													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
 													 sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 
 	if (engine::scorefile.categories.empty()) {
 		widget& no_scores_found{m_ui.emplace<text_widget>(TAG_NO_SCORES_FOUND, glm::vec2{600, 483}, tr::align::TOP_CENTER, font::LANGUAGE,
-														  tr::system::ttf_style::NORMAL, 64, DEFAULT_TEXT_CALLBACK, "80808080"_rgba8)};
+														  tr::system::ttf_style::NORMAL, 64, loc_text_callback{TAG_NO_SCORES_FOUND},
+														  "80808080"_rgba8)};
 		no_scores_found.pos.change(interp_mode::CUBE, {500, 483}, 0.5_s);
 		no_scores_found.unhide(0.5_s);
 		return;
@@ -147,7 +150,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 		widget.unhide(0.5_s);
 	}
 
-	const tooltip_callback cur_gamemode_tooltip_cb{[this] { return std::string{description(m_selected->gamemode)}; }};
+	const text_callback cur_gamemode_tooltip_cb{[this] { return std::string{description(m_selected->gamemode)}; }};
 	widget& cur_gamemode{m_ui.emplace<text_widget>(TAG_CUR_GAMEMODE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, true,
 												   cur_gamemode_tooltip_cb, false, std::vector<tr::system::key_chord>{}, font::LANGUAGE,
 												   tr::system::ttf_style::NORMAL, tr::halign::CENTER, 48, tr::system::UNLIMITED_WIDTH,
@@ -206,7 +209,7 @@ std::unique_ptr<tr::state> scoreboards_state::update(tr::duration)
 		else if (m_timer == 0.25_s) {
 			for (std::size_t i = 0; i < SCORES_PER_PAGE; ++i) {
 				const bool nonempty{m_selected->scores.size() > m_page * SCORES_PER_PAGE + i};
-				score_widget& widget{m_ui.get<score_widget>(SCORE_TAGS[i])};
+				score_widget& widget{m_ui.as<score_widget>(SCORE_TAGS[i])};
 				widget.rank = m_page * SCORES_PER_PAGE + i + 1;
 				widget.score = nonempty ? std::to_address(m_selected->scores.begin() + m_page * SCORES_PER_PAGE + i) : nullptr;
 				widget.pos = {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y};
@@ -233,7 +236,7 @@ void scoreboards_state::draw()
 void scoreboards_state::set_up_page_switch_animation()
 {
 	for (std::size_t i = 0; i < SCORES_PER_PAGE; i++) {
-		widget& widget{m_ui.get(SCORE_TAGS[i])};
+		widget& widget{m_ui[SCORE_TAGS[i]]};
 		widget.pos.change(interp_mode::CUBE, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.25_s);
 		widget.hide(0.25_s);
 	}
@@ -241,23 +244,23 @@ void scoreboards_state::set_up_page_switch_animation()
 
 void scoreboards_state::set_up_exit_animation()
 {
-	m_ui.get(TAG_TITLE).pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui.get(TAG_PLAYER_INFO).pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui.get(TAG_EXIT).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[TAG_PLAYER_INFO].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[TAG_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	if (engine::scorefile.categories.empty()) {
-		m_ui.get(TAG_NO_SCORES_FOUND).pos.change(interp_mode::CUBE, {400, 483}, 0.5_s);
+		m_ui[TAG_NO_SCORES_FOUND].pos.change(interp_mode::CUBE, {400, 483}, 0.5_s);
 	}
 	else {
 		for (std::size_t i = 0; i < SCORES_PER_PAGE; i++) {
-			widget& widget{m_ui.get(SCORE_TAGS[i])};
+			widget& widget{m_ui[SCORE_TAGS[i]]};
 			widget.pos.change(interp_mode::CUBE, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.5_s);
 		}
-		m_ui.get(TAG_CUR_GAMEMODE).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-		m_ui.get(TAG_GAMEMODE_DEC).pos.change(interp_mode::CUBE, {-50, 892.5}, 0.5_s);
-		m_ui.get(TAG_GAMEMODE_INC).pos.change(interp_mode::CUBE, {1050, 892.5}, 0.5_s);
-		m_ui.get(TAG_CUR_PAGE).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-		m_ui.get(TAG_PAGE_DEC).pos.change(interp_mode::CUBE, {-50, 942.5}, 0.5_s);
-		m_ui.get(TAG_PAGE_INC).pos.change(interp_mode::CUBE, {1050, 942.5}, 0.5_s);
+		m_ui[TAG_CUR_GAMEMODE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+		m_ui[TAG_GAMEMODE_DEC].pos.change(interp_mode::CUBE, {-50, 892.5}, 0.5_s);
+		m_ui[TAG_GAMEMODE_INC].pos.change(interp_mode::CUBE, {1050, 892.5}, 0.5_s);
+		m_ui[TAG_CUR_PAGE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+		m_ui[TAG_PAGE_DEC].pos.change(interp_mode::CUBE, {-50, 942.5}, 0.5_s);
+		m_ui[TAG_PAGE_INC].pos.change(interp_mode::CUBE, {1050, 942.5}, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }

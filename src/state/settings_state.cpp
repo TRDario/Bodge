@@ -43,7 +43,7 @@ constexpr tag TAG_APPLY{"apply"};
 constexpr tag TAG_EXIT{"exit"};
 
 // Right-aligned widgets.
-constexpr std::array<const char*, 24> RIGHT_WIDGETS{
+constexpr std::array<tag, 24> RIGHT_WIDGETS{
 	TAG_WINDOW_SIZE_DEC,
 	TAG_CUR_WINDOW_SIZE,
 	TAG_WINDOW_SIZE_INC,
@@ -70,7 +70,7 @@ constexpr std::array<const char*, 24> RIGHT_WIDGETS{
 	TAG_CUR_LANGUAGE,
 };
 // Bottom set of buttons.
-constexpr std::array<const char*, 3> BOTTOM_BUTTONS{TAG_REVERT, TAG_APPLY, TAG_EXIT};
+constexpr std::array<tag, 3> BOTTOM_BUTTONS{TAG_REVERT, TAG_APPLY, TAG_EXIT};
 
 // Sentinel string for having no tooltip.
 constexpr const char* NO_TOOLTIP_STR{nullptr};
@@ -249,35 +249,35 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	// TEXT CALLBACKS
 
-	const text_callback cur_window_size_text_cb{[&window_size = m_pending.window_size](auto&) {
+	const text_callback cur_window_size_text_cb{[&window_size = m_pending.window_size] {
 		return window_size == FULLSCREEN ? std::string{engine::loc["fullscreen"]} : std::to_string(window_size);
 	}};
-	const text_callback cur_refresh_rate_text_cb{[&refresh_rate = m_pending.refresh_rate](auto&) {
+	const text_callback cur_refresh_rate_text_cb{[&refresh_rate = m_pending.refresh_rate] {
 		return refresh_rate == NATIVE_REFRESH_RATE ? std::string{engine::loc["native"]} : std::to_string(refresh_rate);
 	}};
-	const text_callback cur_msaa_text_cb{[this](auto&) { return m_pending.msaa == NO_MSAA ? "--" : std::format("x{}", m_pending.msaa); }};
-	const text_callback cur_primary_hue_text_cb{[this](auto&) { return std::to_string(m_pending.primary_hue); }};
-	const text_callback cur_secondary_hue_text_cb{[this](auto&) { return std::to_string(m_pending.secondary_hue); }};
-	const text_callback cur_sound_volume_text_cb{[this](auto&) { return std::format("{}%", m_pending.sfx_volume); }};
-	const text_callback cur_music_volume_text_cb{[this](auto&) { return std::format("{}%", m_pending.music_volume); }};
+	const text_callback cur_msaa_text_cb{[this] { return m_pending.msaa == NO_MSAA ? "--" : std::format("x{}", m_pending.msaa); }};
+	const text_callback cur_primary_hue_text_cb{[this] { return std::to_string(m_pending.primary_hue); }};
+	const text_callback cur_secondary_hue_text_cb{[this] { return std::to_string(m_pending.secondary_hue); }};
+	const text_callback cur_sound_volume_text_cb{[this] { return std::format("{}%", m_pending.sfx_volume); }};
+	const text_callback cur_music_volume_text_cb{[this] { return std::format("{}%", m_pending.music_volume); }};
 	const text_callback cur_language_text_cb{
-		[this](auto&) { return engine::languages.contains(m_pending.language) ? engine::languages[m_pending.language].name : "???"; }};
+		[this] { return engine::languages.contains(m_pending.language) ? engine::languages[m_pending.language].name : "???"; }};
 
 	//
 
-	widget& title{
-		m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											64, loc_text_callback{TAG_TITLE})};
 	title.pos.change(interp_mode::CUBE, TITLE_POS, 0.5_s);
 	title.unhide(0.5_s);
 
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
 		const label& label{LABELS[i]};
 		const glm::vec2 pos{-50, 196 + i * 75};
-		widget& widget{
-			label.tooltip != NO_TOOLTIP_STR
-				? m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
-											tr::system::ttf_style::NORMAL, 48)
-				: m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48)};
+		widget& widget{label.tooltip != NO_TOOLTIP_STR
+						   ? m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
+													   tr::system::ttf_style::NORMAL, 48, loc_text_callback{TAG_TITLE})
+						   : m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, font::LANGUAGE,
+													   tr::system::ttf_style::NORMAL, 48, loc_text_callback{TAG_TITLE})};
 		widget.pos.change(interp_mode::CUBE, {15, 196 + i * 75}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -400,8 +400,8 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const sound sound{i == 1 ? sound::CONFIRM : sound::CANCEL};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
-														   48, DEFAULT_TEXT_CALLBACK, bottom_status_cbs[i], bottom_action_cbs[i],
-														   NO_TOOLTIP, BOTTOM_SHORTCUTS[i], sound)};
+														   48, loc_text_callback{BOTTOM_BUTTONS[i]}, bottom_status_cbs[i],
+														   bottom_action_cbs[i], NO_TOOLTIP, BOTTOM_SHORTCUTS[i], sound)};
 		widget.pos.change(interp_mode::CUBE, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -441,50 +441,50 @@ void settings_state::draw()
 
 void settings_state::update_window_size_buttons()
 {
-	widget& cur_window_size{m_ui.get(TAG_CUR_WINDOW_SIZE)};
+	widget& cur_window_size{m_ui[TAG_CUR_WINDOW_SIZE]};
 	if (m_pending.window_size == FULLSCREEN) {
 		cur_window_size.pos = glm::vec2{985, 196};
 		cur_window_size.alignment = tr::align::CENTER_RIGHT;
-		m_ui.get(TAG_WINDOW_SIZE_DEC).hide();
-		m_ui.get(TAG_WINDOW_SIZE_INC).hide();
+		m_ui[TAG_WINDOW_SIZE_DEC].hide();
+		m_ui[TAG_WINDOW_SIZE_INC].hide();
 	}
 	else {
 		cur_window_size.pos = glm::vec2{875, 196};
 		cur_window_size.alignment = tr::align::CENTER;
-		m_ui.get(TAG_WINDOW_SIZE_DEC).unhide();
-		m_ui.get(TAG_WINDOW_SIZE_INC).unhide();
+		m_ui[TAG_WINDOW_SIZE_DEC].unhide();
+		m_ui[TAG_WINDOW_SIZE_INC].unhide();
 	}
 }
 
 void settings_state::update_refresh_rate_buttons()
 {
-	widget& cur_refresh_rate{m_ui.get(TAG_CUR_REFRESH_RATE)};
+	widget& cur_refresh_rate{m_ui[TAG_CUR_REFRESH_RATE]};
 	if (m_pending.refresh_rate == NATIVE_REFRESH_RATE) {
 		cur_refresh_rate.pos = glm::vec2{985, 271};
 		cur_refresh_rate.alignment = tr::align::CENTER_RIGHT;
-		m_ui.get(TAG_REFRESH_RATE_DEC).hide();
-		m_ui.get(TAG_REFRESH_RATE_INC).hide();
+		m_ui[TAG_REFRESH_RATE_DEC].hide();
+		m_ui[TAG_REFRESH_RATE_INC].hide();
 	}
 	else {
 		cur_refresh_rate.pos = glm::vec2{892.5, 271};
 		cur_refresh_rate.alignment = tr::align::CENTER;
-		m_ui.get(TAG_REFRESH_RATE_DEC).unhide();
-		m_ui.get(TAG_REFRESH_RATE_INC).unhide();
+		m_ui[TAG_REFRESH_RATE_DEC].unhide();
+		m_ui[TAG_REFRESH_RATE_INC].unhide();
 	}
 }
 
 void settings_state::set_up_exit_animation()
 {
-	m_ui.get(TAG_TITLE).pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	for (const char* tag : BOTTOM_BUTTONS) {
-		m_ui.get(tag).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	for (tag tag : BOTTOM_BUTTONS) {
+		m_ui[tag].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	}
-	for (const char* tag : tr::project(LABELS, &label::tag)) {
-		widget& widget{m_ui.get(tag)};
+	for (tag tag : tr::project(LABELS, &label::tag)) {
+		widget& widget{m_ui[tag]};
 		widget.pos.change(interp_mode::CUBE, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
 	}
-	for (const char* tag : RIGHT_WIDGETS) {
-		widget& widget{m_ui.get(tag)};
+	for (tag tag : RIGHT_WIDGETS) {
+		widget& widget{m_ui[tag]};
 		widget.pos.change(interp_mode::CUBE, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);

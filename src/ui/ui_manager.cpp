@@ -3,6 +3,14 @@
 
 //
 
+widget& ui_manager::operator[](tag tag)
+{
+	std::list<std::unique_ptr<widget>>::iterator it{
+		std::ranges::find_if(m_objects, [=](std::unique_ptr<widget>& p) { return p->tag == tag; })};
+	TR_ASSERT(it != m_objects.end(), "Tried to get widget with nonexistant tag \"{}\".", tag);
+	return **it;
+}
+
 void ui_manager::clear()
 {
 	m_objects.clear();

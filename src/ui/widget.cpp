@@ -162,11 +162,21 @@ void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, fl
 	std::ranges::fill(mesh.colors, color);
 }
 
+std::string loc_text_callback::operator()() const
+{
+	return std::string{engine::loc[tag]};
+}
+
+std::string string_text_callback::operator()() const
+{
+	return str;
+}
+
 ///////////////////////////////////////////////////////////////// WIDGET //////////////////////////////////////////////////////////////////
 
-widget::widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
+widget::widget(::tag tag, glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable,
 			   std::vector<tr::system::key_chord>&& shortcuts)
-	: name{name}
+	: tag{tag}
 	, alignment{alignment}
 	, pos{pos}
 	, tooltip_cb{std::move(tooltip_cb)}
@@ -236,10 +246,10 @@ void widget::update()
 
 /////////////////////////////////////////////////////////////// TEXT_WIDGET ///////////////////////////////////////////////////////////////
 
-text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb,
-						 bool writable, std::vector<tr::system::key_chord>&& shortcuts, font font, tr::system::ttf_style style,
-						 tr::halign text_alignment, float font_size, int max_width, tr::rgba8 color, text_callback text_cb)
-	: widget{name, pos, alignment, hoverable, std::move(tooltip_cb), writable, std::move(shortcuts)}
+text_widget::text_widget(::tag tag, glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable,
+						 std::vector<tr::system::key_chord>&& shortcuts, font font, tr::system::ttf_style style, tr::halign text_alignment,
+						 float font_size, int max_width, tr::rgba8 color, text_callback text_cb)
+	: widget{tag, pos, alignment, hoverable, std::move(tooltip_cb), writable, std::move(shortcuts)}
 	, color{color}
 	, text_cb{std::move(text_cb)}
 	, m_font{font}
@@ -250,9 +260,9 @@ text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignme
 {
 }
 
-text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, tr::system::ttf_style style, float font_size,
+text_widget::text_widget(::tag tag, glm::vec2 pos, tr::align alignment, font font, tr::system::ttf_style style, float font_size,
 						 text_callback text_cb, tr::rgba8 color)
-	: text_widget{name,       pos,
+	: text_widget{tag,        pos,
 				  alignment,  false,
 				  NO_TOOLTIP, false,
 				  {},         font,
@@ -262,13 +272,13 @@ text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignme
 {
 }
 
-text_widget::text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::string_view tooltip_key, font font,
-						 tr::system::ttf_style style, float font_size, text_callback text_cb)
-	: text_widget{name,
+text_widget::text_widget(::tag tag, glm::vec2 pos, tr::align alignment, const char* tooltip_key, font font, tr::system::ttf_style style,
+						 float font_size, text_callback text_cb)
+	: text_widget{tag,
 				  pos,
 				  alignment,
 				  true,
-				  [=] { return std::string{engine::loc[tooltip_key]}; },
+				  string_text_callback{tooltip_key},
 				  false,
 				  {},
 				  font,
@@ -315,14 +325,14 @@ void text_widget::add_to_renderer()
 
 void text_widget::update_cache() const
 {
-	std::string text{text_cb(name)};
+	std::string text{text_cb()};
 	if (!m_cached.has_value() || m_cached->text != text) {
 		tr::bitmap render{engine::render_text(text, engine::determine_font(text, m_font), m_style, m_font_size, m_font_size / 12,
 											  m_max_width, m_text_alignment)};
 		if (!m_cached || m_cached->texture.size().x < render.size().x || m_cached->texture.size().y < render.size().y) {
 			m_cached.emplace(tr::gfx::texture{render}, render.size(), std::move(text));
 			if (tr::gfx::debug()) {
-				m_cached->texture.set_label(std::format("(Bodge) Widget texture - \"{}\"", name));
+				m_cached->texture.set_label(std::format("(Bodge) Widget texture - \"{}\"", tag));
 			}
 		}
 		else {
@@ -336,10 +346,10 @@ void text_widget::update_cache() const
 
 ////////////////////////////////////////////////////////// CLICKABLE_TEXT_WIDGET //////////////////////////////////////////////////////////
 
-clickable_text_widget::clickable_text_widget(std::string_view name, glm::vec2 pos, tr::align alignment, font font, float font_size,
+clickable_text_widget::clickable_text_widget(::tag tag, glm::vec2 pos, tr::align alignment, font font, float font_size,
 											 text_callback text_cb, status_callback status_cb, action_callback action_cb,
-											 tooltip_callback tooltip_cb, std::vector<tr::system::key_chord>&& shortcuts, sound sound)
-	: text_widget{name,
+											 text_callback tooltip_cb, std::vector<tr::system::key_chord>&& shortcuts, sound sound)
+	: text_widget{tag,
 				  pos,
 				  alignment,
 				  true,
@@ -450,8 +460,8 @@ tr::bitmap load_image(std::string_view texture)
 	}
 }
 
-image_widget::image_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t* hue_ref)
-	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, m_texture{load_image(name)}, m_hue_ref{hue_ref}
+image_widget::image_widget(::tag tag, glm::vec2 pos, tr::align alignment, std::uint16_t* hue_ref)
+	: widget{tag, pos, alignment, false, NO_TOOLTIP, false, {}}, m_texture{load_image(tag)}, m_hue_ref{hue_ref}
 {
 	m_texture.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
 }
@@ -477,8 +487,8 @@ void image_widget::add_to_renderer()
 
 /////////////////////////////////////////////////////////// COLOR_PREVIEW_WIDGET //////////////////////////////////////////////////////////
 
-color_preview_widget::color_preview_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::uint16_t& hue_ref)
-	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}, m_hue_ref{hue_ref}
+color_preview_widget::color_preview_widget(::tag tag, glm::vec2 pos, tr::align alignment, std::uint16_t& hue_ref)
+	: widget{tag, pos, alignment, false, NO_TOOLTIP, false, {}}, m_hue_ref{hue_ref}
 {
 }
 
@@ -503,9 +513,9 @@ void color_preview_widget::add_to_renderer()
 
 /////////////////////////////////////////////////////////////// ARROW_WIDGET //////////////////////////////////////////////////////////////
 
-arrow_widget::arrow_widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb,
+arrow_widget::arrow_widget(::tag tag, glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb,
 						   action_callback action_cb, std::vector<tr::system::key_chord>&& chords)
-	: widget{name, pos, alignment, true, NO_TOOLTIP, false, std::move(chords)}
+	: widget{tag, pos, alignment, true, NO_TOOLTIP, false, std::move(chords)}
 	, m_right{right_arrow}
 	, m_color{{160, 160, 160, 160}}
 	, m_status_cb{std::move(status_cb)}
@@ -610,8 +620,8 @@ void arrow_widget::on_shortcut()
 ////////////////////////////////////////////////////// REPLAY_PLAYBACK_INDICATOR_WIDGET ///////////////////////////////////////////////////
 
 // Creates a replay playback indicator widget.
-replay_playback_indicator_widget::replay_playback_indicator_widget(std::string_view name, glm::vec2 pos, tr::align alignment)
-	: widget{name, pos, alignment, false, NO_TOOLTIP, false, {}}
+replay_playback_indicator_widget::replay_playback_indicator_widget(::tag tag, glm::vec2 pos, tr::align alignment)
+	: widget{tag, pos, alignment, false, NO_TOOLTIP, false, {}}
 {
 }
 
@@ -652,9 +662,9 @@ void replay_playback_indicator_widget::add_to_renderer()
 
 ////////////////////////////////////////////////////////////// SCORE WIDGET ///////////////////////////////////////////////////////////////
 
-score_widget::score_widget(std::string_view name, glm::vec2 pos, tr::align alignment, std::size_t rank, ::score* score)
+score_widget::score_widget(::tag tag, glm::vec2 pos, tr::align alignment, std::size_t rank, ::score* score)
 	: text_widget{
-		  name,
+		  tag,
 		  pos,
 		  alignment,
 		  true,
@@ -691,7 +701,7 @@ score_widget::score_widget(std::string_view name, glm::vec2 pos, tr::align align
 		  48,
 		  tr::system::UNLIMITED_WIDTH,
 		  {160, 160, 160, 160},
-		  [this](auto&) {
+		  [this] {
 			  if (this->score == nullptr) {
 				  return std::string{"----------------------------------"};
 			  }

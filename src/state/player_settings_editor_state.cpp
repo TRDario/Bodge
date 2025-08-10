@@ -27,9 +27,9 @@ constexpr std::array<label, 3> LABELS{{
 	{TAG_INERTIA_FACTOR, "inertia_factor_tt"},
 }};
 // Right-aligned widgets.
-constexpr std::array<const char*, 9> RIGHT_WIDGETS{TAG_STARTING_LIVES_DEC, TAG_CUR_STARTING_LIVES, TAG_STARTING_LIVES_INC,
-												   TAG_HITBOX_RADIUS_DEC,  TAG_CUR_HITBOX_RADIUS,  TAG_HITBOX_RADIUS_INC,
-												   TAG_INERTIA_FACTOR_DEC, TAG_CUR_INERTIA_FACTOR, TAG_INERTIA_FACTOR_INC};
+constexpr std::array<tag, 9> RIGHT_WIDGETS{TAG_STARTING_LIVES_DEC, TAG_CUR_STARTING_LIVES, TAG_STARTING_LIVES_INC,
+										   TAG_HITBOX_RADIUS_DEC,  TAG_CUR_HITBOX_RADIUS,  TAG_HITBOX_RADIUS_INC,
+										   TAG_INERTIA_FACTOR_DEC, TAG_CUR_INERTIA_FACTOR, TAG_INERTIA_FACTOR_INC};
 // Shortcuts of the exit button.
 constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
 	{tr::system::keycode::C},      {tr::system::keycode::Q},         {tr::system::keycode::E},
@@ -92,18 +92,18 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 
 	// TEXT CALLBACKS
 
-	const text_callback cur_starting_lives_text_cb{[this](auto&) { return std::format("{}", m_pending.player.starting_lives); }};
-	const text_callback cur_hitbox_radius_text_cb{[this](auto&) { return std::format("{:.0f}", m_pending.player.hitbox_radius); }};
-	const text_callback cur_inertia_factor_text_cb{[this](auto&) { return std::format("{:.2f}", m_pending.player.inertia_factor); }};
+	const text_callback cur_starting_lives_text_cb{[this] { return std::format("{}", m_pending.player.starting_lives); }};
+	const text_callback cur_hitbox_radius_text_cb{[this] { return std::format("{:.0f}", m_pending.player.hitbox_radius); }};
+	const text_callback cur_inertia_factor_text_cb{[this] { return std::format("{:.2f}", m_pending.player.inertia_factor); }};
 
 	//
 
-	widget& title{
-		m_ui.emplace<text_widget>(TAG_TITLE, TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
+											loc_text_callback{TAG_TITLE})};
 	title.unhide();
 
-	widget& subtitle{
-		m_ui.emplace<text_widget>(TAG_SUBTITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32)};
+	widget& subtitle{m_ui.emplace<text_widget>(TAG_SUBTITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
+											   tr::system::ttf_style::NORMAL, 32, loc_text_callback{TAG_SUBTITLE})};
 	subtitle.pos.change(interp_mode::CUBE, {500, TITLE_POS.y + 64}, 0.5_s);
 	subtitle.unhide(0.5_s);
 
@@ -150,13 +150,13 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 		const label& label{LABELS[i]};
 		const glm::vec2 pos{-50, 450 + i * 75};
 		widget& widget{m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
-												 tr::system::ttf_style::NORMAL, 48)};
+												 tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag})};
 		widget.pos.change(interp_mode::CUBE, {15, 450 + i * 75}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
 
 	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
+													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
 													 sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
@@ -196,17 +196,17 @@ void player_settings_editor_state::draw()
 
 void player_settings_editor_state::set_up_exit_animation()
 {
-	widget& subtitle{m_ui.get(TAG_SUBTITLE)};
-	widget& exit{m_ui.get(TAG_EXIT)};
+	widget& subtitle{m_ui[TAG_SUBTITLE]};
+	widget& exit{m_ui[TAG_EXIT]};
 	subtitle.pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
 	subtitle.hide(0.5_s);
-	for (const char* tag : tr::project(LABELS, &label::tag)) {
-		widget& widget{m_ui.get(tag)};
+	for (tag tag : tr::project(LABELS, &label::tag)) {
+		widget& widget{m_ui[tag]};
 		widget.pos.change(interp_mode::CUBE, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
 		widget.hide(0.5_s);
 	}
-	for (const char* tag : RIGHT_WIDGETS) {
-		widget& widget{m_ui.get(tag)};
+	for (tag tag : RIGHT_WIDGETS) {
+		widget& widget{m_ui[tag]};
 		widget.pos.change(interp_mode::CUBE, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
 		widget.hide(0.5_s);
 	}

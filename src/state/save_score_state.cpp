@@ -57,7 +57,7 @@ std::unique_ptr<tr::state> save_score_state::update(tr::duration)
 	if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
 		m_game->update();
 	}
-	m_score.description = m_ui.get<multiline_input_widget<255>>(TAG_INPUT).buffer;
+	m_score.description = m_ui.as<multiline_input_widget<255>>(TAG_INPUT).buffer;
 
 	switch (to_base(m_substate)) {
 	case substate_base::SAVING_SCORE:
@@ -125,13 +125,13 @@ void save_score_state::set_up_ui()
 		set_up_exit_animation();
 	}};
 
-	widget& title{
-		m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											64, loc_text_callback{TAG_TITLE})};
 	title.pos.change(interp_mode::CUBE, {500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
-	widget& preview_label{
-		m_ui.emplace<text_widget>(TAG_PREVIEW, glm::vec2{400, 200}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48)};
+	widget& preview_label{m_ui.emplace<text_widget>(TAG_PREVIEW, glm::vec2{400, 200}, tr::align::CENTER, font::LANGUAGE,
+													tr::system::ttf_style::NORMAL, 48, loc_text_callback{TAG_PREVIEW})};
 	preview_label.pos.change(interp_mode::CUBE, {500, 200}, 0.5_s);
 	preview_label.unhide(0.5_s);
 
@@ -141,7 +141,7 @@ void save_score_state::set_up_ui()
 	preview.unhide(0.5_s);
 
 	widget& description_label{m_ui.emplace<text_widget>(TAG_DESCRIPTION, glm::vec2{600, 440}, tr::align::CENTER, font::LANGUAGE,
-														tr::system::ttf_style::NORMAL, 48)};
+														tr::system::ttf_style::NORMAL, 48, loc_text_callback{TAG_DESCRIPTION})};
 	description_label.pos.change(interp_mode::CUBE, {500, 440}, 0.5_s);
 	description_label.unhide(0.5_s);
 
@@ -151,25 +151,25 @@ void save_score_state::set_up_ui()
 	description.unhide(0.5_s);
 
 	widget& save{m_ui.emplace<clickable_text_widget>(TAG_SAVE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 DEFAULT_TEXT_CALLBACK, status_cb, save_action_cb, NO_TOOLTIP, SAVE_SHORTCUTS)};
+													 loc_text_callback{TAG_SAVE}, status_cb, save_action_cb, NO_TOOLTIP, SAVE_SHORTCUTS)};
 	save.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
 	save.unhide(0.5_s);
 
 	widget& cancel{m_ui.emplace<clickable_text_widget>(TAG_CANCEL, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													   DEFAULT_TEXT_CALLBACK, status_cb, cancel_action_cb, NO_TOOLTIP, CANCEL_SHORTCUTS,
-													   sound::CANCEL)};
+													   loc_text_callback{TAG_CANCEL}, status_cb, cancel_action_cb, NO_TOOLTIP,
+													   CANCEL_SHORTCUTS, sound::CANCEL)};
 	cancel.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	cancel.unhide(0.5_s);
 }
 
 void save_score_state::set_up_exit_animation()
 {
-	m_ui.get(TAG_TITLE).pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui.get(TAG_PREVIEW).pos.change(interp_mode::CUBE, {600, 200}, 0.5_s);
-	m_ui.get(TAG_SCORE).pos.change(interp_mode::CUBE, {600, 235}, 0.5_s);
-	m_ui.get(TAG_DESCRIPTION).pos.change(interp_mode::CUBE, {400, 440}, 0.5_s);
-	m_ui.get(TAG_INPUT).pos.change(interp_mode::CUBE, {400, 475}, 0.5_s);
-	m_ui.get(TAG_SAVE).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-	m_ui.get(TAG_CANCEL).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[TAG_PREVIEW].pos.change(interp_mode::CUBE, {600, 200}, 0.5_s);
+	m_ui[TAG_SCORE].pos.change(interp_mode::CUBE, {600, 235}, 0.5_s);
+	m_ui[TAG_DESCRIPTION].pos.change(interp_mode::CUBE, {400, 440}, 0.5_s);
+	m_ui[TAG_INPUT].pos.change(interp_mode::CUBE, {400, 475}, 0.5_s);
+	m_ui[TAG_SAVE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[TAG_CANCEL].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

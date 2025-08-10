@@ -16,10 +16,12 @@ constexpr tag TAG_SAVE_AND_RESTART{"save_and_restart"};
 constexpr tag TAG_RESTART{"restart"};
 constexpr tag TAG_SAVE_AND_QUIT{"save_and_quit"};
 constexpr tag TAG_QUIT{"quit"};
+
 // The regular pause screen buttons.
-constexpr std::array<const char*, 5> BUTTONS_REGULAR{TAG_UNPAUSE, TAG_SAVE_AND_RESTART, TAG_RESTART, TAG_SAVE_AND_QUIT, TAG_QUIT};
+constexpr std::array<tag, 5> BUTTONS_REGULAR{TAG_UNPAUSE, TAG_SAVE_AND_RESTART, TAG_RESTART, TAG_SAVE_AND_QUIT, TAG_QUIT};
 // The special pause screen buttons.
-constexpr std::array<const char*, 3> BUTTONS_SPECIAL{TAG_UNPAUSE, TAG_RESTART, TAG_QUIT};
+constexpr std::array<tag, 3> BUTTONS_SPECIAL{TAG_UNPAUSE, TAG_RESTART, TAG_QUIT};
+
 // Shortcuts of the regular button set.
 constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS_REGULAR.size()> SHORTCUTS_REGULAR{{
 	{{tr::system::keycode::ESCAPE}, {tr::system::keycode::TOP_ROW_1}},
@@ -190,7 +192,7 @@ void pause_state::set_up_full_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
 	widget& title{m_ui.emplace<text_widget>(TAG_PAUSED, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
-											tr::system::ttf_style::NORMAL, 64)};
+											tr::system::ttf_style::NORMAL, 64, loc_text_callback{TAG_PAUSED})};
 	title.pos.change(interp_mode::CUBE, {500, TITLE_Y}, 0.5_s);
 	title.unhide(0.5_s);
 
@@ -234,7 +236,7 @@ void pause_state::set_up_full_ui()
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const glm::vec2 pos{500 + offset, 500 - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS_REGULAR[i], pos, tr::align::CENTER, font::LANGUAGE, 48,
-														   DEFAULT_TEXT_CALLBACK, i == 0 ? unpause_status_cb : status_cb,
+														   loc_text_callback{BUTTONS_REGULAR[i]}, i == 0 ? unpause_status_cb : status_cb,
 														   std::move(action_cbs[i]), NO_TOOLTIP, SHORTCUTS_REGULAR[i])};
 		widget.pos.change(interp_mode::CUBE, {500, pos.y}, 0.5_s);
 		widget.unhide(0.5_s);
@@ -244,9 +246,9 @@ void pause_state::set_up_full_ui()
 void pause_state::set_up_limited_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
-	const char* const title_tag{to_type(m_substate) == game_type::REPLAY ? TAG_REPLAY_PAUSED : TAG_TEST_PAUSED};
+	const tag title_tag{to_type(m_substate) == game_type::REPLAY ? TAG_REPLAY_PAUSED : TAG_TEST_PAUSED};
 	widget& title{m_ui.emplace<text_widget>(title_tag, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
-											tr::system::ttf_style::NORMAL, 64)};
+											tr::system::ttf_style::NORMAL, 64, loc_text_callback{title_tag})};
 	title.pos.change(interp_mode::CUBE, {500, TITLE_Y}, 0.5_s);
 	title.unhide(0.5_s);
 
@@ -275,7 +277,7 @@ void pause_state::set_up_limited_ui()
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const glm::vec2 pos{500 + offset, 500 - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS_SPECIAL[i], pos, tr::align::CENTER, font::LANGUAGE, 48,
-														   DEFAULT_TEXT_CALLBACK, i == 0 ? unpause_status_cb : status_cb,
+														   loc_text_callback{BUTTONS_SPECIAL[i]}, i == 0 ? unpause_status_cb : status_cb,
 														   std::move(action_cbs[i]), NO_TOOLTIP, SHORTCUTS_SPECIAL[i])};
 		widget.pos.change(interp_mode::CUBE, {500, pos.y}, 0.5_s);
 		widget.unhide(0.5_s);
@@ -285,19 +287,19 @@ void pause_state::set_up_limited_ui()
 void pause_state::set_up_exit_animation()
 {
 	if (to_type(m_substate) == game_type::REGULAR) {
-		m_ui.get(TAG_PAUSED).pos.change(interp_mode::CUBE, {500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
+		m_ui[TAG_PAUSED].pos.change(interp_mode::CUBE, {500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
 		for (std::size_t i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
-			widget& widget{m_ui.get(BUTTONS_REGULAR[i])};
+			widget& widget{m_ui[BUTTONS_REGULAR[i]]};
 			widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}
 	}
 	else {
-		widget& title{m_ui.get(to_type(m_substate) == game_type::TEST ? TAG_TEST_PAUSED : TAG_REPLAY_PAUSED)};
+		widget& title{m_ui[to_type(m_substate) == game_type::TEST ? TAG_TEST_PAUSED : TAG_REPLAY_PAUSED]};
 		title.pos.change(interp_mode::CUBE, {500, 400 - (BUTTONS_SPECIAL.size() + 1) * 30}, 0.5_s);
 		for (std::size_t i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
-			widget& widget{m_ui.get(BUTTONS_SPECIAL[i])};
+			widget& widget{m_ui[BUTTONS_SPECIAL[i]]};
 			widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}
 	}

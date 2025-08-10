@@ -95,10 +95,12 @@ std::int64_t unix_now();
 
 ////////////////////////////////////////////////////////////////// LABEL //////////////////////////////////////////////////////////////////
 
+// Widget tag type.
+using tag = const char*;
 // Struct containing information about a label widget.
 struct label {
 	// The tag of the label.
-	const char* tag;
+	tag tag;
 	// The tooltip of the label.
 	const char* tooltip;
 };

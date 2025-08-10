@@ -23,7 +23,7 @@ constexpr tag TAG_CREDITS{"credits"};
 constexpr tag TAG_EXIT{"exit"};
 
 // Title screen buttons.
-constexpr std::array<const char*, 7> BUTTONS{
+constexpr std::array<tag, 7> BUTTONS{
 	TAG_START_GAME, TAG_GAMEMODE_DESIGNER, TAG_SCOREBOARDS, TAG_REPLAYS, TAG_SETTINGS, TAG_CREDITS, TAG_EXIT,
 };
 // Shortcuts of the title screen buttons.
@@ -136,11 +136,11 @@ void title_state::set_up_ui()
 	logo_ball.unhide(2.5_s);
 
 	widget& copyright{m_ui.emplace<text_widget>(TAG_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, font::DEFAULT,
-												tr::system::ttf_style::NORMAL, 24)};
+												tr::system::ttf_style::NORMAL, 24, loc_text_callback{TAG_COPYRIGHT})};
 	copyright.pos.change(interp_mode::CUBE, {4, 998 - copyright.size().y}, 1_s);
 	copyright.unhide(1_s);
 	widget& version{m_ui.emplace<text_widget>(TAG_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, font::DEFAULT,
-											  tr::system::ttf_style::NORMAL, 24)};
+											  tr::system::ttf_style::NORMAL, 24, loc_text_callback{TAG_VERSION})};
 	version.pos.change(interp_mode::CUBE, {996, 998 - version.size().y}, 1_s);
 	version.unhide(1_s);
 
@@ -185,8 +185,8 @@ void title_state::set_up_ui()
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(35.0f, 75.0f)};
 		const glm::vec2 pos{end_pos.x + offset, end_pos.y};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER_RIGHT, font::LANGUAGE, 48,
-														   DEFAULT_TEXT_CALLBACK, status_cb, action_cbs[i], NO_TOOLTIP, SHORTCUTS[i],
-														   i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL)};
+														   loc_text_callback{BUTTONS[i]}, status_cb, action_cbs[i], NO_TOOLTIP,
+														   SHORTCUTS[i], i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL)};
 		widget.pos.change(interp_mode::CUBE, end_pos, 1_s);
 		widget.unhide(1_s);
 		end_pos += glm::vec2{-25, 50};
@@ -196,15 +196,15 @@ void title_state::set_up_ui()
 void title_state::set_up_exit_animation()
 {
 	int i = 0;
-	for (const char* tag : BUTTONS) {
+	for (tag tag : BUTTONS) {
 		const float offset{(i++ % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(35.0f, 75.0f)};
-		widget& widget{m_ui.get(tag)};
+		widget& widget{m_ui[tag]};
 		widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}
-	m_ui.get(TAG_LOGO_TEXT).pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
-	m_ui.get(TAG_LOGO_OVERLAY).pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
-	m_ui.get(TAG_LOGO_BALL).pos.change(interp_mode::CUBE, {487, 57}, 0.5_s);
-	m_ui.get(TAG_COPYRIGHT).pos.change(interp_mode::CUBE, {4, 1000}, 0.5_s);
-	m_ui.get(TAG_VERSION).pos.change(interp_mode::CUBE, {996, 1000}, 0.5_s);
+	m_ui[TAG_LOGO_TEXT].pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
+	m_ui[TAG_LOGO_OVERLAY].pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
+	m_ui[TAG_LOGO_BALL].pos.change(interp_mode::CUBE, {487, 57}, 0.5_s);
+	m_ui[TAG_COPYRIGHT].pos.change(interp_mode::CUBE, {4, 1000}, 0.5_s);
+	m_ui[TAG_VERSION].pos.change(interp_mode::CUBE, {996, 1000}, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

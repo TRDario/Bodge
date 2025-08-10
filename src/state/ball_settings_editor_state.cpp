@@ -47,7 +47,7 @@ constexpr std::array<label, 7> LABELS{{
 	{TAG_VELOCITY_STEP, "velocity_step_tt"},
 }};
 // Right-aligned widgets.
-constexpr std::array<const char*, 21> RIGHT_WIDGETS{
+constexpr std::array<tag, 21> RIGHT_WIDGETS{
 	TAG_STARTING_COUNT_DEC,   TAG_CUR_STARTING_COUNT,   TAG_STARTING_COUNT_INC,   TAG_MAX_COUNT_DEC,      TAG_CUR_MAX_COUNT,
 	TAG_MAX_COUNT_INC,        TAG_SPAWN_INTERVAL_DEC,   TAG_CUR_SPAWN_INTERVAL,   TAG_SPAWN_INTERVAL_INC, TAG_INITIAL_SIZE_DEC,
 	TAG_CUR_INITIAL_SIZE,     TAG_INITIAL_SIZE_INC,     TAG_SIZE_STEP_DEC,        TAG_CUR_SIZE_STEP,      TAG_SIZE_STEP_INC,
@@ -182,22 +182,22 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 
 	// TEXT CALLBACKS
 
-	const text_callback cur_starting_count_text_cb{[this](auto&) { return std::to_string(m_pending.ball.starting_count); }};
-	const text_callback cur_max_count_text_cb{[this](auto&) { return std::to_string(m_pending.ball.max_count); }};
-	const text_callback cur_spawn_interval_text_cb{[this](auto&) { return std::format("{:.1f}s", m_pending.ball.spawn_interval / 1_sf); }};
-	const text_callback cur_initial_size_text_cb{[this](auto&) { return std::format("{:.0f}", m_pending.ball.initial_size); }};
-	const text_callback cur_size_step_text_cb{[this](auto&) { return std::format("{:.1f}", m_pending.ball.size_step); }};
-	const text_callback cur_initial_velocity_text_cb{[this](auto&) { return std::format("{:.0f}", m_pending.ball.initial_velocity); }};
-	const text_callback cur_velocity_step_text_cb{[this](auto&) { return std::format("{:.0f}", m_pending.ball.velocity_step); }};
+	const text_callback cur_starting_count_text_cb{[this] { return std::to_string(m_pending.ball.starting_count); }};
+	const text_callback cur_max_count_text_cb{[this] { return std::to_string(m_pending.ball.max_count); }};
+	const text_callback cur_spawn_interval_text_cb{[this] { return std::format("{:.1f}s", m_pending.ball.spawn_interval / 1_sf); }};
+	const text_callback cur_initial_size_text_cb{[this] { return std::format("{:.0f}", m_pending.ball.initial_size); }};
+	const text_callback cur_size_step_text_cb{[this] { return std::format("{:.1f}", m_pending.ball.size_step); }};
+	const text_callback cur_initial_velocity_text_cb{[this] { return std::format("{:.0f}", m_pending.ball.initial_velocity); }};
+	const text_callback cur_velocity_step_text_cb{[this] { return std::format("{:.0f}", m_pending.ball.velocity_step); }};
 
 	//
 
-	widget& title{
-		m_ui.emplace<text_widget>(TAG_TITLE, TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
+											loc_text_callback{TAG_TITLE})};
 	title.unhide();
 
-	widget& subtitle{
-		m_ui.emplace<text_widget>(TAG_SUBTITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32)};
+	widget& subtitle{m_ui.emplace<text_widget>(TAG_SUBTITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
+											   tr::system::ttf_style::NORMAL, 32, loc_text_callback{TAG_SUBTITLE})};
 	subtitle.pos.change(interp_mode::CUBE, {500, TITLE_POS.y + 64}, 0.5_s);
 	subtitle.unhide(0.5_s);
 
@@ -297,13 +297,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 		const label& label{LABELS[i]};
 		const glm::vec2 pos{-50, 298 + i * 75};
 		widget& widget{m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
-												 tr::system::ttf_style::NORMAL, 48)};
+												 tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag})};
 		widget.pos.change(interp_mode::CUBE, {15, 298 + i * 75}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
 
 	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
+													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
 													 sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
@@ -343,17 +343,17 @@ void ball_settings_editor_state::draw()
 
 void ball_settings_editor_state::set_up_exit_animation()
 {
-	widget& subtitle{m_ui.get(TAG_SUBTITLE)};
-	widget& exit{m_ui.get(TAG_EXIT)};
+	widget& subtitle{m_ui[TAG_SUBTITLE]};
+	widget& exit{m_ui[TAG_EXIT]};
 	subtitle.pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
 	subtitle.hide(0.5_s);
-	for (const char* tag : tr::project(LABELS, &label::tag)) {
-		widget& widget{m_ui.get(tag)};
+	for (tag tag : tr::project(LABELS, &label::tag)) {
+		widget& widget{m_ui[tag]};
 		widget.pos.change(interp_mode::CUBE, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
 		widget.hide(0.5_s);
 	}
-	for (const char* tag : RIGHT_WIDGETS) {
-		widget& widget{m_ui.get(tag)};
+	for (tag tag : RIGHT_WIDGETS) {
+		widget& widget{m_ui[tag]};
 		widget.pos.change(interp_mode::CUBE, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
 		widget.hide(0.5_s);
 	}

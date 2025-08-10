@@ -21,23 +21,23 @@ name_entry_state::name_entry_state()
 
 	const status_callback input_status_cb{[this] { return m_substate != substate::ENTERING_TITLE; }};
 	const status_callback confirm_status_cb{
-		[this] { return m_substate != substate::ENTERING_TITLE && !m_ui.get<line_input_widget<20>>(TAG_INPUT).buffer.empty(); }};
+		[this] { return m_substate != substate::ENTERING_TITLE && !m_ui.as<line_input_widget<20>>(TAG_INPUT).buffer.empty(); }};
 
 	const action_callback action_cb{[this] {
-		line_input_widget<20>& input{m_ui.get<line_input_widget<20>>(TAG_INPUT)};
+		line_input_widget<20>& input{m_ui.as<line_input_widget<20>>(TAG_INPUT)};
 		if (!input.buffer.empty()) {
 			m_timer = 0;
 			m_substate = substate::ENTERING_TITLE;
-			m_ui.get(TAG_TITLE).pos.change(interp_mode::CUBE, TOP_START_POS, 1.0_s);
-			m_ui.get(TAG_CONFIRM).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 1.0_s);
+			m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 1.0_s);
+			m_ui[TAG_CONFIRM].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 1.0_s);
 			m_ui.hide_all(1.0_s);
 			engine::play_sound(sound::CONFIRM, 0.5f, 0.0f);
 			engine::scorefile.name = input.buffer;
 		}
 	}};
 
-	widget& title{
-		m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											64, loc_text_callback{TAG_TITLE})};
 	title.pos.change(interp_mode::CUBE, {500, 0}, 1.0_s);
 	title.unhide(1.0_s);
 
@@ -46,7 +46,7 @@ name_entry_state::name_entry_state()
 	input.unhide(1.0_s);
 
 	widget& confirm{m_ui.emplace<clickable_text_widget>(TAG_CONFIRM, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-														DEFAULT_TEXT_CALLBACK, confirm_status_cb, action_cb, NO_TOOLTIP,
+														loc_text_callback{TAG_CONFIRM}, confirm_status_cb, action_cb, NO_TOOLTIP,
 														CONFIRM_SHORTCUTS)};
 	confirm.pos.change(interp_mode::CUBE, {500, 1000}, 1.0_s);
 	confirm.unhide(1.0_s);

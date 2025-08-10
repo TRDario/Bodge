@@ -22,7 +22,7 @@ constexpr std::initializer_list<tr::system::key_chord> BALL_SETTINGS_SHORTCUTS{{
 constexpr std::initializer_list<tr::system::key_chord> PLAYER_SETTINGS_SHORTCUTS{{tr::system::keycode::P},
 																				 {tr::system::keycode::TOP_ROW_2}};
 // Buttons at the bottom of the screen.
-constexpr std::array<const char*, 3> BOTTOM_BUTTONS{TAG_TEST, TAG_SAVE, TAG_DISCARD};
+constexpr std::array<tag, 3> BOTTOM_BUTTONS{TAG_TEST, TAG_SAVE, TAG_DISCARD};
 // Shortcuts of the bottom buttons.
 constexpr std::array<std::initializer_list<tr::system::key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
 	{{tr::system::keycode::T}, {tr::system::keycode::TOP_ROW_3}},
@@ -119,7 +119,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	const status_callback status_cb{[this] { return m_substate == substate::IN_GAMEMODE_DESIGNER; }};
 	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_status_cbs{
 		status_cb,
-		[this] { return m_substate == substate::IN_GAMEMODE_DESIGNER && !m_ui.get<line_input_widget<12>>(TAG_NAME).buffer.empty(); },
+		[this] { return m_substate == substate::IN_GAMEMODE_DESIGNER && !m_ui.as<line_input_widget<12>>(TAG_NAME).buffer.empty(); },
 		status_cb,
 	};
 
@@ -130,31 +130,31 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	const action_callback ball_settings_action_cb{[this] {
 		m_substate = substate::ENTERING_BALL_SETTINGS_EDITOR;
 		m_timer = 0;
-		m_pending.name = m_ui.get<line_input_widget<12>>(TAG_NAME).buffer;
-		m_pending.description = m_ui.get<line_input_widget<40>>(TAG_DESCRIPTION).buffer;
+		m_pending.name = m_ui.as<line_input_widget<12>>(TAG_NAME).buffer;
+		m_pending.description = m_ui.as<line_input_widget<40>>(TAG_DESCRIPTION).buffer;
 		set_up_subscreen_animation();
 	}};
 	const action_callback player_settings_action_cb{[this] {
 		m_substate = substate::ENTERING_PLAYER_SETTINGS_EDITOR;
 		m_timer = 0;
-		m_pending.name = m_ui.get<line_input_widget<12>>(TAG_NAME).buffer;
-		m_pending.description = m_ui.get<line_input_widget<40>>(TAG_DESCRIPTION).buffer;
+		m_pending.name = m_ui.as<line_input_widget<12>>(TAG_NAME).buffer;
+		m_pending.description = m_ui.as<line_input_widget<40>>(TAG_DESCRIPTION).buffer;
 		set_up_subscreen_animation();
 	}};
 	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_action_cbs{
 		[this] {
 			m_substate = substate::ENTERING_TEST_GAME;
 			m_timer = 0;
-			m_pending.name = m_ui.get<line_input_widget<12>>(TAG_NAME).buffer;
-			m_pending.description = m_ui.get<line_input_widget<40>>(TAG_DESCRIPTION).buffer;
+			m_pending.name = m_ui.as<line_input_widget<12>>(TAG_NAME).buffer;
+			m_pending.description = m_ui.as<line_input_widget<40>>(TAG_DESCRIPTION).buffer;
 			set_up_exit_animation();
 			engine::fade_song_out(0.5s);
 		},
 		[this] {
 			m_substate = substate::ENTERING_TITLE;
 			m_timer = 0;
-			m_pending.name = m_ui.get<line_input_widget<12>>(TAG_NAME).buffer;
-			m_pending.description = m_ui.get<line_input_widget<40>>(TAG_DESCRIPTION).buffer;
+			m_pending.name = m_ui.as<line_input_widget<12>>(TAG_NAME).buffer;
+			m_pending.description = m_ui.as<line_input_widget<40>>(TAG_DESCRIPTION).buffer;
 			save_gamemode(m_pending);
 			set_up_exit_animation();
 		},
@@ -167,18 +167,18 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 
 	// TEXT CALLBACKS
 
-	text_callback author_text_cb{[str = std::format("{}: {}", engine::loc["by"], engine::scorefile.name)](auto&) { return str; }};
+	text_callback author_text_cb{string_text_callback{std::format("{}: {}", engine::loc["by"], engine::scorefile.name)}};
 
 	//
 
 	if (returning_from_subscreen) {
-		widget& title{
-			m_ui.emplace<text_widget>(TAG_TITLE, TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
+		widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+												64, loc_text_callback{TAG_TITLE})};
 		title.unhide();
 	}
 	else {
-		widget& title{
-			m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
+		widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
+												tr::system::ttf_style::NORMAL, 64, loc_text_callback{TAG_TITLE})};
 		title.pos.change(interp_mode::CUBE, TITLE_POS, 0.5_s);
 		title.unhide(0.5_s);
 	}
@@ -201,22 +201,22 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	description.unhide(0.5_s);
 
 	widget& ball_settings{m_ui.emplace<clickable_text_widget>(TAG_BALL_SETTINGS, glm::vec2{600, 550}, tr::align::CENTER, font::LANGUAGE, 64,
-															  DEFAULT_TEXT_CALLBACK, status_cb, ball_settings_action_cb, NO_TOOLTIP,
-															  BALL_SETTINGS_SHORTCUTS)};
+															  loc_text_callback{TAG_BALL_SETTINGS}, status_cb, ball_settings_action_cb,
+															  NO_TOOLTIP, BALL_SETTINGS_SHORTCUTS)};
 	ball_settings.pos.change(interp_mode::CUBE, {500, 550}, 0.5_s);
 	ball_settings.unhide(0.5_s);
 
 	widget& player_settings{m_ui.emplace<clickable_text_widget>(TAG_PLAYER_SETTINGS, glm::vec2{400, 650}, tr::align::CENTER, font::LANGUAGE,
-																64, DEFAULT_TEXT_CALLBACK, status_cb, player_settings_action_cb, NO_TOOLTIP,
-																PLAYER_SETTINGS_SHORTCUTS)};
+																64, loc_text_callback{TAG_PLAYER_SETTINGS}, status_cb,
+																player_settings_action_cb, NO_TOOLTIP, PLAYER_SETTINGS_SHORTCUTS)};
 	player_settings.pos.change(interp_mode::CUBE, {500, 650}, 0.5_s);
 	player_settings.unhide(0.5_s);
 
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
-														   48, DEFAULT_TEXT_CALLBACK, bottom_status_cbs[i], bottom_action_cbs[i],
-														   NO_TOOLTIP, BOTTOM_SHORTCUTS[i], sound)};
+														   48, loc_text_callback{BOTTOM_BUTTONS[i]}, bottom_status_cbs[i],
+														   bottom_action_cbs[i], NO_TOOLTIP, BOTTOM_SHORTCUTS[i], sound)};
 		widget.pos.change(interp_mode::CUBE, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -224,11 +224,11 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 
 void gamemode_designer_state::set_up_subscreen_animation()
 {
-	widget& name{m_ui.get(TAG_NAME)};
-	widget& author{m_ui.get(TAG_AUTHOR)};
-	widget& description{m_ui.get(TAG_DESCRIPTION)};
-	widget& ball_settings{m_ui.get(TAG_BALL_SETTINGS)};
-	widget& player_settings{m_ui.get(TAG_PLAYER_SETTINGS)};
+	widget& name{m_ui[TAG_NAME]};
+	widget& author{m_ui[TAG_AUTHOR]};
+	widget& description{m_ui[TAG_DESCRIPTION]};
+	widget& ball_settings{m_ui[TAG_BALL_SETTINGS]};
+	widget& player_settings{m_ui[TAG_PLAYER_SETTINGS]};
 	name.pos.change(interp_mode::CUBE, {600, glm::vec2{name.pos}.y}, 0.5_s);
 	name.hide(0.5_s);
 	author.pos.change(interp_mode::CUBE, {400, glm::vec2{author.pos}.y}, 0.5_s);
@@ -239,8 +239,8 @@ void gamemode_designer_state::set_up_subscreen_animation()
 	ball_settings.hide(0.5_s);
 	player_settings.pos.change(interp_mode::CUBE, {600, glm::vec2{player_settings.pos}.y}, 0.5_s);
 	player_settings.hide(0.5_s);
-	for (const char* tag : BOTTOM_BUTTONS) {
-		widget& widget{m_ui.get(tag)};
+	for (tag tag : BOTTOM_BUTTONS) {
+		widget& widget{m_ui[tag]};
 		widget.pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 		widget.hide(0.5_s);
 	}
@@ -248,19 +248,19 @@ void gamemode_designer_state::set_up_subscreen_animation()
 
 void gamemode_designer_state::set_up_exit_animation()
 {
-	m_ui.get(TAG_TITLE).pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	widget& name{m_ui.get(TAG_NAME)};
-	widget& author{m_ui.get(TAG_AUTHOR)};
-	widget& description{m_ui.get(TAG_DESCRIPTION)};
-	widget& ball_settings{m_ui.get(TAG_BALL_SETTINGS)};
-	widget& player_settings{m_ui.get(TAG_PLAYER_SETTINGS)};
+	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	widget& name{m_ui[TAG_NAME]};
+	widget& author{m_ui[TAG_AUTHOR]};
+	widget& description{m_ui[TAG_DESCRIPTION]};
+	widget& ball_settings{m_ui[TAG_BALL_SETTINGS]};
+	widget& player_settings{m_ui[TAG_PLAYER_SETTINGS]};
 	name.pos.change(interp_mode::CUBE, {600, glm::vec2{name.pos}.y}, 0.5_s);
 	author.pos.change(interp_mode::CUBE, {400, glm::vec2{author.pos}.y}, 0.5_s);
 	description.pos.change(interp_mode::CUBE, {600, glm::vec2{description.pos}.y}, 0.5_s);
 	ball_settings.pos.change(interp_mode::CUBE, {400, glm::vec2{ball_settings.pos}.y}, 0.5_s);
 	player_settings.pos.change(interp_mode::CUBE, {600, glm::vec2{player_settings.pos}.y}, 0.5_s);
-	for (const char* tag : BOTTOM_BUTTONS) {
-		m_ui.get(tag).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	for (tag tag : BOTTOM_BUTTONS) {
+		m_ui[tag].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }

@@ -6,9 +6,9 @@
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
 template <std::size_t S>
-line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, tr::system::ttf_style style,
-										float font_size, status_callback status_cb, action_callback enter_cb)
-	: text_widget{name,
+line_input_widget<S>::line_input_widget(::tag tag, glm::vec2 pos, tr::align alignment, tr::system::ttf_style style, float font_size,
+										status_callback status_cb, action_callback enter_cb)
+	: text_widget{tag,
 				  pos,
 				  alignment,
 				  true,
@@ -21,7 +21,7 @@ line_input_widget<S>::line_input_widget(std::string_view name, glm::vec2 pos, tr
 				  font_size,
 				  tr::system::UNLIMITED_WIDTH,
 				  {160, 160, 160, 160},
-				  [this](auto&) { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
+				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
 	, m_status_cb{std::move(status_cb)}
 	, m_enter_cb{std::move(enter_cb)}
 	, m_has_focus{false}
@@ -145,14 +145,14 @@ template <std::size_t S> void line_input_widget<S>::on_paste()
 
 ////////////////////////////////////////////////////////////// REPLAY WIDGET //////////////////////////////////////////////////////////////
 
-replay_widget::replay_widget(std::string_view name, glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
+replay_widget::replay_widget(::tag tag, glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
 							 std::optional<std::map<std::string, replay_header>::iterator> it, tr::system::keycode shortcut)
-	: clickable_text_widget{name,
+	: clickable_text_widget{tag,
 							pos,
 							alignment,
 							font::LANGUAGE,
 							40,
-							[this](auto&) {
+							[this] {
 								if (!this->it.has_value()) {
 									return std::string{"----------------------------------"};
 								}
@@ -214,10 +214,9 @@ replay_widget::replay_widget(std::string_view name, glm::vec2 pos, tr::align ali
 ////////////////////////////////////////////////////////// MULTILINE TEXT INPUT ///////////////////////////////////////////////////////////
 
 template <std::size_t S>
-multiline_input_widget<S>::multiline_input_widget(std::string_view name, glm::vec2 pos, tr::align alignment, float width,
-												  std::uint8_t max_lines, tr::halign text_alignment, float font_size,
-												  status_callback status_cb)
-	: text_widget{name,
+multiline_input_widget<S>::multiline_input_widget(::tag tag, glm::vec2 pos, tr::align alignment, float width, std::uint8_t max_lines,
+												  tr::halign text_alignment, float font_size, status_callback status_cb)
+	: text_widget{tag,
 				  pos,
 				  alignment,
 				  true,
@@ -230,7 +229,7 @@ multiline_input_widget<S>::multiline_input_widget(std::string_view name, glm::ve
 				  font_size,
 				  static_cast<int>(width),
 				  {160, 160, 160, 160},
-				  [this](auto&) { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
+				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
 	, m_status_cb{std::move(status_cb)}
 	, m_size{width, engine::line_skip(font::LANGUAGE, font_size) * max_lines + 4}
 	, m_max_lines{max_lines}

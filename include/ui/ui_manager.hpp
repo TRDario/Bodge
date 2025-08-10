@@ -11,20 +11,19 @@ class ui_manager {
 
 	///////////////////////////////////////////////////////// INSERTION AND ACCESS ////////////////////////////////////////////////////////
 
+	// Gets a widget by tag.
+	widget& operator[](tag tag);
+	// Gets a widget by name.
+	template <class T> T& as(tag tag)
+	{
+		return static_cast<T&>((*this)[tag]);
+	}
 	// Emplaces a new widget into the UI.
 	template <class T, class... Args>
 		requires(std::constructible_from<T, Args...>)
 	T& emplace(Args&&... args)
 	{
 		return *static_cast<T*>(m_objects.emplace_back(std::make_unique<T>(std::forward<Args>(args)...)).get());
-	}
-	// Gets a widget by name.
-	template <class T = widget> T& get(std::string_view name)
-	{
-		std::list<std::unique_ptr<widget>>::iterator it{
-			std::ranges::find_if(m_objects, [=](std::unique_ptr<widget>& p) { return p->name == name; })};
-		TR_ASSERT(it != m_objects.end(), "Tried to get widget with nonexistant name \"{}\".", name);
-		return *static_cast<T*>(it->get());
 	}
 	// Clears the UI.
 	void clear();

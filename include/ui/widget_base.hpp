@@ -1,21 +1,24 @@
 #pragma once
-#include "../localization.hpp"
 #include "interpolator.hpp"
 
 ////////////////////////////////////////////////////////////////// TYPES //////////////////////////////////////////////////////////////////
 
-// Widget tag type.
-using tag = const char*;
-
-// Alias for the type of a tooltip callback.
-using tooltip_callback = std::function<std::string()>;
+// Alias for a widget text callback.
+using text_callback = std::function<std::string()>;
 // Sentinel for a mousable to not have a tooltip.
-inline const tooltip_callback NO_TOOLTIP{};
+inline const text_callback NO_TOOLTIP{};
+// Common callback for text widgets: getting a localization std::string using the widget name as the key.
+struct loc_text_callback {
+	tag tag;
 
-// Alias for a text widget text callback.
-using text_callback = std::function<std::string(const tr::static_string<30>&)>;
-// Default callback for text widgets: gettnig a localization std::string using the widget name as the key.
-inline const text_callback DEFAULT_TEXT_CALLBACK{[](const tr::static_string<30>& name) { return std::string{engine::loc[name]}; }};
+	std::string operator()() const;
+};
+// Common callback for text widgets: copying a string directly.
+struct string_text_callback {
+	std::string str;
+
+	std::string operator()() const;
+};
 
 // Alias for a clickable widget status callback.
 using status_callback = std::function<bool()>;
@@ -31,21 +34,21 @@ constexpr std::initializer_list<tr::system::key_chord> NO_SHORTCUTS{};
 class widget {
   public:
 	// Creates a widget.
-	widget(std::string_view name, glm::vec2 pos, tr::align alignment, bool hoverable, tooltip_callback tooltip_cb, bool writable,
+	widget(tag tag, glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable,
 		   std::vector<tr::system::key_chord>&& shortcuts);
 	// Virtual destructor.
 	virtual ~widget() = default;
 
 	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
 
-	// The name of the widget.
-	tr::static_string<30> name;
+	// The tag of the widget.
+	tag tag;
 	// The alignment of the widget.
 	tr::align alignment;
 	// The position of the widget.
 	interpolator<glm::vec2> pos;
 	// An optional tooltip callback (the widget must be hoverable for it to be used).
-	tooltip_callback tooltip_cb;
+	text_callback tooltip_cb;
 
 	///////////////////////////////////////////////////////////////// SIZE ////////////////////////////////////////////////////////////////
 

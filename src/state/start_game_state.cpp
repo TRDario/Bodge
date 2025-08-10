@@ -15,7 +15,7 @@ constexpr tag TAG_START{"start"};
 constexpr tag TAG_EXIT{"exit"};
 
 // Gamemode display widgets.
-constexpr std::array<const char*, 4> GAMEMODE_WIDGETS{TAG_NAME, TAG_AUTHOR, TAG_DESCRIPTION, TAG_PB};
+constexpr std::array<tag, 4> GAMEMODE_WIDGETS{TAG_NAME, TAG_AUTHOR, TAG_DESCRIPTION, TAG_PB};
 // Shortcuts of the previous gamemode button.
 constexpr std::initializer_list<tr::system::key_chord> PREV_CHORDS{{tr::system::keycode::LEFT}};
 // Shortcuts of the next gamemode button.
@@ -46,31 +46,31 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 
 	const status_callback status_cb{[this] { return m_substate == substate::IN_START_GAME; }};
 
-	widget& title{
-		m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
+	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											64, loc_text_callback{TAG_TITLE})};
 	title.pos.change(interp_mode::CUBE, {500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
-	text_callback name_text_cb{[name = std::string{::name(*m_selected)}](auto&) { return name; }};
+	text_callback name_text_cb{string_text_callback{std::string{::name(*m_selected)}}};
 	widget& name{m_ui.emplace<text_widget>(TAG_NAME, glm::vec2{500, 275}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
 										   120, std::move(name_text_cb))};
 	name.pos.change(interp_mode::CUBE, {500, 375}, 0.5_s);
 	name.unhide(0.5_s);
 
-	text_callback author_text_cb{[str = std::format("{}: {}", engine::loc["by"], m_selected->author)](auto&) { return str; }};
+	text_callback author_text_cb{string_text_callback{std::format("{}: {}", engine::loc["by"], m_selected->author)}};
 	widget& author{m_ui.emplace<text_widget>(TAG_AUTHOR, glm::vec2{400, 450}, tr::align::CENTER, font::LANGUAGE,
 											 tr::system::ttf_style::NORMAL, 32, std::move(author_text_cb))};
 	author.pos.change(interp_mode::CUBE, {500, 450}, 0.5_s);
 	author.unhide(0.5_s);
 
-	text_callback description_text_cb{[desc = std::string{description(*m_selected)}](auto&) { return desc; }};
+	text_callback description_text_cb{string_text_callback{std::string{description(*m_selected)}}};
 	widget& description{m_ui.emplace<text_widget>(TAG_DESCRIPTION, glm::vec2{600, 500}, tr::align::CENTER, font::LANGUAGE,
 												  tr::system::ttf_style::ITALIC, 32, std::move(description_text_cb), "80808080"_rgba8)};
 	description.pos.change(interp_mode::CUBE, {500, 500}, 0.5_s);
 	description.unhide(0.5_s);
 
 	text_callback pb_text_cb{
-		[pb = std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))](const auto&) { return pb; }};
+		string_text_callback{std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))}};
 	widget& pb{m_ui.emplace<text_widget>(TAG_PB, glm::vec2{500, 695}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
 										 std::move(pb_text_cb), "FFFF00C0"_rgba8)};
 	pb.pos.change(interp_mode::CUBE, {500, 595}, 0.5_s);
@@ -80,8 +80,8 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		m_selected = m_selected == m_gamemodes.begin() ? m_selected = m_gamemodes.end() - 1 : std::prev(m_selected);
 		m_substate = substate::SWITCHING_GAMEMODE;
 		m_timer = 0;
-		for (const char* tag : GAMEMODE_WIDGETS) {
-			widget& widget{m_ui.get(tag)};
+		for (tag tag : GAMEMODE_WIDGETS) {
+			widget& widget{m_ui[tag]};
 			widget.pos.change(interp_mode::CUBE, {750, glm::vec2{widget.pos}.y}, 0.25_s);
 			widget.hide(0.25_s);
 		}
@@ -97,8 +97,8 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		}
 		m_substate = substate::SWITCHING_GAMEMODE;
 		m_timer = 0;
-		for (const char* tag : GAMEMODE_WIDGETS) {
-			widget& widget{m_ui.get(tag)};
+		for (tag tag : GAMEMODE_WIDGETS) {
+			widget& widget{m_ui[tag]};
 			widget.pos.change(interp_mode::CUBE, {250, glm::vec2{widget.pos}.y}, 0.25_s);
 			widget.hide(0.25_s);
 		}
@@ -116,7 +116,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		engine::fade_song_out(0.5s);
 	}};
 	widget& start{m_ui.emplace<clickable_text_widget>(TAG_START, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													  DEFAULT_TEXT_CALLBACK, status_cb, start_action_cb, NO_TOOLTIP, START_CHORDS)};
+													  loc_text_callback{TAG_START}, status_cb, start_action_cb, NO_TOOLTIP, START_CHORDS)};
 	start.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
 	start.unhide(0.5_s);
 
@@ -127,7 +127,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		engine::scorefile.last_selected = *m_selected;
 	}};
 	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_CHORDS,
+													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_CHORDS,
 													 sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
@@ -157,13 +157,13 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 		}
 		else if (m_timer == 0.25_s) {
 			std::array<text_callback, GAMEMODE_WIDGETS.size()> new_cbs{
-				[name = std::string{::name(*m_selected)}](auto&) { return name; },
-				[author = std::format("{}: {}", engine::loc["by"], m_selected->author)](auto&) { return author; },
-				[desc = std::string{description(*m_selected)}](auto&) { return desc; },
-				[pb = std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))](auto&) { return pb; },
+				string_text_callback{std::string{::name(*m_selected)}},
+				string_text_callback{std::format("{}: {}", engine::loc["by"], m_selected->author)},
+				string_text_callback{std::string{description(*m_selected)}},
+				string_text_callback{std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))},
 			};
 			for (std::size_t i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
-				text_widget& widget{m_ui.get<text_widget>(GAMEMODE_WIDGETS[i])};
+				text_widget& widget{m_ui.as<text_widget>(GAMEMODE_WIDGETS[i])};
 				const glm::vec2 old_pos{widget.pos};
 				widget.text_cb = std::move(new_cbs[i]);
 				widget.pos = glm::vec2{old_pos.x < 500 ? 600 : 400, old_pos.y};
@@ -193,18 +193,18 @@ void start_game_state::draw()
 void start_game_state::set_up_exit_animation()
 {
 
-	widget& name{m_ui.get(TAG_NAME)};
-	widget& author{m_ui.get(TAG_AUTHOR)};
-	widget& description{m_ui.get(TAG_DESCRIPTION)};
-	widget& pb{m_ui.get(TAG_PB)};
+	widget& name{m_ui[TAG_NAME]};
+	widget& author{m_ui[TAG_AUTHOR]};
+	widget& description{m_ui[TAG_DESCRIPTION]};
+	widget& pb{m_ui[TAG_PB]};
 	name.pos.change(interp_mode::CUBE, glm::vec2{name.pos} - glm::vec2{0, 100}, 0.5_s);
 	author.pos.change(interp_mode::CUBE, glm::vec2{author.pos} + glm::vec2{100, 0}, 0.5_s);
 	description.pos.change(interp_mode::CUBE, glm::vec2{description.pos} - glm::vec2{100, 0}, 0.5_s);
 	pb.pos.change(interp_mode::CUBE, glm::vec2{pb.pos} + glm::vec2{0, 100}, 0.5_s);
-	m_ui.get(TAG_TITLE).pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui.get(TAG_PREV).pos.change(interp_mode::CUBE, {-100, 500}, 0.5_s);
-	m_ui.get(TAG_NEXT).pos.change(interp_mode::CUBE, {1100, 500}, 0.5_s);
-	m_ui.get(TAG_START).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-	m_ui.get(TAG_EXIT).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[TAG_PREV].pos.change(interp_mode::CUBE, {-100, 500}, 0.5_s);
+	m_ui[TAG_NEXT].pos.change(interp_mode::CUBE, {1100, 500}, 0.5_s);
+	m_ui[TAG_START].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[TAG_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }
