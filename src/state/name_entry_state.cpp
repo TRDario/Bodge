@@ -3,6 +3,10 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
+constexpr const char* TAG_TITLE{"enter_your_name"};
+constexpr const char* TAG_INPUT{"input"};
+constexpr const char* TAG_CONFIRM{"confirm"};
+
 // Shortcuts of the confirm button.
 constexpr std::initializer_list<tr::system::key_chord> CONFIRM_SHORTCUTS{{tr::system::keycode::ENTER}};
 
@@ -17,31 +21,31 @@ name_entry_state::name_entry_state()
 
 	const status_callback input_status_cb{[this] { return m_substate != substate::ENTERING_TITLE; }};
 	const status_callback confirm_status_cb{
-		[this] { return m_substate != substate::ENTERING_TITLE && !m_ui.get<line_input_widget<20>>("input").buffer.empty(); }};
+		[this] { return m_substate != substate::ENTERING_TITLE && !m_ui.get<line_input_widget<20>>(TAG_INPUT).buffer.empty(); }};
 
 	const action_callback action_cb{[this] {
-		line_input_widget<20>& input{m_ui.get<line_input_widget<20>>("input")};
+		line_input_widget<20>& input{m_ui.get<line_input_widget<20>>(TAG_INPUT)};
 		if (!input.buffer.empty()) {
 			m_timer = 0;
 			m_substate = substate::ENTERING_TITLE;
-			m_ui.get("enter_your_name").pos.change(interp_mode::CUBE, TOP_START_POS, 1.0_s);
-			m_ui.get("confirm").pos.change(interp_mode::CUBE, BOTTOM_START_POS, 1.0_s);
+			m_ui.get(TAG_TITLE).pos.change(interp_mode::CUBE, TOP_START_POS, 1.0_s);
+			m_ui.get(TAG_CONFIRM).pos.change(interp_mode::CUBE, BOTTOM_START_POS, 1.0_s);
 			m_ui.hide_all(1.0_s);
 			engine::play_sound(sound::CONFIRM, 0.5f, 0.0f);
 			engine::scorefile.name = input.buffer;
 		}
 	}};
 
-	widget& title{m_ui.emplace<text_widget>("enter_your_name", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
-											tr::system::ttf_style::NORMAL, 64)};
+	widget& title{
+		m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change(interp_mode::CUBE, {500, 0}, 1.0_s);
 	title.unhide(1.0_s);
 
-	widget& input{m_ui.emplace<line_input_widget<20>>("input", glm::vec2{500, 500}, tr::align::CENTER, tr::system::ttf_style::NORMAL, 64,
+	widget& input{m_ui.emplace<line_input_widget<20>>(TAG_INPUT, glm::vec2{500, 500}, tr::align::CENTER, tr::system::ttf_style::NORMAL, 64,
 													  input_status_cb, action_cb)};
 	input.unhide(1.0_s);
 
-	widget& confirm{m_ui.emplace<clickable_text_widget>("confirm", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
+	widget& confirm{m_ui.emplace<clickable_text_widget>(TAG_CONFIRM, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 														DEFAULT_TEXT_CALLBACK, confirm_status_cb, action_cb, NO_TOOLTIP,
 														CONFIRM_SHORTCUTS)};
 	confirm.pos.change(interp_mode::CUBE, {500, 1000}, 1.0_s);

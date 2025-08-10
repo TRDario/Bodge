@@ -1,19 +1,35 @@
-#include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
+#include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/system.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
+constexpr const char* TAG_TITLE{"gamemode_designer"};
+constexpr const char* TAG_SUBTITLE{"player_settings"};
+constexpr const char* TAG_STARTING_LIVES{"starting_lives"};
+constexpr const char* TAG_STARTING_LIVES_DEC{"starting_lives_dec"};
+constexpr const char* TAG_CUR_STARTING_LIVES{"cur_starting_lives"};
+constexpr const char* TAG_STARTING_LIVES_INC{"starting_lives_inc"};
+constexpr const char* TAG_HITBOX_RADIUS{"hitbox_radius"};
+constexpr const char* TAG_HITBOX_RADIUS_DEC{"hitbox_radius_dec"};
+constexpr const char* TAG_CUR_HITBOX_RADIUS{"cur_hitbox_radius"};
+constexpr const char* TAG_HITBOX_RADIUS_INC{"hitbox_radius_inc"};
+constexpr const char* TAG_INERTIA_FACTOR{"inertia_factor"};
+constexpr const char* TAG_INERTIA_FACTOR_DEC{"inertia_factor_dec"};
+constexpr const char* TAG_CUR_INERTIA_FACTOR{"cur_inertia_factor"};
+constexpr const char* TAG_INERTIA_FACTOR_INC{"inertia_factor_inc"};
+constexpr const char* TAG_EXIT{"exit"};
+
 // Left-aligned labels.
 constexpr std::array<label, 3> LABELS{{
-	{"starting_lives", "starting_lives_tt"},
-	{"hitbox_radius", "hitbox_size_tt"},
-	{"inertia_factor", "inertia_factor_tt"},
+	{TAG_STARTING_LIVES, "starting_lives_tt"},
+	{TAG_HITBOX_RADIUS, "hitbox_size_tt"},
+	{TAG_INERTIA_FACTOR, "inertia_factor_tt"},
 }};
 // Right-aligned widgets.
-constexpr std::array<const char*, 9> RIGHT_WIDGETS{"starting_lives_dec", "cur_starting_lives", "starting_lives_inc",
-												   "hitbox_radius_dec",  "cur_hitbox_radius",  "hitbox_radius_inc",
-												   "inertia_factor_dec", "cur_inertia_factor", "inertia_factor_inc"};
+constexpr std::array<const char*, 9> RIGHT_WIDGETS{TAG_STARTING_LIVES_DEC, TAG_CUR_STARTING_LIVES, TAG_STARTING_LIVES_INC,
+												   TAG_HITBOX_RADIUS_DEC,  TAG_CUR_HITBOX_RADIUS,  TAG_HITBOX_RADIUS_INC,
+												   TAG_INERTIA_FACTOR_DEC, TAG_CUR_INERTIA_FACTOR, TAG_INERTIA_FACTOR_INC};
 // Shortcuts of the exit button.
 constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
 	{tr::system::keycode::C},      {tr::system::keycode::Q},         {tr::system::keycode::E},
@@ -82,21 +98,21 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 
 	//
 
-	widget& title{m_ui.emplace<text_widget>("gamemode_designer", TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE,
-											tr::system::ttf_style::NORMAL, 64)};
+	widget& title{
+		m_ui.emplace<text_widget>(TAG_TITLE, TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64)};
 	title.unhide();
 
-	widget& subtitle{m_ui.emplace<text_widget>("player_settings", TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
-											   tr::system::ttf_style::NORMAL, 32)};
+	widget& subtitle{
+		m_ui.emplace<text_widget>(TAG_SUBTITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32)};
 	subtitle.pos.change(interp_mode::CUBE, {500, TITLE_POS.y + 64}, 0.5_s);
 	subtitle.unhide(0.5_s);
 
-	widget& starting_lives_dec{m_ui.emplace<arrow_widget>("starting_lives_dec", STARTING_LIVES_START_POS, tr::align::CENTER_LEFT, false,
+	widget& starting_lives_dec{m_ui.emplace<arrow_widget>(TAG_STARTING_LIVES_DEC, STARTING_LIVES_START_POS, tr::align::CENTER_LEFT, false,
 														  starting_lives_dec_status_cb, starting_lives_dec_action_cb)};
-	widget& starting_lives_inc{m_ui.emplace<arrow_widget>("starting_lives_inc", STARTING_LIVES_START_POS, tr::align::CENTER_RIGHT, true,
+	widget& starting_lives_inc{m_ui.emplace<arrow_widget>(TAG_STARTING_LIVES_INC, STARTING_LIVES_START_POS, tr::align::CENTER_RIGHT, true,
 														  starting_lives_inc_status_cb, starting_lives_inc_action_cb)};
-	widget& cur_starting_lives{m_ui.emplace<text_widget>("cur_starting_lives", STARTING_LIVES_START_POS, tr::align::CENTER, font::LANGUAGE,
-														 tr::system::ttf_style::NORMAL, 48, cur_starting_lives_text_cb)};
+	widget& cur_starting_lives{m_ui.emplace<text_widget>(TAG_CUR_STARTING_LIVES, STARTING_LIVES_START_POS, tr::align::CENTER,
+														 font::LANGUAGE, tr::system::ttf_style::NORMAL, 48, cur_starting_lives_text_cb)};
 	starting_lives_dec.pos.change(interp_mode::CUBE, {790, STARTING_LIVES_START_POS.y}, 0.5_s);
 	starting_lives_inc.pos.change(interp_mode::CUBE, {985, STARTING_LIVES_START_POS.y}, 0.5_s);
 	cur_starting_lives.pos.change(interp_mode::CUBE, {887.5, STARTING_LIVES_START_POS.y}, 0.5_s);
@@ -104,11 +120,11 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 	starting_lives_inc.unhide(0.5_s);
 	cur_starting_lives.unhide(0.5_s);
 
-	widget& hitbox_radius_dec{m_ui.emplace<arrow_widget>("hitbox_radius_dec", HITBOX_RADIUS_START_POS, tr::align::CENTER_LEFT, false,
+	widget& hitbox_radius_dec{m_ui.emplace<arrow_widget>(TAG_HITBOX_RADIUS_DEC, HITBOX_RADIUS_START_POS, tr::align::CENTER_LEFT, false,
 														 hitbox_radius_dec_status_cb, hitbox_radius_dec_action_cb)};
-	widget& hitbox_radius_inc{m_ui.emplace<arrow_widget>("hitbox_radius_inc", HITBOX_RADIUS_START_POS, tr::align::CENTER_RIGHT, true,
+	widget& hitbox_radius_inc{m_ui.emplace<arrow_widget>(TAG_HITBOX_RADIUS_INC, HITBOX_RADIUS_START_POS, tr::align::CENTER_RIGHT, true,
 														 hitbox_radius_inc_status_cb, hitbox_radius_inc_action_cb)};
-	widget& cur_hitbox_radius{m_ui.emplace<text_widget>("cur_hitbox_radius", HITBOX_RADIUS_START_POS, tr::align::CENTER, font::LANGUAGE,
+	widget& cur_hitbox_radius{m_ui.emplace<text_widget>(TAG_CUR_HITBOX_RADIUS, HITBOX_RADIUS_START_POS, tr::align::CENTER, font::LANGUAGE,
 														tr::system::ttf_style::NORMAL, 48, cur_hitbox_radius_text_cb)};
 	hitbox_radius_dec.pos.change(interp_mode::CUBE, {790, HITBOX_RADIUS_START_POS.y}, 0.5_s);
 	hitbox_radius_inc.pos.change(interp_mode::CUBE, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s);
@@ -117,12 +133,12 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 	hitbox_radius_inc.unhide(0.5_s);
 	cur_hitbox_radius.unhide(0.5_s);
 
-	widget& inertia_factor_dec{m_ui.emplace<arrow_widget>("inertia_factor_dec", INERTIA_FACTOR_START_POS, tr::align::CENTER_LEFT, false,
+	widget& inertia_factor_dec{m_ui.emplace<arrow_widget>(TAG_INERTIA_FACTOR_DEC, INERTIA_FACTOR_START_POS, tr::align::CENTER_LEFT, false,
 														  inertia_factor_dec_status_cb, inertia_factor_dec_action_cb)};
-	widget& inertia_factor_inc{m_ui.emplace<arrow_widget>("inertia_factor_inc", INERTIA_FACTOR_START_POS, tr::align::CENTER_RIGHT, true,
+	widget& inertia_factor_inc{m_ui.emplace<arrow_widget>(TAG_INERTIA_FACTOR_INC, INERTIA_FACTOR_START_POS, tr::align::CENTER_RIGHT, true,
 														  inertia_factor_inc_status_cb, inertia_factor_inc_action_cb)};
-	widget& cur_inertia_factor{m_ui.emplace<text_widget>("cur_inertia_factor", INERTIA_FACTOR_START_POS, tr::align::CENTER, font::LANGUAGE,
-														 tr::system::ttf_style::NORMAL, 48, cur_inertia_factor_text_cb)};
+	widget& cur_inertia_factor{m_ui.emplace<text_widget>(TAG_CUR_INERTIA_FACTOR, INERTIA_FACTOR_START_POS, tr::align::CENTER,
+														 font::LANGUAGE, tr::system::ttf_style::NORMAL, 48, cur_inertia_factor_text_cb)};
 	inertia_factor_dec.pos.change(interp_mode::CUBE, {790, INERTIA_FACTOR_START_POS.y}, 0.5_s);
 	inertia_factor_inc.pos.change(interp_mode::CUBE, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s);
 	cur_inertia_factor.pos.change(interp_mode::CUBE, {887.5, INERTIA_FACTOR_START_POS.y}, 0.5_s);
@@ -139,7 +155,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 		widget.unhide(0.5_s);
 	}
 
-	widget& exit{m_ui.emplace<clickable_text_widget>("exit", BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
+	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 													 DEFAULT_TEXT_CALLBACK, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
 													 sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
@@ -180,8 +196,8 @@ void player_settings_editor_state::draw()
 
 void player_settings_editor_state::set_up_exit_animation()
 {
-	widget& subtitle{m_ui.get("player_settings")};
-	widget& exit{m_ui.get("exit")};
+	widget& subtitle{m_ui.get(TAG_SUBTITLE)};
+	widget& exit{m_ui.get(TAG_EXIT)};
 	subtitle.pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
 	subtitle.hide(0.5_s);
 	for (const char* tag : tr::project(LABELS, &label::tag)) {

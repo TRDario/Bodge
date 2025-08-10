@@ -1,4 +1,3 @@
-#include "../../include/state/title_state.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
@@ -6,11 +5,27 @@
 #include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/settings_state.hpp"
 #include "../../include/state/start_game_state.hpp"
+#include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
+constexpr const char* TAG_LOGO_TEXT{"logo_text"};
+constexpr const char* TAG_LOGO_OVERLAY{"logo_overlay"};
+constexpr const char* TAG_LOGO_BALL{"logo_ball"};
+constexpr const char* TAG_COPYRIGHT{"copyright"};
+constexpr const char* TAG_VERSION{"version"};
+constexpr const char* TAG_START_GAME{"start_game"};
+constexpr const char* TAG_GAMEMODE_DESIGNER{"gamemode_designer"};
+constexpr const char* TAG_SCOREBOARDS{"scoreboards"};
+constexpr const char* TAG_REPLAYS{"replays"};
+constexpr const char* TAG_SETTINGS{"settings"};
+constexpr const char* TAG_CREDITS{"credits"};
+constexpr const char* TAG_EXIT{"exit"};
+
 // Title screen buttons.
-constexpr std::array<const char*, 7> BUTTONS{"start_game", "gamemode_designer", "scoreboards", "replays", "settings", "credits", "exit"};
+constexpr std::array<const char*, 7> BUTTONS{
+	TAG_START_GAME, TAG_GAMEMODE_DESIGNER, TAG_SCOREBOARDS, TAG_REPLAYS, TAG_SETTINGS, TAG_CREDITS, TAG_EXIT,
+};
 // Shortcuts of the title screen buttons.
 constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS.size()> SHORTCUTS{{
 	{{tr::system::keycode::ENTER}, {tr::system::keycode::TOP_ROW_1}},
@@ -109,22 +124,23 @@ float title_state::fade_overlay_opacity() const
 
 void title_state::set_up_ui()
 {
-	widget& logo_text{m_ui.emplace<image_widget>("logo_text", glm::vec2{500, 100}, tr::align::CENTER)};
+	widget& logo_text{m_ui.emplace<image_widget>(TAG_LOGO_TEXT, glm::vec2{500, 100}, tr::align::CENTER)};
 	logo_text.pos.change(interp_mode::CUBE, {500, 160}, 2.5_s);
 	logo_text.unhide(2.5_s);
-	widget& logo_overlay{m_ui.emplace<image_widget>("logo_overlay", glm::vec2{500, 100}, tr::align::CENTER, &engine::settings.primary_hue)};
+	widget& logo_overlay{
+		m_ui.emplace<image_widget>(TAG_LOGO_OVERLAY, glm::vec2{500, 100}, tr::align::CENTER, &engine::settings.primary_hue)};
 	logo_overlay.pos.change(interp_mode::CUBE, {500, 160}, 2.5_s);
 	logo_overlay.unhide(2.5_s);
-	widget& logo_ball{m_ui.emplace<image_widget>("logo_ball", glm::vec2{-180, 644}, tr::align::CENTER, &engine::settings.secondary_hue)};
+	widget& logo_ball{m_ui.emplace<image_widget>(TAG_LOGO_BALL, glm::vec2{-180, 644}, tr::align::CENTER, &engine::settings.secondary_hue)};
 	logo_ball.pos.change(interp_mode::CUBE, {327, 217}, 2.5_s);
 	logo_ball.unhide(2.5_s);
 
-	widget& copyright{
-		m_ui.emplace<text_widget>("copyright", glm::vec2{4, 1000}, tr::align::TOP_LEFT, font::DEFAULT, tr::system::ttf_style::NORMAL, 24)};
+	widget& copyright{m_ui.emplace<text_widget>(TAG_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, font::DEFAULT,
+												tr::system::ttf_style::NORMAL, 24)};
 	copyright.pos.change(interp_mode::CUBE, {4, 998 - copyright.size().y}, 1_s);
 	copyright.unhide(1_s);
-	widget& version{
-		m_ui.emplace<text_widget>("version", glm::vec2{996, 1000}, tr::align::TOP_RIGHT, font::DEFAULT, tr::system::ttf_style::NORMAL, 24)};
+	widget& version{m_ui.emplace<text_widget>(TAG_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, font::DEFAULT,
+											  tr::system::ttf_style::NORMAL, 24)};
 	version.pos.change(interp_mode::CUBE, {996, 998 - version.size().y}, 1_s);
 	version.unhide(1_s);
 
@@ -185,10 +201,10 @@ void title_state::set_up_exit_animation()
 		widget& widget{m_ui.get(tag)};
 		widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}
-	m_ui.get("logo_text").pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
-	m_ui.get("logo_overlay").pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
-	m_ui.get("logo_ball").pos.change(interp_mode::CUBE, {487, 57}, 0.5_s);
-	m_ui.get("copyright").pos.change(interp_mode::CUBE, {4, 1000}, 0.5_s);
-	m_ui.get("version").pos.change(interp_mode::CUBE, {996, 1000}, 0.5_s);
+	m_ui.get(TAG_LOGO_TEXT).pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
+	m_ui.get(TAG_LOGO_OVERLAY).pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
+	m_ui.get(TAG_LOGO_BALL).pos.change(interp_mode::CUBE, {487, 57}, 0.5_s);
+	m_ui.get(TAG_COPYRIGHT).pos.change(interp_mode::CUBE, {4, 1000}, 0.5_s);
+	m_ui.get(TAG_VERSION).pos.change(interp_mode::CUBE, {996, 1000}, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

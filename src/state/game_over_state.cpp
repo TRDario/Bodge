@@ -1,13 +1,21 @@
-#include "../../include/state/game_over_state.hpp"
 #include "../../include/graphics.hpp"
+#include "../../include/state/game_over_state.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/save_score_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
+constexpr const char* TAG_TITLE{"game_over"};
+constexpr const char* TAG_TIME{"time"};
+constexpr const char* TAG_PB{"pb"};
+constexpr const char* TAG_SAVE_AND_RESTART{"save_and_restart"};
+constexpr const char* TAG_RESTART{"restart"};
+constexpr const char* TAG_SAVE_AND_QUIT{"save_and_quit"};
+constexpr const char* TAG_QUIT{"quit"};
+
 // The pause screen buttons.
-constexpr std::array<const char*, 4> BUTTONS{"save_and_restart", "restart", "save_and_quit", "quit"};
+constexpr std::array<const char*, 4> BUTTONS{TAG_SAVE_AND_RESTART, TAG_RESTART, TAG_SAVE_AND_QUIT, TAG_QUIT};
 // Shortcuts of the buttons.
 constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS.size()> SHORTCUTS{{
 	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, {tr::system::keycode::TOP_ROW_1}},
@@ -27,7 +35,7 @@ constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
 game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_in, ticks prev_pb)
 	: m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}, m_timer{0}, m_game{std::move(game)}, m_prev_pb{prev_pb}
 {
-	widget& title{m_ui.emplace<text_widget>("game_over", glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
+	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
 											tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change(interp_mode::CUBE, {500, TITLE_Y}, 0.5_s);
 	title.unhide(0.5_s);
@@ -36,7 +44,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 					   (engine::line_skip(font::LANGUAGE, 48) + 4 + engine::line_skip(font::LANGUAGE, 24)) / 2};
 	const ticks time_ticks{m_game->result()};
 	text_callback time_text_cb{[time = timer_text(time_ticks)](const auto&) { return time; }};
-	widget& time{m_ui.emplace<text_widget>("time", glm::vec2{400, time_h}, tr::align::TOP_CENTER, font::LANGUAGE,
+	widget& time{m_ui.emplace<text_widget>(TAG_TIME, glm::vec2{400, time_h}, tr::align::TOP_CENTER, font::LANGUAGE,
 										   tr::system::ttf_style::NORMAL, 64, std::move(time_text_cb), "FFFF00C0"_rgba8)};
 	time.pos.change(interp_mode::CUBE, {500, time_h}, 0.5_s);
 	time.unhide(0.5_s);
@@ -51,7 +59,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 			return str;
 		};
 	}
-	widget& pb{m_ui.emplace<text_widget>("pb", glm::vec2{600, pb_h}, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+	widget& pb{m_ui.emplace<text_widget>(TAG_PB, glm::vec2{600, pb_h}, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
 										 24, std::move(pb_text_cb), "FFFF00C0"_rgba8)};
 	pb.pos.change(interp_mode::CUBE, {500, pb_h}, 0.5_s);
 	if (prev_pb >= m_game->result()) {
@@ -117,10 +125,10 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 	case substate::GAME_OVER:
 		if (m_prev_pb < m_game->result()) {
 			if (m_timer % 0.5_s == 0) {
-				m_ui.get("pb").hide();
+				m_ui.get(TAG_PB).hide();
 			}
 			else if (m_timer % 0.5_s == 0.25_s) {
-				m_ui.get("pb").unhide();
+				m_ui.get(TAG_PB).unhide();
 			}
 		}
 		return nullptr;
@@ -185,9 +193,9 @@ float game_over_state::blur_strength() const
 
 void game_over_state::set_up_exit_animation()
 {
-	m_ui.get("game_over").pos.change(interp_mode::CUBE, {500, TITLE_Y - 100}, 0.5_s);
-	widget& time{m_ui.get("time")};
-	widget& pb{m_ui.get("pb")};
+	m_ui.get(TAG_TITLE).pos.change(interp_mode::CUBE, {500, TITLE_Y - 100}, 0.5_s);
+	widget& time{m_ui.get(TAG_TIME)};
+	widget& pb{m_ui.get(TAG_PB)};
 	time.pos.change(interp_mode::CUBE, {400, glm::vec2{time.pos}.y}, 0.5_s);
 	pb.pos.change(interp_mode::CUBE, {600, glm::vec2{pb.pos}.y}, 0.5_s);
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {

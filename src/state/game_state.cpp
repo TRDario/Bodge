@@ -1,10 +1,15 @@
-#include "../../include/state/game_state.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/state/game_over_state.hpp"
+#include "../../include/state/game_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/pause_state.hpp"
 #include "../../include/state/replays_state.hpp"
 #include "../../include/system.hpp"
+
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+
+constexpr const char* TAG_REPLAY{"replay"};
+constexpr const char* TAG_INDICATOR{"indicator"};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
@@ -16,10 +21,10 @@ game_state::game_state(std::unique_ptr<game>&& game, game_type type, bool fade_i
 	}
 
 	if (type == game_type::REPLAY) {
-		widget& replay{m_ui.emplace<text_widget>("replay", glm::vec2{4, 1000}, tr::align::BOTTOM_LEFT, font::LANGUAGE,
+		widget& replay{m_ui.emplace<text_widget>(TAG_REPLAY, glm::vec2{4, 1000}, tr::align::BOTTOM_LEFT, font::LANGUAGE,
 												 tr::system::ttf_style::NORMAL, 48)};
 		replay.unhide();
-		widget& indicator{m_ui.emplace<replay_playback_indicator_widget>("indicator", glm::vec2{992, 994}, tr::align::BOTTOM_RIGHT)};
+		widget& indicator{m_ui.emplace<replay_playback_indicator_widget>(TAG_INDICATOR, glm::vec2{992, 994}, tr::align::BOTTOM_RIGHT)};
 		indicator.unhide();
 	}
 }
@@ -78,10 +83,10 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 				m_timer = 0;
 			}
 			else if (m_timer % 120 == 60) {
-				m_ui.get("replay").hide();
+				m_ui.get(TAG_REPLAY).hide();
 			}
 			else if (m_timer % 120 == 0) {
-				m_ui.get("replay").unhide();
+				m_ui.get(TAG_REPLAY).unhide();
 			}
 		}
 		else {

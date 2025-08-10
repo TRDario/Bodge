@@ -1,6 +1,6 @@
-#include "../../include/state/pause_state.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
+#include "../../include/state/pause_state.hpp"
 #include "../../include/state/replays_state.hpp"
 #include "../../include/state/save_score_state.hpp"
 #include "../../include/state/title_state.hpp"
@@ -8,10 +8,18 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
+constexpr const char* TAG_PAUSED{"paused"};
+constexpr const char* TAG_TEST_PAUSED{"test_paused"};
+constexpr const char* TAG_REPLAY_PAUSED{"replay_paused"};
+constexpr const char* TAG_UNPAUSE{"unpause"};
+constexpr const char* TAG_SAVE_AND_RESTART{"save_and_restart"};
+constexpr const char* TAG_RESTART{"restart"};
+constexpr const char* TAG_SAVE_AND_QUIT{"save_and_quit"};
+constexpr const char* TAG_QUIT{"quit"};
 // The regular pause screen buttons.
-constexpr std::array<const char*, 5> BUTTONS_REGULAR{"unpause", "save_and_restart", "restart", "save_and_quit", "quit"};
+constexpr std::array<const char*, 5> BUTTONS_REGULAR{TAG_UNPAUSE, TAG_SAVE_AND_RESTART, TAG_RESTART, TAG_SAVE_AND_QUIT, TAG_QUIT};
 // The special pause screen buttons.
-constexpr std::array<const char*, 3> BUTTONS_SPECIAL{"unpause", "restart", "quit"};
+constexpr std::array<const char*, 3> BUTTONS_SPECIAL{TAG_UNPAUSE, TAG_RESTART, TAG_QUIT};
 // Shortcuts of the regular button set.
 constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS_REGULAR.size()> SHORTCUTS_REGULAR{{
 	{{tr::system::keycode::ESCAPE}, {tr::system::keycode::TOP_ROW_1}},
@@ -181,7 +189,7 @@ float pause_state::blur_strength() const
 void pause_state::set_up_full_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
-	widget& title{m_ui.emplace<text_widget>("paused", glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
+	widget& title{m_ui.emplace<text_widget>(TAG_PAUSED, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
 											tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change(interp_mode::CUBE, {500, TITLE_Y}, 0.5_s);
 	title.unhide(0.5_s);
@@ -236,7 +244,7 @@ void pause_state::set_up_full_ui()
 void pause_state::set_up_limited_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
-	const char* const title_tag{to_type(m_substate) == game_type::REPLAY ? "replay_paused" : "test_paused"};
+	const char* const title_tag{to_type(m_substate) == game_type::REPLAY ? TAG_REPLAY_PAUSED : TAG_TEST_PAUSED};
 	widget& title{m_ui.emplace<text_widget>(title_tag, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
 											tr::system::ttf_style::NORMAL, 64)};
 	title.pos.change(interp_mode::CUBE, {500, TITLE_Y}, 0.5_s);
@@ -277,7 +285,7 @@ void pause_state::set_up_limited_ui()
 void pause_state::set_up_exit_animation()
 {
 	if (to_type(m_substate) == game_type::REGULAR) {
-		m_ui.get("paused").pos.change(interp_mode::CUBE, {500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
+		m_ui.get(TAG_PAUSED).pos.change(interp_mode::CUBE, {500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
 		for (std::size_t i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 			widget& widget{m_ui.get(BUTTONS_REGULAR[i])};
@@ -285,7 +293,7 @@ void pause_state::set_up_exit_animation()
 		}
 	}
 	else {
-		widget& title{m_ui.get(to_type(m_substate) == game_type::TEST ? "test_paused" : "replay_paused")};
+		widget& title{m_ui.get(to_type(m_substate) == game_type::TEST ? TAG_TEST_PAUSED : TAG_REPLAY_PAUSED)};
 		title.pos.change(interp_mode::CUBE, {500, 400 - (BUTTONS_SPECIAL.size() + 1) * 30}, 0.5_s);
 		for (std::size_t i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
