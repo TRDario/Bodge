@@ -30,10 +30,10 @@ constexpr std::array<label, 3> LABELS{{
 constexpr std::array<tag, 9> RIGHT_WIDGETS{TAG_STARTING_LIVES_DEC, TAG_CUR_STARTING_LIVES, TAG_STARTING_LIVES_INC,
 										   TAG_HITBOX_RADIUS_DEC,  TAG_CUR_HITBOX_RADIUS,  TAG_HITBOX_RADIUS_INC,
 										   TAG_INERTIA_FACTOR_DEC, TAG_CUR_INERTIA_FACTOR, TAG_INERTIA_FACTOR_INC};
-// Shortcuts of the exit button.
-constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
-	{tr::system::keycode::C},      {tr::system::keycode::Q},         {tr::system::keycode::E},
-	{tr::system::keycode::ESCAPE}, {tr::system::keycode::TOP_ROW_2},
+
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::ESCAPE}, TAG_EXIT},
+	{{tr::system::keycode::TOP_ROW_1}, TAG_EXIT},
 };
 
 // Starting position of the starting lives widgets.
@@ -46,7 +46,7 @@ constexpr glm::vec2 INERTIA_FACTOR_START_POS{1050, 600};
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
-	: m_substate{substate::IN_EDITOR}, m_timer{0}, m_background_game{std::move(game)}, m_pending{gamemode}
+	: m_substate{substate::IN_EDITOR}, m_timer{0}, m_ui{SHORTCUTS}, m_background_game{std::move(game)}, m_pending{gamemode}
 {
 	// STATUS CALLBACKS
 
@@ -156,8 +156,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 	}
 
 	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
-													 sound::CANCEL)};
+													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 }

@@ -14,7 +14,7 @@ constexpr tag TAG_INDICATOR{"indicator"};
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
 game_state::game_state(std::unique_ptr<game>&& game, game_type type, bool fade_in)
-	: m_substate{(fade_in ? substate_base::STARTING : substate_base::ONGOING) | type}, m_timer{0}, m_game{std::move(game)}
+	: m_substate{(fade_in ? substate_base::STARTING : substate_base::ONGOING) | type}, m_timer{0}, m_ui{}, m_game{std::move(game)}
 {
 	if (!fade_in) {
 		engine::unpause_song();

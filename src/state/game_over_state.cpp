@@ -16,16 +16,20 @@ constexpr tag TAG_QUIT{"quit"};
 
 // The pause screen buttons.
 constexpr std::array<tag, 4> BUTTONS{TAG_SAVE_AND_RESTART, TAG_RESTART, TAG_SAVE_AND_QUIT, TAG_QUIT};
-// Shortcuts of the buttons.
-constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS.size()> SHORTCUTS{{
-	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, {tr::system::keycode::TOP_ROW_1}},
-	{{tr::system::keycode::R}, {tr::system::keycode::TOP_ROW_2}},
-	{{tr::system::keycode::ESCAPE, tr::system::keymod::SHIFT},
-	 {tr::system::keycode::Q, tr::system::keymod::SHIFT},
-	 {tr::system::keycode::E, tr::system::keymod::SHIFT},
-	 {tr::system::keycode::TOP_ROW_3}},
-	{{tr::system::keycode::ESCAPE}, {tr::system::keycode::Q}, {tr::system::keycode::E}, {tr::system::keycode::TOP_ROW_4}},
-}};
+
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, TAG_SAVE_AND_RESTART},
+	{{tr::system::keycode::TOP_ROW_1}, TAG_SAVE_AND_RESTART},
+	{{tr::system::keycode::R}, TAG_RESTART},
+	{{tr::system::keycode::TOP_ROW_2}, TAG_RESTART},
+	{{tr::system::keycode::ESCAPE, tr::system::keymod::SHIFT}, TAG_SAVE_AND_QUIT},
+	{{tr::system::keycode::Q, tr::system::keymod::SHIFT}, TAG_SAVE_AND_QUIT},
+	{{tr::system::keycode::E, tr::system::keymod::SHIFT}, TAG_SAVE_AND_QUIT},
+	{{tr::system::keycode::TOP_ROW_3}, TAG_SAVE_AND_QUIT},
+	{{tr::system::keycode::ESCAPE}, TAG_QUIT},
+	{{tr::system::keycode::Q}, TAG_QUIT},
+	{{tr::system::keycode::TOP_ROW_4}, TAG_QUIT},
+};
 
 // The height of the title text.
 constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
@@ -33,7 +37,11 @@ constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
 game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_in, ticks prev_pb)
-	: m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}, m_timer{0}, m_game{std::move(game)}, m_prev_pb{prev_pb}
+	: m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}
+	, m_timer{0}
+	, m_ui{SHORTCUTS}
+	, m_game{std::move(game)}
+	, m_prev_pb{prev_pb}
 {
 	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
 											tr::system::ttf_style::NORMAL, 64, loc_text_callback{TAG_TITLE})};
@@ -93,8 +101,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const glm::vec2 pos{500 + offset, 500 - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER, font::LANGUAGE, 48,
-														   loc_text_callback{BUTTONS[i]}, status_cb, std::move(action_cbs[i]), NO_TOOLTIP,
-														   SHORTCUTS[i])};
+														   loc_text_callback{BUTTONS[i]}, status_cb, std::move(action_cbs[i]))};
 		widget.pos.change(interp_mode::CUBE, {500, pos.y}, 0.5_s);
 		widget.unhide(0.5_s);
 	}

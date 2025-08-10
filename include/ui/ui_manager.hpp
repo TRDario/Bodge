@@ -1,13 +1,15 @@
 #pragma once
 #include "widget.hpp"
 
+using shortcut_table = std::initializer_list<std::pair<const tr::system::key_chord, tag>>;
+
 // UI manager class.
 class ui_manager {
   public:
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
-	// Creates an empty UI manager.
-	ui_manager() = default;
+	// Creates a UI manager.
+	ui_manager(shortcut_table shortcuts);
 
 	///////////////////////////////////////////////////////// INSERTION AND ACCESS ////////////////////////////////////////////////////////
 
@@ -25,8 +27,6 @@ class ui_manager {
 	{
 		return *static_cast<T*>(m_widgets.emplace(tag, std::make_unique<T>(std::forward<Args>(args)...)).first->second.get());
 	}
-	// Clears the UI.
-	void clear();
 
 	///////////////////////////////////////////////////////////// INPUT FOCUS /////////////////////////////////////////////////////////////
 
@@ -59,6 +59,8 @@ class ui_manager {
 
 	// The widget list.
 	std::unordered_map<tag, std::unique_ptr<widget>> m_widgets;
+	// Shortcut table.
+	std::unordered_map<tr::system::key_chord, tag> m_shortcuts;
 	// Pointer to the widget being hovered over, or nullptr.
 	kv_pair* m_hovered{nullptr};
 	// Pointer to the widget with input focus, or nullptr.

@@ -16,28 +16,30 @@ constexpr tag TAG_TEST{"test"};
 constexpr tag TAG_SAVE{"save"};
 constexpr tag TAG_DISCARD{"discard"};
 
-// Shortcuts of the ball settings button.
-constexpr std::initializer_list<tr::system::key_chord> BALL_SETTINGS_SHORTCUTS{{tr::system::keycode::B}, {tr::system::keycode::TOP_ROW_1}};
-// Shortcuts of the player settings button.
-constexpr std::initializer_list<tr::system::key_chord> PLAYER_SETTINGS_SHORTCUTS{{tr::system::keycode::P},
-																				 {tr::system::keycode::TOP_ROW_2}};
 // Buttons at the bottom of the screen.
 constexpr std::array<tag, 3> BOTTOM_BUTTONS{TAG_TEST, TAG_SAVE, TAG_DISCARD};
-// Shortcuts of the bottom buttons.
-constexpr std::array<std::initializer_list<tr::system::key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
-	{{tr::system::keycode::T}, {tr::system::keycode::TOP_ROW_3}},
-	{{tr::system::keycode::S}, {tr::system::keycode::ENTER}, {tr::system::keycode::TOP_ROW_4}},
-	{{tr::system::keycode::C},
-	 {tr::system::keycode::Q},
-	 {tr::system::keycode::E},
-	 {tr::system::keycode::ESCAPE},
-	 {tr::system::keycode::TOP_ROW_5}},
-}};
+
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::B}, TAG_BALL_SETTINGS},
+	{{tr::system::keycode::TOP_ROW_1}, TAG_BALL_SETTINGS},
+	{{tr::system::keycode::P}, TAG_PLAYER_SETTINGS},
+	{{tr::system::keycode::TOP_ROW_2}, TAG_PLAYER_SETTINGS},
+	{{tr::system::keycode::T}, TAG_TEST},
+	{{tr::system::keycode::TOP_ROW_3}, TAG_TEST},
+	{{tr::system::keycode::S}, TAG_SAVE},
+	{{tr::system::keycode::ENTER}, TAG_SAVE},
+	{{tr::system::keycode::TOP_ROW_4}, TAG_SAVE},
+	{{tr::system::keycode::C}, TAG_DISCARD},
+	{{tr::system::keycode::Q}, TAG_DISCARD},
+	{{tr::system::keycode::E}, TAG_DISCARD},
+	{{tr::system::keycode::ESCAPE}, TAG_DISCARD},
+	{{tr::system::keycode::TOP_ROW_5}, TAG_DISCARD},
+};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 gamemode_designer_state::gamemode_designer_state(std::unique_ptr<game>&& game, const gamemode& gamemode, bool returning_from_subscreen)
-	: m_substate{substate::IN_GAMEMODE_DESIGNER}, m_timer{0}, m_background_game{std::move(game)}, m_pending{gamemode}
+	: m_substate{substate::IN_GAMEMODE_DESIGNER}, m_timer{0}, m_ui{SHORTCUTS}, m_background_game{std::move(game)}, m_pending{gamemode}
 {
 	set_up_ui(returning_from_subscreen);
 }
@@ -45,6 +47,7 @@ gamemode_designer_state::gamemode_designer_state(std::unique_ptr<game>&& game, c
 gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 	: m_substate{substate::RETURNING_FROM_TEST_GAME}
 	, m_timer{0}
+	, m_ui{SHORTCUTS}
 	, m_background_game{std::make_unique<game>(pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
 	, m_pending{gamemode}
 {
@@ -201,14 +204,13 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	description.unhide(0.5_s);
 
 	widget& ball_settings{m_ui.emplace<clickable_text_widget>(TAG_BALL_SETTINGS, glm::vec2{600, 550}, tr::align::CENTER, font::LANGUAGE, 64,
-															  loc_text_callback{TAG_BALL_SETTINGS}, status_cb, ball_settings_action_cb,
-															  NO_TOOLTIP, BALL_SETTINGS_SHORTCUTS)};
+															  loc_text_callback{TAG_BALL_SETTINGS}, status_cb, ball_settings_action_cb)};
 	ball_settings.pos.change(interp_mode::CUBE, {500, 550}, 0.5_s);
 	ball_settings.unhide(0.5_s);
 
 	widget& player_settings{m_ui.emplace<clickable_text_widget>(TAG_PLAYER_SETTINGS, glm::vec2{400, 650}, tr::align::CENTER, font::LANGUAGE,
 																64, loc_text_callback{TAG_PLAYER_SETTINGS}, status_cb,
-																player_settings_action_cb, NO_TOOLTIP, PLAYER_SETTINGS_SHORTCUTS)};
+																player_settings_action_cb)};
 	player_settings.pos.change(interp_mode::CUBE, {500, 650}, 0.5_s);
 	player_settings.unhide(0.5_s);
 
@@ -216,7 +218,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
 														   48, loc_text_callback{BOTTOM_BUTTONS[i]}, bottom_status_cbs[i],
-														   bottom_action_cbs[i], NO_TOOLTIP, BOTTOM_SHORTCUTS[i], sound)};
+														   bottom_action_cbs[i], NO_TOOLTIP, sound)};
 		widget.pos.change(interp_mode::CUBE, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s);
 		widget.unhide(0.5_s);
 	}

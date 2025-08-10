@@ -16,18 +16,10 @@ constexpr tag TAG_EXIT{"exit"};
 
 // Gamemode display widgets.
 constexpr std::array<tag, 4> GAMEMODE_WIDGETS{TAG_NAME, TAG_AUTHOR, TAG_DESCRIPTION, TAG_PB};
-// Shortcuts of the previous gamemode button.
-constexpr std::initializer_list<tr::system::key_chord> PREV_CHORDS{{tr::system::keycode::LEFT}};
-// Shortcuts of the next gamemode button.
-constexpr std::initializer_list<tr::system::key_chord> NEXT_CHORDS{{tr::system::keycode::RIGHT}};
-// Shortcuts of the start button.
-constexpr std::initializer_list<tr::system::key_chord> START_CHORDS{{tr::system::keycode::ENTER}, {tr::system::keycode::TOP_ROW_1}};
-// Shortcuts of the exit button.
-constexpr std::initializer_list<tr::system::key_chord> EXIT_CHORDS{
-	{tr::system::keycode::ESCAPE},
-	{tr::system::keycode::Q},
-	{tr::system::keycode::E},
-	{tr::system::keycode::TOP_ROW_2},
+
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::LEFT}, TAG_PREV},       {{tr::system::keycode::RIGHT}, TAG_NEXT},  {{tr::system::keycode::ENTER}, TAG_START},
+	{{tr::system::keycode::TOP_ROW_1}, TAG_START}, {{tr::system::keycode::ESCAPE}, TAG_EXIT}, {{tr::system::keycode::TOP_ROW_2}, TAG_EXIT},
 };
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
@@ -35,6 +27,7 @@ constexpr std::initializer_list<tr::system::key_chord> EXIT_CHORDS{
 start_game_state::start_game_state(std::unique_ptr<game>&& game)
 	: m_substate{substate::IN_START_GAME}
 	, m_timer{0}
+	, m_ui{SHORTCUTS}
 	, m_background_game{std::move(game)}
 	, m_gamemodes{load_gamemodes()}
 	, m_selected{m_gamemodes.begin()}
@@ -86,8 +79,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 			widget.hide(0.25_s);
 		}
 	}};
-	widget& prev{
-		m_ui.emplace<arrow_widget>(TAG_PREV, glm::vec2{-100, 500}, tr::align::CENTER_LEFT, false, status_cb, prev_action_cb, PREV_CHORDS)};
+	widget& prev{m_ui.emplace<arrow_widget>(TAG_PREV, glm::vec2{-100, 500}, tr::align::CENTER_LEFT, false, status_cb, prev_action_cb)};
 	prev.pos.change(interp_mode::CUBE, {10, 500}, 0.5_s);
 	prev.unhide(0.5_s);
 
@@ -103,8 +95,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 			widget.hide(0.25_s);
 		}
 	}};
-	widget& next{
-		m_ui.emplace<arrow_widget>(TAG_NEXT, glm::vec2{1100, 500}, tr::align::CENTER_RIGHT, true, status_cb, next_action_cb, NEXT_CHORDS)};
+	widget& next{m_ui.emplace<arrow_widget>(TAG_NEXT, glm::vec2{1100, 500}, tr::align::CENTER_RIGHT, true, status_cb, next_action_cb)};
 	next.pos.change(interp_mode::CUBE, {990, 500}, 0.5_s);
 	next.unhide(0.5_s);
 
@@ -116,7 +107,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		engine::fade_song_out(0.5s);
 	}};
 	widget& start{m_ui.emplace<clickable_text_widget>(TAG_START, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													  loc_text_callback{TAG_START}, status_cb, start_action_cb, NO_TOOLTIP, START_CHORDS)};
+													  loc_text_callback{TAG_START}, status_cb, start_action_cb, NO_TOOLTIP)};
 	start.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
 	start.unhide(0.5_s);
 
@@ -127,8 +118,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		engine::scorefile.last_selected = *m_selected;
 	}};
 	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_CHORDS,
-													 sound::CANCEL)};
+													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 }

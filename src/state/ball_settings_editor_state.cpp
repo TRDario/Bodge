@@ -55,10 +55,9 @@ constexpr std::array<tag, 21> RIGHT_WIDGETS{
 	TAG_VELOCITY_STEP_INC,
 };
 
-// Shortcuts of the exit button.
-constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
-	{tr::system::keycode::C},      {tr::system::keycode::Q},         {tr::system::keycode::E},
-	{tr::system::keycode::ESCAPE}, {tr::system::keycode::TOP_ROW_2},
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::ESCAPE}, TAG_EXIT},
+	{{tr::system::keycode::TOP_ROW_1}, TAG_EXIT},
 };
 
 // Starting position of the starting count widgets.
@@ -79,7 +78,7 @@ constexpr glm::vec2 VELOCITY_STEP_START_POS{1050, INITIAL_VELOCITY_START_POS.y +
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
-	: m_substate{substate::IN_EDITOR}, m_timer{0}, m_background_game{std::move(game)}, m_pending{gamemode}
+	: m_substate{substate::IN_EDITOR}, m_timer{0}, m_ui{SHORTCUTS}, m_background_game{std::move(game)}, m_pending{gamemode}
 {
 	// STATUS CALLBACKS
 
@@ -303,8 +302,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	}
 
 	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
-													 sound::CANCEL)};
+													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 }

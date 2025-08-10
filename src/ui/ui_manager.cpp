@@ -1,6 +1,11 @@
 #include "../../include/ui/ui_manager.hpp"
 #include "../../include/system.hpp"
 
+ui_manager::ui_manager(shortcut_table shortcuts)
+	: m_shortcuts{shortcuts}
+{
+}
+
 //
 
 widget& ui_manager::operator[](tag tag)
@@ -8,13 +13,6 @@ widget& ui_manager::operator[](tag tag)
 	TR_ASSERT(m_widgets.contains(tag), "Tried to get widget with nonexistant tag \"{}\".", tag);
 
 	return *m_widgets.find(tag)->second;
-}
-
-void ui_manager::clear()
-{
-	m_widgets.clear();
-	m_hovered = nullptr;
-	m_input = nullptr;
 }
 
 //
@@ -183,10 +181,9 @@ void ui_manager::handle_event(const tr::system::event& event)
 				}
 			}
 			else {
-				for (widget& widget : tr::deref(std::views::values(m_widgets))) {
-					if (widget.is_shortcut({key_down.key, key_down.mods})) {
-						widget.on_shortcut();
-					}
+				auto it{m_shortcuts.find({key_down.key, key_down.mods})};
+				if (it != m_shortcuts.end()) {
+					(*this)[it->second].on_shortcut();
 				}
 			}
 		}

@@ -22,28 +22,31 @@ constexpr std::array<tag, 5> BUTTONS_REGULAR{TAG_UNPAUSE, TAG_SAVE_AND_RESTART, 
 // The special pause screen buttons.
 constexpr std::array<tag, 3> BUTTONS_SPECIAL{TAG_UNPAUSE, TAG_RESTART, TAG_QUIT};
 
-// Shortcuts of the regular button set.
-constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS_REGULAR.size()> SHORTCUTS_REGULAR{{
-	{{tr::system::keycode::ESCAPE}, {tr::system::keycode::TOP_ROW_1}},
-	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, {tr::system::keycode::TOP_ROW_2}},
-	{{tr::system::keycode::R}, {tr::system::keycode::TOP_ROW_3}},
-	{{tr::system::keycode::Q, tr::system::keymod::SHIFT},
-	 {tr::system::keycode::E, tr::system::keymod::SHIFT},
-	 {tr::system::keycode::TOP_ROW_4}},
-	{{tr::system::keycode::Q}, {tr::system::keycode::E}, {tr::system::keycode::TOP_ROW_5}},
-}};
-// Shortcuts of the special button set.
-constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS_SPECIAL.size()> SHORTCUTS_SPECIAL{{
-	{{tr::system::keycode::ESCAPE}, {tr::system::keycode::TOP_ROW_1}},
-	{{tr::system::keycode::R}, {tr::system::keycode::TOP_ROW_2}},
-	{{tr::system::keycode::Q}, {tr::system::keycode::E}, {tr::system::keycode::TOP_ROW_3}},
-}};
+constexpr shortcut_table SHORTCUTS_REGULAR{
+	{{tr::system::keycode::ESCAPE}, TAG_UNPAUSE},
+	{{tr::system::keycode::TOP_ROW_1}, TAG_UNPAUSE},
+	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, TAG_SAVE_AND_RESTART},
+	{{tr::system::keycode::TOP_ROW_2}, TAG_SAVE_AND_RESTART},
+	{{tr::system::keycode::R}, TAG_RESTART},
+	{{tr::system::keycode::TOP_ROW_3}, TAG_RESTART},
+	{{tr::system::keycode::Q, tr::system::keymod::SHIFT}, TAG_SAVE_AND_QUIT},
+	{{tr::system::keycode::TOP_ROW_4}, TAG_SAVE_AND_QUIT},
+	{{tr::system::keycode::Q}, TAG_QUIT},
+	{{tr::system::keycode::TOP_ROW_5}, TAG_QUIT},
+};
+
+constexpr shortcut_table SHORTCUTS_SPECIAL{
+	{{tr::system::keycode::ESCAPE}, TAG_UNPAUSE}, {{tr::system::keycode::TOP_ROW_1}, TAG_UNPAUSE},
+	{{tr::system::keycode::R}, TAG_RESTART},      {{tr::system::keycode::TOP_ROW_2}, TAG_RESTART},
+	{{tr::system::keycode::Q}, TAG_QUIT},         {{tr::system::keycode::TOP_ROW_3}, TAG_QUIT},
+};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
 pause_state::pause_state(std::unique_ptr<game>&& game, game_type type, glm::vec2 mouse_pos, bool blur_in)
 	: m_substate{(blur_in ? substate_base::PAUSING : substate_base::PAUSED) | type}
 	, m_timer{0}
+	, m_ui{type == game_type::REGULAR ? SHORTCUTS_REGULAR : SHORTCUTS_SPECIAL}
 	, m_game{std::move(game)}
 	, m_start_mouse_pos{mouse_pos}
 {
@@ -237,7 +240,7 @@ void pause_state::set_up_full_ui()
 		const glm::vec2 pos{500 + offset, 500 - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS_REGULAR[i], pos, tr::align::CENTER, font::LANGUAGE, 48,
 														   loc_text_callback{BUTTONS_REGULAR[i]}, i == 0 ? unpause_status_cb : status_cb,
-														   std::move(action_cbs[i]), NO_TOOLTIP, SHORTCUTS_REGULAR[i])};
+														   std::move(action_cbs[i]))};
 		widget.pos.change(interp_mode::CUBE, {500, pos.y}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -278,7 +281,7 @@ void pause_state::set_up_limited_ui()
 		const glm::vec2 pos{500 + offset, 500 - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS_SPECIAL[i], pos, tr::align::CENTER, font::LANGUAGE, 48,
 														   loc_text_callback{BUTTONS_SPECIAL[i]}, i == 0 ? unpause_status_cb : status_cb,
-														   std::move(action_cbs[i]), NO_TOOLTIP, SHORTCUTS_SPECIAL[i])};
+														   std::move(action_cbs[i]))};
 		widget.pos.change(interp_mode::CUBE, {500, pos.y}, 0.5_s);
 		widget.unhide(0.5_s);
 	}

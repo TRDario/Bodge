@@ -21,13 +21,12 @@ constexpr tag TAG_CUR_PAGE{"cur_page"};
 constexpr tag TAG_PAGE_INC{"page_inc"};
 constexpr tag TAG_EXIT{"exit"};
 
-// Shortcuts of the exit button.
-constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
-	{tr::system::keycode::ESCAPE}, {tr::system::keycode::Q}, {tr::system::keycode::E}};
-// Shortcuts of the page decrement button.
-constexpr std::initializer_list<tr::system::key_chord> PAGE_DEC_SHORTCUTS{{tr::system::keycode::LEFT}};
-// Shortcuts of the page increment button.
-constexpr std::initializer_list<tr::system::key_chord> PAGE_INC_SHORTCUTS{{tr::system::keycode::RIGHT}};
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::TOP_ROW_1}, TAG_REPLAY_0}, {{tr::system::keycode::TOP_ROW_2}, TAG_REPLAY_1},
+	{{tr::system::keycode::TOP_ROW_3}, TAG_REPLAY_2}, {{tr::system::keycode::TOP_ROW_4}, TAG_REPLAY_3},
+	{{tr::system::keycode::TOP_ROW_5}, TAG_REPLAY_4}, {{tr::system::keycode::ESCAPE}, TAG_EXIT},
+	{{tr::system::keycode::LEFT}, TAG_PAGE_DEC},      {{tr::system::keycode::RIGHT}, TAG_PAGE_INC},
+};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -35,6 +34,7 @@ replays_state::replays_state()
 	: m_substate{substate::RETURNING_FROM_REPLAY}
 	, m_page{0}
 	, m_timer{0}
+	, m_ui{SHORTCUTS}
 	, m_background_game{std::make_unique<game>(pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
 	, m_replays{load_replay_headers()}
 {
@@ -43,7 +43,12 @@ replays_state::replays_state()
 }
 
 replays_state::replays_state(std::unique_ptr<game>&& game)
-	: m_substate{substate::IN_REPLAYS}, m_page{0}, m_timer{0}, m_background_game{std::move(game)}, m_replays{load_replay_headers()}
+	: m_substate{substate::IN_REPLAYS}
+	, m_page{0}
+	, m_timer{0}
+	, m_ui{SHORTCUTS}
+	, m_background_game{std::move(game)}
+	, m_replays{load_replay_headers()}
 {
 	set_up_ui();
 }
@@ -167,8 +172,7 @@ void replays_state::set_up_ui()
 	title.unhide(0.5_s);
 
 	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
-													 sound::CANCEL)};
+													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 
@@ -186,8 +190,7 @@ void replays_state::set_up_ui()
 		const std::optional<std::map<std::string, replay_header>::iterator> opt_it{it != m_replays.end() ? std::optional{it++}
 																										 : std::nullopt};
 		const glm::vec2 pos{i % 2 == 0 ? 400 : 600, 183 + 150 * i};
-		widget& widget{m_ui.emplace<replay_widget>(REPLAY_TAGS[i], pos, tr::align::CENTER, status_cb, replay_action_cb, opt_it,
-												   tr::system::make_top_row_keycode(i + 1))};
+		widget& widget{m_ui.emplace<replay_widget>(REPLAY_TAGS[i], pos, tr::align::CENTER, status_cb, replay_action_cb, opt_it)};
 		widget.pos.change(interp_mode::CUBE, {500, 183 + 150 * i}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -200,12 +203,12 @@ void replays_state::set_up_ui()
 	cur_page.unhide(0.5_s);
 
 	widget& page_dec{m_ui.emplace<arrow_widget>(TAG_PAGE_DEC, glm::vec2{-50, 942.5}, tr::align::BOTTOM_LEFT, false, page_dec_status_cb,
-												page_dec_action_cb, PAGE_DEC_SHORTCUTS)};
+												page_dec_action_cb)};
 	page_dec.pos.change(interp_mode::CUBE, {10, 942.5}, 0.5_s);
 	page_dec.unhide(0.5_s);
 
 	widget& page_inc{m_ui.emplace<arrow_widget>(TAG_PAGE_INC, glm::vec2{1050, 942.5}, tr::align::BOTTOM_RIGHT, true, page_inc_status_cb,
-												page_inc_action_cb, PAGE_INC_SHORTCUTS)};
+												page_inc_action_cb)};
 	page_inc.pos.change(interp_mode::CUBE, {990, 942.5}, 0.5_s);
 	page_inc.unhide(0.5_s);
 }

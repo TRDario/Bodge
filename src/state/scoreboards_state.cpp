@@ -30,17 +30,13 @@ constexpr std::array<tag, SCORES_PER_PAGE> SCORE_TAGS{
 	TAG_SCORE_0, TAG_SCORE_1, TAG_SCORE_2, TAG_SCORE_3, TAG_SCORE_4, TAG_SCORE_5, TAG_SCORE_6, TAG_SCORE_7,
 };
 
-// Shortcuts of the exit button.
-constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{
-	{tr::system::keycode::ESCAPE}, {tr::system::keycode::Q}, {tr::system::keycode::E}};
-// Shortcuts of the gamemode decrement button.
-constexpr std::initializer_list<tr::system::key_chord> GAMEMODE_DEC_SHORTCUTS{{tr::system::keycode::LEFT, tr::system::keymod::SHIFT}};
-// Shortcuts of the gamemode increment button.
-constexpr std::initializer_list<tr::system::key_chord> GAMEMODE_INC_SHORTCUTS{{tr::system::keycode::RIGHT, tr::system::keymod::SHIFT}};
-// Shortcuts of the page decrement button.
-constexpr std::initializer_list<tr::system::key_chord> PAGE_DEC_SHORTCUTS{{tr::system::keycode::LEFT}};
-// Shortcuts of the page increment button.
-constexpr std::initializer_list<tr::system::key_chord> PAGE_INC_SHORTCUTS{{tr::system::keycode::RIGHT}};
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::ESCAPE}, TAG_EXIT},
+	{{tr::system::keycode::LEFT, tr::system::keymod::SHIFT}, TAG_GAMEMODE_DEC},
+	{{tr::system::keycode::RIGHT, tr::system::keymod::SHIFT}, TAG_GAMEMODE_INC},
+	{{tr::system::keycode::LEFT}, TAG_PAGE_DEC},
+	{{tr::system::keycode::RIGHT}, TAG_PAGE_INC},
+};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -48,6 +44,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	: m_substate{substate::IN_SCORES}
 	, m_page{0}
 	, m_timer{0}
+	, m_ui{SHORTCUTS}
 	, m_background_game{std::move(game)}
 	, m_selected{engine::scorefile.categories.begin()}
 {
@@ -127,8 +124,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	player_info.unhide(0.5_s);
 
 	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, EXIT_SHORTCUTS,
-													 sound::CANCEL)};
+													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 
@@ -151,20 +147,19 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	}
 
 	const text_callback cur_gamemode_tooltip_cb{[this] { return std::string{description(m_selected->gamemode)}; }};
-	widget& cur_gamemode{m_ui.emplace<text_widget>(TAG_CUR_GAMEMODE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, true,
-												   cur_gamemode_tooltip_cb, false, std::vector<tr::system::key_chord>{}, font::LANGUAGE,
-												   tr::system::ttf_style::NORMAL, tr::halign::CENTER, 48, tr::system::UNLIMITED_WIDTH,
-												   "A0A0A0A0"_rgba8, cur_gamemode_text_cb)};
+	widget& cur_gamemode{m_ui.emplace<text_widget>(
+		TAG_CUR_GAMEMODE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, true, cur_gamemode_tooltip_cb, false, font::LANGUAGE,
+		tr::system::ttf_style::NORMAL, tr::halign::CENTER, 48, tr::system::UNLIMITED_WIDTH, "A0A0A0A0"_rgba8, cur_gamemode_text_cb)};
 	cur_gamemode.pos.change(interp_mode::CUBE, {500, 900}, 0.5_s);
 	cur_gamemode.unhide(0.5_s);
 
 	widget& gamemode_dec{m_ui.emplace<arrow_widget>(TAG_GAMEMODE_DEC, glm::vec2{-50, 892.5}, tr::align::BOTTOM_LEFT, false,
-													gamemode_change_status_cb, gamemode_dec_action_cb, GAMEMODE_DEC_SHORTCUTS)};
+													gamemode_change_status_cb, gamemode_dec_action_cb)};
 	gamemode_dec.pos.change(interp_mode::CUBE, {10, 892.5}, 0.5_s);
 	gamemode_dec.unhide(0.5_s);
 
 	widget& gamemode_inc{m_ui.emplace<arrow_widget>(TAG_GAMEMODE_INC, glm::vec2{1050, 892.5}, tr::align::BOTTOM_RIGHT, true,
-													gamemode_change_status_cb, gamemode_inc_action_cb, GAMEMODE_INC_SHORTCUTS)};
+													gamemode_change_status_cb, gamemode_inc_action_cb)};
 	gamemode_inc.pos.change(interp_mode::CUBE, {990, 892.5}, 0.5_s);
 	gamemode_inc.unhide(0.5_s);
 
@@ -174,12 +169,12 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	cur_page.unhide(0.5_s);
 
 	widget& page_dec{m_ui.emplace<arrow_widget>(TAG_PAGE_DEC, glm::vec2{-50, 942.5}, tr::align::BOTTOM_LEFT, false, page_dec_status_cb,
-												page_dec_action_cb, PAGE_DEC_SHORTCUTS)};
+												page_dec_action_cb)};
 	page_dec.pos.change(interp_mode::CUBE, {10, 942.5}, 0.5_s);
 	page_dec.unhide(0.5_s);
 
 	widget& page_inc{m_ui.emplace<arrow_widget>(TAG_PAGE_INC, glm::vec2{1050, 942.5}, tr::align::BOTTOM_RIGHT, true, page_inc_status_cb,
-												page_inc_action_cb, PAGE_INC_SHORTCUTS)};
+												page_inc_action_cb)};
 	page_inc.pos.change(interp_mode::CUBE, {990, 942.5}, 0.5_s);
 	page_inc.unhide(0.5_s);
 }

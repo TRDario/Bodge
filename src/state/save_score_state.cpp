@@ -13,12 +13,10 @@ constexpr tag TAG_INPUT{"input"};
 constexpr tag TAG_SAVE{"save"};
 constexpr tag TAG_CANCEL{"cancel"};
 
-// Shortcuts of the save button.
-constexpr std::initializer_list<tr::system::key_chord> SAVE_SHORTCUTS{
-	{tr::system::keycode::ENTER}, {tr::system::keycode::S}, {tr::system::keycode::TOP_ROW_1}};
-// Shortcuts of the cancel button.
-constexpr std::initializer_list<tr::system::key_chord> CANCEL_SHORTCUTS{
-	{tr::system::keycode::ESCAPE}, {tr::system::keycode::C}, {tr::system::keycode::TOP_ROW_2}};
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::ENTER}, TAG_SAVE},    {{tr::system::keycode::S}, TAG_SAVE},   {{tr::system::keycode::TOP_ROW_1}, TAG_SAVE},
+	{{tr::system::keycode::ESCAPE}, TAG_CANCEL}, {{tr::system::keycode::C}, TAG_CANCEL}, {{tr::system::keycode::TOP_ROW_2}, TAG_CANCEL},
+};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -26,6 +24,7 @@ save_score_state::save_score_state(std::unique_ptr<active_game>&& game, glm::vec
 	: m_substate{substate_base::SAVING_SCORE | flags}
 	, m_substate_data{.mouse_pos = mouse_pos}
 	, m_timer{0}
+	, m_ui{SHORTCUTS}
 	, m_game{std::move(game)}
 	, m_score{{}, unix_now(), m_game->result(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
@@ -36,6 +35,7 @@ save_score_state::save_score_state(std::unique_ptr<active_game>&& game, ticks pr
 	: m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
 	, m_substate_data{.prev_pb = prev_pb}
 	, m_timer{0}
+	, m_ui{SHORTCUTS}
 	, m_game{std::move(game)}
 	, m_score{{}, unix_now(), m_game->result(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
@@ -151,13 +151,13 @@ void save_score_state::set_up_ui()
 	description.unhide(0.5_s);
 
 	widget& save{m_ui.emplace<clickable_text_widget>(TAG_SAVE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_SAVE}, status_cb, save_action_cb, NO_TOOLTIP, SAVE_SHORTCUTS)};
+													 loc_text_callback{TAG_SAVE}, status_cb, save_action_cb)};
 	save.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
 	save.unhide(0.5_s);
 
 	widget& cancel{m_ui.emplace<clickable_text_widget>(TAG_CANCEL, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
 													   loc_text_callback{TAG_CANCEL}, status_cb, cancel_action_cb, NO_TOOLTIP,
-													   CANCEL_SHORTCUTS, sound::CANCEL)};
+													   sound::CANCEL)};
 	cancel.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	cancel.unhide(0.5_s);
 }

@@ -22,26 +22,25 @@ constexpr tag TAG_SETTINGS{"settings"};
 constexpr tag TAG_CREDITS{"credits"};
 constexpr tag TAG_EXIT{"exit"};
 
-// Title screen buttons.
 constexpr std::array<tag, 7> BUTTONS{
 	TAG_START_GAME, TAG_GAMEMODE_DESIGNER, TAG_SCOREBOARDS, TAG_REPLAYS, TAG_SETTINGS, TAG_CREDITS, TAG_EXIT,
 };
-// Shortcuts of the title screen buttons.
-constexpr std::array<std::initializer_list<tr::system::key_chord>, BUTTONS.size()> SHORTCUTS{{
-	{{tr::system::keycode::ENTER}, {tr::system::keycode::TOP_ROW_1}},
-	{{tr::system::keycode::G}, {tr::system::keycode::TOP_ROW_2}},
-	{{tr::system::keycode::B}, {tr::system::keycode::TOP_ROW_3}},
-	{{tr::system::keycode::R}, {tr::system::keycode::TOP_ROW_4}},
-	{{tr::system::keycode::S}, {tr::system::keycode::TOP_ROW_5}},
-	{{tr::system::keycode::C}, {tr::system::keycode::TOP_ROW_6}},
-	{{tr::system::keycode::ESCAPE}, {tr::system::keycode::Q}, {tr::system::keycode::E}, {tr::system::keycode::TOP_ROW_7}},
-}};
+
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::ENTER}, TAG_START_GAME},    {{tr::system::keycode::TOP_ROW_1}, TAG_START_GAME},
+	{{tr::system::keycode::G}, TAG_GAMEMODE_DESIGNER}, {{tr::system::keycode::TOP_ROW_2}, TAG_GAMEMODE_DESIGNER},
+	{{tr::system::keycode::B}, TAG_SCOREBOARDS},       {{tr::system::keycode::TOP_ROW_3}, TAG_SCOREBOARDS},
+	{{tr::system::keycode::R}, TAG_REPLAYS},           {{tr::system::keycode::TOP_ROW_4}, TAG_REPLAYS},
+	{{tr::system::keycode::S}, TAG_SETTINGS},          {{tr::system::keycode::TOP_ROW_5}, TAG_SETTINGS},
+	{{tr::system::keycode::ESCAPE}, TAG_EXIT},         {{tr::system::keycode::TOP_ROW_6}, TAG_EXIT},
+};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
 title_state::title_state()
 	: m_substate{substate::ENTERING_GAME}
 	, m_timer{0}
+	, m_ui{SHORTCUTS}
 	, m_background_game{std::make_unique<game>(pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
 {
 	set_up_ui();
@@ -49,7 +48,7 @@ title_state::title_state()
 }
 
 title_state::title_state(std::unique_ptr<game>&& game)
-	: m_substate{substate::IN_TITLE}, m_timer{0}, m_background_game{std::move(game)}
+	: m_substate{substate::IN_TITLE}, m_timer{0}, m_ui{SHORTCUTS}, m_background_game{std::move(game)}
 {
 	set_up_ui();
 }
@@ -187,7 +186,7 @@ void title_state::set_up_ui()
 		const glm::vec2 pos{end_pos.x + offset, end_pos.y};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER_RIGHT, font::LANGUAGE, 48,
 														   loc_text_callback{BUTTONS[i]}, status_cb, action_cbs[i], NO_TOOLTIP,
-														   SHORTCUTS[i], i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL)};
+														   i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL)};
 		widget.pos.change(interp_mode::CUBE, end_pos, 1_s);
 		widget.unhide(1_s);
 		end_pos += glm::vec2{-25, 50};

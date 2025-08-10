@@ -13,7 +13,6 @@ line_input_widget<S>::line_input_widget(glm::vec2 pos, tr::align alignment, tr::
 				  true,
 				  NO_TOOLTIP,
 				  true,
-				  {},
 				  font::LANGUAGE,
 				  style,
 				  tr::halign::CENTER,
@@ -145,7 +144,7 @@ template <std::size_t S> void line_input_widget<S>::on_paste()
 ////////////////////////////////////////////////////////////// REPLAY WIDGET //////////////////////////////////////////////////////////////
 
 replay_widget::replay_widget(glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
-							 std::optional<std::map<std::string, replay_header>::iterator> it, tr::system::keycode shortcut)
+							 std::optional<std::map<std::string, replay_header>::iterator> it)
 	: clickable_text_widget{pos,
 							alignment,
 							font::LANGUAGE,
@@ -203,8 +202,7 @@ replay_widget::replay_widget(glm::vec2 pos, tr::align alignment, auto base_statu
 									}
 									return str;
 								}
-							},
-							{{shortcut}}}
+							}}
 	, it{it}
 {
 }
@@ -219,7 +217,6 @@ multiline_input_widget<S>::multiline_input_widget(glm::vec2 pos, tr::align align
 				  true,
 				  NO_TOOLTIP,
 				  true,
-				  {},
 				  font::LANGUAGE,
 				  tr::system::ttf_style::NORMAL,
 				  text_alignment,

@@ -86,12 +86,11 @@ constexpr std::array<label, 8> LABELS{{
 	{TAG_LANGUAGE, NO_TOOLTIP_STR},
 }};
 
-// Shortcuts of the bottom buttons.
-constexpr std::array<std::initializer_list<tr::system::key_chord>, BOTTOM_BUTTONS.size()> BOTTOM_SHORTCUTS{{
-	{{tr::system::keycode::Z, tr::system::keymod::CTRL}},
-	{{tr::system::keycode::S, tr::system::keymod::CTRL}},
-	{{tr::system::keycode::ESCAPE}},
-}};
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::Z, tr::system::keymod::CTRL}, TAG_REVERT},
+	{{tr::system::keycode::S, tr::system::keymod::CTRL}, TAG_APPLY},
+	{{tr::system::keycode::ESCAPE}, TAG_EXIT},
+};
 
 // Starting position of the window size widgets.
 constexpr glm::vec2 WINDOW_SIZE_START_POS{1050, 196};
@@ -113,7 +112,7 @@ constexpr glm::vec2 LANGUAGE_START_POS{1050, 721};
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
 settings_state::settings_state(std::unique_ptr<game>&& game)
-	: m_substate{substate::IN_SETTINGS}, m_timer{0}, m_background_game{std::move(game)}, m_pending{engine::settings}
+	: m_substate{substate::IN_SETTINGS}, m_timer{0}, m_ui{SHORTCUTS}, m_background_game{std::move(game)}, m_pending{engine::settings}
 {
 	// STATUS CALLBACKS
 
@@ -275,9 +274,9 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		const glm::vec2 pos{-50, 196 + i * 75};
 		widget& widget{label.tooltip != NO_TOOLTIP_STR
 						   ? m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
-													   tr::system::ttf_style::NORMAL, 48, loc_text_callback{TAG_TITLE})
+													   tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag})
 						   : m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, font::LANGUAGE,
-													   tr::system::ttf_style::NORMAL, 48, loc_text_callback{TAG_TITLE})};
+													   tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag})};
 		widget.pos.change(interp_mode::CUBE, {15, 196 + i * 75}, 0.5_s);
 		widget.unhide(0.5_s);
 	}
@@ -401,7 +400,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		const sound sound{i == 1 ? sound::CONFIRM : sound::CANCEL};
 		widget& widget{m_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
 														   48, loc_text_callback{BOTTOM_BUTTONS[i]}, bottom_status_cbs[i],
-														   bottom_action_cbs[i], NO_TOOLTIP, BOTTOM_SHORTCUTS[i], sound)};
+														   bottom_action_cbs[i], NO_TOOLTIP, sound)};
 		widget.pos.change(interp_mode::CUBE, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s);
 		widget.unhide(0.5_s);
 	}

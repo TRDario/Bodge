@@ -174,15 +174,8 @@ std::string string_text_callback::operator()() const
 
 ///////////////////////////////////////////////////////////////// WIDGET //////////////////////////////////////////////////////////////////
 
-widget::widget(glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable,
-			   std::vector<tr::system::key_chord>&& shortcuts)
-	: alignment{alignment}
-	, pos{pos}
-	, tooltip_cb{std::move(tooltip_cb)}
-	, m_opacity{0}
-	, m_hoverable{hoverable}
-	, m_writable{writable}
-	, m_shortcuts{std::move(shortcuts)}
+widget::widget(glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable)
+	: alignment{alignment}, pos{pos}, tooltip_cb{std::move(tooltip_cb)}, m_opacity{0}, m_hoverable{hoverable}, m_writable{writable}
 {
 }
 
@@ -231,12 +224,6 @@ bool widget::active() const
 	return false;
 }
 
-bool widget::is_shortcut(const tr::system::key_chord& chord) const
-{
-	const std::vector<tr::system::key_chord>::const_iterator it{std::ranges::find(m_shortcuts, chord)};
-	return it != m_shortcuts.end();
-}
-
 void widget::update()
 {
 	pos.update();
@@ -245,10 +232,10 @@ void widget::update()
 
 /////////////////////////////////////////////////////////////// TEXT_WIDGET ///////////////////////////////////////////////////////////////
 
-text_widget::text_widget(glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable,
-						 std::vector<tr::system::key_chord>&& shortcuts, font font, tr::system::ttf_style style, tr::halign text_alignment,
-						 float font_size, int max_width, tr::rgba8 color, text_callback text_cb)
-	: widget{pos, alignment, hoverable, std::move(tooltip_cb), writable, std::move(shortcuts)}
+text_widget::text_widget(glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable, font font,
+						 tr::system::ttf_style style, tr::halign text_alignment, float font_size, int max_width, tr::rgba8 color,
+						 text_callback text_cb)
+	: widget{pos, alignment, hoverable, std::move(tooltip_cb), writable}
 	, color{color}
 	, text_cb{std::move(text_cb)}
 	, m_font{font}
@@ -262,7 +249,7 @@ text_widget::text_widget(glm::vec2 pos, tr::align alignment, bool hoverable, tex
 text_widget::text_widget(glm::vec2 pos, tr::align alignment, font font, tr::system::ttf_style style, float font_size, text_callback text_cb,
 						 tr::rgba8 color)
 	: text_widget{
-		  pos,   alignment,         false, NO_TOOLTIP, false, {}, font, style, tr::halign::CENTER, font_size, tr::system::UNLIMITED_WIDTH,
+		  pos,   alignment,         false, NO_TOOLTIP, false, font, style, tr::halign::CENTER, font_size, tr::system::UNLIMITED_WIDTH,
 		  color, std::move(text_cb)}
 {
 }
@@ -274,7 +261,6 @@ text_widget::text_widget(glm::vec2 pos, tr::align alignment, const char* tooltip
 				  true,
 				  string_text_callback{tooltip_key},
 				  false,
-				  {},
 				  font,
 				  style,
 				  tr::halign::CENTER,
@@ -341,14 +327,12 @@ void text_widget::update_cache() const
 ////////////////////////////////////////////////////////// CLICKABLE_TEXT_WIDGET //////////////////////////////////////////////////////////
 
 clickable_text_widget::clickable_text_widget(glm::vec2 pos, tr::align alignment, font font, float font_size, text_callback text_cb,
-											 status_callback status_cb, action_callback action_cb, text_callback tooltip_cb,
-											 std::vector<tr::system::key_chord>&& shortcuts, sound sound)
+											 status_callback status_cb, action_callback action_cb, text_callback tooltip_cb, sound sound)
 	: text_widget{pos,
 				  alignment,
 				  true,
 				  std::move(tooltip_cb),
 				  false,
-				  std::move(shortcuts),
 				  font,
 				  tr::system::ttf_style::NORMAL,
 				  tr::halign::CENTER,
@@ -454,7 +438,7 @@ tr::bitmap load_image(std::string_view texture)
 }
 
 image_widget::image_widget(glm::vec2 pos, tr::align alignment, std::string_view file, std::uint16_t* hue_ref)
-	: widget{pos, alignment, false, NO_TOOLTIP, false, {}}, m_texture{load_image(file)}, m_hue_ref{hue_ref}
+	: widget{pos, alignment, false, NO_TOOLTIP, false}, m_texture{load_image(file)}, m_hue_ref{hue_ref}
 {
 	m_texture.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
 }
@@ -481,7 +465,7 @@ void image_widget::add_to_renderer()
 /////////////////////////////////////////////////////////// COLOR_PREVIEW_WIDGET //////////////////////////////////////////////////////////
 
 color_preview_widget::color_preview_widget(glm::vec2 pos, tr::align alignment, std::uint16_t& hue_ref)
-	: widget{pos, alignment, false, NO_TOOLTIP, false, {}}, m_hue_ref{hue_ref}
+	: widget{pos, alignment, false, NO_TOOLTIP, false}, m_hue_ref{hue_ref}
 {
 }
 
@@ -506,9 +490,8 @@ void color_preview_widget::add_to_renderer()
 
 /////////////////////////////////////////////////////////////// ARROW_WIDGET //////////////////////////////////////////////////////////////
 
-arrow_widget::arrow_widget(glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb, action_callback action_cb,
-						   std::vector<tr::system::key_chord>&& chords)
-	: widget{pos, alignment, true, NO_TOOLTIP, false, std::move(chords)}
+arrow_widget::arrow_widget(glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb, action_callback action_cb)
+	: widget{pos, alignment, true, NO_TOOLTIP, false}
 	, m_right{right_arrow}
 	, m_color{{160, 160, 160, 160}}
 	, m_status_cb{std::move(status_cb)}
@@ -614,7 +597,7 @@ void arrow_widget::on_shortcut()
 
 // Creates a replay playback indicator widget.
 replay_playback_indicator_widget::replay_playback_indicator_widget(glm::vec2 pos, tr::align alignment)
-	: widget{pos, alignment, false, NO_TOOLTIP, false, {}}
+	: widget{pos, alignment, false, NO_TOOLTIP, false}
 {
 }
 
@@ -686,7 +669,6 @@ score_widget::score_widget(glm::vec2 pos, tr::align alignment, std::size_t rank,
 			  }
 		  },
 		  false,
-		  {},
 		  font::LANGUAGE,
 		  tr::system::ttf_style::NORMAL,
 		  tr::halign::CENTER,

@@ -12,9 +12,9 @@ class text_widget : public widget {
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a text widget.
-	text_widget(glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable,
-				std::vector<tr::system::key_chord>&& shortcuts, font font, tr::system::ttf_style style, tr::halign text_alignment,
-				float font_size, int max_width, tr::rgba8 color, text_callback text_cb);
+	text_widget(glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable, font font,
+				tr::system::ttf_style style, tr::halign text_alignment, float font_size, int max_width, tr::rgba8 color,
+				text_callback text_cb);
 
 	// Creates a common type of text widget: non-interactible, single-line.
 	text_widget(glm::vec2 pos, tr::align alignment, font font, tr::system::ttf_style style, float font_size, text_callback text_cb,
@@ -76,8 +76,7 @@ class clickable_text_widget : public text_widget {
 
 	// Creates a clickable text widget.
 	clickable_text_widget(glm::vec2 pos, tr::align alignment, font font, float font_size, text_callback text_cb, status_callback status_cb,
-						  action_callback action_cb, text_callback tooltip_cb = NO_TOOLTIP,
-						  std::vector<tr::system::key_chord>&& shortcuts = {}, sound sound = sound::CONFIRM);
+						  action_callback action_cb, text_callback tooltip_cb = NO_TOOLTIP, sound sound = sound::CONFIRM);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -244,8 +243,7 @@ class arrow_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates an arrow widget.
-	arrow_widget(glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb, action_callback action_cb,
-				 std::vector<tr::system::key_chord>&& chords = {});
+	arrow_widget(glm::vec2 pos, tr::align alignment, bool right_arrow, status_callback status_cb, action_callback action_cb);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -321,7 +319,7 @@ struct replay_widget : public clickable_text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	replay_widget(glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
-				  std::optional<std::map<std::string, replay_header>::iterator> it, tr::system::keycode shortcut);
+				  std::optional<std::map<std::string, replay_header>::iterator> it);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 

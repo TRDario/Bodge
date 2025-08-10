@@ -7,14 +7,16 @@ constexpr tag TAG_TITLE{"enter_your_name"};
 constexpr tag TAG_INPUT{"input"};
 constexpr tag TAG_CONFIRM{"confirm"};
 
-// Shortcuts of the confirm button.
-constexpr std::initializer_list<tr::system::key_chord> CONFIRM_SHORTCUTS{{tr::system::keycode::ENTER}};
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::ENTER}, TAG_CONFIRM},
+};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 name_entry_state::name_entry_state()
 	: m_substate{substate::ENTERING_GAME}
 	, m_timer{0}
+	, m_ui{SHORTCUTS}
 	, m_background_game{std::make_unique<game>(pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
 {
 	engine::play_song("menu", 1.0s);
@@ -46,8 +48,7 @@ name_entry_state::name_entry_state()
 	input.unhide(1.0_s);
 
 	widget& confirm{m_ui.emplace<clickable_text_widget>(TAG_CONFIRM, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-														loc_text_callback{TAG_CONFIRM}, confirm_status_cb, action_cb, NO_TOOLTIP,
-														CONFIRM_SHORTCUTS)};
+														loc_text_callback{TAG_CONFIRM}, confirm_status_cb, action_cb)};
 	confirm.pos.change(interp_mode::CUBE, {500, 1000}, 1.0_s);
 	confirm.unhide(1.0_s);
 }

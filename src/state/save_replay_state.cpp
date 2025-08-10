@@ -12,17 +12,19 @@ constexpr tag TAG_DESCRIPTION_INPUT{"description_input"};
 constexpr tag TAG_SAVE{"save"};
 constexpr tag TAG_DISCARD{"discard"};
 
-// Shortcuts of the save button.
-constexpr std::initializer_list<tr::system::key_chord> SAVE_SHORTCUTS{
-	{tr::system::keycode::ENTER}, {tr::system::keycode::S}, {tr::system::keycode::TOP_ROW_1}};
-// Shortcuts of the don't save button.
-constexpr std::initializer_list<tr::system::key_chord> DONT_SAVE_SHORTCUTS{
-	{tr::system::keycode::ESCAPE}, {tr::system::keycode::C}, {tr::system::keycode::TOP_ROW_2}};
+constexpr shortcut_table SHORTCUTS{
+	{{tr::system::keycode::ENTER}, TAG_SAVE},     {{tr::system::keycode::S}, TAG_SAVE},    {{tr::system::keycode::TOP_ROW_1}, TAG_SAVE},
+	{{tr::system::keycode::ESCAPE}, TAG_DISCARD}, {{tr::system::keycode::C}, TAG_DISCARD}, {{tr::system::keycode::TOP_ROW_2}, TAG_DISCARD},
+};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_screen_flags flags)
-	: m_substate{substate_base::SAVING_REPLAY | flags}, m_timer{0}, m_game{std::move(game)}, m_replay{m_game->replay().header()}
+	: m_substate{substate_base::SAVING_REPLAY | flags}
+	, m_timer{0}
+	, m_ui{SHORTCUTS}
+	, m_game{std::move(game)}
+	, m_replay{m_game->replay().header()}
 {
 	const status_callback status_cb{[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }};
 
@@ -67,8 +69,7 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 		m_game->replay().save_to_file();
 	}};
 	widget& save{m_ui.emplace<clickable_text_widget>(TAG_SAVE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_SAVE}, save_status_cb, save_action_cb, NO_TOOLTIP,
-													 SAVE_SHORTCUTS)};
+													 loc_text_callback{TAG_SAVE}, save_status_cb, save_action_cb)};
 	save.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
 	save.unhide(0.5_s);
 
@@ -78,8 +79,7 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 		set_up_exit_animation();
 	}};
 	widget& discard{m_ui.emplace<clickable_text_widget>(TAG_DISCARD, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-														loc_text_callback{TAG_DISCARD}, status_cb, dont_save_action_cb, NO_TOOLTIP,
-														DONT_SAVE_SHORTCUTS)};
+														loc_text_callback{TAG_DISCARD}, status_cb, dont_save_action_cb)};
 	discard.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	discard.unhide(0.5_s);
 }
