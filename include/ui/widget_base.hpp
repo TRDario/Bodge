@@ -4,6 +4,9 @@
 
 ////////////////////////////////////////////////////////////////// TYPES //////////////////////////////////////////////////////////////////
 
+// Widget tag type.
+using tag = const char*;
+
 // Alias for the type of a tooltip callback.
 using tooltip_callback = std::function<std::string()>;
 // Sentinel for a mousable to not have a tooltip.

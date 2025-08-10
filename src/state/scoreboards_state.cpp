@@ -1,5 +1,5 @@
-#include "../../include/graphics.hpp"
 #include "../../include/state/scoreboards_state.hpp"
+#include "../../include/graphics.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -7,26 +7,26 @@
 // The number of scores per page.
 constexpr std::size_t SCORES_PER_PAGE{8};
 
-constexpr const char* TAG_TITLE{"scoreboards"};
-constexpr const char* TAG_PLAYER_INFO{"player_info"};
-constexpr const char* TAG_NO_SCORES_FOUND{"no_scores_found"};
-constexpr const char* TAG_SCORE_0{"score0"};
-constexpr const char* TAG_SCORE_1{"score1"};
-constexpr const char* TAG_SCORE_2{"score2"};
-constexpr const char* TAG_SCORE_3{"score3"};
-constexpr const char* TAG_SCORE_4{"score4"};
-constexpr const char* TAG_SCORE_5{"score5"};
-constexpr const char* TAG_SCORE_6{"score6"};
-constexpr const char* TAG_SCORE_7{"score7"};
+constexpr tag TAG_TITLE{"scoreboards"};
+constexpr tag TAG_PLAYER_INFO{"player_info"};
+constexpr tag TAG_NO_SCORES_FOUND{"no_scores_found"};
+constexpr tag TAG_SCORE_0{"score0"};
+constexpr tag TAG_SCORE_1{"score1"};
+constexpr tag TAG_SCORE_2{"score2"};
+constexpr tag TAG_SCORE_3{"score3"};
+constexpr tag TAG_SCORE_4{"score4"};
+constexpr tag TAG_SCORE_5{"score5"};
+constexpr tag TAG_SCORE_6{"score6"};
+constexpr tag TAG_SCORE_7{"score7"};
 constexpr std::array<const char*, SCORES_PER_PAGE> SCORE_TAGS{TAG_SCORE_0, TAG_SCORE_1, TAG_SCORE_2, TAG_SCORE_3,
 															  TAG_SCORE_4, TAG_SCORE_5, TAG_SCORE_6, TAG_SCORE_7};
-constexpr const char* TAG_GAMEMODE_DEC{"gamemode_dec"};
-constexpr const char* TAG_CUR_GAMEMODE{"cur_gamemode"};
-constexpr const char* TAG_GAMEMODE_INC{"gamemode_inc"};
-constexpr const char* TAG_PAGE_DEC{"page_dec"};
-constexpr const char* TAG_CUR_PAGE{"cur_page"};
-constexpr const char* TAG_PAGE_INC{"page_inc"};
-constexpr const char* TAG_EXIT{"exit"};
+constexpr tag TAG_GAMEMODE_DEC{"gamemode_dec"};
+constexpr tag TAG_CUR_GAMEMODE{"cur_gamemode"};
+constexpr tag TAG_GAMEMODE_INC{"gamemode_inc"};
+constexpr tag TAG_PAGE_DEC{"page_dec"};
+constexpr tag TAG_CUR_PAGE{"cur_page"};
+constexpr tag TAG_PAGE_INC{"page_inc"};
+constexpr tag TAG_EXIT{"exit"};
 
 // Shortcuts of the exit button.
 constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{

@@ -1,6 +1,6 @@
+#include "../../include/state/replays_state.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/replays_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -8,18 +8,18 @@
 // The number of replays per page.
 constexpr std::size_t REPLAYS_PER_PAGE{5};
 
-constexpr const char* TAG_TITLE{"replays"};
-constexpr const char* TAG_NO_REPLAYS_FOUND{"no_replays_found"};
-constexpr const char* TAG_REPLAY_0{"replay0"};
-constexpr const char* TAG_REPLAY_1{"replay1"};
-constexpr const char* TAG_REPLAY_2{"replay2"};
-constexpr const char* TAG_REPLAY_3{"replay3"};
-constexpr const char* TAG_REPLAY_4{"replay4"};
+constexpr tag TAG_TITLE{"replays"};
+constexpr tag TAG_NO_REPLAYS_FOUND{"no_replays_found"};
+constexpr tag TAG_REPLAY_0{"replay0"};
+constexpr tag TAG_REPLAY_1{"replay1"};
+constexpr tag TAG_REPLAY_2{"replay2"};
+constexpr tag TAG_REPLAY_3{"replay3"};
+constexpr tag TAG_REPLAY_4{"replay4"};
 constexpr std::array<const char*, REPLAYS_PER_PAGE> REPLAY_TAGS{TAG_REPLAY_0, TAG_REPLAY_1, TAG_REPLAY_2, TAG_REPLAY_3, TAG_REPLAY_4};
-constexpr const char* TAG_PAGE_DEC{"page_dec"};
-constexpr const char* TAG_CUR_PAGE{"cur_page"};
-constexpr const char* TAG_PAGE_INC{"page_inc"};
-constexpr const char* TAG_EXIT{"exit"};
+constexpr tag TAG_PAGE_DEC{"page_dec"};
+constexpr tag TAG_CUR_PAGE{"cur_page"};
+constexpr tag TAG_PAGE_INC{"page_inc"};
+constexpr tag TAG_EXIT{"exit"};
 
 // Shortcuts of the exit button.
 constexpr std::initializer_list<tr::system::key_chord> EXIT_SHORTCUTS{

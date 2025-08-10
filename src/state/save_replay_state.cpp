@@ -1,16 +1,16 @@
-#include "../../include/state/game_state.hpp"
 #include "../../include/state/save_replay_state.hpp"
+#include "../../include/state/game_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr const char* TAG_TITLE{"save_replay"};
-constexpr const char* TAG_NAME{"name"};
-constexpr const char* TAG_NAME_INPUT{"name_input"};
-constexpr const char* TAG_DESCRIPTION{"description"};
-constexpr const char* TAG_DESCRIPTION_INPUT{"description_input"};
-constexpr const char* TAG_SAVE{"save"};
-constexpr const char* TAG_DISCARD{"discard"};
+constexpr tag TAG_TITLE{"save_replay"};
+constexpr tag TAG_NAME{"name"};
+constexpr tag TAG_NAME_INPUT{"name_input"};
+constexpr tag TAG_DESCRIPTION{"description"};
+constexpr tag TAG_DESCRIPTION_INPUT{"description_input"};
+constexpr tag TAG_SAVE{"save"};
+constexpr tag TAG_DISCARD{"discard"};
 
 // Shortcuts of the save button.
 constexpr std::initializer_list<tr::system::key_chord> SAVE_SHORTCUTS{

@@ -1,46 +1,46 @@
-#include "../../include/audio.hpp"
 #include "../../include/state/settings_state.hpp"
+#include "../../include/audio.hpp"
 #include "../../include/state/title_state.hpp"
 #include "../../include/system.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr const char* TAG_TITLE{"settings"};
-constexpr const char* TAG_WINDOW_SIZE{"window_size"};
-constexpr const char* TAG_WINDOW_SIZE_DEC{"window_size_dec"};
-constexpr const char* TAG_CUR_WINDOW_SIZE{"cur_window_size"};
-constexpr const char* TAG_WINDOW_SIZE_INC{"window_size_inc"};
-constexpr const char* TAG_REFRESH_RATE{"refresh_rate"};
-constexpr const char* TAG_REFRESH_RATE_DEC{"refresh_rate_dec"};
-constexpr const char* TAG_CUR_REFRESH_RATE{"cur_refresh_rate"};
-constexpr const char* TAG_REFRESH_RATE_INC{"refresh_rate_inc"};
-constexpr const char* TAG_MSAA{"msaa"};
-constexpr const char* TAG_MSAA_DEC{"msaa_dec"};
-constexpr const char* TAG_CUR_MSAA{"cur_msaa"};
-constexpr const char* TAG_MSAA_INC{"msaa_inc"};
-constexpr const char* TAG_PRIMARY_HUE{"primary_hue"};
-constexpr const char* TAG_PRIMARY_HUE_PREVIEW{"primary_hue_preview"};
-constexpr const char* TAG_PRIMARY_HUE_DEC{"primary_hue_dec"};
-constexpr const char* TAG_CUR_PRIMARY_HUE{"cur_primary_hue"};
-constexpr const char* TAG_PRIMARY_HUE_INC{"primary_hue_inc"};
-constexpr const char* TAG_SECONDARY_HUE{"secondary_hue"};
-constexpr const char* TAG_SECONDARY_HUE_PREVIEW{"secondary_hue_preview"};
-constexpr const char* TAG_SECONDARY_HUE_DEC{"secondary_hue_dec"};
-constexpr const char* TAG_CUR_SECONDARY_HUE{"cur_secondary_hue"};
-constexpr const char* TAG_SECONDARY_HUE_INC{"secondary_hue_inc"};
-constexpr const char* TAG_SFX_VOLUME{"sfx_volume"};
-constexpr const char* TAG_SFX_VOLUME_DEC{"sfx_volume_dec"};
-constexpr const char* TAG_CUR_SFX_VOLUME{"cur_sfx_volume"};
-constexpr const char* TAG_SFX_VOLUME_INC{"sfx_volume_inc"};
-constexpr const char* TAG_MUSIC_VOLUME{"music_volume"};
-constexpr const char* TAG_MUSIC_VOLUME_DEC{"music_volume_dec"};
-constexpr const char* TAG_CUR_MUSIC_VOLUME{"cur_music_volume"};
-constexpr const char* TAG_MUSIC_VOLUME_INC{"music_volume_inc"};
-constexpr const char* TAG_LANGUAGE{"language"};
-constexpr const char* TAG_CUR_LANGUAGE{"cur_language"};
-constexpr const char* TAG_REVERT{"revert"};
-constexpr const char* TAG_APPLY{"apply"};
-constexpr const char* TAG_EXIT{"exit"};
+constexpr tag TAG_TITLE{"settings"};
+constexpr tag TAG_WINDOW_SIZE{"window_size"};
+constexpr tag TAG_WINDOW_SIZE_DEC{"window_size_dec"};
+constexpr tag TAG_CUR_WINDOW_SIZE{"cur_window_size"};
+constexpr tag TAG_WINDOW_SIZE_INC{"window_size_inc"};
+constexpr tag TAG_REFRESH_RATE{"refresh_rate"};
+constexpr tag TAG_REFRESH_RATE_DEC{"refresh_rate_dec"};
+constexpr tag TAG_CUR_REFRESH_RATE{"cur_refresh_rate"};
+constexpr tag TAG_REFRESH_RATE_INC{"refresh_rate_inc"};
+constexpr tag TAG_MSAA{"msaa"};
+constexpr tag TAG_MSAA_DEC{"msaa_dec"};
+constexpr tag TAG_CUR_MSAA{"cur_msaa"};
+constexpr tag TAG_MSAA_INC{"msaa_inc"};
+constexpr tag TAG_PRIMARY_HUE{"primary_hue"};
+constexpr tag TAG_PRIMARY_HUE_PREVIEW{"primary_hue_preview"};
+constexpr tag TAG_PRIMARY_HUE_DEC{"primary_hue_dec"};
+constexpr tag TAG_CUR_PRIMARY_HUE{"cur_primary_hue"};
+constexpr tag TAG_PRIMARY_HUE_INC{"primary_hue_inc"};
+constexpr tag TAG_SECONDARY_HUE{"secondary_hue"};
+constexpr tag TAG_SECONDARY_HUE_PREVIEW{"secondary_hue_preview"};
+constexpr tag TAG_SECONDARY_HUE_DEC{"secondary_hue_dec"};
+constexpr tag TAG_CUR_SECONDARY_HUE{"cur_secondary_hue"};
+constexpr tag TAG_SECONDARY_HUE_INC{"secondary_hue_inc"};
+constexpr tag TAG_SFX_VOLUME{"sfx_volume"};
+constexpr tag TAG_SFX_VOLUME_DEC{"sfx_volume_dec"};
+constexpr tag TAG_CUR_SFX_VOLUME{"cur_sfx_volume"};
+constexpr tag TAG_SFX_VOLUME_INC{"sfx_volume_inc"};
+constexpr tag TAG_MUSIC_VOLUME{"music_volume"};
+constexpr tag TAG_MUSIC_VOLUME_DEC{"music_volume_dec"};
+constexpr tag TAG_CUR_MUSIC_VOLUME{"cur_music_volume"};
+constexpr tag TAG_MUSIC_VOLUME_INC{"music_volume_inc"};
+constexpr tag TAG_LANGUAGE{"language"};
+constexpr tag TAG_CUR_LANGUAGE{"cur_language"};
+constexpr tag TAG_REVERT{"revert"};
+constexpr tag TAG_APPLY{"apply"};
+constexpr tag TAG_EXIT{"exit"};
 
 // Right-aligned widgets.
 constexpr std::array<const char*, 24> RIGHT_WIDGETS{

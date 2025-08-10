@@ -1,18 +1,18 @@
-#include "../../include/state/game_state.hpp"
 #include "../../include/state/start_game_state.hpp"
+#include "../../include/state/game_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr const char* TAG_TITLE{"start_game"};
-constexpr const char* TAG_NAME{"name"};
-constexpr const char* TAG_AUTHOR{"author"};
-constexpr const char* TAG_DESCRIPTION{"description"};
-constexpr const char* TAG_PB{"pb"};
-constexpr const char* TAG_PREV{"prev"};
-constexpr const char* TAG_NEXT{"next"};
-constexpr const char* TAG_START{"start"};
-constexpr const char* TAG_EXIT{"exit"};
+constexpr tag TAG_TITLE{"start_game"};
+constexpr tag TAG_NAME{"name"};
+constexpr tag TAG_AUTHOR{"author"};
+constexpr tag TAG_DESCRIPTION{"description"};
+constexpr tag TAG_PB{"pb"};
+constexpr tag TAG_PREV{"prev"};
+constexpr tag TAG_NEXT{"next"};
+constexpr tag TAG_START{"start"};
+constexpr tag TAG_EXIT{"exit"};
 
 // Gamemode display widgets.
 constexpr std::array<const char*, 4> GAMEMODE_WIDGETS{TAG_NAME, TAG_AUTHOR, TAG_DESCRIPTION, TAG_PB};

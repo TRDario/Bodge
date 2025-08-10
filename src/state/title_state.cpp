@@ -1,3 +1,4 @@
+#include "../../include/state/title_state.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
@@ -5,22 +6,21 @@
 #include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/settings_state.hpp"
 #include "../../include/state/start_game_state.hpp"
-#include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr const char* TAG_LOGO_TEXT{"logo_text"};
-constexpr const char* TAG_LOGO_OVERLAY{"logo_overlay"};
-constexpr const char* TAG_LOGO_BALL{"logo_ball"};
-constexpr const char* TAG_COPYRIGHT{"copyright"};
-constexpr const char* TAG_VERSION{"version"};
-constexpr const char* TAG_START_GAME{"start_game"};
-constexpr const char* TAG_GAMEMODE_DESIGNER{"gamemode_designer"};
-constexpr const char* TAG_SCOREBOARDS{"scoreboards"};
-constexpr const char* TAG_REPLAYS{"replays"};
-constexpr const char* TAG_SETTINGS{"settings"};
-constexpr const char* TAG_CREDITS{"credits"};
-constexpr const char* TAG_EXIT{"exit"};
+constexpr tag TAG_LOGO_TEXT{"logo_text"};
+constexpr tag TAG_LOGO_OVERLAY{"logo_overlay"};
+constexpr tag TAG_LOGO_BALL{"logo_ball"};
+constexpr tag TAG_COPYRIGHT{"copyright"};
+constexpr tag TAG_VERSION{"version"};
+constexpr tag TAG_START_GAME{"start_game"};
+constexpr tag TAG_GAMEMODE_DESIGNER{"gamemode_designer"};
+constexpr tag TAG_SCOREBOARDS{"scoreboards"};
+constexpr tag TAG_REPLAYS{"replays"};
+constexpr tag TAG_SETTINGS{"settings"};
+constexpr tag TAG_CREDITS{"credits"};
+constexpr tag TAG_EXIT{"exit"};
 
 // Title screen buttons.
 constexpr std::array<const char*, 7> BUTTONS{

@@ -3,9 +3,9 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr const char* TAG_TITLE{"enter_your_name"};
-constexpr const char* TAG_INPUT{"input"};
-constexpr const char* TAG_CONFIRM{"confirm"};
+constexpr tag TAG_TITLE{"enter_your_name"};
+constexpr tag TAG_INPUT{"input"};
+constexpr tag TAG_CONFIRM{"confirm"};
 
 // Shortcuts of the confirm button.
 constexpr std::initializer_list<tr::system::key_chord> CONFIRM_SHORTCUTS{{tr::system::keycode::ENTER}};

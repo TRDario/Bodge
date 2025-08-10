@@ -1,20 +1,20 @@
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/ball_settings_editor_state.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr const char* TAG_TITLE{"gamemode_designer"};
-constexpr const char* TAG_NAME{"name"};
-constexpr const char* TAG_AUTHOR{"author"};
-constexpr const char* TAG_DESCRIPTION{"description"};
-constexpr const char* TAG_BALL_SETTINGS{"ball_settings"};
-constexpr const char* TAG_PLAYER_SETTINGS{"player_settings"};
-constexpr const char* TAG_TEST{"test"};
-constexpr const char* TAG_SAVE{"save"};
-constexpr const char* TAG_DISCARD{"discard"};
+constexpr tag TAG_TITLE{"gamemode_designer"};
+constexpr tag TAG_NAME{"name"};
+constexpr tag TAG_AUTHOR{"author"};
+constexpr tag TAG_DESCRIPTION{"description"};
+constexpr tag TAG_BALL_SETTINGS{"ball_settings"};
+constexpr tag TAG_PLAYER_SETTINGS{"player_settings"};
+constexpr tag TAG_TEST{"test"};
+constexpr tag TAG_SAVE{"save"};
+constexpr tag TAG_DISCARD{"discard"};
 
 // Shortcuts of the ball settings button.
 constexpr std::initializer_list<tr::system::key_chord> BALL_SETTINGS_SHORTCUTS{{tr::system::keycode::B}, {tr::system::keycode::TOP_ROW_1}};

@@ -1,24 +1,24 @@
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/system.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr const char* TAG_TITLE{"gamemode_designer"};
-constexpr const char* TAG_SUBTITLE{"player_settings"};
-constexpr const char* TAG_STARTING_LIVES{"starting_lives"};
-constexpr const char* TAG_STARTING_LIVES_DEC{"starting_lives_dec"};
-constexpr const char* TAG_CUR_STARTING_LIVES{"cur_starting_lives"};
-constexpr const char* TAG_STARTING_LIVES_INC{"starting_lives_inc"};
-constexpr const char* TAG_HITBOX_RADIUS{"hitbox_radius"};
-constexpr const char* TAG_HITBOX_RADIUS_DEC{"hitbox_radius_dec"};
-constexpr const char* TAG_CUR_HITBOX_RADIUS{"cur_hitbox_radius"};
-constexpr const char* TAG_HITBOX_RADIUS_INC{"hitbox_radius_inc"};
-constexpr const char* TAG_INERTIA_FACTOR{"inertia_factor"};
-constexpr const char* TAG_INERTIA_FACTOR_DEC{"inertia_factor_dec"};
-constexpr const char* TAG_CUR_INERTIA_FACTOR{"cur_inertia_factor"};
-constexpr const char* TAG_INERTIA_FACTOR_INC{"inertia_factor_inc"};
-constexpr const char* TAG_EXIT{"exit"};
+constexpr tag TAG_TITLE{"gamemode_designer"};
+constexpr tag TAG_SUBTITLE{"player_settings"};
+constexpr tag TAG_STARTING_LIVES{"starting_lives"};
+constexpr tag TAG_STARTING_LIVES_DEC{"starting_lives_dec"};
+constexpr tag TAG_CUR_STARTING_LIVES{"cur_starting_lives"};
+constexpr tag TAG_STARTING_LIVES_INC{"starting_lives_inc"};
+constexpr tag TAG_HITBOX_RADIUS{"hitbox_radius"};
+constexpr tag TAG_HITBOX_RADIUS_DEC{"hitbox_radius_dec"};
+constexpr tag TAG_CUR_HITBOX_RADIUS{"cur_hitbox_radius"};
+constexpr tag TAG_HITBOX_RADIUS_INC{"hitbox_radius_inc"};
+constexpr tag TAG_INERTIA_FACTOR{"inertia_factor"};
+constexpr tag TAG_INERTIA_FACTOR_DEC{"inertia_factor_dec"};
+constexpr tag TAG_CUR_INERTIA_FACTOR{"cur_inertia_factor"};
+constexpr tag TAG_INERTIA_FACTOR_INC{"inertia_factor_inc"};
+constexpr tag TAG_EXIT{"exit"};
 
 // Left-aligned labels.
 constexpr std::array<label, 3> LABELS{{

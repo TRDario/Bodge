@@ -1,18 +1,18 @@
-#include "../../include/graphics.hpp"
 #include "../../include/state/game_over_state.hpp"
+#include "../../include/graphics.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/save_score_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr const char* TAG_TITLE{"game_over"};
-constexpr const char* TAG_TIME{"time"};
-constexpr const char* TAG_PB{"pb"};
-constexpr const char* TAG_SAVE_AND_RESTART{"save_and_restart"};
-constexpr const char* TAG_RESTART{"restart"};
-constexpr const char* TAG_SAVE_AND_QUIT{"save_and_quit"};
-constexpr const char* TAG_QUIT{"quit"};
+constexpr tag TAG_TITLE{"game_over"};
+constexpr tag TAG_TIME{"time"};
+constexpr tag TAG_PB{"pb"};
+constexpr tag TAG_SAVE_AND_RESTART{"save_and_restart"};
+constexpr tag TAG_RESTART{"restart"};
+constexpr tag TAG_SAVE_AND_QUIT{"save_and_quit"};
+constexpr tag TAG_QUIT{"quit"};
 
 // The pause screen buttons.
 constexpr std::array<const char*, 4> BUTTONS{TAG_SAVE_AND_RESTART, TAG_RESTART, TAG_SAVE_AND_QUIT, TAG_QUIT};

@@ -1,6 +1,6 @@
+#include "../../include/state/game_state.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/state/game_over_state.hpp"
-#include "../../include/state/game_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/pause_state.hpp"
 #include "../../include/state/replays_state.hpp"
@@ -8,8 +8,8 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr const char* TAG_REPLAY{"replay"};
-constexpr const char* TAG_INDICATOR{"indicator"};
+constexpr tag TAG_REPLAY{"replay"};
+constexpr tag TAG_INDICATOR{"indicator"};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 

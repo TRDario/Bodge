@@ -1,6 +1,6 @@
+#include "../../include/state/pause_state.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
-#include "../../include/state/pause_state.hpp"
 #include "../../include/state/replays_state.hpp"
 #include "../../include/state/save_score_state.hpp"
 #include "../../include/state/title_state.hpp"
@@ -8,14 +8,14 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr const char* TAG_PAUSED{"paused"};
-constexpr const char* TAG_TEST_PAUSED{"test_paused"};
-constexpr const char* TAG_REPLAY_PAUSED{"replay_paused"};
-constexpr const char* TAG_UNPAUSE{"unpause"};
-constexpr const char* TAG_SAVE_AND_RESTART{"save_and_restart"};
-constexpr const char* TAG_RESTART{"restart"};
-constexpr const char* TAG_SAVE_AND_QUIT{"save_and_quit"};
-constexpr const char* TAG_QUIT{"quit"};
+constexpr tag TAG_PAUSED{"paused"};
+constexpr tag TAG_TEST_PAUSED{"test_paused"};
+constexpr tag TAG_REPLAY_PAUSED{"replay_paused"};
+constexpr tag TAG_UNPAUSE{"unpause"};
+constexpr tag TAG_SAVE_AND_RESTART{"save_and_restart"};
+constexpr tag TAG_RESTART{"restart"};
+constexpr tag TAG_SAVE_AND_QUIT{"save_and_quit"};
+constexpr tag TAG_QUIT{"quit"};
 // The regular pause screen buttons.
 constexpr std::array<const char*, 5> BUTTONS_REGULAR{TAG_UNPAUSE, TAG_SAVE_AND_RESTART, TAG_RESTART, TAG_SAVE_AND_QUIT, TAG_QUIT};
 // The special pause screen buttons.
