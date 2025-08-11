@@ -136,7 +136,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 		const tr::system::key_down_event key_down{event};
 
 		if (m_input != nullptr) {
-			if (key_down.key == tr::system::keycode::ESCAPE) {
+			if (key_down == tr::system::key_chord{tr::system::keycode::ESCAPE}) {
 				clear_input_focus();
 			}
 			else if (key_down.key == tr::system::keycode::TAB) {
@@ -148,25 +148,25 @@ void ui_manager::handle_event(const tr::system::event& event)
 				}
 			}
 			else if (m_input->second->active()) {
-				if (key_down.mods == tr::system::keymod::CTRL && key_down.key == tr::system::keycode::C) {
+				if (key_down == tr::system::key_chord{tr::system::keycode::C, tr::system::keymod::CTRL}) {
 					m_input->second->on_copy();
 				}
-				else if (key_down.mods == tr::system::keymod::CTRL && key_down.key == tr::system::keycode::X) {
+				else if (key_down == tr::system::key_chord{tr::system::keycode::X, tr::system::keymod::CTRL}) {
 					m_input->second->on_copy();
 					m_input->second->on_clear();
 				}
-				else if (key_down.mods == tr::system::keymod::CTRL && key_down.key == tr::system::keycode::V) {
+				else if (key_down == tr::system::key_chord{tr::system::keycode::V, tr::system::keymod::CTRL}) {
 					m_input->second->on_paste();
 				}
 				else if (key_down.key == tr::system::keycode::BACKSPACE || key_down.key == tr::system::keycode::DELETE) {
-					if (key_down.mods & tr::system::keymod::CTRL) {
+					if (key_down.mods == tr::system::keymod::CTRL) {
 						m_input->second->on_clear();
 					}
 					else {
 						m_input->second->on_erase();
 					}
 				}
-				else if (key_down.key == tr::system::keycode::ENTER) {
+				else if (key_down == tr::system::key_chord{tr::system::keycode::ENTER}) {
 					m_input->second->on_enter();
 				}
 			}
@@ -189,7 +189,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 		}
 	} break;
 	case tr::system::text_input_event::ID:
-		if (m_input != nullptr && m_input->second->active()) {
+		if (m_input != nullptr && m_input->second->active() && !(engine::held_keymods() & tr::system::keymod::CTRL)) {
 			m_input->second->on_write(tr::system::text_input_event{event}.text);
 		}
 		break;

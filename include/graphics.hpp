@@ -20,6 +20,10 @@ enum layer {
 	GAME_OVERLAY,
 	// Layer used to draw UI elements.
 	UI,
+	// Higher priority UI layer.
+	UI_2,
+	// Even higher priority UI layer.
+	UI_3,
 	// Layer used to draw tooltips.
 	TOOLTIP,
 	// Layer used to draw the fade overlay.

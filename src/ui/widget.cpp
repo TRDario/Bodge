@@ -437,8 +437,8 @@ tr::bitmap load_image(std::string_view texture)
 	}
 }
 
-image_widget::image_widget(glm::vec2 pos, tr::align alignment, std::string_view file, std::uint16_t* hue_ref)
-	: widget{pos, alignment, false, NO_TOOLTIP, false}, m_texture{load_image(file)}, m_hue_ref{hue_ref}
+image_widget::image_widget(glm::vec2 pos, tr::align alignment, int priority, std::string_view file, std::uint16_t* hue_ref)
+	: widget{pos, alignment, false, NO_TOOLTIP, false}, m_texture{load_image(file)}, m_hue_ref{hue_ref}, m_priority{priority}
 {
 	m_texture.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
 }
@@ -456,7 +456,7 @@ void image_widget::add_to_renderer()
 	}
 	color.a = static_cast<std::uint8_t>(color.a * opacity());
 
-	const tr::gfx::simple_textured_mesh_ref quad{tr::gfx::renderer_2d::new_textured_fan(layer::UI, 4, m_texture)};
+	const tr::gfx::simple_textured_mesh_ref quad{tr::gfx::renderer_2d::new_textured_fan(layer::UI + m_priority, 4, m_texture)};
 	tr::fill_rect_vtx(quad.positions, {tl(), size()});
 	tr::fill_rect_vtx(quad.uvs, {{0, 0}, {1, 1}});
 	std::ranges::fill(quad.tints, tr::rgba8{color});

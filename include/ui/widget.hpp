@@ -201,7 +201,7 @@ class image_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates an image widget.
-	image_widget(glm::vec2 pos, tr::align alignment, std::string_view file, std::uint16_t* hue_ref = nullptr);
+	image_widget(glm::vec2 pos, tr::align alignment, int priority, std::string_view file, std::uint16_t* hue_ref = nullptr);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -217,6 +217,8 @@ class image_widget : public widget {
 	tr::gfx::texture m_texture;
 	// A reference to the hue to apply to the widget, or nullptr to not tint the widget.
 	std::uint16_t* m_hue_ref;
+	// The drawing priority of the image.
+	int m_priority;
 };
 
 // Color preview widget.
