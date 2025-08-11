@@ -35,6 +35,9 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ESCAPE}, T_EXIT},         {{tr::system::keycode::TOP_ROW_6}, T_EXIT},
 };
 
+constexpr interpolator<glm::vec2> LOGO_TEXT_MOVE_IN{interp_mode::CUBE, {500, 100}, {500, 160}, 2.5_s};
+constexpr interpolator<glm::vec2> LOGO_BALL_MOVE_IN{interp_mode::CUBE, {-180, 644}, {327, 127}, 2.5_s};
+
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
 title_state::title_state()
@@ -123,26 +126,17 @@ float title_state::fade_overlay_opacity() const
 
 void title_state::set_up_ui()
 {
-	widget& logo_text{m_ui.emplace<image_widget>(T_LOGO_TEXT, glm::vec2{500, 100}, tr::align::CENTER, 0, "logo_text")};
-	logo_text.pos.change(interp_mode::CUBE, {500, 160}, 2.5_s);
-	logo_text.unhide(2.5_s);
-	widget& logo_overlay{m_ui.emplace<image_widget>(T_LOGO_OVERLAY, glm::vec2{500, 100}, tr::align::CENTER, 1, "logo_overlay",
-													&engine::settings.primary_hue)};
-	logo_overlay.pos.change(interp_mode::CUBE, {500, 160}, 2.5_s);
-	logo_overlay.unhide(2.5_s);
-	widget& logo_ball{
-		m_ui.emplace<image_widget>(T_LOGO_BALL, glm::vec2{-180, 644}, tr::align::CENTER, 2, "logo_ball", &engine::settings.secondary_hue)};
-	logo_ball.pos.change(interp_mode::CUBE, {327, 217}, 2.5_s);
-	logo_ball.unhide(2.5_s);
+	m_ui.emplace<image_widget>(T_LOGO_TEXT, LOGO_TEXT_MOVE_IN, tr::align::CENTER, 2.5_s, 0, "logo_text");
+	m_ui.emplace<image_widget>(T_LOGO_OVERLAY, LOGO_TEXT_MOVE_IN, tr::align::CENTER, 2.5_s, 1, "logo_overlay",
+							   &engine::settings.primary_hue);
+	m_ui.emplace<image_widget>(T_LOGO_BALL, LOGO_BALL_MOVE_IN, tr::align::CENTER, 2.5_s, 2, "logo_ball", &engine::settings.secondary_hue);
 
-	widget& copyright{m_ui.emplace<text_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, font::DEFAULT,
+	widget& copyright{m_ui.emplace<text_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, 1_s, font::DEFAULT,
 												tr::system::ttf_style::NORMAL, 24, loc_text_callback{T_COPYRIGHT})};
 	copyright.pos.change(interp_mode::CUBE, {4, 998 - copyright.size().y}, 1_s);
-	copyright.unhide(1_s);
-	widget& version{m_ui.emplace<text_widget>(T_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, font::DEFAULT,
+	widget& version{m_ui.emplace<text_widget>(T_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, 1_s, font::DEFAULT,
 											  tr::system::ttf_style::NORMAL, 24, loc_text_callback{T_VERSION})};
 	version.pos.change(interp_mode::CUBE, {996, 998 - version.size().y}, 1_s);
-	version.unhide(1_s);
 
 	const status_callback status_cb{[this] { return m_substate == substate::IN_TITLE || m_substate == substate::ENTERING_GAME; }};
 	const std::array<action_callback, BUTTONS.size()> action_cbs{
@@ -183,12 +177,10 @@ void title_state::set_up_ui()
 	glm::vec2 end_pos{990, 965 - (BUTTONS.size() - 1) * 50};
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(35.0f, 75.0f)};
-		const glm::vec2 pos{end_pos.x + offset, end_pos.y};
-		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER_RIGHT, font::LANGUAGE, 48,
-														   loc_text_callback{BUTTONS[i]}, status_cb, action_cbs[i], NO_TOOLTIP,
-														   i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL)};
-		widget.pos.change(interp_mode::CUBE, end_pos, 1_s);
-		widget.unhide(1_s);
+		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {end_pos.x + offset, end_pos.y}, end_pos, 1_s};
+		m_ui.emplace<clickable_text_widget>(BUTTONS[i], move_in, tr::align::CENTER_RIGHT, 1_s, font::LANGUAGE, 48,
+											loc_text_callback{BUTTONS[i]}, status_cb, action_cbs[i], NO_TOOLTIP,
+											i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL);
 		end_pos += glm::vec2{-25, 50};
 	}
 }

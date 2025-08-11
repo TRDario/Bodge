@@ -1,5 +1,5 @@
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/system.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -43,6 +43,28 @@ constexpr glm::vec2 HITBOX_RADIUS_START_POS{1050, 525};
 // Starting position of the inertia factor widgets.
 constexpr glm::vec2 INERTIA_FACTOR_START_POS{1050, 600};
 
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> SUBTITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
+constexpr interpolator<glm::vec2> STARTING_LIVES_D_MOVE_IN{
+	interp_mode::CUBE, STARTING_LIVES_START_POS, {790, STARTING_LIVES_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> STARTING_LIVES_C_MOVE_IN{
+	interp_mode::CUBE, STARTING_LIVES_START_POS, {887.5f, STARTING_LIVES_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> STARTING_LIVES_I_MOVE_IN{
+	interp_mode::CUBE, STARTING_LIVES_START_POS, {985, STARTING_LIVES_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> HITBOX_RADIUS_D_MOVE_IN{
+	interp_mode::CUBE, HITBOX_RADIUS_START_POS, {790, HITBOX_RADIUS_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> HITBOX_RADIUS_C_MOVE_IN{
+	interp_mode::CUBE, HITBOX_RADIUS_START_POS, {887.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> HITBOX_RADIUS_I_MOVE_IN{
+	interp_mode::CUBE, HITBOX_RADIUS_START_POS, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INERTIA_FACTOR_D_MOVE_IN{
+	interp_mode::CUBE, INERTIA_FACTOR_START_POS, {790, INERTIA_FACTOR_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INERTIA_FACTOR_C_MOVE_IN{
+	interp_mode::CUBE, INERTIA_FACTOR_START_POS, {887.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INERTIA_FACTOR_I_MOVE_IN{
+	interp_mode::CUBE, INERTIA_FACTOR_START_POS, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
@@ -50,7 +72,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 {
 	// STATUS CALLBACKS
 
-	const status_callback status_cb{[this] { return m_substate == substate::IN_EDITOR; }};
+	const status_callback scb{[this] { return m_substate == substate::IN_EDITOR; }};
 	const status_callback starting_lives_d_scb{[this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives > 0; }};
 	const status_callback starting_lives_i_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives < 255; }};
@@ -97,67 +119,36 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 
 	//
 
-	widget& title{m_ui.emplace<text_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-											loc_text_callback{T_TITLE})};
-	title.unhide();
-
-	widget& subtitle{m_ui.emplace<text_widget>(T_SUBTITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
-											   tr::system::ttf_style::NORMAL, 32, loc_text_callback{T_SUBTITLE})};
-	subtitle.pos.change(interp_mode::CUBE, {500, TITLE_POS.y + 64}, 0.5_s);
-	subtitle.unhide(0.5_s);
-
-	widget& starting_lives_d{m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, STARTING_LIVES_START_POS, tr::align::CENTER_LEFT, false,
-														starting_lives_d_scb, starting_lives_d_acb)};
-	widget& starting_lives_i{m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, STARTING_LIVES_START_POS, tr::align::CENTER_RIGHT, true,
-														starting_lives_i_scb, starting_lives_i_acb)};
-	widget& cur_starting_lives{m_ui.emplace<text_widget>(T_CUR_STARTING_LIVES, STARTING_LIVES_START_POS, tr::align::CENTER, font::LANGUAGE,
-														 tr::system::ttf_style::NORMAL, 48, cur_starting_lives_tcb)};
-	starting_lives_d.pos.change(interp_mode::CUBE, {790, STARTING_LIVES_START_POS.y}, 0.5_s);
-	starting_lives_i.pos.change(interp_mode::CUBE, {985, STARTING_LIVES_START_POS.y}, 0.5_s);
-	cur_starting_lives.pos.change(interp_mode::CUBE, {887.5, STARTING_LIVES_START_POS.y}, 0.5_s);
-	starting_lives_d.unhide(0.5_s);
-	starting_lives_i.unhide(0.5_s);
-	cur_starting_lives.unhide(0.5_s);
-
-	widget& hitbox_radius_d{m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, HITBOX_RADIUS_START_POS, tr::align::CENTER_LEFT, false,
-													   hitbox_radius_d_scb, hitbox_radius_d_acb)};
-	widget& hitbox_radius_i{m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_I, HITBOX_RADIUS_START_POS, tr::align::CENTER_RIGHT, true,
-													   hitbox_radius_i_scb, hitbox_radius_i_acb)};
-	widget& cur_hitbox_radius{m_ui.emplace<text_widget>(T_CUR_HITBOX_RADIUS, HITBOX_RADIUS_START_POS, tr::align::CENTER, font::LANGUAGE,
-														tr::system::ttf_style::NORMAL, 48, cur_hitbox_radius_tcb)};
-	hitbox_radius_d.pos.change(interp_mode::CUBE, {790, HITBOX_RADIUS_START_POS.y}, 0.5_s);
-	hitbox_radius_i.pos.change(interp_mode::CUBE, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s);
-	cur_hitbox_radius.pos.change(interp_mode::CUBE, {887.5, HITBOX_RADIUS_START_POS.y}, 0.5_s);
-	hitbox_radius_d.unhide(0.5_s);
-	hitbox_radius_i.unhide(0.5_s);
-	cur_hitbox_radius.unhide(0.5_s);
-
-	widget& inertia_factor_d{m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_D, INERTIA_FACTOR_START_POS, tr::align::CENTER_LEFT, false,
-														inertia_factor_d_scb, inertia_factor_d_acb)};
-	widget& inertia_factor_i{m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_I, INERTIA_FACTOR_START_POS, tr::align::CENTER_RIGHT, true,
-														inertia_factor_i_scb, inertia_factor_i_acb)};
-	widget& cur_inertia_factor{m_ui.emplace<text_widget>(T_CUR_INERTIA_FACTOR, INERTIA_FACTOR_START_POS, tr::align::CENTER, font::LANGUAGE,
-														 tr::system::ttf_style::NORMAL, 48, cur_inertia_factor_tcb)};
-	inertia_factor_d.pos.change(interp_mode::CUBE, {790, INERTIA_FACTOR_START_POS.y}, 0.5_s);
-	inertia_factor_i.pos.change(interp_mode::CUBE, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s);
-	cur_inertia_factor.pos.change(interp_mode::CUBE, {887.5, INERTIA_FACTOR_START_POS.y}, 0.5_s);
-	inertia_factor_d.unhide(0.5_s);
-	inertia_factor_i.unhide(0.5_s);
-	cur_inertia_factor.unhide(0.5_s);
-
+	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
+							  loc_text_callback{T_TITLE});
+	m_ui.emplace<text_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32,
+							  loc_text_callback{T_SUBTITLE});
+	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, STARTING_LIVES_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_lives_d_scb,
+							   starting_lives_d_acb);
+	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, STARTING_LIVES_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, starting_lives_i_scb,
+							   starting_lives_i_acb);
+	m_ui.emplace<text_widget>(T_CUR_STARTING_LIVES, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_starting_lives_tcb);
+	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, HITBOX_RADIUS_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, hitbox_radius_d_scb,
+							   hitbox_radius_d_acb);
+	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_I, HITBOX_RADIUS_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, hitbox_radius_i_scb,
+							   hitbox_radius_i_acb);
+	m_ui.emplace<text_widget>(T_CUR_HITBOX_RADIUS, HITBOX_RADIUS_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_hitbox_radius_tcb);
+	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_D, INERTIA_FACTOR_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, inertia_factor_d_scb,
+							   inertia_factor_d_acb);
+	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_I, INERTIA_FACTOR_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, inertia_factor_i_scb,
+							   inertia_factor_i_acb);
+	m_ui.emplace<text_widget>(T_CUR_INERTIA_FACTOR, INERTIA_FACTOR_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_inertia_factor_tcb);
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
 		const label& label{LABELS[i]};
-		const glm::vec2 pos{-50, 450 + i * 75};
-		widget& widget{m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
-												 tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag})};
-		widget.pos.change(interp_mode::CUBE, {15, 450 + i * 75}, 0.5_s);
-		widget.unhide(0.5_s);
+		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {-50, 450 + i * 75}, {15, 450 + i * 75}, 0.5_s};
+		m_ui.emplace<text_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, LABELS[i].tooltip, font::LANGUAGE,
+								  tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag});
 	}
-
-	widget& exit{m_ui.emplace<clickable_text_widget>(T_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{T_EXIT}, status_cb, exit_acb, NO_TOOLTIP, sound::CANCEL)};
-	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
-	exit.unhide(0.5_s);
+	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
+										loc_text_callback{T_EXIT}, scb, exit_acb, NO_TOOLTIP, sound::CANCEL);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

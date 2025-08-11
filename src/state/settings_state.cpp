@@ -1,5 +1,5 @@
-#include "../../include/audio.hpp"
 #include "../../include/state/settings_state.hpp"
+#include "../../include/audio.hpp"
 #include "../../include/state/title_state.hpp"
 #include "../../include/system.hpp"
 
@@ -108,6 +108,8 @@ constexpr glm::vec2 SFX_VOLUME_START_POS{1050, 571};
 constexpr glm::vec2 MUSIC_VOLUME_START_POS{1050, 646};
 // Starting position of the language widgets.
 constexpr glm::vec2 LANGUAGE_START_POS{1050, 721};
+
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 0.5_s};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
@@ -259,21 +261,16 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	//
 
-	widget& title{m_ui.emplace<text_widget>(T_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-											64, loc_text_callback{T_TITLE})};
-	title.pos.change(interp_mode::CUBE, TITLE_POS, 0.5_s);
-	title.unhide(0.5_s);
-
+	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
+							  loc_text_callback{T_TITLE});
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
 		const label& label{LABELS[i]};
-		const glm::vec2 pos{-50, 196 + i * 75};
-		widget& widget{label.tooltip != NO_TOOLTIP_STR
-						   ? m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
-													   tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag})
-						   : m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, font::LANGUAGE,
-													   tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag})};
-		widget.pos.change(interp_mode::CUBE, {15, 196 + i * 75}, 0.5_s);
-		widget.unhide(0.5_s);
+		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {-50, 196 + i * 75}, {15, 196 + i * 75}, 0.5_s};
+		label.tooltip != NO_TOOLTIP_STR
+			? m_ui.emplace<text_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, LABELS[i].tooltip, font::LANGUAGE,
+										tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag})
+			: m_ui.emplace<text_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+										48, loc_text_callback{label.tag});
 	}
 
 	const tr::align cur_window_size_alignment{engine::settings.window_size == FULLSCREEN ? tr::align::CENTER_RIGHT : tr::align::CENTER};
