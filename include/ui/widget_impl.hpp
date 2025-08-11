@@ -6,10 +6,11 @@
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
 template <std::size_t S>
-line_input_widget<S>::line_input_widget(glm::vec2 pos, tr::align alignment, tr::system::ttf_style style, float font_size,
-										status_callback status_cb, action_callback enter_cb)
+line_input_widget<S>::line_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style,
+										float font_size, status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
 	: text_widget{pos,
 				  alignment,
+				  unhide_time,
 				  true,
 				  NO_TOOLTIP,
 				  true,
@@ -20,6 +21,7 @@ line_input_widget<S>::line_input_widget(glm::vec2 pos, tr::align alignment, tr::
 				  tr::system::UNLIMITED_WIDTH,
 				  {160, 160, 160, 160},
 				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
+	, buffer{initial_text}
 	, m_status_cb{std::move(status_cb)}
 	, m_enter_cb{std::move(enter_cb)}
 	, m_has_focus{false}
@@ -143,10 +145,11 @@ template <std::size_t S> void line_input_widget<S>::on_paste()
 
 ////////////////////////////////////////////////////////////// REPLAY WIDGET //////////////////////////////////////////////////////////////
 
-replay_widget::replay_widget(glm::vec2 pos, tr::align alignment, auto base_status_cb, auto base_action_cb,
+replay_widget::replay_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_status_cb, auto base_action_cb,
 							 std::optional<std::map<std::string, replay_header>::iterator> it)
 	: clickable_text_widget{pos,
 							alignment,
+							unhide_time,
 							font::LANGUAGE,
 							40,
 							[this] {
@@ -210,10 +213,12 @@ replay_widget::replay_widget(glm::vec2 pos, tr::align alignment, auto base_statu
 ////////////////////////////////////////////////////////// MULTILINE TEXT INPUT ///////////////////////////////////////////////////////////
 
 template <std::size_t S>
-multiline_input_widget<S>::multiline_input_widget(glm::vec2 pos, tr::align alignment, float width, std::uint8_t max_lines,
-												  tr::halign text_alignment, float font_size, status_callback status_cb)
+multiline_input_widget<S>::multiline_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width,
+												  std::uint8_t max_lines, tr::halign text_alignment, float font_size,
+												  status_callback status_cb)
 	: text_widget{pos,
 				  alignment,
+				  unhide_time,
 				  true,
 				  NO_TOOLTIP,
 				  true,

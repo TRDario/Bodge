@@ -4,22 +4,22 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr tag TAG_TITLE{"start_game"};
-constexpr tag TAG_NAME{"name"};
-constexpr tag TAG_AUTHOR{"author"};
-constexpr tag TAG_DESCRIPTION{"description"};
-constexpr tag TAG_PB{"pb"};
-constexpr tag TAG_PREV{"prev"};
-constexpr tag TAG_NEXT{"next"};
-constexpr tag TAG_START{"start"};
-constexpr tag TAG_EXIT{"exit"};
+constexpr tag T_TITLE{"start_game"};
+constexpr tag T_NAME{"name"};
+constexpr tag T_AUTHOR{"author"};
+constexpr tag T_DESCRIPTION{"description"};
+constexpr tag T_PB{"pb"};
+constexpr tag T_PREV{"prev"};
+constexpr tag T_NEXT{"next"};
+constexpr tag T_START{"start"};
+constexpr tag T_EXIT{"exit"};
 
 // Gamemode display widgets.
-constexpr std::array<tag, 4> GAMEMODE_WIDGETS{TAG_NAME, TAG_AUTHOR, TAG_DESCRIPTION, TAG_PB};
+constexpr std::array<tag, 4> GAMEMODE_WIDGETS{T_NAME, T_AUTHOR, T_DESCRIPTION, T_PB};
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::LEFT}, TAG_PREV},       {{tr::system::keycode::RIGHT}, TAG_NEXT},  {{tr::system::keycode::ENTER}, TAG_START},
-	{{tr::system::keycode::TOP_ROW_1}, TAG_START}, {{tr::system::keycode::ESCAPE}, TAG_EXIT}, {{tr::system::keycode::TOP_ROW_2}, TAG_EXIT},
+	{{tr::system::keycode::LEFT}, T_PREV},       {{tr::system::keycode::RIGHT}, T_NEXT},  {{tr::system::keycode::ENTER}, T_START},
+	{{tr::system::keycode::TOP_ROW_1}, T_START}, {{tr::system::keycode::ESCAPE}, T_EXIT}, {{tr::system::keycode::TOP_ROW_2}, T_EXIT},
 };
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
@@ -39,32 +39,32 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 
 	const status_callback status_cb{[this] { return m_substate == substate::IN_START_GAME; }};
 
-	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-											64, loc_text_callback{TAG_TITLE})};
+	widget& title{m_ui.emplace<text_widget>(T_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											64, loc_text_callback{T_TITLE})};
 	title.pos.change(interp_mode::CUBE, {500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
 	text_callback name_text_cb{string_text_callback{std::string{::name(*m_selected)}}};
-	widget& name{m_ui.emplace<text_widget>(TAG_NAME, glm::vec2{500, 275}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+	widget& name{m_ui.emplace<text_widget>(T_NAME, glm::vec2{500, 275}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
 										   120, std::move(name_text_cb))};
 	name.pos.change(interp_mode::CUBE, {500, 375}, 0.5_s);
 	name.unhide(0.5_s);
 
 	text_callback author_text_cb{string_text_callback{std::format("{}: {}", engine::loc["by"], m_selected->author)}};
-	widget& author{m_ui.emplace<text_widget>(TAG_AUTHOR, glm::vec2{400, 450}, tr::align::CENTER, font::LANGUAGE,
+	widget& author{m_ui.emplace<text_widget>(T_AUTHOR, glm::vec2{400, 450}, tr::align::CENTER, font::LANGUAGE,
 											 tr::system::ttf_style::NORMAL, 32, std::move(author_text_cb))};
 	author.pos.change(interp_mode::CUBE, {500, 450}, 0.5_s);
 	author.unhide(0.5_s);
 
 	text_callback description_text_cb{string_text_callback{std::string{description(*m_selected)}}};
-	widget& description{m_ui.emplace<text_widget>(TAG_DESCRIPTION, glm::vec2{600, 500}, tr::align::CENTER, font::LANGUAGE,
+	widget& description{m_ui.emplace<text_widget>(T_DESCRIPTION, glm::vec2{600, 500}, tr::align::CENTER, font::LANGUAGE,
 												  tr::system::ttf_style::ITALIC, 32, std::move(description_text_cb), "80808080"_rgba8)};
 	description.pos.change(interp_mode::CUBE, {500, 500}, 0.5_s);
 	description.unhide(0.5_s);
 
 	text_callback pb_text_cb{
 		string_text_callback{std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))}};
-	widget& pb{m_ui.emplace<text_widget>(TAG_PB, glm::vec2{500, 695}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
+	widget& pb{m_ui.emplace<text_widget>(T_PB, glm::vec2{500, 695}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
 										 std::move(pb_text_cb), "FFFF00C0"_rgba8)};
 	pb.pos.change(interp_mode::CUBE, {500, 595}, 0.5_s);
 	pb.unhide(0.5_s);
@@ -79,7 +79,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 			widget.hide(0.25_s);
 		}
 	}};
-	widget& prev{m_ui.emplace<arrow_widget>(TAG_PREV, glm::vec2{-100, 500}, tr::align::CENTER_LEFT, false, status_cb, prev_action_cb)};
+	widget& prev{m_ui.emplace<arrow_widget>(T_PREV, glm::vec2{-100, 500}, tr::align::CENTER_LEFT, false, status_cb, prev_action_cb)};
 	prev.pos.change(interp_mode::CUBE, {10, 500}, 0.5_s);
 	prev.unhide(0.5_s);
 
@@ -95,7 +95,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 			widget.hide(0.25_s);
 		}
 	}};
-	widget& next{m_ui.emplace<arrow_widget>(TAG_NEXT, glm::vec2{1100, 500}, tr::align::CENTER_RIGHT, true, status_cb, next_action_cb)};
+	widget& next{m_ui.emplace<arrow_widget>(T_NEXT, glm::vec2{1100, 500}, tr::align::CENTER_RIGHT, true, status_cb, next_action_cb)};
 	next.pos.change(interp_mode::CUBE, {990, 500}, 0.5_s);
 	next.unhide(0.5_s);
 
@@ -106,8 +106,8 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		engine::scorefile.last_selected = *m_selected;
 		engine::fade_song_out(0.5s);
 	}};
-	widget& start{m_ui.emplace<clickable_text_widget>(TAG_START, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													  loc_text_callback{TAG_START}, status_cb, start_action_cb, NO_TOOLTIP)};
+	widget& start{m_ui.emplace<clickable_text_widget>(T_START, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
+													  loc_text_callback{T_START}, status_cb, start_action_cb, NO_TOOLTIP)};
 	start.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
 	start.unhide(0.5_s);
 
@@ -117,8 +117,8 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		set_up_exit_animation();
 		engine::scorefile.last_selected = *m_selected;
 	}};
-	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
+	widget& exit{m_ui.emplace<clickable_text_widget>(T_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
+													 loc_text_callback{T_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 }
@@ -183,18 +183,18 @@ void start_game_state::draw()
 void start_game_state::set_up_exit_animation()
 {
 
-	widget& name{m_ui[TAG_NAME]};
-	widget& author{m_ui[TAG_AUTHOR]};
-	widget& description{m_ui[TAG_DESCRIPTION]};
-	widget& pb{m_ui[TAG_PB]};
+	widget& name{m_ui[T_NAME]};
+	widget& author{m_ui[T_AUTHOR]};
+	widget& description{m_ui[T_DESCRIPTION]};
+	widget& pb{m_ui[T_PB]};
 	name.pos.change(interp_mode::CUBE, glm::vec2{name.pos} - glm::vec2{0, 100}, 0.5_s);
 	author.pos.change(interp_mode::CUBE, glm::vec2{author.pos} + glm::vec2{100, 0}, 0.5_s);
 	description.pos.change(interp_mode::CUBE, glm::vec2{description.pos} - glm::vec2{100, 0}, 0.5_s);
 	pb.pos.change(interp_mode::CUBE, glm::vec2{pb.pos} + glm::vec2{0, 100}, 0.5_s);
-	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui[TAG_PREV].pos.change(interp_mode::CUBE, {-100, 500}, 0.5_s);
-	m_ui[TAG_NEXT].pos.change(interp_mode::CUBE, {1100, 500}, 0.5_s);
-	m_ui[TAG_START].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-	m_ui[TAG_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[T_PREV].pos.change(interp_mode::CUBE, {-100, 500}, 0.5_s);
+	m_ui[T_NEXT].pos.change(interp_mode::CUBE, {1100, 500}, 0.5_s);
+	m_ui[T_START].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

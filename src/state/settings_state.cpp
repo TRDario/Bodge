@@ -5,91 +5,91 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr tag TAG_TITLE{"settings"};
-constexpr tag TAG_WINDOW_SIZE{"window_size"};
-constexpr tag TAG_WINDOW_SIZE_DEC{"window_size_dec"};
-constexpr tag TAG_CUR_WINDOW_SIZE{"cur_window_size"};
-constexpr tag TAG_WINDOW_SIZE_INC{"window_size_inc"};
-constexpr tag TAG_REFRESH_RATE{"refresh_rate"};
-constexpr tag TAG_REFRESH_RATE_DEC{"refresh_rate_dec"};
-constexpr tag TAG_CUR_REFRESH_RATE{"cur_refresh_rate"};
-constexpr tag TAG_REFRESH_RATE_INC{"refresh_rate_inc"};
-constexpr tag TAG_MSAA{"msaa"};
-constexpr tag TAG_MSAA_DEC{"msaa_dec"};
-constexpr tag TAG_CUR_MSAA{"cur_msaa"};
-constexpr tag TAG_MSAA_INC{"msaa_inc"};
-constexpr tag TAG_PRIMARY_HUE{"primary_hue"};
-constexpr tag TAG_PRIMARY_HUE_PREVIEW{"primary_hue_preview"};
-constexpr tag TAG_PRIMARY_HUE_DEC{"primary_hue_dec"};
-constexpr tag TAG_CUR_PRIMARY_HUE{"cur_primary_hue"};
-constexpr tag TAG_PRIMARY_HUE_INC{"primary_hue_inc"};
-constexpr tag TAG_SECONDARY_HUE{"secondary_hue"};
-constexpr tag TAG_SECONDARY_HUE_PREVIEW{"secondary_hue_preview"};
-constexpr tag TAG_SECONDARY_HUE_DEC{"secondary_hue_dec"};
-constexpr tag TAG_CUR_SECONDARY_HUE{"cur_secondary_hue"};
-constexpr tag TAG_SECONDARY_HUE_INC{"secondary_hue_inc"};
-constexpr tag TAG_SFX_VOLUME{"sfx_volume"};
-constexpr tag TAG_SFX_VOLUME_DEC{"sfx_volume_dec"};
-constexpr tag TAG_CUR_SFX_VOLUME{"cur_sfx_volume"};
-constexpr tag TAG_SFX_VOLUME_INC{"sfx_volume_inc"};
-constexpr tag TAG_MUSIC_VOLUME{"music_volume"};
-constexpr tag TAG_MUSIC_VOLUME_DEC{"music_volume_dec"};
-constexpr tag TAG_CUR_MUSIC_VOLUME{"cur_music_volume"};
-constexpr tag TAG_MUSIC_VOLUME_INC{"music_volume_inc"};
-constexpr tag TAG_LANGUAGE{"language"};
-constexpr tag TAG_CUR_LANGUAGE{"cur_language"};
-constexpr tag TAG_REVERT{"revert"};
-constexpr tag TAG_APPLY{"apply"};
-constexpr tag TAG_EXIT{"exit"};
+constexpr tag T_TITLE{"settings"};
+constexpr tag T_WINDOW_SIZE{"window_size"};
+constexpr tag T_WINDOW_SIZE_DEC{"window_size_dec"};
+constexpr tag T_CUR_WINDOW_SIZE{"cur_window_size"};
+constexpr tag T_WINDOW_SIZE_INC{"window_size_inc"};
+constexpr tag T_REFRESH_RATE{"refresh_rate"};
+constexpr tag T_REFRESH_RATE_DEC{"refresh_rate_dec"};
+constexpr tag T_CUR_REFRESH_RATE{"cur_refresh_rate"};
+constexpr tag T_REFRESH_RATE_INC{"refresh_rate_inc"};
+constexpr tag T_MSAA{"msaa"};
+constexpr tag T_MSAA_DEC{"msaa_dec"};
+constexpr tag T_CUR_MSAA{"cur_msaa"};
+constexpr tag T_MSAA_INC{"msaa_inc"};
+constexpr tag T_PRIMARY_HUE{"primary_hue"};
+constexpr tag T_PRIMARY_HUE_PREVIEW{"primary_hue_preview"};
+constexpr tag T_PRIMARY_HUE_DEC{"primary_hue_dec"};
+constexpr tag T_CUR_PRIMARY_HUE{"cur_primary_hue"};
+constexpr tag T_PRIMARY_HUE_INC{"primary_hue_inc"};
+constexpr tag T_SECONDARY_HUE{"secondary_hue"};
+constexpr tag T_SECONDARY_HUE_PREVIEW{"secondary_hue_preview"};
+constexpr tag T_SECONDARY_HUE_DEC{"secondary_hue_dec"};
+constexpr tag T_CUR_SECONDARY_HUE{"cur_secondary_hue"};
+constexpr tag T_SECONDARY_HUE_INC{"secondary_hue_inc"};
+constexpr tag T_SFX_VOLUME{"sfx_volume"};
+constexpr tag T_SFX_VOLUME_DEC{"sfx_volume_dec"};
+constexpr tag T_CUR_SFX_VOLUME{"cur_sfx_volume"};
+constexpr tag T_SFX_VOLUME_INC{"sfx_volume_inc"};
+constexpr tag T_MUSIC_VOLUME{"music_volume"};
+constexpr tag T_MUSIC_VOLUME_DEC{"music_volume_dec"};
+constexpr tag T_CUR_MUSIC_VOLUME{"cur_music_volume"};
+constexpr tag T_MUSIC_VOLUME_INC{"music_volume_inc"};
+constexpr tag T_LANGUAGE{"language"};
+constexpr tag T_CUR_LANGUAGE{"cur_language"};
+constexpr tag T_REVERT{"revert"};
+constexpr tag T_APPLY{"apply"};
+constexpr tag T_EXIT{"exit"};
 
 // Right-aligned widgets.
 constexpr std::array<tag, 24> RIGHT_WIDGETS{
-	TAG_WINDOW_SIZE_DEC,
-	TAG_CUR_WINDOW_SIZE,
-	TAG_WINDOW_SIZE_INC,
-	TAG_REFRESH_RATE_DEC,
-	TAG_CUR_REFRESH_RATE,
-	TAG_REFRESH_RATE_INC,
-	TAG_MSAA_DEC,
-	TAG_CUR_MSAA,
-	TAG_MSAA_INC,
-	TAG_PRIMARY_HUE_DEC,
-	TAG_CUR_PRIMARY_HUE,
-	TAG_PRIMARY_HUE_INC,
-	TAG_PRIMARY_HUE_PREVIEW,
-	TAG_SECONDARY_HUE_DEC,
-	TAG_CUR_SECONDARY_HUE,
-	TAG_SECONDARY_HUE_INC,
-	TAG_SECONDARY_HUE_PREVIEW,
-	TAG_SFX_VOLUME_DEC,
-	TAG_CUR_SFX_VOLUME,
-	TAG_SFX_VOLUME_INC,
-	TAG_MUSIC_VOLUME_DEC,
-	TAG_CUR_MUSIC_VOLUME,
-	TAG_MUSIC_VOLUME_INC,
-	TAG_CUR_LANGUAGE,
+	T_WINDOW_SIZE_DEC,
+	T_CUR_WINDOW_SIZE,
+	T_WINDOW_SIZE_INC,
+	T_REFRESH_RATE_DEC,
+	T_CUR_REFRESH_RATE,
+	T_REFRESH_RATE_INC,
+	T_MSAA_DEC,
+	T_CUR_MSAA,
+	T_MSAA_INC,
+	T_PRIMARY_HUE_DEC,
+	T_CUR_PRIMARY_HUE,
+	T_PRIMARY_HUE_INC,
+	T_PRIMARY_HUE_PREVIEW,
+	T_SECONDARY_HUE_DEC,
+	T_CUR_SECONDARY_HUE,
+	T_SECONDARY_HUE_INC,
+	T_SECONDARY_HUE_PREVIEW,
+	T_SFX_VOLUME_DEC,
+	T_CUR_SFX_VOLUME,
+	T_SFX_VOLUME_INC,
+	T_MUSIC_VOLUME_DEC,
+	T_CUR_MUSIC_VOLUME,
+	T_MUSIC_VOLUME_INC,
+	T_CUR_LANGUAGE,
 };
 // Bottom set of buttons.
-constexpr std::array<tag, 3> BOTTOM_BUTTONS{TAG_REVERT, TAG_APPLY, TAG_EXIT};
+constexpr std::array<tag, 3> BOTTOM_BUTTONS{T_REVERT, T_APPLY, T_EXIT};
 
 // Sentinel string for having no tooltip.
 constexpr const char* NO_TOOLTIP_STR{nullptr};
 // Left-aligned label widgets.
 constexpr std::array<label, 8> LABELS{{
-	{TAG_WINDOW_SIZE, "window_size_tt"},
-	{TAG_REFRESH_RATE, "refresh_rate_tt"},
-	{TAG_MSAA, "msaa_tt"},
-	{TAG_PRIMARY_HUE, "primary_hue_tt"},
-	{TAG_SECONDARY_HUE, "secondary_hue_tt"},
-	{TAG_SFX_VOLUME, NO_TOOLTIP_STR},
-	{TAG_MUSIC_VOLUME, NO_TOOLTIP_STR},
-	{TAG_LANGUAGE, NO_TOOLTIP_STR},
+	{T_WINDOW_SIZE, "window_size_tt"},
+	{T_REFRESH_RATE, "refresh_rate_tt"},
+	{T_MSAA, "msaa_tt"},
+	{T_PRIMARY_HUE, "primary_hue_tt"},
+	{T_SECONDARY_HUE, "secondary_hue_tt"},
+	{T_SFX_VOLUME, NO_TOOLTIP_STR},
+	{T_MUSIC_VOLUME, NO_TOOLTIP_STR},
+	{T_LANGUAGE, NO_TOOLTIP_STR},
 }};
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::Z, tr::system::keymod::CTRL}, TAG_REVERT},
-	{{tr::system::keycode::S, tr::system::keymod::CTRL}, TAG_APPLY},
-	{{tr::system::keycode::ESCAPE}, TAG_EXIT},
+	{{tr::system::keycode::Z, tr::system::keymod::CTRL}, T_REVERT},
+	{{tr::system::keycode::S, tr::system::keymod::CTRL}, T_APPLY},
+	{{tr::system::keycode::ESCAPE}, T_EXIT},
 };
 
 // Starting position of the window size widgets.
@@ -264,8 +264,8 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	//
 
-	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-											64, loc_text_callback{TAG_TITLE})};
+	widget& title{m_ui.emplace<text_widget>(T_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											64, loc_text_callback{T_TITLE})};
 	title.pos.change(interp_mode::CUBE, TITLE_POS, 0.5_s);
 	title.unhide(0.5_s);
 
@@ -282,11 +282,11 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	}
 
 	const tr::align cur_window_size_alignment{engine::settings.window_size == FULLSCREEN ? tr::align::CENTER_RIGHT : tr::align::CENTER};
-	widget& window_size_dec{m_ui.emplace<arrow_widget>(TAG_WINDOW_SIZE_DEC, WINDOW_SIZE_START_POS, tr::align::CENTER_LEFT, false,
+	widget& window_size_dec{m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_DEC, WINDOW_SIZE_START_POS, tr::align::CENTER_LEFT, false,
 													   window_size_dec_status_cb, window_size_dec_action_cb)};
-	widget& window_size_inc{m_ui.emplace<arrow_widget>(TAG_WINDOW_SIZE_INC, WINDOW_SIZE_START_POS, tr::align::CENTER_RIGHT, true,
+	widget& window_size_inc{m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_INC, WINDOW_SIZE_START_POS, tr::align::CENTER_RIGHT, true,
 													   window_size_inc_status_cb, window_size_inc_action_cb)};
-	widget& cur_window_size{m_ui.emplace<clickable_text_widget>(TAG_CUR_WINDOW_SIZE, WINDOW_SIZE_START_POS, cur_window_size_alignment,
+	widget& cur_window_size{m_ui.emplace<clickable_text_widget>(T_CUR_WINDOW_SIZE, WINDOW_SIZE_START_POS, cur_window_size_alignment,
 																font::LANGUAGE, 48, cur_window_size_text_cb, cur_window_size_status_cb,
 																cur_window_size_action_cb)};
 	cur_window_size.pos.change(interp_mode::CUBE, {engine::settings.window_size == FULLSCREEN ? 985 : 875, WINDOW_SIZE_START_POS.y}, 0.5_s);
@@ -300,11 +300,11 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	const tr::align cur_refresh_rate_alignment{engine::settings.refresh_rate == NATIVE_REFRESH_RATE ? tr::align::CENTER_RIGHT
 																									: tr::align::CENTER};
-	widget& refresh_rate_dec{m_ui.emplace<arrow_widget>(TAG_REFRESH_RATE_DEC, REFRESH_RATE_START_POS, tr::align::CENTER_LEFT, false,
+	widget& refresh_rate_dec{m_ui.emplace<arrow_widget>(T_REFRESH_RATE_DEC, REFRESH_RATE_START_POS, tr::align::CENTER_LEFT, false,
 														refresh_rate_dec_status_cb, refresh_rate_dec_action_cb)};
-	widget& refresh_rate_inc{m_ui.emplace<arrow_widget>(TAG_REFRESH_RATE_INC, REFRESH_RATE_START_POS, tr::align::CENTER_RIGHT, true,
+	widget& refresh_rate_inc{m_ui.emplace<arrow_widget>(T_REFRESH_RATE_INC, REFRESH_RATE_START_POS, tr::align::CENTER_RIGHT, true,
 														refresh_rate_inc_status_cb, refresh_rate_inc_action_cb)};
-	widget& cur_refresh_rate{m_ui.emplace<clickable_text_widget>(TAG_CUR_REFRESH_RATE, REFRESH_RATE_START_POS, cur_refresh_rate_alignment,
+	widget& cur_refresh_rate{m_ui.emplace<clickable_text_widget>(T_CUR_REFRESH_RATE, REFRESH_RATE_START_POS, cur_refresh_rate_alignment,
 																 font::LANGUAGE, 48, cur_refresh_rate_text_cb, cur_refresh_rate_status_cb,
 																 cur_refresh_rate_action_cb)};
 	cur_refresh_rate.pos.change(interp_mode::CUBE,
@@ -318,11 +318,11 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	}
 
 	widget& msaa_dec{
-		m_ui.emplace<arrow_widget>(TAG_MSAA_DEC, MSAA_START_POS, tr::align::CENTER_LEFT, false, msaa_dec_status_cb, msaa_dec_action_cb)};
+		m_ui.emplace<arrow_widget>(T_MSAA_DEC, MSAA_START_POS, tr::align::CENTER_LEFT, false, msaa_dec_status_cb, msaa_dec_action_cb)};
 	widget& msaa_inc{
-		m_ui.emplace<arrow_widget>(TAG_MSAA_INC, MSAA_START_POS, tr::align::CENTER_RIGHT, true, msaa_inc_status_cb, msaa_inc_action_cb)};
-	widget& cur_msaa{m_ui.emplace<text_widget>(TAG_CUR_MSAA, MSAA_START_POS, tr::align::CENTER, font::LANGUAGE,
-											   tr::system::ttf_style::NORMAL, 48, cur_msaa_text_cb)};
+		m_ui.emplace<arrow_widget>(T_MSAA_INC, MSAA_START_POS, tr::align::CENTER_RIGHT, true, msaa_inc_status_cb, msaa_inc_action_cb)};
+	widget& cur_msaa{m_ui.emplace<text_widget>(T_CUR_MSAA, MSAA_START_POS, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											   48, cur_msaa_text_cb)};
 	msaa_dec.pos.change(interp_mode::CUBE, {830, MSAA_START_POS.y}, 0.5_s);
 	msaa_inc.pos.change(interp_mode::CUBE, {985, MSAA_START_POS.y}, 0.5_s);
 	cur_msaa.pos.change(interp_mode::CUBE, {907.5, MSAA_START_POS.y}, 0.5_s);
@@ -330,14 +330,14 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	msaa_inc.unhide(0.5_s);
 	cur_msaa.unhide(0.5_s);
 
-	widget& primary_hue_dec{m_ui.emplace<arrow_widget>(TAG_PRIMARY_HUE_DEC, PRIMARY_HUE_START_POS, tr::align::CENTER_LEFT, false,
+	widget& primary_hue_dec{m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_DEC, PRIMARY_HUE_START_POS, tr::align::CENTER_LEFT, false,
 													   hue_arrow_status_cb, primary_hue_dec_action_cb)};
-	widget& primary_hue_inc{m_ui.emplace<arrow_widget>(TAG_PRIMARY_HUE_INC, PRIMARY_HUE_START_POS, tr::align::CENTER_RIGHT, true,
+	widget& primary_hue_inc{m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_INC, PRIMARY_HUE_START_POS, tr::align::CENTER_RIGHT, true,
 													   hue_arrow_status_cb, primary_hue_inc_action_cb)};
-	widget& cur_primary_hue{m_ui.emplace<text_widget>(TAG_CUR_PRIMARY_HUE, PRIMARY_HUE_START_POS, tr::align::CENTER, font::LANGUAGE,
+	widget& cur_primary_hue{m_ui.emplace<text_widget>(T_CUR_PRIMARY_HUE, PRIMARY_HUE_START_POS, tr::align::CENTER, font::LANGUAGE,
 													  tr::system::ttf_style::NORMAL, 48, cur_primary_hue_text_cb)};
 	widget& primary_hue_preview{
-		m_ui.emplace<color_preview_widget>(TAG_PRIMARY_HUE_PREVIEW, PRIMARY_HUE_START_POS, tr::align::CENTER_RIGHT, m_pending.primary_hue)};
+		m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, PRIMARY_HUE_START_POS, tr::align::CENTER_RIGHT, m_pending.primary_hue)};
 	primary_hue_dec.pos.change(interp_mode::CUBE, {745, PRIMARY_HUE_START_POS.y}, 0.5_s);
 	primary_hue_inc.pos.change(interp_mode::CUBE, {930, PRIMARY_HUE_START_POS.y}, 0.5_s);
 	cur_primary_hue.pos.change(interp_mode::CUBE, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s);
@@ -347,13 +347,13 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	cur_primary_hue.unhide(0.5_s);
 	primary_hue_preview.unhide(0.5_s);
 
-	widget& secondary_hue_dec{m_ui.emplace<arrow_widget>(TAG_SECONDARY_HUE_DEC, SECONDARY_HUE_START_POS, tr::align::CENTER_LEFT, false,
+	widget& secondary_hue_dec{m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_DEC, SECONDARY_HUE_START_POS, tr::align::CENTER_LEFT, false,
 														 hue_arrow_status_cb, secondary_hue_dec_action_cb)};
-	widget& secondary_hue_inc{m_ui.emplace<arrow_widget>(TAG_SECONDARY_HUE_INC, SECONDARY_HUE_START_POS, tr::align::CENTER_RIGHT, true,
+	widget& secondary_hue_inc{m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_INC, SECONDARY_HUE_START_POS, tr::align::CENTER_RIGHT, true,
 														 hue_arrow_status_cb, secondary_hue_inc_action_cb)};
-	widget& cur_secondary_hue{m_ui.emplace<text_widget>(TAG_CUR_SECONDARY_HUE, SECONDARY_HUE_START_POS, tr::align::CENTER, font::LANGUAGE,
+	widget& cur_secondary_hue{m_ui.emplace<text_widget>(T_CUR_SECONDARY_HUE, SECONDARY_HUE_START_POS, tr::align::CENTER, font::LANGUAGE,
 														tr::system::ttf_style::NORMAL, 48, cur_secondary_hue_text_cb)};
-	widget& secondary_hue_preview{m_ui.emplace<color_preview_widget>(TAG_SECONDARY_HUE_PREVIEW, SECONDARY_HUE_START_POS,
+	widget& secondary_hue_preview{m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, SECONDARY_HUE_START_POS,
 																	 tr::align::CENTER_RIGHT, m_pending.secondary_hue)};
 	secondary_hue_dec.pos.change(interp_mode::CUBE, {745, SECONDARY_HUE_START_POS.y}, 0.5_s);
 	secondary_hue_inc.pos.change(interp_mode::CUBE, {930, SECONDARY_HUE_START_POS.y}, 0.5_s);
@@ -364,11 +364,11 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	cur_secondary_hue.unhide(0.5_s);
 	secondary_hue_preview.unhide(0.5_s);
 
-	widget& sfx_volume_dec{m_ui.emplace<arrow_widget>(TAG_SFX_VOLUME_DEC, SFX_VOLUME_START_POS, tr::align::CENTER_LEFT, false,
+	widget& sfx_volume_dec{m_ui.emplace<arrow_widget>(T_SFX_VOLUME_DEC, SFX_VOLUME_START_POS, tr::align::CENTER_LEFT, false,
 													  sfx_volume_dec_status_cb, sfx_volume_dec_action_cb)};
-	widget& sfx_volume_inc{m_ui.emplace<arrow_widget>(TAG_SFX_VOLUME_INC, SFX_VOLUME_START_POS, tr::align::CENTER_RIGHT, true,
+	widget& sfx_volume_inc{m_ui.emplace<arrow_widget>(T_SFX_VOLUME_INC, SFX_VOLUME_START_POS, tr::align::CENTER_RIGHT, true,
 													  sfx_volume_inc_status_cb, sfx_volume_inc_action_cb)};
-	widget& cur_sound_volume{m_ui.emplace<text_widget>(TAG_CUR_SFX_VOLUME, SFX_VOLUME_START_POS, tr::align::CENTER, font::LANGUAGE,
+	widget& cur_sound_volume{m_ui.emplace<text_widget>(T_CUR_SFX_VOLUME, SFX_VOLUME_START_POS, tr::align::CENTER, font::LANGUAGE,
 													   tr::system::ttf_style::NORMAL, 48, cur_sound_volume_text_cb)};
 	sfx_volume_dec.pos.change(interp_mode::CUBE, {765, SFX_VOLUME_START_POS.y}, 0.5_s);
 	sfx_volume_inc.pos.change(interp_mode::CUBE, {985, SFX_VOLUME_START_POS.y}, 0.5_s);
@@ -377,11 +377,11 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	sfx_volume_inc.unhide(0.5_s);
 	cur_sound_volume.unhide(0.5_s);
 
-	widget& music_volume_dec{m_ui.emplace<arrow_widget>(TAG_MUSIC_VOLUME_DEC, MUSIC_VOLUME_START_POS, tr::align::CENTER_LEFT, false,
+	widget& music_volume_dec{m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_DEC, MUSIC_VOLUME_START_POS, tr::align::CENTER_LEFT, false,
 														music_volume_dec_status_cb, music_volume_dec_action_cb)};
-	widget& music_volume_inc{m_ui.emplace<arrow_widget>(TAG_MUSIC_VOLUME_INC, MUSIC_VOLUME_START_POS, tr::align::CENTER_RIGHT, true,
+	widget& music_volume_inc{m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_INC, MUSIC_VOLUME_START_POS, tr::align::CENTER_RIGHT, true,
 														music_volume_inc_status_cb, music_volume_inc_action_cb)};
-	widget& cur_music_volume{m_ui.emplace<text_widget>(TAG_CUR_MUSIC_VOLUME, MUSIC_VOLUME_START_POS, tr::align::CENTER, font::LANGUAGE,
+	widget& cur_music_volume{m_ui.emplace<text_widget>(T_CUR_MUSIC_VOLUME, MUSIC_VOLUME_START_POS, tr::align::CENTER, font::LANGUAGE,
 													   tr::system::ttf_style::NORMAL, 48, cur_music_volume_text_cb)};
 	music_volume_dec.pos.change(interp_mode::CUBE, {765, MUSIC_VOLUME_START_POS.y}, 0.5_s);
 	music_volume_inc.pos.change(interp_mode::CUBE, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s);
@@ -390,7 +390,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	music_volume_inc.unhide(0.5_s);
 	cur_music_volume.unhide(0.5_s);
 
-	widget& cur_language{m_ui.emplace<clickable_text_widget>(TAG_CUR_LANGUAGE, LANGUAGE_START_POS, tr::align::CENTER_RIGHT,
+	widget& cur_language{m_ui.emplace<clickable_text_widget>(T_CUR_LANGUAGE, LANGUAGE_START_POS, tr::align::CENTER_RIGHT,
 															 font::LANGUAGE_PREVIEW, 48, cur_language_text_cb, cur_language_status_cb,
 															 cur_language_action_cb)};
 	cur_language.pos.change(interp_mode::CUBE, {985, LANGUAGE_START_POS.y}, 0.5_s);
@@ -440,41 +440,41 @@ void settings_state::draw()
 
 void settings_state::update_window_size_buttons()
 {
-	widget& cur_window_size{m_ui[TAG_CUR_WINDOW_SIZE]};
+	widget& cur_window_size{m_ui[T_CUR_WINDOW_SIZE]};
 	if (m_pending.window_size == FULLSCREEN) {
 		cur_window_size.pos = glm::vec2{985, 196};
 		cur_window_size.alignment = tr::align::CENTER_RIGHT;
-		m_ui[TAG_WINDOW_SIZE_DEC].hide();
-		m_ui[TAG_WINDOW_SIZE_INC].hide();
+		m_ui[T_WINDOW_SIZE_DEC].hide();
+		m_ui[T_WINDOW_SIZE_INC].hide();
 	}
 	else {
 		cur_window_size.pos = glm::vec2{875, 196};
 		cur_window_size.alignment = tr::align::CENTER;
-		m_ui[TAG_WINDOW_SIZE_DEC].unhide();
-		m_ui[TAG_WINDOW_SIZE_INC].unhide();
+		m_ui[T_WINDOW_SIZE_DEC].unhide();
+		m_ui[T_WINDOW_SIZE_INC].unhide();
 	}
 }
 
 void settings_state::update_refresh_rate_buttons()
 {
-	widget& cur_refresh_rate{m_ui[TAG_CUR_REFRESH_RATE]};
+	widget& cur_refresh_rate{m_ui[T_CUR_REFRESH_RATE]};
 	if (m_pending.refresh_rate == NATIVE_REFRESH_RATE) {
 		cur_refresh_rate.pos = glm::vec2{985, 271};
 		cur_refresh_rate.alignment = tr::align::CENTER_RIGHT;
-		m_ui[TAG_REFRESH_RATE_DEC].hide();
-		m_ui[TAG_REFRESH_RATE_INC].hide();
+		m_ui[T_REFRESH_RATE_DEC].hide();
+		m_ui[T_REFRESH_RATE_INC].hide();
 	}
 	else {
 		cur_refresh_rate.pos = glm::vec2{892.5, 271};
 		cur_refresh_rate.alignment = tr::align::CENTER;
-		m_ui[TAG_REFRESH_RATE_DEC].unhide();
-		m_ui[TAG_REFRESH_RATE_INC].unhide();
+		m_ui[T_REFRESH_RATE_DEC].unhide();
+		m_ui[T_REFRESH_RATE_INC].unhide();
 	}
 }
 
 void settings_state::set_up_exit_animation()
 {
-	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
 	for (tag tag : BOTTOM_BUTTONS) {
 		m_ui[tag].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	}

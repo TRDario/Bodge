@@ -9,30 +9,30 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr tag TAG_LOGO_TEXT{"logo_text"};
-constexpr tag TAG_LOGO_OVERLAY{"logo_overlay"};
-constexpr tag TAG_LOGO_BALL{"logo_ball"};
-constexpr tag TAG_COPYRIGHT{"copyright"};
-constexpr tag TAG_VERSION{"version"};
-constexpr tag TAG_START_GAME{"start_game"};
-constexpr tag TAG_GAMEMODE_DESIGNER{"gamemode_designer"};
-constexpr tag TAG_SCOREBOARDS{"scoreboards"};
-constexpr tag TAG_REPLAYS{"replays"};
-constexpr tag TAG_SETTINGS{"settings"};
-constexpr tag TAG_CREDITS{"credits"};
-constexpr tag TAG_EXIT{"exit"};
+constexpr tag T_LOGO_TEXT{"logo_text"};
+constexpr tag T_LOGO_OVERLAY{"logo_overlay"};
+constexpr tag T_LOGO_BALL{"logo_ball"};
+constexpr tag T_COPYRIGHT{"copyright"};
+constexpr tag T_VERSION{"version"};
+constexpr tag T_START_GAME{"start_game"};
+constexpr tag T_GAMEMODE_DESIGNER{"gamemode_designer"};
+constexpr tag T_SCOREBOARDS{"scoreboards"};
+constexpr tag T_REPLAYS{"replays"};
+constexpr tag T_SETTINGS{"settings"};
+constexpr tag T_CREDITS{"credits"};
+constexpr tag T_EXIT{"exit"};
 
 constexpr std::array<tag, 7> BUTTONS{
-	TAG_START_GAME, TAG_GAMEMODE_DESIGNER, TAG_SCOREBOARDS, TAG_REPLAYS, TAG_SETTINGS, TAG_CREDITS, TAG_EXIT,
+	T_START_GAME, T_GAMEMODE_DESIGNER, T_SCOREBOARDS, T_REPLAYS, T_SETTINGS, T_CREDITS, T_EXIT,
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ENTER}, TAG_START_GAME},    {{tr::system::keycode::TOP_ROW_1}, TAG_START_GAME},
-	{{tr::system::keycode::G}, TAG_GAMEMODE_DESIGNER}, {{tr::system::keycode::TOP_ROW_2}, TAG_GAMEMODE_DESIGNER},
-	{{tr::system::keycode::B}, TAG_SCOREBOARDS},       {{tr::system::keycode::TOP_ROW_3}, TAG_SCOREBOARDS},
-	{{tr::system::keycode::R}, TAG_REPLAYS},           {{tr::system::keycode::TOP_ROW_4}, TAG_REPLAYS},
-	{{tr::system::keycode::S}, TAG_SETTINGS},          {{tr::system::keycode::TOP_ROW_5}, TAG_SETTINGS},
-	{{tr::system::keycode::ESCAPE}, TAG_EXIT},         {{tr::system::keycode::TOP_ROW_6}, TAG_EXIT},
+	{{tr::system::keycode::ENTER}, T_START_GAME},    {{tr::system::keycode::TOP_ROW_1}, T_START_GAME},
+	{{tr::system::keycode::G}, T_GAMEMODE_DESIGNER}, {{tr::system::keycode::TOP_ROW_2}, T_GAMEMODE_DESIGNER},
+	{{tr::system::keycode::B}, T_SCOREBOARDS},       {{tr::system::keycode::TOP_ROW_3}, T_SCOREBOARDS},
+	{{tr::system::keycode::R}, T_REPLAYS},           {{tr::system::keycode::TOP_ROW_4}, T_REPLAYS},
+	{{tr::system::keycode::S}, T_SETTINGS},          {{tr::system::keycode::TOP_ROW_5}, T_SETTINGS},
+	{{tr::system::keycode::ESCAPE}, T_EXIT},         {{tr::system::keycode::TOP_ROW_6}, T_EXIT},
 };
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
@@ -123,24 +123,24 @@ float title_state::fade_overlay_opacity() const
 
 void title_state::set_up_ui()
 {
-	widget& logo_text{m_ui.emplace<image_widget>(TAG_LOGO_TEXT, glm::vec2{500, 100}, tr::align::CENTER, 0, "logo_text")};
+	widget& logo_text{m_ui.emplace<image_widget>(T_LOGO_TEXT, glm::vec2{500, 100}, tr::align::CENTER, 0, "logo_text")};
 	logo_text.pos.change(interp_mode::CUBE, {500, 160}, 2.5_s);
 	logo_text.unhide(2.5_s);
-	widget& logo_overlay{m_ui.emplace<image_widget>(TAG_LOGO_OVERLAY, glm::vec2{500, 100}, tr::align::CENTER, 1, "logo_overlay",
+	widget& logo_overlay{m_ui.emplace<image_widget>(T_LOGO_OVERLAY, glm::vec2{500, 100}, tr::align::CENTER, 1, "logo_overlay",
 													&engine::settings.primary_hue)};
 	logo_overlay.pos.change(interp_mode::CUBE, {500, 160}, 2.5_s);
 	logo_overlay.unhide(2.5_s);
-	widget& logo_ball{m_ui.emplace<image_widget>(TAG_LOGO_BALL, glm::vec2{-180, 644}, tr::align::CENTER, 2, "logo_ball",
-												 &engine::settings.secondary_hue)};
+	widget& logo_ball{
+		m_ui.emplace<image_widget>(T_LOGO_BALL, glm::vec2{-180, 644}, tr::align::CENTER, 2, "logo_ball", &engine::settings.secondary_hue)};
 	logo_ball.pos.change(interp_mode::CUBE, {327, 217}, 2.5_s);
 	logo_ball.unhide(2.5_s);
 
-	widget& copyright{m_ui.emplace<text_widget>(TAG_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, font::DEFAULT,
-												tr::system::ttf_style::NORMAL, 24, loc_text_callback{TAG_COPYRIGHT})};
+	widget& copyright{m_ui.emplace<text_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, font::DEFAULT,
+												tr::system::ttf_style::NORMAL, 24, loc_text_callback{T_COPYRIGHT})};
 	copyright.pos.change(interp_mode::CUBE, {4, 998 - copyright.size().y}, 1_s);
 	copyright.unhide(1_s);
-	widget& version{m_ui.emplace<text_widget>(TAG_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, font::DEFAULT,
-											  tr::system::ttf_style::NORMAL, 24, loc_text_callback{TAG_VERSION})};
+	widget& version{m_ui.emplace<text_widget>(T_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, font::DEFAULT,
+											  tr::system::ttf_style::NORMAL, 24, loc_text_callback{T_VERSION})};
 	version.pos.change(interp_mode::CUBE, {996, 998 - version.size().y}, 1_s);
 	version.unhide(1_s);
 
@@ -201,10 +201,10 @@ void title_state::set_up_exit_animation()
 		widget& widget{m_ui[tag]};
 		widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}
-	m_ui[TAG_LOGO_TEXT].pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
-	m_ui[TAG_LOGO_OVERLAY].pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
-	m_ui[TAG_LOGO_BALL].pos.change(interp_mode::CUBE, {487, 57}, 0.5_s);
-	m_ui[TAG_COPYRIGHT].pos.change(interp_mode::CUBE, {4, 1000}, 0.5_s);
-	m_ui[TAG_VERSION].pos.change(interp_mode::CUBE, {996, 1000}, 0.5_s);
+	m_ui[T_LOGO_TEXT].pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
+	m_ui[T_LOGO_OVERLAY].pos.change(interp_mode::CUBE, {500, 220}, 0.5_s);
+	m_ui[T_LOGO_BALL].pos.change(interp_mode::CUBE, {487, 57}, 0.5_s);
+	m_ui[T_COPYRIGHT].pos.change(interp_mode::CUBE, {4, 1000}, 0.5_s);
+	m_ui[T_VERSION].pos.change(interp_mode::CUBE, {996, 1000}, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

@@ -25,8 +25,8 @@ using status_callback = std::function<bool()>;
 // Alias for a clickable widget action callback.
 using action_callback = std::function<void()>;
 
-// Sentinel for no shortcuts.
-constexpr std::initializer_list<tr::system::key_chord> NO_SHORTCUTS{};
+// Sentinel to not unhide a widget.
+constexpr ticks DONT_UNHIDE{std::numeric_limits<ticks>::max()};
 
 ////////////////////////////////////////////////////////////////// WIDGET /////////////////////////////////////////////////////////////////
 
@@ -34,7 +34,7 @@ constexpr std::initializer_list<tr::system::key_chord> NO_SHORTCUTS{};
 class widget {
   public:
 	// Creates a widget.
-	widget(glm::vec2 pos, tr::align alignment, bool hoverable, text_callback tooltip_cb, bool writable);
+	widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, bool hoverable, text_callback tooltip_cb, bool writable);
 	// Virtual destructor.
 	virtual ~widget() = default;
 

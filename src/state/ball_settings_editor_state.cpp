@@ -4,60 +4,59 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr tag TAG_TITLE{"gamemode_designer"};
-constexpr tag TAG_SUBTITLE{"ball_settings"};
-constexpr tag TAG_STARTING_COUNT{"starting_count"};
-constexpr tag TAG_STARTING_COUNT_DEC{"starting_count_dec"};
-constexpr tag TAG_CUR_STARTING_COUNT{"cur_starting_count"};
-constexpr tag TAG_STARTING_COUNT_INC{"starting_count_inc"};
-constexpr tag TAG_MAX_COUNT{"max_count"};
-constexpr tag TAG_MAX_COUNT_DEC{"max_count_dec"};
-constexpr tag TAG_CUR_MAX_COUNT{"cur_max_count"};
-constexpr tag TAG_MAX_COUNT_INC{"max_count_inc"};
-constexpr tag TAG_SPAWN_INTERVAL{"spawn_interval"};
-constexpr tag TAG_SPAWN_INTERVAL_DEC{"spawn_interval_dec"};
-constexpr tag TAG_CUR_SPAWN_INTERVAL{"cur_spawn_interval"};
-constexpr tag TAG_SPAWN_INTERVAL_INC{"spawn_interval_inc"};
-constexpr tag TAG_INITIAL_SIZE{"initial_size"};
-constexpr tag TAG_INITIAL_SIZE_DEC{"initial_size_dec"};
-constexpr tag TAG_CUR_INITIAL_SIZE{"cur_initial_size"};
-constexpr tag TAG_INITIAL_SIZE_INC{"initial_size_inc"};
-constexpr tag TAG_SIZE_STEP{"size_step"};
-constexpr tag TAG_SIZE_STEP_DEC{"size_step_dec"};
-constexpr tag TAG_CUR_SIZE_STEP{"cur_size_step"};
-constexpr tag TAG_SIZE_STEP_INC{"size_step_inc"};
-constexpr tag TAG_INITIAL_VELOCITY{"initial_velocity"};
-constexpr tag TAG_INITIAL_VELOCITY_DEC{"initial_velocity_dec"};
-constexpr tag TAG_CUR_INITIAL_VELOCITY{"cur_initial_velocity"};
-constexpr tag TAG_INITIAL_VELOCITY_INC{"initial_velocity_inc"};
-constexpr tag TAG_VELOCITY_STEP{"velocity_step"};
-constexpr tag TAG_VELOCITY_STEP_DEC{"velocity_step_dec"};
-constexpr tag TAG_CUR_VELOCITY_STEP{"cur_velocity_step"};
-constexpr tag TAG_VELOCITY_STEP_INC{"velocity_step_inc"};
-constexpr tag TAG_EXIT{"exit"};
+constexpr tag T_TITLE{"gamemode_designer"};
+constexpr tag T_SUBTITLE{"ball_settings"};
+constexpr tag T_STARTING_COUNT{"starting_count"};
+constexpr tag T_STARTING_COUNT_D{"starting_count_d"};
+constexpr tag T_STARTING_COUNT_C{"starting_count_c"};
+constexpr tag T_STARTING_COUNT_I{"starting_count_i"};
+constexpr tag T_MAX_COUNT{"max_count"};
+constexpr tag T_MAX_COUNT_D{"max_count_d"};
+constexpr tag T_MAX_COUNT_C{"max_count_c"};
+constexpr tag T_MAX_COUNT_I{"max_count_i"};
+constexpr tag T_SPAWN_INTERVAL{"spawn_interval"};
+constexpr tag T_SPAWN_INTERVAL_D{"spawn_interval_d"};
+constexpr tag T_SPAWN_INTERVAL_C{"spawn_interval_c"};
+constexpr tag T_SPAWN_INTERVAL_I{"spawn_interval_i"};
+constexpr tag T_INITIAL_SIZE{"initial_size"};
+constexpr tag T_INITIAL_SIZE_D{"initial_size_d"};
+constexpr tag T_INITIAL_SIZE_C{"initial_size_c"};
+constexpr tag T_INITIAL_SIZE_I{"initial_size_i"};
+constexpr tag T_SIZE_STEP{"size_step"};
+constexpr tag T_SIZE_STEP_D{"size_step_d"};
+constexpr tag T_SIZE_STEP_C{"size_step_c"};
+constexpr tag T_SIZE_STEP_I{"size_step_i"};
+constexpr tag T_INITIAL_VELOCITY{"initial_velocity"};
+constexpr tag T_INITIAL_VELOCITY_D{"initial_velocity_d"};
+constexpr tag T_INITIAL_VELOCITY_C{"initial_velocity_c"};
+constexpr tag T_INITIAL_VELOCITY_I{"initial_velocity_i"};
+constexpr tag T_VELOCITY_STEP{"velocity_step"};
+constexpr tag T_VELOCITY_STEP_D{"velocity_step_d"};
+constexpr tag T_VELOCITY_STEP_C{"velocity_step_c"};
+constexpr tag T_VELOCITY_STEP_I{"velocity_step_i"};
+constexpr tag T_EXIT{"exit"};
 
 // Left-aligned labels.
 constexpr std::array<label, 7> LABELS{{
-	{TAG_STARTING_COUNT, "starting_count_tt"},
-	{TAG_MAX_COUNT, "max_count_tt"},
-	{TAG_SPAWN_INTERVAL, "spawn_interval_tt"},
-	{TAG_INITIAL_SIZE, "initial_size_tt"},
-	{TAG_SIZE_STEP, "size_step_tt"},
-	{TAG_INITIAL_VELOCITY, "initial_velocity_tt"},
-	{TAG_VELOCITY_STEP, "velocity_step_tt"},
+	{T_STARTING_COUNT, "starting_count_tt"},
+	{T_MAX_COUNT, "max_count_tt"},
+	{T_SPAWN_INTERVAL, "spawn_interval_tt"},
+	{T_INITIAL_SIZE, "initial_size_tt"},
+	{T_SIZE_STEP, "size_step_tt"},
+	{T_INITIAL_VELOCITY, "initial_velocity_tt"},
+	{T_VELOCITY_STEP, "velocity_step_tt"},
 }};
 // Right-aligned widgets.
 constexpr std::array<tag, 21> RIGHT_WIDGETS{
-	TAG_STARTING_COUNT_DEC,   TAG_CUR_STARTING_COUNT,   TAG_STARTING_COUNT_INC,   TAG_MAX_COUNT_DEC,      TAG_CUR_MAX_COUNT,
-	TAG_MAX_COUNT_INC,        TAG_SPAWN_INTERVAL_DEC,   TAG_CUR_SPAWN_INTERVAL,   TAG_SPAWN_INTERVAL_INC, TAG_INITIAL_SIZE_DEC,
-	TAG_CUR_INITIAL_SIZE,     TAG_INITIAL_SIZE_INC,     TAG_SIZE_STEP_DEC,        TAG_CUR_SIZE_STEP,      TAG_SIZE_STEP_INC,
-	TAG_INITIAL_VELOCITY_DEC, TAG_CUR_INITIAL_VELOCITY, TAG_INITIAL_VELOCITY_INC, TAG_VELOCITY_STEP_DEC,  TAG_CUR_VELOCITY_STEP,
-	TAG_VELOCITY_STEP_INC,
+	T_STARTING_COUNT_D, T_STARTING_COUNT_C, T_STARTING_COUNT_I, T_MAX_COUNT_D,        T_MAX_COUNT_C,        T_MAX_COUNT_I,
+	T_SPAWN_INTERVAL_D, T_SPAWN_INTERVAL_C, T_SPAWN_INTERVAL_I, T_INITIAL_SIZE_D,     T_INITIAL_SIZE_C,     T_INITIAL_SIZE_I,
+	T_SIZE_STEP_D,      T_SIZE_STEP_C,      T_SIZE_STEP_I,      T_INITIAL_VELOCITY_D, T_INITIAL_VELOCITY_C, T_INITIAL_VELOCITY_I,
+	T_VELOCITY_STEP_D,  T_VELOCITY_STEP_C,  T_VELOCITY_STEP_I,
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ESCAPE}, TAG_EXIT},
-	{{tr::system::keycode::TOP_ROW_1}, TAG_EXIT},
+	{{tr::system::keycode::ESCAPE}, T_EXIT},
+	{{tr::system::keycode::TOP_ROW_1}, T_EXIT},
 };
 
 // Starting position of the starting count widgets.
@@ -75,6 +74,44 @@ constexpr glm::vec2 INITIAL_VELOCITY_START_POS{1050, SIZE_STEP_START_POS.y + 75}
 // Starting position of the velocity step widgets.
 constexpr glm::vec2 VELOCITY_STEP_START_POS{1050, INITIAL_VELOCITY_START_POS.y + 75};
 
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{TITLE_POS};
+constexpr interpolator<glm::vec2> SUBTITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
+constexpr interpolator<glm::vec2> STARTING_COUNT_D_MOVE_IN{
+	interpolator<glm::vec2>{interp_mode::CUBE, STARTING_COUNT_START_POS, {765, STARTING_COUNT_START_POS.y}, 0.5_s}};
+constexpr interpolator<glm::vec2> STARTING_COUNT_C_MOVE_IN{
+	interpolator<glm::vec2>{interp_mode::CUBE, STARTING_COUNT_START_POS, {875.5f, STARTING_COUNT_START_POS.y}, 0.5_s}};
+constexpr interpolator<glm::vec2> STARTING_COUNT_I_MOVE_IN{
+	interpolator<glm::vec2>{interp_mode::CUBE, STARTING_COUNT_START_POS, {985, STARTING_COUNT_START_POS.y}, 0.5_s}};
+constexpr interpolator<glm::vec2> MAX_COUNT_D_MOVE_IN{interp_mode::CUBE, MAX_COUNT_START_POS, {765, MAX_COUNT_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> MAX_COUNT_C_MOVE_IN{interp_mode::CUBE, MAX_COUNT_START_POS, {875.5f, MAX_COUNT_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> MAX_COUNT_I_MOVE_IN{interp_mode::CUBE, MAX_COUNT_START_POS, {985, MAX_COUNT_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> SPAWN_INTERVAL_D_MOVE_IN{
+	interp_mode::CUBE, SPAWN_INTERVAL_START_POS, {765, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> SPAWN_INTERVAL_C_MOVE_IN{
+	interp_mode::CUBE, SPAWN_INTERVAL_START_POS, {875.5f, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> SPAWN_INTERVAL_I_MOVE_IN{
+	interp_mode::CUBE, SPAWN_INTERVAL_START_POS, {985, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INITIAL_SIZE_D_MOVE_IN{interp_mode::CUBE, INITIAL_SIZE_START_POS, {765, INITIAL_SIZE_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INITIAL_SIZE_C_MOVE_IN{
+	interp_mode::CUBE, INITIAL_SIZE_START_POS, {875.5f, INITIAL_SIZE_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INITIAL_SIZE_I_MOVE_IN{interp_mode::CUBE, INITIAL_SIZE_START_POS, {985, INITIAL_SIZE_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> SIZE_STEP_D_MOVE_IN{interp_mode::CUBE, SIZE_STEP_START_POS, {765, SIZE_STEP_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> SIZE_STEP_C_MOVE_IN{interp_mode::CUBE, SIZE_STEP_START_POS, {875.5f, SIZE_STEP_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> SIZE_STEP_I_MOVE_IN{interp_mode::CUBE, SIZE_STEP_START_POS, {985, SIZE_STEP_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INITIAL_VELOCITY_D_MOVE_IN{
+	interp_mode::CUBE, INITIAL_VELOCITY_START_POS, {765, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INITIAL_VELOCITY_C_MOVE_IN{
+	interp_mode::CUBE, INITIAL_VELOCITY_START_POS, {875.5f, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INITIAL_VELOCITY_I_MOVE_IN{
+	interp_mode::CUBE, INITIAL_VELOCITY_START_POS, {985, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> VELOCITY_STEP_D_MOVE_IN{
+	interp_mode::CUBE, VELOCITY_STEP_START_POS, {765, VELOCITY_STEP_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> VELOCITY_STEP_C_MOVE_IN{
+	interp_mode::CUBE, VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> VELOCITY_STEP_I_MOVE_IN{
+	interp_mode::CUBE, VELOCITY_STEP_START_POS, {985, VELOCITY_STEP_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
@@ -82,98 +119,98 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 {
 	// STATUS CALLBACKS
 
-	const status_callback status_cb{
+	const status_callback scb{
 		[this] { return m_substate == substate::IN_EDITOR; },
 	};
-	const status_callback starting_count_dec_status_cb{
+	const status_callback starting_count_d_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.starting_count > 0; },
 	};
-	const status_callback starting_count_inc_status_cb{
+	const status_callback starting_count_i_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.starting_count < m_pending.ball.max_count; },
 	};
-	const status_callback max_count_dec_status_cb{
+	const status_callback max_count_d_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.max_count > m_pending.ball.starting_count; },
 	};
-	const status_callback max_count_inc_status_cb{
+	const status_callback max_count_i_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.max_count < 255; },
 	};
-	const status_callback spawn_interval_dec_status_cb{
+	const status_callback spawn_interval_d_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.spawn_interval > 1.0_s; },
 	};
-	const status_callback spawn_interval_inc_status_cb{
+	const status_callback spawn_interval_i_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.spawn_interval < 60_s; },
 	};
-	const status_callback initial_size_dec_status_cb{
+	const status_callback initial_size_d_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size > 10; },
 	};
-	const status_callback initial_size_inc_status_cb{
+	const status_callback initial_size_i_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size < 250.0f; },
 	};
-	const status_callback size_step_dec_status_cb{
+	const status_callback size_step_d_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.size_step > 0; },
 	};
-	const status_callback size_step_inc_status_cb{
+	const status_callback size_step_i_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.size_step < 50.0f; },
 	};
-	const status_callback initial_velocity_dec_status_cb{
+	const status_callback initial_velocity_d_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_velocity > 100; },
 	};
-	const status_callback initial_velocity_inc_status_cb{
+	const status_callback initial_velocity_i_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_velocity < 5000.0f; },
 	};
-	const status_callback velocity_step_dec_status_cb{
+	const status_callback velocity_step_d_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.velocity_step > 0; },
 	};
-	const status_callback velocity_step_inc_status_cb{
+	const status_callback velocity_step_i_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.velocity_step < 1000.0f; },
 	};
 
 	// ACTION CALLBACKS
 
-	const action_callback starting_count_dec_action_cb{[&starting_count = m_pending.ball.starting_count] {
+	const action_callback starting_count_d_acb{[&starting_count = m_pending.ball.starting_count] {
 		starting_count = static_cast<std::uint8_t>(std::max(starting_count - engine::keymods_choose(1, 5, 10), 0));
 	}};
-	const action_callback starting_count_inc_action_cb{[&ball = m_pending.ball] {
+	const action_callback starting_count_i_acb{[&ball = m_pending.ball] {
 		ball.starting_count =
 			static_cast<std::uint8_t>(std::min(ball.starting_count + engine::keymods_choose(1, 5, 10), static_cast<int>(ball.max_count)));
 	}};
-	const action_callback max_count_dec_action_cb{[&ball = m_pending.ball] {
+	const action_callback max_count_d_acb{[&ball = m_pending.ball] {
 		ball.max_count =
 			static_cast<std::uint8_t>(std::max(ball.max_count - engine::keymods_choose(1, 5, 10), static_cast<int>(ball.starting_count)));
 	}};
-	const action_callback max_count_inc_action_cb{[&max_count = m_pending.ball.max_count] {
+	const action_callback max_count_i_acb{[&max_count = m_pending.ball.max_count] {
 		max_count = static_cast<std::uint8_t>(std::min(max_count + engine::keymods_choose(1, 5, 10), 255));
 	}};
-	const action_callback spawn_interval_dec_action_cb{[&spawn_interval = m_pending.ball.spawn_interval] {
+	const action_callback spawn_interval_d_acb{[&spawn_interval = m_pending.ball.spawn_interval] {
 		spawn_interval = static_cast<ticks>(
 			std::max(static_cast<int>(spawn_interval - engine::keymods_choose(0.1_s, 1_s, 10_s)), static_cast<int>(1_s)));
 	}};
-	const action_callback spawn_interval_inc_action_cb{[&spawn_interval = m_pending.ball.spawn_interval] {
+	const action_callback spawn_interval_i_acb{[&spawn_interval = m_pending.ball.spawn_interval] {
 		spawn_interval = std::min(spawn_interval + engine::keymods_choose(0.1_s, 1_s, 10_s), 60_s);
 	}};
-	const action_callback initial_size_dec_action_cb{[&initial_size = m_pending.ball.initial_size] {
+	const action_callback initial_size_d_acb{[&initial_size = m_pending.ball.initial_size] {
 		initial_size = std::max(initial_size - engine::keymods_choose(1, 10, 100), 10.0f);
 	}};
-	const action_callback initial_size_inc_action_cb{[&initial_size = m_pending.ball.initial_size] {
+	const action_callback initial_size_i_acb{[&initial_size = m_pending.ball.initial_size] {
 		initial_size = std::min(initial_size + engine::keymods_choose(1, 10, 100), 250.0f);
 	}};
-	const action_callback size_step_dec_action_cb{
+	const action_callback size_step_d_acb{
 		[&size_step = m_pending.ball.size_step] { size_step = std::max(size_step - engine::keymods_choose(0.1f, 1.0f, 10.0f), 0.0f); }};
-	const action_callback size_step_inc_action_cb{
+	const action_callback size_step_i_acb{
 		[&size_step = m_pending.ball.size_step] { size_step = std::min(size_step + engine::keymods_choose(0.1f, 1.0f, 10.0f), 50.0f); }};
-	const action_callback initial_velocity_dec_action_cb{[&initial_velocity = m_pending.ball.initial_velocity] {
+	const action_callback initial_velocity_d_acb{[&initial_velocity = m_pending.ball.initial_velocity] {
 		initial_velocity = std::max(initial_velocity - engine::keymods_choose(1, 10, 100), 100.0f);
 	}};
-	const action_callback initial_velocity_inc_action_cb{[&initial_velocity = m_pending.ball.initial_velocity] {
+	const action_callback initial_velocity_i_acb{[&initial_velocity = m_pending.ball.initial_velocity] {
 		initial_velocity = std::min(initial_velocity + engine::keymods_choose(1, 10, 100), 5000.0f);
 	}};
-	const action_callback velocity_step_dec_action_cb{[&velocity_step = m_pending.ball.velocity_step] {
+	const action_callback velocity_step_d_acb{[&velocity_step = m_pending.ball.velocity_step] {
 		velocity_step = std::max(velocity_step - engine::keymods_choose(1, 10, 100), 0.0f);
 	}};
-	const action_callback velocity_step_inc_action_cb{[&velocity_step = m_pending.ball.velocity_step] {
+	const action_callback velocity_step_i_acb{[&velocity_step = m_pending.ball.velocity_step] {
 		velocity_step = std::min(velocity_step + engine::keymods_choose(1, 10, 100), 1000.0f);
 	}};
-	const action_callback exit_action_cb{[this] {
+	const action_callback exit_acb{[this] {
 		m_substate = substate::EXITING;
 		m_timer = 0;
 		set_up_exit_animation();
@@ -181,130 +218,65 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 
 	// TEXT CALLBACKS
 
-	const text_callback cur_starting_count_text_cb{[this] { return std::to_string(m_pending.ball.starting_count); }};
-	const text_callback cur_max_count_text_cb{[this] { return std::to_string(m_pending.ball.max_count); }};
-	const text_callback cur_spawn_interval_text_cb{[this] { return std::format("{:.1f}s", m_pending.ball.spawn_interval / 1_sf); }};
-	const text_callback cur_initial_size_text_cb{[this] { return std::format("{:.0f}", m_pending.ball.initial_size); }};
-	const text_callback cur_size_step_text_cb{[this] { return std::format("{:.1f}", m_pending.ball.size_step); }};
-	const text_callback cur_initial_velocity_text_cb{[this] { return std::format("{:.0f}", m_pending.ball.initial_velocity); }};
-	const text_callback cur_velocity_step_text_cb{[this] { return std::format("{:.0f}", m_pending.ball.velocity_step); }};
+	const text_callback cur_starting_count_tcb{[this] { return std::to_string(m_pending.ball.starting_count); }};
+	const text_callback cur_max_count_tcb{[this] { return std::to_string(m_pending.ball.max_count); }};
+	const text_callback cur_spawn_interval_tcb{[this] { return std::format("{:.1f}s", m_pending.ball.spawn_interval / 1_sf); }};
+	const text_callback cur_initial_size_tcb{[this] { return std::format("{:.0f}", m_pending.ball.initial_size); }};
+	const text_callback cur_size_step_tcb{[this] { return std::format("{:.1f}", m_pending.ball.size_step); }};
+	const text_callback cur_initial_velocity_tcb{[this] { return std::format("{:.0f}", m_pending.ball.initial_velocity); }};
+	const text_callback cur_velocity_step_tcb{[this] { return std::format("{:.0f}", m_pending.ball.velocity_step); }};
 
 	//
 
-	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TITLE_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-											loc_text_callback{TAG_TITLE})};
-	title.unhide();
-
-	widget& subtitle{m_ui.emplace<text_widget>(TAG_SUBTITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
-											   tr::system::ttf_style::NORMAL, 32, loc_text_callback{TAG_SUBTITLE})};
-	subtitle.pos.change(interp_mode::CUBE, {500, TITLE_POS.y + 64}, 0.5_s);
-	subtitle.unhide(0.5_s);
-
-	widget& starting_count_dec{m_ui.emplace<arrow_widget>(TAG_STARTING_COUNT_DEC, STARTING_COUNT_START_POS, tr::align::CENTER_LEFT, false,
-														  starting_count_dec_status_cb, starting_count_dec_action_cb)};
-	widget& starting_count_inc{m_ui.emplace<arrow_widget>(TAG_STARTING_COUNT_INC, STARTING_COUNT_START_POS, tr::align::CENTER_RIGHT, true,
-														  starting_count_inc_status_cb, starting_count_inc_action_cb)};
-	widget& cur_starting_count{m_ui.emplace<text_widget>(TAG_CUR_STARTING_COUNT, STARTING_COUNT_START_POS, tr::align::CENTER,
-														 font::LANGUAGE, tr::system::ttf_style::NORMAL, 48, cur_starting_count_text_cb)};
-	starting_count_dec.pos.change(interp_mode::CUBE, {765, STARTING_COUNT_START_POS.y}, 0.5_s);
-	starting_count_inc.pos.change(interp_mode::CUBE, {985, STARTING_COUNT_START_POS.y}, 0.5_s);
-	cur_starting_count.pos.change(interp_mode::CUBE, {875.5, STARTING_COUNT_START_POS.y}, 0.5_s);
-	starting_count_dec.unhide(0.5_s);
-	starting_count_inc.unhide(0.5_s);
-	cur_starting_count.unhide(0.5_s);
-
-	widget& max_count_dec{m_ui.emplace<arrow_widget>(TAG_MAX_COUNT_DEC, MAX_COUNT_START_POS, tr::align::CENTER_LEFT, false,
-													 max_count_dec_status_cb, max_count_dec_action_cb)};
-	widget& max_count_inc{m_ui.emplace<arrow_widget>(TAG_MAX_COUNT_INC, MAX_COUNT_START_POS, tr::align::CENTER_RIGHT, true,
-													 max_count_inc_status_cb, max_count_inc_action_cb)};
-	widget& cur_max_count{m_ui.emplace<text_widget>(TAG_CUR_MAX_COUNT, MAX_COUNT_START_POS, tr::align::CENTER, font::LANGUAGE,
-													tr::system::ttf_style::NORMAL, 48, cur_max_count_text_cb)};
-	max_count_dec.pos.change(interp_mode::CUBE, {765, MAX_COUNT_START_POS.y}, 0.5_s);
-	max_count_inc.pos.change(interp_mode::CUBE, {985, MAX_COUNT_START_POS.y}, 0.5_s);
-	cur_max_count.pos.change(interp_mode::CUBE, {875.5, MAX_COUNT_START_POS.y}, 0.5_s);
-	max_count_dec.unhide(0.5_s);
-	max_count_inc.unhide(0.5_s);
-	cur_max_count.unhide(0.5_s);
-
-	widget& spawn_interval_dec{m_ui.emplace<arrow_widget>(TAG_SPAWN_INTERVAL_DEC, SPAWN_INTERVAL_START_POS, tr::align::CENTER_LEFT, false,
-														  spawn_interval_dec_status_cb, spawn_interval_dec_action_cb)};
-	widget& spawn_interval_inc{m_ui.emplace<arrow_widget>(TAG_SPAWN_INTERVAL_INC, SPAWN_INTERVAL_START_POS, tr::align::CENTER_RIGHT, true,
-														  spawn_interval_inc_status_cb, spawn_interval_inc_action_cb)};
-	widget& cur_spawn_interval{m_ui.emplace<text_widget>(TAG_CUR_SPAWN_INTERVAL, SPAWN_INTERVAL_START_POS, tr::align::CENTER,
-														 font::LANGUAGE, tr::system::ttf_style::NORMAL, 48, cur_spawn_interval_text_cb)};
-	spawn_interval_dec.pos.change(interp_mode::CUBE, {765, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
-	spawn_interval_inc.pos.change(interp_mode::CUBE, {985, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
-	cur_spawn_interval.pos.change(interp_mode::CUBE, {875.5, SPAWN_INTERVAL_START_POS.y}, 0.5_s);
-	spawn_interval_dec.unhide(0.5_s);
-	spawn_interval_inc.unhide(0.5_s);
-	cur_spawn_interval.unhide(0.5_s);
-
-	widget& initial_size_dec{m_ui.emplace<arrow_widget>(TAG_INITIAL_SIZE_DEC, INITIAL_SIZE_START_POS, tr::align::CENTER_LEFT, false,
-														initial_size_dec_status_cb, initial_size_dec_action_cb)};
-	widget& initial_size_inc{m_ui.emplace<arrow_widget>(TAG_INITIAL_SIZE_INC, INITIAL_SIZE_START_POS, tr::align::CENTER_RIGHT, true,
-														initial_size_inc_status_cb, initial_size_inc_action_cb)};
-	widget& cur_initial_size{m_ui.emplace<text_widget>(TAG_CUR_INITIAL_SIZE, INITIAL_SIZE_START_POS, tr::align::CENTER, font::LANGUAGE,
-													   tr::system::ttf_style::NORMAL, 48, cur_initial_size_text_cb)};
-	initial_size_dec.pos.change(interp_mode::CUBE, {765, INITIAL_SIZE_START_POS.y}, 0.5_s);
-	initial_size_inc.pos.change(interp_mode::CUBE, {985, INITIAL_SIZE_START_POS.y}, 0.5_s);
-	cur_initial_size.pos.change(interp_mode::CUBE, {875.5, INITIAL_SIZE_START_POS.y}, 0.5_s);
-	initial_size_dec.unhide(0.5_s);
-	initial_size_inc.unhide(0.5_s);
-	cur_initial_size.unhide(0.5_s);
-
-	widget& size_step_dec{m_ui.emplace<arrow_widget>(TAG_SIZE_STEP_DEC, SIZE_STEP_START_POS, tr::align::CENTER_LEFT, false,
-													 size_step_dec_status_cb, size_step_dec_action_cb)};
-	widget& size_step_inc{m_ui.emplace<arrow_widget>(TAG_SIZE_STEP_INC, SIZE_STEP_START_POS, tr::align::CENTER_RIGHT, true,
-													 size_step_inc_status_cb, size_step_inc_action_cb)};
-	widget& cur_size_step{m_ui.emplace<text_widget>(TAG_CUR_SIZE_STEP, SIZE_STEP_START_POS, tr::align::CENTER, font::LANGUAGE,
-													tr::system::ttf_style::NORMAL, 48, cur_size_step_text_cb)};
-	size_step_dec.pos.change(interp_mode::CUBE, {765, SIZE_STEP_START_POS.y}, 0.5_s);
-	size_step_inc.pos.change(interp_mode::CUBE, {985, SIZE_STEP_START_POS.y}, 0.5_s);
-	cur_size_step.pos.change(interp_mode::CUBE, {875.5, SIZE_STEP_START_POS.y}, 0.5_s);
-	size_step_dec.unhide(0.5_s);
-	size_step_inc.unhide(0.5_s);
-	cur_size_step.unhide(0.5_s);
-
-	widget& initial_velocity_dec{m_ui.emplace<arrow_widget>(TAG_INITIAL_VELOCITY_DEC, INITIAL_VELOCITY_START_POS, tr::align::CENTER_LEFT,
-															false, initial_velocity_dec_status_cb, initial_velocity_dec_action_cb)};
-	widget& initial_velocity_inc{m_ui.emplace<arrow_widget>(TAG_INITIAL_VELOCITY_INC, INITIAL_VELOCITY_START_POS, tr::align::CENTER_RIGHT,
-															true, initial_velocity_inc_status_cb, initial_velocity_inc_action_cb)};
-	widget& cur_initial_velocity{m_ui.emplace<text_widget>(TAG_CUR_INITIAL_VELOCITY, INITIAL_VELOCITY_START_POS, tr::align::CENTER,
-														   font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
-														   cur_initial_velocity_text_cb)};
-	initial_velocity_dec.pos.change(interp_mode::CUBE, {765, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
-	initial_velocity_inc.pos.change(interp_mode::CUBE, {985, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
-	cur_initial_velocity.pos.change(interp_mode::CUBE, {875.5, INITIAL_VELOCITY_START_POS.y}, 0.5_s);
-	initial_velocity_dec.unhide(0.5_s);
-	initial_velocity_inc.unhide(0.5_s);
-	cur_initial_velocity.unhide(0.5_s);
-
-	widget& velocity_step_dec{m_ui.emplace<arrow_widget>(TAG_VELOCITY_STEP_DEC, VELOCITY_STEP_START_POS, tr::align::CENTER_LEFT, false,
-														 velocity_step_dec_status_cb, velocity_step_dec_action_cb)};
-	widget& velocity_step_inc{m_ui.emplace<arrow_widget>(TAG_VELOCITY_STEP_INC, VELOCITY_STEP_START_POS, tr::align::CENTER_RIGHT, true,
-														 velocity_step_inc_status_cb, velocity_step_inc_action_cb)};
-	widget& cur_velocity_step{m_ui.emplace<text_widget>(TAG_CUR_VELOCITY_STEP, VELOCITY_STEP_START_POS, tr::align::CENTER, font::LANGUAGE,
-														tr::system::ttf_style::NORMAL, 48, cur_velocity_step_text_cb)};
-	velocity_step_dec.pos.change(interp_mode::CUBE, {765, VELOCITY_STEP_START_POS.y}, 0.5_s);
-	velocity_step_inc.pos.change(interp_mode::CUBE, {985, VELOCITY_STEP_START_POS.y}, 0.5_s);
-	cur_velocity_step.pos.change(interp_mode::CUBE, {875.5, VELOCITY_STEP_START_POS.y}, 0.5_s);
-	velocity_step_dec.unhide(0.5_s);
-	velocity_step_inc.unhide(0.5_s);
-	cur_velocity_step.unhide(0.5_s);
-
+	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
+							  loc_text_callback{T_TITLE});
+	m_ui.emplace<text_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32,
+							  loc_text_callback{T_SUBTITLE});
+	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_D, STARTING_COUNT_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_count_d_scb,
+							   starting_count_d_acb);
+	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_I, STARTING_COUNT_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, starting_count_i_scb,
+							   starting_count_i_acb);
+	m_ui.emplace<text_widget>(T_STARTING_COUNT_C, STARTING_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_starting_count_tcb);
+	m_ui.emplace<arrow_widget>(T_MAX_COUNT_D, MAX_COUNT_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, max_count_d_scb, max_count_d_acb);
+	m_ui.emplace<arrow_widget>(T_MAX_COUNT_I, MAX_COUNT_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, max_count_i_scb, max_count_i_acb);
+	m_ui.emplace<text_widget>(T_MAX_COUNT_C, MAX_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+							  48, cur_max_count_tcb);
+	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_D, SPAWN_INTERVAL_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, spawn_interval_d_scb,
+							   spawn_interval_d_acb);
+	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_I, SPAWN_INTERVAL_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, spawn_interval_i_scb,
+							   spawn_interval_i_acb);
+	m_ui.emplace<text_widget>(T_SPAWN_INTERVAL_C, SPAWN_INTERVAL_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_spawn_interval_tcb);
+	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_D, INITIAL_SIZE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, initial_size_d_scb,
+							   initial_size_d_acb);
+	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_I, INITIAL_SIZE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, initial_size_i_scb,
+							   initial_size_i_acb);
+	m_ui.emplace<text_widget>(T_INITIAL_SIZE_C, INITIAL_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_initial_size_tcb);
+	m_ui.emplace<arrow_widget>(T_SIZE_STEP_D, SIZE_STEP_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, size_step_d_scb, size_step_d_acb);
+	m_ui.emplace<arrow_widget>(T_SIZE_STEP_I, SIZE_STEP_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, size_step_i_scb, size_step_i_acb);
+	m_ui.emplace<text_widget>(T_SIZE_STEP_C, SIZE_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+							  48, cur_size_step_tcb);
+	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_D, INITIAL_VELOCITY_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false,
+							   initial_velocity_d_scb, initial_velocity_d_acb);
+	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_I, INITIAL_VELOCITY_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true,
+							   initial_velocity_i_scb, initial_velocity_i_acb);
+	m_ui.emplace<text_widget>(T_INITIAL_VELOCITY_C, INITIAL_VELOCITY_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_initial_velocity_tcb);
+	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_D, VELOCITY_STEP_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, velocity_step_d_scb,
+							   velocity_step_d_acb);
+	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_I, VELOCITY_STEP_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, velocity_step_i_scb,
+							   velocity_step_i_acb);
+	m_ui.emplace<text_widget>(T_VELOCITY_STEP_C, VELOCITY_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_velocity_step_tcb);
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
-		const label& label{LABELS[i]};
-		const glm::vec2 pos{-50, 298 + i * 75};
-		widget& widget{m_ui.emplace<text_widget>(label.tag, pos, tr::align::CENTER_LEFT, LABELS[i].tooltip, font::LANGUAGE,
-												 tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag})};
-		widget.pos.change(interp_mode::CUBE, {15, 298 + i * 75}, 0.5_s);
-		widget.unhide(0.5_s);
+		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {-50, 298 + i * 75}, {15, 298 + i * 75}, 0.5_s};
+		m_ui.emplace<text_widget>(LABELS[i].tag, move_in, tr::align::CENTER_LEFT, 0.5_s, LABELS[i].tooltip, font::LANGUAGE,
+								  tr::system::ttf_style::NORMAL, 48, loc_text_callback{LABELS[i].tag});
 	}
-
-	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
-	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
-	exit.unhide(0.5_s);
+	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
+										loc_text_callback{T_EXIT}, scb, exit_acb, NO_TOOLTIP, sound::CANCEL);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
@@ -341,8 +313,8 @@ void ball_settings_editor_state::draw()
 
 void ball_settings_editor_state::set_up_exit_animation()
 {
-	widget& subtitle{m_ui[TAG_SUBTITLE]};
-	widget& exit{m_ui[TAG_EXIT]};
+	widget& subtitle{m_ui[T_SUBTITLE]};
+	widget& exit{m_ui[T_EXIT]};
 	subtitle.pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
 	subtitle.hide(0.5_s);
 	for (tag tag : tr::project(LABELS, &label::tag)) {

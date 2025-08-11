@@ -4,17 +4,17 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr tag TAG_TITLE{"save_replay"};
-constexpr tag TAG_NAME{"name"};
-constexpr tag TAG_NAME_INPUT{"name_input"};
-constexpr tag TAG_DESCRIPTION{"description"};
-constexpr tag TAG_DESCRIPTION_INPUT{"description_input"};
-constexpr tag TAG_SAVE{"save"};
-constexpr tag TAG_DISCARD{"discard"};
+constexpr tag T_TITLE{"save_replay"};
+constexpr tag T_NAME{"name"};
+constexpr tag T_NAME_INPUT{"name_input"};
+constexpr tag T_DESCRIPTION{"description"};
+constexpr tag T_DESCRIPTION_INPUT{"description_input"};
+constexpr tag T_SAVE{"save"};
+constexpr tag T_DISCARD{"discard"};
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ENTER}, TAG_SAVE},     {{tr::system::keycode::S}, TAG_SAVE},    {{tr::system::keycode::TOP_ROW_1}, TAG_SAVE},
-	{{tr::system::keycode::ESCAPE}, TAG_DISCARD}, {{tr::system::keycode::C}, TAG_DISCARD}, {{tr::system::keycode::TOP_ROW_2}, TAG_DISCARD},
+	{{tr::system::keycode::ENTER}, T_SAVE},     {{tr::system::keycode::S}, T_SAVE},    {{tr::system::keycode::TOP_ROW_1}, T_SAVE},
+	{{tr::system::keycode::ESCAPE}, T_DISCARD}, {{tr::system::keycode::C}, T_DISCARD}, {{tr::system::keycode::TOP_ROW_2}, T_DISCARD},
 };
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
@@ -28,34 +28,34 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 {
 	const status_callback status_cb{[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }};
 
-	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-											64, loc_text_callback{TAG_TITLE})};
+	widget& title{m_ui.emplace<text_widget>(T_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											64, loc_text_callback{T_TITLE})};
 	title.pos.change(interp_mode::CUBE, {500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
-	widget& name_label{m_ui.emplace<text_widget>(TAG_NAME, glm::vec2{400, 200}, tr::align::CENTER, font::LANGUAGE,
-												 tr::system::ttf_style::NORMAL, 48, loc_text_callback{TAG_NAME})};
+	widget& name_label{m_ui.emplace<text_widget>(T_NAME, glm::vec2{400, 200}, tr::align::CENTER, font::LANGUAGE,
+												 tr::system::ttf_style::NORMAL, 48, loc_text_callback{T_NAME})};
 	name_label.pos.change(interp_mode::CUBE, {500, 200}, 0.5_s);
 	name_label.unhide(0.5_s);
 
 	const action_callback name_action_cb{[this] { m_ui.move_input_focus_forward(); }};
-	widget& name{m_ui.emplace<line_input_widget<20>>(TAG_NAME_INPUT, glm::vec2{400, 235}, tr::align::TOP_CENTER,
+	widget& name{m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, glm::vec2{400, 235}, tr::align::TOP_CENTER,
 													 tr::system::ttf_style::NORMAL, 64, status_cb, name_action_cb)};
 	name.pos.change(interp_mode::CUBE, {500, 235}, 0.5_s);
 	name.unhide(0.5_s);
 
-	widget& description_label{m_ui.emplace<text_widget>(TAG_DESCRIPTION, glm::vec2{600, 440}, tr::align::CENTER, font::LANGUAGE,
-														tr::system::ttf_style::NORMAL, 48, loc_text_callback{TAG_DESCRIPTION})};
+	widget& description_label{m_ui.emplace<text_widget>(T_DESCRIPTION, glm::vec2{600, 440}, tr::align::CENTER, font::LANGUAGE,
+														tr::system::ttf_style::NORMAL, 48, loc_text_callback{T_DESCRIPTION})};
 	description_label.pos.change(interp_mode::CUBE, {500, 440}, 0.5_s);
 	description_label.unhide(0.5_s);
 
-	widget& description{m_ui.emplace<multiline_input_widget<255>>(TAG_DESCRIPTION_INPUT, glm::vec2{600, 475}, tr::align::TOP_CENTER, 800,
-																  10, tr::halign::CENTER, 24, status_cb)};
+	widget& description{m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, glm::vec2{600, 475}, tr::align::TOP_CENTER, 800, 10,
+																  tr::halign::CENTER, 24, status_cb)};
 	description.pos.change(interp_mode::CUBE, {500, 475}, 0.5_s);
 	description.unhide(0.5_s);
 
 	const status_callback save_status_cb{[this] {
-		return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(TAG_NAME_INPUT).buffer.empty();
+		return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(T_NAME_INPUT).buffer.empty();
 	}};
 	const action_callback save_action_cb{[this] {
 		const score_flags flags{!m_game->game_over(), engine::cli_settings.game_speed != 1.0f};
@@ -63,13 +63,12 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 		m_substate = substate_base::EXITING | to_flags(m_substate);
 		m_timer = 0;
 		set_up_exit_animation();
-		m_game->replay().set_header(
-			{m_ui.as<multiline_input_widget<255>>(TAG_DESCRIPTION_INPUT).buffer, unix_now(), m_game->result(), flags},
-			m_ui.as<line_input_widget<20>>("name_input").buffer);
+		m_game->replay().set_header({m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).buffer, unix_now(), m_game->result(), flags},
+									m_ui.as<line_input_widget<20>>("name_input").buffer);
 		m_game->replay().save_to_file();
 	}};
-	widget& save{m_ui.emplace<clickable_text_widget>(TAG_SAVE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_SAVE}, save_status_cb, save_action_cb)};
+	widget& save{m_ui.emplace<clickable_text_widget>(T_SAVE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
+													 loc_text_callback{T_SAVE}, save_status_cb, save_action_cb)};
 	save.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
 	save.unhide(0.5_s);
 
@@ -78,8 +77,8 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 		m_timer = 0;
 		set_up_exit_animation();
 	}};
-	widget& discard{m_ui.emplace<clickable_text_widget>(TAG_DISCARD, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-														loc_text_callback{TAG_DISCARD}, status_cb, dont_save_action_cb)};
+	widget& discard{m_ui.emplace<clickable_text_widget>(T_DISCARD, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
+														loc_text_callback{T_DISCARD}, status_cb, dont_save_action_cb)};
 	discard.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	discard.unhide(0.5_s);
 }
@@ -155,12 +154,12 @@ float save_replay_state::fade_overlay_opacity() const
 
 void save_replay_state::set_up_exit_animation()
 {
-	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui[TAG_NAME].pos.change(interp_mode::CUBE, {600, 200}, 0.5_s);
-	m_ui[TAG_NAME_INPUT].pos.change(interp_mode::CUBE, {600, 235}, 0.5_s);
-	m_ui[TAG_DESCRIPTION].pos.change(interp_mode::CUBE, {400, 440}, 0.5_s);
-	m_ui[TAG_DESCRIPTION_INPUT].pos.change(interp_mode::CUBE, {400, 475}, 0.5_s);
-	m_ui[TAG_SAVE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-	m_ui[TAG_DISCARD].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[T_NAME].pos.change(interp_mode::CUBE, {600, 200}, 0.5_s);
+	m_ui[T_NAME_INPUT].pos.change(interp_mode::CUBE, {600, 235}, 0.5_s);
+	m_ui[T_DESCRIPTION].pos.change(interp_mode::CUBE, {400, 440}, 0.5_s);
+	m_ui[T_DESCRIPTION_INPUT].pos.change(interp_mode::CUBE, {400, 475}, 0.5_s);
+	m_ui[T_SAVE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_DISCARD].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

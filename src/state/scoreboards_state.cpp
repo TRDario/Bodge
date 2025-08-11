@@ -7,35 +7,35 @@
 // The number of scores per page.
 constexpr std::size_t SCORES_PER_PAGE{8};
 
-constexpr tag TAG_TITLE{"scoreboards"};
-constexpr tag TAG_PLAYER_INFO{"player_info"};
-constexpr tag TAG_NO_SCORES_FOUND{"no_scores_found"};
-constexpr tag TAG_SCORE_0{"score0"};
-constexpr tag TAG_SCORE_1{"score1"};
-constexpr tag TAG_SCORE_2{"score2"};
-constexpr tag TAG_SCORE_3{"score3"};
-constexpr tag TAG_SCORE_4{"score4"};
-constexpr tag TAG_SCORE_5{"score5"};
-constexpr tag TAG_SCORE_6{"score6"};
-constexpr tag TAG_SCORE_7{"score7"};
-constexpr tag TAG_GAMEMODE_DEC{"gamemode_dec"};
-constexpr tag TAG_CUR_GAMEMODE{"cur_gamemode"};
-constexpr tag TAG_GAMEMODE_INC{"gamemode_inc"};
-constexpr tag TAG_PAGE_DEC{"page_dec"};
-constexpr tag TAG_CUR_PAGE{"cur_page"};
-constexpr tag TAG_PAGE_INC{"page_inc"};
-constexpr tag TAG_EXIT{"exit"};
+constexpr tag T_TITLE{"scoreboards"};
+constexpr tag T_PLAYER_INFO{"player_info"};
+constexpr tag T_NO_SCORES_FOUND{"no_scores_found"};
+constexpr tag T_SCORE_0{"score0"};
+constexpr tag T_SCORE_1{"score1"};
+constexpr tag T_SCORE_2{"score2"};
+constexpr tag T_SCORE_3{"score3"};
+constexpr tag T_SCORE_4{"score4"};
+constexpr tag T_SCORE_5{"score5"};
+constexpr tag T_SCORE_6{"score6"};
+constexpr tag T_SCORE_7{"score7"};
+constexpr tag T_GAMEMODE_DEC{"gamemode_dec"};
+constexpr tag T_CUR_GAMEMODE{"cur_gamemode"};
+constexpr tag T_GAMEMODE_INC{"gamemode_inc"};
+constexpr tag T_PAGE_DEC{"page_dec"};
+constexpr tag T_CUR_PAGE{"cur_page"};
+constexpr tag T_PAGE_INC{"page_inc"};
+constexpr tag T_EXIT{"exit"};
 
 constexpr std::array<tag, SCORES_PER_PAGE> SCORE_TAGS{
-	TAG_SCORE_0, TAG_SCORE_1, TAG_SCORE_2, TAG_SCORE_3, TAG_SCORE_4, TAG_SCORE_5, TAG_SCORE_6, TAG_SCORE_7,
+	T_SCORE_0, T_SCORE_1, T_SCORE_2, T_SCORE_3, T_SCORE_4, T_SCORE_5, T_SCORE_6, T_SCORE_7,
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ESCAPE}, TAG_EXIT},
-	{{tr::system::keycode::LEFT, tr::system::keymod::SHIFT}, TAG_GAMEMODE_DEC},
-	{{tr::system::keycode::RIGHT, tr::system::keymod::SHIFT}, TAG_GAMEMODE_INC},
-	{{tr::system::keycode::LEFT}, TAG_PAGE_DEC},
-	{{tr::system::keycode::RIGHT}, TAG_PAGE_INC},
+	{{tr::system::keycode::ESCAPE}, T_EXIT},
+	{{tr::system::keycode::LEFT, tr::system::keymod::SHIFT}, T_GAMEMODE_DEC},
+	{{tr::system::keycode::RIGHT, tr::system::keymod::SHIFT}, T_GAMEMODE_INC},
+	{{tr::system::keycode::LEFT}, T_PAGE_DEC},
+	{{tr::system::keycode::RIGHT}, T_PAGE_INC},
 };
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
@@ -113,24 +113,24 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 
 	//
 
-	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-											64, loc_text_callback{TAG_TITLE})};
+	widget& title{m_ui.emplace<text_widget>(T_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											64, loc_text_callback{T_TITLE})};
 	title.pos.change(interp_mode::CUBE, {500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
-	widget& player_info{m_ui.emplace<text_widget>(TAG_PLAYER_INFO, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
+	widget& player_info{m_ui.emplace<text_widget>(T_PLAYER_INFO, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE,
 												  tr::system::ttf_style::NORMAL, 32, player_info_text_cb)};
 	player_info.pos.change(interp_mode::CUBE, {500, 64}, 0.5_s);
 	player_info.unhide(0.5_s);
 
-	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
+	widget& exit{m_ui.emplace<clickable_text_widget>(T_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
+													 loc_text_callback{T_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 
 	if (engine::scorefile.categories.empty()) {
-		widget& no_scores_found{m_ui.emplace<text_widget>(TAG_NO_SCORES_FOUND, glm::vec2{600, 483}, tr::align::TOP_CENTER, font::LANGUAGE,
-														  tr::system::ttf_style::NORMAL, 64, loc_text_callback{TAG_NO_SCORES_FOUND},
+		widget& no_scores_found{m_ui.emplace<text_widget>(T_NO_SCORES_FOUND, glm::vec2{600, 483}, tr::align::TOP_CENTER, font::LANGUAGE,
+														  tr::system::ttf_style::NORMAL, 64, loc_text_callback{T_NO_SCORES_FOUND},
 														  "80808080"_rgba8)};
 		no_scores_found.pos.change(interp_mode::CUBE, {500, 483}, 0.5_s);
 		no_scores_found.unhide(0.5_s);
@@ -148,32 +148,32 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 
 	const text_callback cur_gamemode_tooltip_cb{[this] { return std::string{description(m_selected->gamemode)}; }};
 	widget& cur_gamemode{m_ui.emplace<text_widget>(
-		TAG_CUR_GAMEMODE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, true, cur_gamemode_tooltip_cb, false, font::LANGUAGE,
+		T_CUR_GAMEMODE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, true, cur_gamemode_tooltip_cb, false, font::LANGUAGE,
 		tr::system::ttf_style::NORMAL, tr::halign::CENTER, 48, tr::system::UNLIMITED_WIDTH, "A0A0A0A0"_rgba8, cur_gamemode_text_cb)};
 	cur_gamemode.pos.change(interp_mode::CUBE, {500, 900}, 0.5_s);
 	cur_gamemode.unhide(0.5_s);
 
-	widget& gamemode_dec{m_ui.emplace<arrow_widget>(TAG_GAMEMODE_DEC, glm::vec2{-50, 892.5}, tr::align::BOTTOM_LEFT, false,
+	widget& gamemode_dec{m_ui.emplace<arrow_widget>(T_GAMEMODE_DEC, glm::vec2{-50, 892.5}, tr::align::BOTTOM_LEFT, false,
 													gamemode_change_status_cb, gamemode_dec_action_cb)};
 	gamemode_dec.pos.change(interp_mode::CUBE, {10, 892.5}, 0.5_s);
 	gamemode_dec.unhide(0.5_s);
 
-	widget& gamemode_inc{m_ui.emplace<arrow_widget>(TAG_GAMEMODE_INC, glm::vec2{1050, 892.5}, tr::align::BOTTOM_RIGHT, true,
+	widget& gamemode_inc{m_ui.emplace<arrow_widget>(T_GAMEMODE_INC, glm::vec2{1050, 892.5}, tr::align::BOTTOM_RIGHT, true,
 													gamemode_change_status_cb, gamemode_inc_action_cb)};
 	gamemode_inc.pos.change(interp_mode::CUBE, {990, 892.5}, 0.5_s);
 	gamemode_inc.unhide(0.5_s);
 
-	widget& cur_page{m_ui.emplace<text_widget>(TAG_CUR_PAGE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
+	widget& cur_page{m_ui.emplace<text_widget>(T_CUR_PAGE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
 											   tr::system::ttf_style::NORMAL, 48, cur_page_text_cb)};
 	cur_page.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
 	cur_page.unhide(0.5_s);
 
-	widget& page_dec{m_ui.emplace<arrow_widget>(TAG_PAGE_DEC, glm::vec2{-50, 942.5}, tr::align::BOTTOM_LEFT, false, page_dec_status_cb,
+	widget& page_dec{m_ui.emplace<arrow_widget>(T_PAGE_DEC, glm::vec2{-50, 942.5}, tr::align::BOTTOM_LEFT, false, page_dec_status_cb,
 												page_dec_action_cb)};
 	page_dec.pos.change(interp_mode::CUBE, {10, 942.5}, 0.5_s);
 	page_dec.unhide(0.5_s);
 
-	widget& page_inc{m_ui.emplace<arrow_widget>(TAG_PAGE_INC, glm::vec2{1050, 942.5}, tr::align::BOTTOM_RIGHT, true, page_inc_status_cb,
+	widget& page_inc{m_ui.emplace<arrow_widget>(T_PAGE_INC, glm::vec2{1050, 942.5}, tr::align::BOTTOM_RIGHT, true, page_inc_status_cb,
 												page_inc_action_cb)};
 	page_inc.pos.change(interp_mode::CUBE, {990, 942.5}, 0.5_s);
 	page_inc.unhide(0.5_s);
@@ -239,23 +239,23 @@ void scoreboards_state::set_up_page_switch_animation()
 
 void scoreboards_state::set_up_exit_animation()
 {
-	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui[TAG_PLAYER_INFO].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui[TAG_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[T_PLAYER_INFO].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[T_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	if (engine::scorefile.categories.empty()) {
-		m_ui[TAG_NO_SCORES_FOUND].pos.change(interp_mode::CUBE, {400, 483}, 0.5_s);
+		m_ui[T_NO_SCORES_FOUND].pos.change(interp_mode::CUBE, {400, 483}, 0.5_s);
 	}
 	else {
 		for (std::size_t i = 0; i < SCORES_PER_PAGE; i++) {
 			widget& widget{m_ui[SCORE_TAGS[i]]};
 			widget.pos.change(interp_mode::CUBE, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.5_s);
 		}
-		m_ui[TAG_CUR_GAMEMODE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-		m_ui[TAG_GAMEMODE_DEC].pos.change(interp_mode::CUBE, {-50, 892.5}, 0.5_s);
-		m_ui[TAG_GAMEMODE_INC].pos.change(interp_mode::CUBE, {1050, 892.5}, 0.5_s);
-		m_ui[TAG_CUR_PAGE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-		m_ui[TAG_PAGE_DEC].pos.change(interp_mode::CUBE, {-50, 942.5}, 0.5_s);
-		m_ui[TAG_PAGE_INC].pos.change(interp_mode::CUBE, {1050, 942.5}, 0.5_s);
+		m_ui[T_CUR_GAMEMODE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+		m_ui[T_GAMEMODE_DEC].pos.change(interp_mode::CUBE, {-50, 892.5}, 0.5_s);
+		m_ui[T_GAMEMODE_INC].pos.change(interp_mode::CUBE, {1050, 892.5}, 0.5_s);
+		m_ui[T_CUR_PAGE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+		m_ui[T_PAGE_DEC].pos.change(interp_mode::CUBE, {-50, 942.5}, 0.5_s);
+		m_ui[T_PAGE_INC].pos.change(interp_mode::CUBE, {1050, 942.5}, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }

@@ -6,33 +6,33 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr tag TAG_TITLE{"game_over"};
-constexpr tag TAG_TIME{"time"};
-constexpr tag TAG_PB{"pb"};
-constexpr tag TAG_SAVE_AND_RESTART{"save_and_restart"};
-constexpr tag TAG_RESTART{"restart"};
-constexpr tag TAG_SAVE_AND_QUIT{"save_and_quit"};
-constexpr tag TAG_QUIT{"quit"};
+constexpr tag T_TITLE{"game_over"};
+constexpr tag T_TIME{"time"};
+constexpr tag T_PB{"pb"};
+constexpr tag T_SAVE_AND_RESTART{"save_and_restart"};
+constexpr tag T_RESTART{"restart"};
+constexpr tag T_SAVE_AND_QUIT{"save_and_quit"};
+constexpr tag T_QUIT{"quit"};
 
-// The pause screen buttons.
-constexpr std::array<tag, 4> BUTTONS{TAG_SAVE_AND_RESTART, TAG_RESTART, TAG_SAVE_AND_QUIT, TAG_QUIT};
+constexpr std::array<tag, 4> BUTTONS{T_SAVE_AND_RESTART, T_RESTART, T_SAVE_AND_QUIT, T_QUIT};
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, TAG_SAVE_AND_RESTART},
-	{{tr::system::keycode::TOP_ROW_1}, TAG_SAVE_AND_RESTART},
-	{{tr::system::keycode::R}, TAG_RESTART},
-	{{tr::system::keycode::TOP_ROW_2}, TAG_RESTART},
-	{{tr::system::keycode::ESCAPE, tr::system::keymod::SHIFT}, TAG_SAVE_AND_QUIT},
-	{{tr::system::keycode::Q, tr::system::keymod::SHIFT}, TAG_SAVE_AND_QUIT},
-	{{tr::system::keycode::E, tr::system::keymod::SHIFT}, TAG_SAVE_AND_QUIT},
-	{{tr::system::keycode::TOP_ROW_3}, TAG_SAVE_AND_QUIT},
-	{{tr::system::keycode::ESCAPE}, TAG_QUIT},
-	{{tr::system::keycode::Q}, TAG_QUIT},
-	{{tr::system::keycode::TOP_ROW_4}, TAG_QUIT},
+	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, T_SAVE_AND_RESTART},
+	{{tr::system::keycode::TOP_ROW_1}, T_SAVE_AND_RESTART},
+	{{tr::system::keycode::R}, T_RESTART},
+	{{tr::system::keycode::TOP_ROW_2}, T_RESTART},
+	{{tr::system::keycode::ESCAPE, tr::system::keymod::SHIFT}, T_SAVE_AND_QUIT},
+	{{tr::system::keycode::Q, tr::system::keymod::SHIFT}, T_SAVE_AND_QUIT},
+	{{tr::system::keycode::E, tr::system::keymod::SHIFT}, T_SAVE_AND_QUIT},
+	{{tr::system::keycode::TOP_ROW_3}, T_SAVE_AND_QUIT},
+	{{tr::system::keycode::ESCAPE}, T_QUIT},
+	{{tr::system::keycode::Q}, T_QUIT},
+	{{tr::system::keycode::TOP_ROW_4}, T_QUIT},
 };
 
-// The height of the title text.
 constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
+
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, glm::vec2{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
@@ -43,21 +43,18 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	, m_game{std::move(game)}
 	, m_prev_pb{prev_pb}
 {
-	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, glm::vec2{500, TITLE_Y - 100}, tr::align::CENTER, font::LANGUAGE,
-											tr::system::ttf_style::NORMAL, 64, loc_text_callback{TAG_TITLE})};
-	title.pos.change(interp_mode::CUBE, {500, TITLE_Y}, 0.5_s);
-	title.unhide(0.5_s);
+	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
+							  loc_text_callback{T_TITLE});
 
 	const float time_h{(500 - (BUTTONS.size() - 0.75f) * 30) -
 					   (engine::line_skip(font::LANGUAGE, 48) + 4 + engine::line_skip(font::LANGUAGE, 24)) / 2};
-	const ticks time_ticks{m_game->result()};
-	text_callback time_text_cb{string_text_callback{timer_text(time_ticks)}};
-	widget& time{m_ui.emplace<text_widget>(TAG_TIME, glm::vec2{400, time_h}, tr::align::TOP_CENTER, font::LANGUAGE,
-										   tr::system::ttf_style::NORMAL, 64, std::move(time_text_cb), "FFFF00C0"_rgba8)};
-	time.pos.change(interp_mode::CUBE, {500, time_h}, 0.5_s);
-	time.unhide(0.5_s);
+	const interpolator<glm::vec2> time_move_in{interp_mode::CUBE, {400, time_h}, {500, time_h}, 0.5_s};
+	text_callback time_text_cb{string_text_callback{timer_text(m_game->result())}};
+	m_ui.emplace<text_widget>(T_TIME, time_move_in, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
+							  std::move(time_text_cb), "FFFF00C0"_rgba8);
 
 	const float pb_h{time_h + engine::line_skip(font::LANGUAGE, 48) + 4};
+	const interpolator<glm::vec2> pb_move_in{interp_mode::CUBE, {600, pb_h}, {500, pb_h}, 0.5_s};
 	text_callback pb_text_cb;
 	if (prev_pb < m_game->result()) {
 		pb_text_cb = loc_text_callback{"new_pb"};
@@ -65,12 +62,8 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	else {
 		pb_text_cb = string_text_callback{std::format("{}: {}", engine::loc["pb"], timer_text(pb(engine::scorefile, m_game->gamemode())))};
 	}
-	widget& pb{m_ui.emplace<text_widget>(TAG_PB, glm::vec2{600, pb_h}, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-										 24, std::move(pb_text_cb), "FFFF00C0"_rgba8)};
-	pb.pos.change(interp_mode::CUBE, {500, pb_h}, 0.5_s);
-	if (prev_pb >= m_game->result()) {
-		pb.unhide(0.5_s);
-	}
+	m_ui.emplace<text_widget>(T_PB, pb_move_in, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 24,
+							  std::move(pb_text_cb), "FFFF00C0"_rgba8);
 
 	const status_callback status_cb{[this] { return m_substate == substate::BLURRING_IN || m_substate == substate::GAME_OVER; }};
 	std::array<action_callback, BUTTONS.size()> action_cbs{
@@ -99,11 +92,10 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	};
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
-		const glm::vec2 pos{500 + offset, 500 - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
-		widget& widget{m_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER, font::LANGUAGE, 48,
-														   loc_text_callback{BUTTONS[i]}, status_cb, std::move(action_cbs[i]))};
-		widget.pos.change(interp_mode::CUBE, {500, pos.y}, 0.5_s);
-		widget.unhide(0.5_s);
+		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
+		const interpolator<glm::vec2> pos{interp_mode::CUBE, {500 + offset, y}, {500, y}, 0.5_s};
+		m_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER, 0.5_s, font::LANGUAGE, 48, loc_text_callback{BUTTONS[i]},
+											status_cb, std::move(action_cbs[i]));
 	}
 }
 
@@ -131,10 +123,10 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 	case substate::GAME_OVER:
 		if (m_prev_pb < m_game->result()) {
 			if (m_timer % 0.5_s == 0) {
-				m_ui[TAG_PB].hide();
+				m_ui[T_PB].hide();
 			}
 			else if (m_timer % 0.5_s == 0.25_s) {
-				m_ui[TAG_PB].unhide();
+				m_ui[T_PB].unhide();
 			}
 		}
 		return nullptr;
@@ -199,9 +191,9 @@ float game_over_state::blur_strength() const
 
 void game_over_state::set_up_exit_animation()
 {
-	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, {500, TITLE_Y - 100}, 0.5_s);
-	widget& time{m_ui[TAG_TIME]};
-	widget& pb{m_ui[TAG_PB]};
+	m_ui[T_TITLE].pos.change(interp_mode::CUBE, {500, TITLE_Y - 100}, 0.5_s);
+	widget& time{m_ui[T_TIME]};
+	widget& pb{m_ui[T_PB]};
 	time.pos.change(interp_mode::CUBE, {400, glm::vec2{time.pos}.y}, 0.5_s);
 	pb.pos.change(interp_mode::CUBE, {600, glm::vec2{pb.pos}.y}, 0.5_s);
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {

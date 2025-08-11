@@ -14,9 +14,9 @@ enum class interp_mode {
 template <class T> struct interpolator {
   public:
 	// Constructs an interpolator with a value.
-	interpolator(T value);
+	constexpr interpolator(T value);
 	// Constructs an interpolator with an ongoing interpolation.
-	interpolator(interp_mode mode, T start, T end, ticks time);
+	constexpr interpolator(interp_mode mode, T start, T end, ticks time);
 
 	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
 
@@ -48,13 +48,13 @@ template <class T> struct interpolator {
 ///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
 
 template <class T>
-interpolator<T>::interpolator(T value)
-	: m_end{value}, m_len{0}
+constexpr interpolator<T>::interpolator(T value)
+	: m_mode{interp_mode::CUBE}, m_end{value}, m_len{0}, m_pos{0}
 {
 }
 
 template <class T>
-interpolator<T>::interpolator(interp_mode mode, T start, T end, ticks time)
+constexpr interpolator<T>::interpolator(interp_mode mode, T start, T end, ticks time)
 	: m_mode{mode}, m_start{start}, m_end{end}, m_len{static_cast<std::uint16_t>(time)}, m_pos{0}
 {
 }

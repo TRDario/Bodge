@@ -3,13 +3,16 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-constexpr tag TAG_TITLE{"enter_your_name"};
-constexpr tag TAG_INPUT{"input"};
-constexpr tag TAG_CONFIRM{"confirm"};
+constexpr tag T_TITLE{"enter_your_name"};
+constexpr tag T_INPUT{"input"};
+constexpr tag T_CONFIRM{"confirm"};
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ENTER}, TAG_CONFIRM},
+	{{tr::system::keycode::ENTER}, T_CONFIRM},
 };
+
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 1.0_s};
+constexpr interpolator<glm::vec2> CONFIRM_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 1.0_s};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -23,34 +26,27 @@ name_entry_state::name_entry_state()
 
 	const status_callback input_status_cb{[this] { return m_substate != substate::ENTERING_TITLE; }};
 	const status_callback confirm_status_cb{
-		[this] { return m_substate != substate::ENTERING_TITLE && !m_ui.as<line_input_widget<20>>(TAG_INPUT).buffer.empty(); }};
+		[this] { return m_substate != substate::ENTERING_TITLE && !m_ui.as<line_input_widget<20>>(T_INPUT).buffer.empty(); }};
 
 	const action_callback action_cb{[this] {
-		line_input_widget<20>& input{m_ui.as<line_input_widget<20>>(TAG_INPUT)};
+		line_input_widget<20>& input{m_ui.as<line_input_widget<20>>(T_INPUT)};
 		if (!input.buffer.empty()) {
 			m_timer = 0;
 			m_substate = substate::ENTERING_TITLE;
-			m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 1.0_s);
-			m_ui[TAG_CONFIRM].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 1.0_s);
+			m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 1.0_s);
+			m_ui[T_CONFIRM].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 1.0_s);
 			m_ui.hide_all(1.0_s);
 			engine::play_sound(sound::CONFIRM, 0.5f, 0.0f);
 			engine::scorefile.name = input.buffer;
 		}
 	}};
 
-	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-											64, loc_text_callback{TAG_TITLE})};
-	title.pos.change(interp_mode::CUBE, {500, 0}, 1.0_s);
-	title.unhide(1.0_s);
-
-	widget& input{m_ui.emplace<line_input_widget<20>>(TAG_INPUT, glm::vec2{500, 500}, tr::align::CENTER, tr::system::ttf_style::NORMAL, 64,
-													  input_status_cb, action_cb)};
-	input.unhide(1.0_s);
-
-	widget& confirm{m_ui.emplace<clickable_text_widget>(TAG_CONFIRM, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-														loc_text_callback{TAG_CONFIRM}, confirm_status_cb, action_cb)};
-	confirm.pos.change(interp_mode::CUBE, {500, 1000}, 1.0_s);
-	confirm.unhide(1.0_s);
+	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 1.0_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
+							  loc_text_callback{T_TITLE});
+	m_ui.emplace<line_input_widget<20>>(T_INPUT, glm::vec2{500, 500}, tr::align::CENTER, 1.0_s, tr::system::ttf_style::NORMAL, 64,
+										input_status_cb, action_cb, std::string_view{});
+	m_ui.emplace<clickable_text_widget>(T_CONFIRM, CONFIRM_MOVE_IN, tr::align::BOTTOM_CENTER, 1.0_s, font::LANGUAGE, 48,
+										loc_text_callback{T_CONFIRM}, confirm_status_cb, action_cb);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

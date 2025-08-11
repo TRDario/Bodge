@@ -8,24 +8,24 @@
 // The number of replays per page.
 constexpr std::size_t REPLAYS_PER_PAGE{5};
 
-constexpr tag TAG_TITLE{"replays"};
-constexpr tag TAG_NO_REPLAYS_FOUND{"no_replays_found"};
-constexpr tag TAG_REPLAY_0{"replay0"};
-constexpr tag TAG_REPLAY_1{"replay1"};
-constexpr tag TAG_REPLAY_2{"replay2"};
-constexpr tag TAG_REPLAY_3{"replay3"};
-constexpr tag TAG_REPLAY_4{"replay4"};
-constexpr std::array<tag, REPLAYS_PER_PAGE> REPLAY_TAGS{TAG_REPLAY_0, TAG_REPLAY_1, TAG_REPLAY_2, TAG_REPLAY_3, TAG_REPLAY_4};
-constexpr tag TAG_PAGE_DEC{"page_dec"};
-constexpr tag TAG_CUR_PAGE{"cur_page"};
-constexpr tag TAG_PAGE_INC{"page_inc"};
-constexpr tag TAG_EXIT{"exit"};
+constexpr tag T_TITLE{"replays"};
+constexpr tag T_NO_REPLAYS_FOUND{"no_replays_found"};
+constexpr tag T_REPLAY_0{"replay0"};
+constexpr tag T_REPLAY_1{"replay1"};
+constexpr tag T_REPLAY_2{"replay2"};
+constexpr tag T_REPLAY_3{"replay3"};
+constexpr tag T_REPLAY_4{"replay4"};
+constexpr std::array<tag, REPLAYS_PER_PAGE> REPLAY_TAGS{T_REPLAY_0, T_REPLAY_1, T_REPLAY_2, T_REPLAY_3, T_REPLAY_4};
+constexpr tag T_PAGE_DEC{"page_dec"};
+constexpr tag T_CUR_PAGE{"cur_page"};
+constexpr tag T_PAGE_INC{"page_inc"};
+constexpr tag T_EXIT{"exit"};
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::TOP_ROW_1}, TAG_REPLAY_0}, {{tr::system::keycode::TOP_ROW_2}, TAG_REPLAY_1},
-	{{tr::system::keycode::TOP_ROW_3}, TAG_REPLAY_2}, {{tr::system::keycode::TOP_ROW_4}, TAG_REPLAY_3},
-	{{tr::system::keycode::TOP_ROW_5}, TAG_REPLAY_4}, {{tr::system::keycode::ESCAPE}, TAG_EXIT},
-	{{tr::system::keycode::LEFT}, TAG_PAGE_DEC},      {{tr::system::keycode::RIGHT}, TAG_PAGE_INC},
+	{{tr::system::keycode::TOP_ROW_1}, T_REPLAY_0}, {{tr::system::keycode::TOP_ROW_2}, T_REPLAY_1},
+	{{tr::system::keycode::TOP_ROW_3}, T_REPLAY_2}, {{tr::system::keycode::TOP_ROW_4}, T_REPLAY_3},
+	{{tr::system::keycode::TOP_ROW_5}, T_REPLAY_4}, {{tr::system::keycode::ESCAPE}, T_EXIT},
+	{{tr::system::keycode::LEFT}, T_PAGE_DEC},      {{tr::system::keycode::RIGHT}, T_PAGE_INC},
 };
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
@@ -166,19 +166,19 @@ void replays_state::set_up_ui()
 
 	//
 
-	widget& title{m_ui.emplace<text_widget>(TAG_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-											64, loc_text_callback{TAG_TITLE})};
+	widget& title{m_ui.emplace<text_widget>(T_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+											64, loc_text_callback{T_TITLE})};
 	title.pos.change(interp_mode::CUBE, {500, 0}, 0.5_s);
 	title.unhide(0.5_s);
 
-	widget& exit{m_ui.emplace<clickable_text_widget>(TAG_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{TAG_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
+	widget& exit{m_ui.emplace<clickable_text_widget>(T_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
+													 loc_text_callback{T_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
 	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
 	exit.unhide(0.5_s);
 
 	if (m_replays.empty()) {
-		widget& no_replays_found{m_ui.emplace<text_widget>(TAG_NO_REPLAYS_FOUND, glm::vec2{600, 467}, tr::align::TOP_CENTER, font::LANGUAGE,
-														   tr::system::ttf_style::NORMAL, 64, loc_text_callback{TAG_NO_REPLAYS_FOUND},
+		widget& no_replays_found{m_ui.emplace<text_widget>(T_NO_REPLAYS_FOUND, glm::vec2{600, 467}, tr::align::TOP_CENTER, font::LANGUAGE,
+														   tr::system::ttf_style::NORMAL, 64, loc_text_callback{T_NO_REPLAYS_FOUND},
 														   "80808080"_rgba8)};
 		no_replays_found.pos.change(interp_mode::CUBE, {500, 467}, 0.5_s);
 		no_replays_found.unhide(0.5_s);
@@ -197,17 +197,17 @@ void replays_state::set_up_ui()
 
 	const text_callback cur_page_text_cb{
 		[this] { return std::format("{}/{}", m_page + 1, std::max(m_replays.size() - 1, std::size_t{0}) / REPLAYS_PER_PAGE + 1); }};
-	widget& cur_page{m_ui.emplace<text_widget>(TAG_CUR_PAGE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
+	widget& cur_page{m_ui.emplace<text_widget>(T_CUR_PAGE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE,
 											   tr::system::ttf_style::NORMAL, 48, cur_page_text_cb)};
 	cur_page.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
 	cur_page.unhide(0.5_s);
 
-	widget& page_dec{m_ui.emplace<arrow_widget>(TAG_PAGE_DEC, glm::vec2{-50, 942.5}, tr::align::BOTTOM_LEFT, false, page_dec_status_cb,
+	widget& page_dec{m_ui.emplace<arrow_widget>(T_PAGE_DEC, glm::vec2{-50, 942.5}, tr::align::BOTTOM_LEFT, false, page_dec_status_cb,
 												page_dec_action_cb)};
 	page_dec.pos.change(interp_mode::CUBE, {10, 942.5}, 0.5_s);
 	page_dec.unhide(0.5_s);
 
-	widget& page_inc{m_ui.emplace<arrow_widget>(TAG_PAGE_INC, glm::vec2{1050, 942.5}, tr::align::BOTTOM_RIGHT, true, page_inc_status_cb,
+	widget& page_inc{m_ui.emplace<arrow_widget>(T_PAGE_INC, glm::vec2{1050, 942.5}, tr::align::BOTTOM_RIGHT, true, page_inc_status_cb,
 												page_inc_action_cb)};
 	page_inc.pos.change(interp_mode::CUBE, {990, 942.5}, 0.5_s);
 	page_inc.unhide(0.5_s);
@@ -224,19 +224,19 @@ void replays_state::set_up_page_switch_animation()
 
 void replays_state::set_up_exit_animation()
 {
-	m_ui[TAG_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui[TAG_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[T_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
 	if (m_replays.empty()) {
-		m_ui[TAG_NO_REPLAYS_FOUND].pos.change(interp_mode::CUBE, {400, 467}, 0.5_s);
+		m_ui[T_NO_REPLAYS_FOUND].pos.change(interp_mode::CUBE, {400, 467}, 0.5_s);
 	}
 	else {
 		for (std::size_t i = 0; i < REPLAYS_PER_PAGE; i++) {
 			widget& widget{m_ui[REPLAY_TAGS[i]]};
 			widget.pos.change(interp_mode::CUBE, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.5_s);
 		}
-		m_ui[TAG_CUR_PAGE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-		m_ui[TAG_PAGE_DEC].pos.change(interp_mode::CUBE, {-50, 942.5}, 0.5_s);
-		m_ui[TAG_PAGE_INC].pos.change(interp_mode::CUBE, {1050, 942.5}, 0.5_s);
+		m_ui[T_CUR_PAGE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+		m_ui[T_PAGE_DEC].pos.change(interp_mode::CUBE, {-50, 942.5}, 0.5_s);
+		m_ui[T_PAGE_INC].pos.change(interp_mode::CUBE, {1050, 942.5}, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }
