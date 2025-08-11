@@ -1,6 +1,6 @@
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/ball_settings_editor_state.hpp"
 #include "../../include/state/game_state.hpp"
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/title_state.hpp"
 
@@ -126,7 +126,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	// STATUS CALLBACKS
 
 	const status_callback status_cb{[this] { return m_substate == substate::IN_GAMEMODE_DESIGNER; }};
-	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_status_cbs{
+	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_scbs{
 		status_cb,
 		[this] { return m_substate == substate::IN_GAMEMODE_DESIGNER && !m_ui.as<line_input_widget<12>>(T_NAME).buffer.empty(); },
 		status_cb,
@@ -136,21 +136,21 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 
 	const action_callback name_enter_cb{[this] { m_ui.move_input_focus_forward(); }};
 	const action_callback description_enter_cb{[this] { m_ui.clear_input_focus(); }};
-	const action_callback ball_settings_action_cb{[this] {
+	const action_callback ball_settings_acb{[this] {
 		m_substate = substate::ENTERING_BALL_SETTINGS_EDITOR;
 		m_timer = 0;
 		m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
 		m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 		set_up_subscreen_animation();
 	}};
-	const action_callback player_settings_action_cb{[this] {
+	const action_callback player_settings_acb{[this] {
 		m_substate = substate::ENTERING_PLAYER_SETTINGS_EDITOR;
 		m_timer = 0;
 		m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
 		m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 		set_up_subscreen_animation();
 	}};
-	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_action_cbs{
+	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_acbs{
 		[this] {
 			m_substate = substate::ENTERING_TEST_GAME;
 			m_timer = 0;
@@ -176,7 +176,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 
 	// TEXT CALLBACKS
 
-	text_callback author_text_cb{string_text_callback{std::format("{}: {}", engine::loc["by"], engine::scorefile.name)}};
+	text_callback author_tcb{string_text_callback{std::format("{}: {}", engine::loc["by"], engine::scorefile.name)}};
 
 	//
 
@@ -191,20 +191,19 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, tr::system::ttf_style::NORMAL, 120, status_cb,
 										name_enter_cb, m_pending.name);
 	m_ui.emplace<text_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32,
-							  std::move(author_text_cb));
+							  std::move(author_tcb));
 	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, tr::system::ttf_style::ITALIC, 32,
 										status_cb, description_enter_cb, m_pending.description);
 	m_ui.emplace<clickable_text_widget>(T_BALL_SETTINGS, BALL_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, 64,
-										loc_text_callback{T_BALL_SETTINGS}, status_cb, ball_settings_action_cb);
+										loc_text_callback{T_BALL_SETTINGS}, status_cb, ball_settings_acb);
 	m_ui.emplace<clickable_text_widget>(T_PLAYER_SETTINGS, PLAYER_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, 64,
-										loc_text_callback{T_PLAYER_SETTINGS}, status_cb, player_settings_action_cb);
+										loc_text_callback{T_PLAYER_SETTINGS}, status_cb, player_settings_acb);
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
 		const interpolator<glm::vec2> move_in{
 			interp_mode::CUBE, BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s};
 		m_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-											loc_text_callback{BOTTOM_BUTTONS[i]}, bottom_status_cbs[i], bottom_action_cbs[i], NO_TOOLTIP,
-											sound);
+											loc_text_callback{BOTTOM_BUTTONS[i]}, bottom_scbs[i], bottom_acbs[i], NO_TOOLTIP, sound);
 	}
 }
 

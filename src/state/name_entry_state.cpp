@@ -24,8 +24,8 @@ name_entry_state::name_entry_state()
 {
 	engine::play_song("menu", 1.0s);
 
-	const status_callback input_status_cb{[this] { return m_substate != substate::ENTERING_TITLE; }};
-	const status_callback confirm_status_cb{
+	const status_callback input_scb{[this] { return m_substate != substate::ENTERING_TITLE; }};
+	const status_callback confirm_scb{
 		[this] { return m_substate != substate::ENTERING_TITLE && !m_ui.as<line_input_widget<20>>(T_INPUT).buffer.empty(); }};
 
 	const action_callback action_cb{[this] {
@@ -44,9 +44,9 @@ name_entry_state::name_entry_state()
 	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 1.0_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
 							  loc_text_callback{T_TITLE});
 	m_ui.emplace<line_input_widget<20>>(T_INPUT, glm::vec2{500, 500}, tr::align::CENTER, 1.0_s, tr::system::ttf_style::NORMAL, 64,
-										input_status_cb, action_cb, std::string_view{});
+										input_scb, action_cb, std::string_view{});
 	m_ui.emplace<clickable_text_widget>(T_CONFIRM, CONFIRM_MOVE_IN, tr::align::BOTTOM_CENTER, 1.0_s, font::LANGUAGE, 48,
-										loc_text_callback{T_CONFIRM}, confirm_status_cb, action_cb);
+										loc_text_callback{T_CONFIRM}, confirm_scb, action_cb);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

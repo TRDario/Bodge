@@ -1,5 +1,5 @@
-#include "../../include/state/game_over_state.hpp"
 #include "../../include/graphics.hpp"
+#include "../../include/state/game_over_state.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/save_score_state.hpp"
 #include "../../include/state/title_state.hpp"
@@ -49,21 +49,21 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	const float time_h{(500 - (BUTTONS.size() - 0.75f) * 30) -
 					   (engine::line_skip(font::LANGUAGE, 48) + 4 + engine::line_skip(font::LANGUAGE, 24)) / 2};
 	const interpolator<glm::vec2> time_move_in{interp_mode::CUBE, {400, time_h}, {500, time_h}, 0.5_s};
-	text_callback time_text_cb{string_text_callback{timer_text(m_game->result())}};
+	text_callback time_tcb{string_text_callback{timer_text(m_game->result())}};
 	m_ui.emplace<text_widget>(T_TIME, time_move_in, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  std::move(time_text_cb), "FFFF00C0"_rgba8);
+							  std::move(time_tcb), "FFFF00C0"_rgba8);
 
 	const float pb_h{time_h + engine::line_skip(font::LANGUAGE, 48) + 4};
 	const interpolator<glm::vec2> pb_move_in{interp_mode::CUBE, {600, pb_h}, {500, pb_h}, 0.5_s};
-	text_callback pb_text_cb;
+	text_callback pb_tcb;
 	if (prev_pb < m_game->result()) {
-		pb_text_cb = loc_text_callback{"new_pb"};
+		pb_tcb = loc_text_callback{"new_pb"};
 	}
 	else {
-		pb_text_cb = string_text_callback{std::format("{}: {}", engine::loc["pb"], timer_text(pb(engine::scorefile, m_game->gamemode())))};
+		pb_tcb = string_text_callback{std::format("{}: {}", engine::loc["pb"], timer_text(pb(engine::scorefile, m_game->gamemode())))};
 	}
 	m_ui.emplace<text_widget>(T_PB, pb_move_in, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 24,
-							  std::move(pb_text_cb), "FFFF00C0"_rgba8);
+							  std::move(pb_tcb), "FFFF00C0"_rgba8);
 
 	const status_callback status_cb{[this] { return m_substate == substate::BLURRING_IN || m_substate == substate::GAME_OVER; }};
 	std::array<action_callback, BUTTONS.size()> action_cbs{

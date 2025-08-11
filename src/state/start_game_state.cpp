@@ -1,5 +1,5 @@
-#include "../../include/state/start_game_state.hpp"
 #include "../../include/state/game_state.hpp"
+#include "../../include/state/start_game_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -22,6 +22,16 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::TOP_ROW_1}, T_START}, {{tr::system::keycode::ESCAPE}, T_EXIT}, {{tr::system::keycode::TOP_ROW_2}, T_EXIT},
 };
 
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> NAME_MOVE_IN{interp_mode::CUBE, {500, 275}, {500, 375}, 0.5_s};
+constexpr interpolator<glm::vec2> AUTHOR_MOVE_IN{interp_mode::CUBE, {400, 450}, {500, 450}, 0.5_s};
+constexpr interpolator<glm::vec2> DESCRIPTION_MOVE_IN{interp_mode::CUBE, {600, 500}, {500, 500}, 0.5_s};
+constexpr interpolator<glm::vec2> PB_MOVE_IN{interp_mode::CUBE, {500, 695}, {500, 595}, 0.5_s};
+constexpr interpolator<glm::vec2> PREV_MOVE_IN{interp_mode::CUBE, {-50, 500}, {10, 500}, 0.5_s};
+constexpr interpolator<glm::vec2> NEXT_MOVE_IN{interp_mode::CUBE, {1050, 500}, {990, 500}, 0.5_s};
+constexpr interpolator<glm::vec2> START_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 950}, 0.5_s};
+constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 start_game_state::start_game_state(std::unique_ptr<game>&& game)
@@ -37,39 +47,20 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		m_selected = last_selected_it;
 	}
 
+	// TEXT CALLBACKS
+
+	text_callback name_tcb{string_text_callback{std::string{name(*m_selected)}}};
+	text_callback author_tcb{string_text_callback{std::format("{}: {}", engine::loc["by"], m_selected->author)}};
+	text_callback description_tcb{string_text_callback{std::string{description(*m_selected)}}};
+	text_callback pb_tcb{string_text_callback{std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))}};
+
+	// STATUS CALLBACKS
+
 	const status_callback status_cb{[this] { return m_substate == substate::IN_START_GAME; }};
 
-	widget& title{m_ui.emplace<text_widget>(T_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-											64, loc_text_callback{T_TITLE})};
-	title.pos.change(interp_mode::CUBE, {500, 0}, 0.5_s);
-	title.unhide(0.5_s);
+	// ACTION CALLBACKS
 
-	text_callback name_text_cb{string_text_callback{std::string{::name(*m_selected)}}};
-	widget& name{m_ui.emplace<text_widget>(T_NAME, glm::vec2{500, 275}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-										   120, std::move(name_text_cb))};
-	name.pos.change(interp_mode::CUBE, {500, 375}, 0.5_s);
-	name.unhide(0.5_s);
-
-	text_callback author_text_cb{string_text_callback{std::format("{}: {}", engine::loc["by"], m_selected->author)}};
-	widget& author{m_ui.emplace<text_widget>(T_AUTHOR, glm::vec2{400, 450}, tr::align::CENTER, font::LANGUAGE,
-											 tr::system::ttf_style::NORMAL, 32, std::move(author_text_cb))};
-	author.pos.change(interp_mode::CUBE, {500, 450}, 0.5_s);
-	author.unhide(0.5_s);
-
-	text_callback description_text_cb{string_text_callback{std::string{description(*m_selected)}}};
-	widget& description{m_ui.emplace<text_widget>(T_DESCRIPTION, glm::vec2{600, 500}, tr::align::CENTER, font::LANGUAGE,
-												  tr::system::ttf_style::ITALIC, 32, std::move(description_text_cb), "80808080"_rgba8)};
-	description.pos.change(interp_mode::CUBE, {500, 500}, 0.5_s);
-	description.unhide(0.5_s);
-
-	text_callback pb_text_cb{
-		string_text_callback{std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))}};
-	widget& pb{m_ui.emplace<text_widget>(T_PB, glm::vec2{500, 695}, tr::align::CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
-										 std::move(pb_text_cb), "FFFF00C0"_rgba8)};
-	pb.pos.change(interp_mode::CUBE, {500, 595}, 0.5_s);
-	pb.unhide(0.5_s);
-
-	const action_callback prev_action_cb{[this] {
+	const action_callback prev_acb{[this] {
 		m_selected = m_selected == m_gamemodes.begin() ? m_selected = m_gamemodes.end() - 1 : std::prev(m_selected);
 		m_substate = substate::SWITCHING_GAMEMODE;
 		m_timer = 0;
@@ -79,11 +70,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 			widget.hide(0.25_s);
 		}
 	}};
-	widget& prev{m_ui.emplace<arrow_widget>(T_PREV, glm::vec2{-100, 500}, tr::align::CENTER_LEFT, false, status_cb, prev_action_cb)};
-	prev.pos.change(interp_mode::CUBE, {10, 500}, 0.5_s);
-	prev.unhide(0.5_s);
-
-	const action_callback next_action_cb{[this] {
+	const action_callback next_acb{[this] {
 		if (++m_selected == m_gamemodes.end()) {
 			m_selected = m_gamemodes.begin();
 		}
@@ -95,32 +82,38 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 			widget.hide(0.25_s);
 		}
 	}};
-	widget& next{m_ui.emplace<arrow_widget>(T_NEXT, glm::vec2{1100, 500}, tr::align::CENTER_RIGHT, true, status_cb, next_action_cb)};
-	next.pos.change(interp_mode::CUBE, {990, 500}, 0.5_s);
-	next.unhide(0.5_s);
-
-	const action_callback start_action_cb{[this] {
+	const action_callback start_acb{[this] {
 		m_substate = substate::ENTERING_GAME;
 		m_timer = 0;
 		set_up_exit_animation();
 		engine::scorefile.last_selected = *m_selected;
 		engine::fade_song_out(0.5s);
 	}};
-	widget& start{m_ui.emplace<clickable_text_widget>(T_START, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													  loc_text_callback{T_START}, status_cb, start_action_cb, NO_TOOLTIP)};
-	start.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
-	start.unhide(0.5_s);
-
-	const action_callback exit_action_cb{[this] {
+	const action_callback exit_acb{[this] {
 		m_substate = substate::ENTERING_TITLE;
 		m_timer = 0;
 		set_up_exit_animation();
 		engine::scorefile.last_selected = *m_selected;
 	}};
-	widget& exit{m_ui.emplace<clickable_text_widget>(T_EXIT, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{T_EXIT}, status_cb, exit_action_cb, NO_TOOLTIP, sound::CANCEL)};
-	exit.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
-	exit.unhide(0.5_s);
+
+	//
+
+	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
+							  loc_text_callback{T_TITLE});
+	m_ui.emplace<text_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 120,
+							  std::move(name_tcb));
+	m_ui.emplace<text_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32,
+							  std::move(author_tcb));
+	m_ui.emplace<text_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::ITALIC,
+							  32, std::move(description_tcb), "80808080"_rgba8);
+	m_ui.emplace<text_widget>(T_PB, PB_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
+							  std::move(pb_tcb), "FFFF00C0"_rgba8);
+	m_ui.emplace<arrow_widget>(T_PREV, PREV_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, status_cb, prev_acb);
+	m_ui.emplace<arrow_widget>(T_NEXT, NEXT_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, status_cb, next_acb);
+	m_ui.emplace<clickable_text_widget>(T_START, START_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
+										loc_text_callback{T_START}, status_cb, start_acb, NO_TOOLTIP);
+	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
+										loc_text_callback{T_EXIT}, status_cb, exit_acb, NO_TOOLTIP, sound::CANCEL);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

@@ -22,7 +22,7 @@ line_input_widget<S>::line_input_widget(interpolator<glm::vec2> pos, tr::align a
 				  {160, 160, 160, 160},
 				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
 	, buffer{initial_text}
-	, m_status_cb{std::move(status_cb)}
+	, m_scb{std::move(status_cb)}
 	, m_enter_cb{std::move(enter_cb)}
 	, m_has_focus{false}
 {
@@ -45,7 +45,7 @@ template <std::size_t S> void line_input_widget<S>::add_to_renderer()
 
 template <std::size_t S> bool line_input_widget<S>::active() const
 {
-	return m_status_cb();
+	return m_scb();
 }
 
 template <std::size_t S> void line_input_widget<S>::on_hover()
@@ -145,7 +145,7 @@ template <std::size_t S> void line_input_widget<S>::on_paste()
 
 ////////////////////////////////////////////////////////////// REPLAY WIDGET //////////////////////////////////////////////////////////////
 
-replay_widget::replay_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_status_cb, auto base_action_cb,
+replay_widget::replay_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_scb, auto base_acb,
 							 std::optional<std::map<std::string, replay_header>::iterator> it)
 	: clickable_text_widget{pos,
 							alignment,
@@ -175,10 +175,10 @@ replay_widget::replay_widget(interpolator<glm::vec2> pos, tr::align alignment, t
 												   engine::loc["by"], rpy.player, ::name(rpy.gamemode), result_m, result_s, result_ms, year,
 												   month, day, hour, minute);
 							},
-							[=, this] { return base_status_cb() && this->it.has_value(); },
+							[=, this] { return base_scb() && this->it.has_value(); },
 							[=, this] {
 								if (this->it.has_value()) {
-									base_action_cb(*this->it);
+									base_acb(*this->it);
 								}
 							},
 							[this] {
@@ -229,7 +229,7 @@ multiline_input_widget<S>::multiline_input_widget(interpolator<glm::vec2> pos, t
 				  static_cast<int>(width),
 				  {160, 160, 160, 160},
 				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
-	, m_status_cb{std::move(status_cb)}
+	, m_scb{std::move(status_cb)}
 	, m_size{width, engine::line_skip(font::LANGUAGE, font_size) * max_lines + 4}
 	, m_max_lines{max_lines}
 	, m_has_focus{false}
@@ -268,7 +268,7 @@ template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 
 template <std::size_t S> bool multiline_input_widget<S>::active() const
 {
-	return m_status_cb();
+	return m_scb();
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_hover()

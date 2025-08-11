@@ -1,6 +1,6 @@
-#include "../../include/state/pause_state.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
+#include "../../include/state/pause_state.hpp"
 #include "../../include/state/replays_state.hpp"
 #include "../../include/state/save_score_state.hpp"
 #include "../../include/state/title_state.hpp"
@@ -200,7 +200,7 @@ void pause_state::set_up_full_ui()
 
 	const status_callback status_cb{
 		[this] { return to_base(m_substate) == substate_base::PAUSED || to_base(m_substate) == substate_base::PAUSING; }};
-	const status_callback unpause_status_cb{[this] { return to_base(m_substate) == substate_base::PAUSED; }};
+	const status_callback unpause_scb{[this] { return to_base(m_substate) == substate_base::PAUSED; }};
 	std::array<action_callback, BUTTONS_REGULAR.size()> action_cbs{
 		[this] {
 			m_timer = 0;
@@ -239,7 +239,7 @@ void pause_state::set_up_full_ui()
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {500 + offset, y}, {500, y}, 0.5_s};
 		m_ui.emplace<clickable_text_widget>(BUTTONS_REGULAR[i], move_in, tr::align::CENTER, 0.5_s, font::LANGUAGE, 48,
-											loc_text_callback{BUTTONS_REGULAR[i]}, i == 0 ? unpause_status_cb : status_cb,
+											loc_text_callback{BUTTONS_REGULAR[i]}, i == 0 ? unpause_scb : status_cb,
 											std::move(action_cbs[i]));
 	}
 }
@@ -254,7 +254,7 @@ void pause_state::set_up_limited_ui()
 
 	const status_callback status_cb{
 		[this] { return to_base(m_substate) == substate_base::PAUSED || to_base(m_substate) == substate_base::PAUSING; }};
-	const status_callback unpause_status_cb{[this] { return to_base(m_substate) == substate_base::PAUSED; }};
+	const status_callback unpause_scb{[this] { return to_base(m_substate) == substate_base::PAUSED; }};
 	std::array<action_callback, BUTTONS_SPECIAL.size()> action_cbs{
 		[this] {
 			m_timer = 0;
@@ -278,7 +278,7 @@ void pause_state::set_up_limited_ui()
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {500 + offset, y}, {500, y}, 0.5_s};
 		m_ui.emplace<clickable_text_widget>(BUTTONS_SPECIAL[i], move_in, tr::align::CENTER, 0.5_s, font::LANGUAGE, 48,
-											loc_text_callback{BUTTONS_SPECIAL[i]}, i == 0 ? unpause_status_cb : status_cb,
+											loc_text_callback{BUTTONS_SPECIAL[i]}, i == 0 ? unpause_scb : status_cb,
 											std::move(action_cbs[i]));
 	}
 }

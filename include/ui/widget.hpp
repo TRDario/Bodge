@@ -96,9 +96,9 @@ class clickable_text_widget : public text_widget {
 
   private:
 	// Callback used to determine the status of the widget.
-	status_callback m_status_cb;
+	status_callback m_scb;
 	// Callback called when the widget is interacted with.
-	action_callback m_action_cb;
+	action_callback m_acb;
 	// Timer used when overriding the disabled color.
 	ticks m_override_disabled_color_left;
 	// The sound effect that interacting with the widget plays.
@@ -141,7 +141,7 @@ template <std::size_t S> class line_input_widget : public text_widget {
 
   private:
 	// Callback used to determine the status of the widget.
-	status_callback m_status_cb;
+	status_callback m_scb;
 	// Callback called when enter is pressed.
 	action_callback m_enter_cb;
 	// Keeps track of whether the widget has input focus.
@@ -185,7 +185,7 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 
   private:
 	// Callback used to determine the status of the widget.
-	status_callback m_status_cb;
+	status_callback m_scb;
 	// The size of the widget.
 	glm::vec2 m_size;
 	// The maximum allowed number of lines of text.
@@ -272,9 +272,9 @@ class arrow_widget : public widget {
 	// The tint color.
 	interpolator<tr::rgba8> m_color;
 	// Callback used to determine the status of the widget.
-	status_callback m_status_cb;
+	status_callback m_scb;
 	// Callback called when the widget is interacted with.
-	action_callback m_action_cb;
+	action_callback m_acb;
 	// Timer used when overriding the disabled color.
 	ticks m_override_disabled_color_left;
 };
@@ -323,7 +323,7 @@ struct score_widget : public text_widget {
 struct replay_widget : public clickable_text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	replay_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_status_cb, auto base_action_cb,
+	replay_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_scb, auto base_acb,
 				  std::optional<std::map<std::string, replay_header>::iterator> it);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////

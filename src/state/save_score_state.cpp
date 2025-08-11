@@ -1,7 +1,7 @@
-#include "../../include/state/save_score_state.hpp"
 #include "../../include/state/game_over_state.hpp"
 #include "../../include/state/pause_state.hpp"
 #include "../../include/state/save_replay_state.hpp"
+#include "../../include/state/save_score_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -17,6 +17,14 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ENTER}, T_SAVE},    {{tr::system::keycode::S}, T_SAVE},   {{tr::system::keycode::TOP_ROW_1}, T_SAVE},
 	{{tr::system::keycode::ESCAPE}, T_CANCEL}, {{tr::system::keycode::C}, T_CANCEL}, {{tr::system::keycode::TOP_ROW_2}, T_CANCEL},
 };
+
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> PREVIEW_MOVE_IN{interp_mode::CUBE, {400, 200}, {500, 200}, 0.5_s};
+constexpr interpolator<glm::vec2> SCORE_MOVE_IN{interp_mode::CUBE, {400, 235}, {500, 235}, 0.5_s};
+constexpr interpolator<glm::vec2> DESCRIPTION_MOVE_IN{interp_mode::CUBE, {600, 440}, {500, 440}, 0.5_s};
+constexpr interpolator<glm::vec2> DESCRIPTION_INPUT_MOVE_IN{interp_mode::CUBE, {600, 475}, {500, 475}, 0.5_s};
+constexpr interpolator<glm::vec2> SAVE_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 950}, 0.5_s};
+constexpr interpolator<glm::vec2> CANCEL_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -109,9 +117,13 @@ save_screen_flags to_flags(save_score_state::substate state)
 
 void save_score_state::set_up_ui()
 {
-	const status_callback status_cb{[this] { return to_base(m_substate) == substate_base::SAVING_SCORE; }};
+	// STATUS CALLBACKS
 
-	const action_callback save_action_cb{[this] {
+	const status_callback scb{[this] { return to_base(m_substate) == substate_base::SAVING_SCORE; }};
+
+	// ACTION CALLBACKS
+
+	const action_callback save_acb{[this] {
 		m_substate = substate_base::ENTERING_SAVE_REPLAY | to_flags(m_substate);
 		m_timer = 0;
 		set_up_exit_animation();
@@ -119,47 +131,27 @@ void save_score_state::set_up_ui()
 		add_score(engine::scorefile, m_game->gamemode(), m_score);
 		update_pb(engine::scorefile, m_game->gamemode(), m_game->result());
 	}};
-	const action_callback cancel_action_cb{[this] {
+	const action_callback cancel_acb{[this] {
 		m_substate = substate_base::RETURNING | to_flags(m_substate);
 		m_timer = 0;
 		set_up_exit_animation();
 	}};
 
-	widget& title{m_ui.emplace<text_widget>(T_TITLE, TOP_START_POS, tr::align::TOP_CENTER, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-											64, loc_text_callback{T_TITLE})};
-	title.pos.change(interp_mode::CUBE, {500, 0}, 0.5_s);
-	title.unhide(0.5_s);
+	//
 
-	widget& preview_label{m_ui.emplace<text_widget>(T_PREVIEW, glm::vec2{400, 200}, tr::align::CENTER, font::LANGUAGE,
-													tr::system::ttf_style::NORMAL, 48, loc_text_callback{T_PREVIEW})};
-	preview_label.pos.change(interp_mode::CUBE, {500, 200}, 0.5_s);
-	preview_label.unhide(0.5_s);
-
-	widget& preview{
-		m_ui.emplace<score_widget>(T_SCORE, glm::vec2{400, 235}, tr::align::TOP_CENTER, score_widget::DONT_SHOW_RANK, &m_score)};
-	preview.pos.change(interp_mode::CUBE, {500, 235}, 0.5_s);
-	preview.unhide(0.5_s);
-
-	widget& description_label{m_ui.emplace<text_widget>(T_DESCRIPTION, glm::vec2{600, 440}, tr::align::CENTER, font::LANGUAGE,
-														tr::system::ttf_style::NORMAL, 48, loc_text_callback{T_DESCRIPTION})};
-	description_label.pos.change(interp_mode::CUBE, {500, 440}, 0.5_s);
-	description_label.unhide(0.5_s);
-
-	widget& description{m_ui.emplace<multiline_input_widget<255>>(T_INPUT, glm::vec2{600, 475}, tr::align::TOP_CENTER, 800, 10,
-																  tr::halign::CENTER, 24, status_cb)};
-	description.pos.change(interp_mode::CUBE, {500, 475}, 0.5_s);
-	description.unhide(0.5_s);
-
-	widget& save{m_ui.emplace<clickable_text_widget>(T_SAVE, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													 loc_text_callback{T_SAVE}, status_cb, save_action_cb)};
-	save.pos.change(interp_mode::CUBE, {500, 950}, 0.5_s);
-	save.unhide(0.5_s);
-
-	widget& cancel{m_ui.emplace<clickable_text_widget>(T_CANCEL, BOTTOM_START_POS, tr::align::BOTTOM_CENTER, font::LANGUAGE, 48,
-													   loc_text_callback{T_CANCEL}, status_cb, cancel_action_cb, NO_TOOLTIP,
-													   sound::CANCEL)};
-	cancel.pos.change(interp_mode::CUBE, {500, 1000}, 0.5_s);
-	cancel.unhide(0.5_s);
+	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
+							  loc_text_callback{T_TITLE});
+	m_ui.emplace<text_widget>(T_PREVIEW, PREVIEW_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
+							  loc_text_callback{T_PREVIEW});
+	m_ui.emplace<score_widget>(T_SCORE, SCORE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, score_widget::DONT_SHOW_RANK, &m_score);
+	m_ui.emplace<text_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL,
+							  48, loc_text_callback{T_DESCRIPTION});
+	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, tr::halign::CENTER,
+											  24, scb);
+	m_ui.emplace<clickable_text_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
+										loc_text_callback{T_SAVE}, scb, save_acb);
+	m_ui.emplace<clickable_text_widget>(T_CANCEL, CANCEL_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
+										loc_text_callback{T_CANCEL}, scb, cancel_acb, NO_TOOLTIP, sound::CANCEL);
 }
 
 void save_score_state::set_up_exit_animation()
