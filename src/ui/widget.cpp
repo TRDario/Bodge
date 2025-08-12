@@ -199,7 +199,7 @@ void widget::hide()
 
 void widget::hide(ticks time)
 {
-	m_opacity.change(interp_mode::CUBE, 0, time);
+	m_opacity.change(interp::CUBIC, 0, time);
 }
 
 void widget::unhide()
@@ -209,7 +209,7 @@ void widget::unhide()
 
 void widget::unhide(ticks time)
 {
-	m_opacity.change(interp_mode::CUBE, 1, time);
+	m_opacity.change(interp::CUBIC, 1, time);
 }
 
 bool widget::hoverable() const
@@ -388,7 +388,7 @@ bool clickable_text_widget::active() const
 
 void clickable_text_widget::on_hover()
 {
-	color.change(interp_mode::LERP, "FFFFFF"_rgba8, 0.2_s);
+	color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
 		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
@@ -396,7 +396,7 @@ void clickable_text_widget::on_hover()
 
 void clickable_text_widget::on_unhover()
 {
-	color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
+	color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
 void clickable_text_widget::on_hold_begin()
@@ -412,12 +412,12 @@ void clickable_text_widget::on_hold_transfer_in()
 
 void clickable_text_widget::on_hold_transfer_out()
 {
-	color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
+	color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
 void clickable_text_widget::on_hold_end()
 {
-	color.change(interp_mode::LERP, "FFFFFF"_rgba8, 0.2_s);
+	color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
 	m_acb();
 	engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
@@ -427,7 +427,7 @@ void clickable_text_widget::on_shortcut()
 	if (active()) {
 		m_acb();
 		color = "FFFFFF"_rgba8;
-		color.change(interp_mode::LERP, active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
+		color.change(interp::LERP, active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
 		m_override_disabled_color_left = 0.2_s;
 		engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
@@ -566,7 +566,7 @@ bool arrow_widget::active() const
 
 void arrow_widget::on_hover()
 {
-	m_color.change(interp_mode::LERP, "FFFFFF"_rgba8, 0.2_s);
+	m_color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
 	if (active()) {
 		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
@@ -574,7 +574,7 @@ void arrow_widget::on_hover()
 
 void arrow_widget::on_unhover()
 {
-	m_color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
+	m_color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
 void arrow_widget::on_hold_begin()
@@ -590,12 +590,12 @@ void arrow_widget::on_hold_transfer_in()
 
 void arrow_widget::on_hold_transfer_out()
 {
-	m_color.change(interp_mode::LERP, {160, 160, 160, 160}, 0.2_s);
+	m_color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
 void arrow_widget::on_hold_end()
 {
-	m_color.change(interp_mode::LERP, "FFFFFF"_rgba8, 0.2_s);
+	m_color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
 	m_acb();
 	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
@@ -605,7 +605,7 @@ void arrow_widget::on_shortcut()
 	if (active()) {
 		m_acb();
 		m_color = "FFFFFF"_rgba8;
-		m_color.change(interp_mode::LERP, active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
+		m_color.change(interp::LERP, active() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
 		m_override_disabled_color_left = 0.2_s;
 		engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}

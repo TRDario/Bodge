@@ -1,5 +1,5 @@
-#include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
+#include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/system.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -43,27 +43,25 @@ constexpr glm::vec2 HITBOX_RADIUS_START_POS{1050, 525};
 // Starting position of the inertia factor widgets.
 constexpr glm::vec2 INERTIA_FACTOR_START_POS{1050, 600};
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr interpolator<glm::vec2> SUBTITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> SUBTITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
 constexpr interpolator<glm::vec2> STARTING_LIVES_D_MOVE_IN{
-	interp_mode::CUBE, STARTING_LIVES_START_POS, {790, STARTING_LIVES_START_POS.y}, 0.5_s};
+	interp::CUBIC, STARTING_LIVES_START_POS, {790, STARTING_LIVES_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> STARTING_LIVES_C_MOVE_IN{
-	interp_mode::CUBE, STARTING_LIVES_START_POS, {887.5f, STARTING_LIVES_START_POS.y}, 0.5_s};
+	interp::CUBIC, STARTING_LIVES_START_POS, {887.5f, STARTING_LIVES_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> STARTING_LIVES_I_MOVE_IN{
-	interp_mode::CUBE, STARTING_LIVES_START_POS, {985, STARTING_LIVES_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> HITBOX_RADIUS_D_MOVE_IN{
-	interp_mode::CUBE, HITBOX_RADIUS_START_POS, {790, HITBOX_RADIUS_START_POS.y}, 0.5_s};
+	interp::CUBIC, STARTING_LIVES_START_POS, {985, STARTING_LIVES_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> HITBOX_RADIUS_D_MOVE_IN{interp::CUBIC, HITBOX_RADIUS_START_POS, {790, HITBOX_RADIUS_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> HITBOX_RADIUS_C_MOVE_IN{
-	interp_mode::CUBE, HITBOX_RADIUS_START_POS, {887.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> HITBOX_RADIUS_I_MOVE_IN{
-	interp_mode::CUBE, HITBOX_RADIUS_START_POS, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s};
+	interp::CUBIC, HITBOX_RADIUS_START_POS, {887.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> HITBOX_RADIUS_I_MOVE_IN{interp::CUBIC, HITBOX_RADIUS_START_POS, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> INERTIA_FACTOR_D_MOVE_IN{
-	interp_mode::CUBE, INERTIA_FACTOR_START_POS, {790, INERTIA_FACTOR_START_POS.y}, 0.5_s};
+	interp::CUBIC, INERTIA_FACTOR_START_POS, {790, INERTIA_FACTOR_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> INERTIA_FACTOR_C_MOVE_IN{
-	interp_mode::CUBE, INERTIA_FACTOR_START_POS, {887.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s};
+	interp::CUBIC, INERTIA_FACTOR_START_POS, {887.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> INERTIA_FACTOR_I_MOVE_IN{
-	interp_mode::CUBE, INERTIA_FACTOR_START_POS, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+	interp::CUBIC, INERTIA_FACTOR_START_POS, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -143,7 +141,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 							  tr::system::ttf_style::NORMAL, 48, cur_inertia_factor_tcb);
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
 		const label& label{LABELS[i]};
-		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {-50, 450 + i * 75}, {15, 450 + i * 75}, 0.5_s};
+		const interpolator<glm::vec2> move_in{interp::CUBIC, {-50, 450 + i * 75}, {15, 450 + i * 75}, 0.5_s};
 		m_ui.emplace<text_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, LABELS[i].tooltip, font::LANGUAGE,
 								  tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag});
 	}
@@ -187,18 +185,18 @@ void player_settings_editor_state::set_up_exit_animation()
 {
 	widget& subtitle{m_ui[T_SUBTITLE]};
 	widget& exit{m_ui[T_EXIT]};
-	subtitle.pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	subtitle.pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
 	subtitle.hide(0.5_s);
 	for (tag tag : tr::project(LABELS, &label::tag)) {
 		widget& widget{m_ui[tag]};
-		widget.pos.change(interp_mode::CUBE, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
+		widget.pos.change(interp::CUBIC, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
 		widget.hide(0.5_s);
 	}
 	for (tag tag : RIGHT_WIDGETS) {
 		widget& widget{m_ui[tag]};
-		widget.pos.change(interp_mode::CUBE, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
+		widget.pos.change(interp::CUBIC, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
 		widget.hide(0.5_s);
 	}
-	exit.pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	exit.pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
 	exit.hide(0.5_s);
 }

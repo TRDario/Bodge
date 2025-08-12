@@ -75,42 +75,39 @@ constexpr glm::vec2 INITIAL_VELOCITY_START_POS{1050, SIZE_STEP_START_POS.y + 75}
 constexpr glm::vec2 VELOCITY_STEP_START_POS{1050, INITIAL_VELOCITY_START_POS.y + 75};
 
 constexpr interpolator<glm::vec2> TITLE_MOVE_IN{TITLE_POS};
-constexpr interpolator<glm::vec2> SUBTITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
+constexpr interpolator<glm::vec2> SUBTITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
 constexpr interpolator<glm::vec2> STARTING_COUNT_D_MOVE_IN{
-	interpolator<glm::vec2>{interp_mode::CUBE, STARTING_COUNT_START_POS, {765, STARTING_COUNT_START_POS.y}, 0.5_s}};
+	interpolator<glm::vec2>{interp::CUBIC, STARTING_COUNT_START_POS, {765, STARTING_COUNT_START_POS.y}, 0.5_s}};
 constexpr interpolator<glm::vec2> STARTING_COUNT_C_MOVE_IN{
-	interpolator<glm::vec2>{interp_mode::CUBE, STARTING_COUNT_START_POS, {875.5f, STARTING_COUNT_START_POS.y}, 0.5_s}};
+	interpolator<glm::vec2>{interp::CUBIC, STARTING_COUNT_START_POS, {875.5f, STARTING_COUNT_START_POS.y}, 0.5_s}};
 constexpr interpolator<glm::vec2> STARTING_COUNT_I_MOVE_IN{
-	interpolator<glm::vec2>{interp_mode::CUBE, STARTING_COUNT_START_POS, {985, STARTING_COUNT_START_POS.y}, 0.5_s}};
-constexpr interpolator<glm::vec2> MAX_COUNT_D_MOVE_IN{interp_mode::CUBE, MAX_COUNT_START_POS, {765, MAX_COUNT_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> MAX_COUNT_C_MOVE_IN{interp_mode::CUBE, MAX_COUNT_START_POS, {875.5f, MAX_COUNT_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> MAX_COUNT_I_MOVE_IN{interp_mode::CUBE, MAX_COUNT_START_POS, {985, MAX_COUNT_START_POS.y}, 0.5_s};
+	interpolator<glm::vec2>{interp::CUBIC, STARTING_COUNT_START_POS, {985, STARTING_COUNT_START_POS.y}, 0.5_s}};
+constexpr interpolator<glm::vec2> MAX_COUNT_D_MOVE_IN{interp::CUBIC, MAX_COUNT_START_POS, {765, MAX_COUNT_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> MAX_COUNT_C_MOVE_IN{interp::CUBIC, MAX_COUNT_START_POS, {875.5f, MAX_COUNT_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> MAX_COUNT_I_MOVE_IN{interp::CUBIC, MAX_COUNT_START_POS, {985, MAX_COUNT_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> SPAWN_INTERVAL_D_MOVE_IN{
-	interp_mode::CUBE, SPAWN_INTERVAL_START_POS, {765, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+	interp::CUBIC, SPAWN_INTERVAL_START_POS, {765, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> SPAWN_INTERVAL_C_MOVE_IN{
-	interp_mode::CUBE, SPAWN_INTERVAL_START_POS, {875.5f, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+	interp::CUBIC, SPAWN_INTERVAL_START_POS, {875.5f, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> SPAWN_INTERVAL_I_MOVE_IN{
-	interp_mode::CUBE, SPAWN_INTERVAL_START_POS, {985, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> INITIAL_SIZE_D_MOVE_IN{interp_mode::CUBE, INITIAL_SIZE_START_POS, {765, INITIAL_SIZE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> INITIAL_SIZE_C_MOVE_IN{
-	interp_mode::CUBE, INITIAL_SIZE_START_POS, {875.5f, INITIAL_SIZE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> INITIAL_SIZE_I_MOVE_IN{interp_mode::CUBE, INITIAL_SIZE_START_POS, {985, INITIAL_SIZE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> SIZE_STEP_D_MOVE_IN{interp_mode::CUBE, SIZE_STEP_START_POS, {765, SIZE_STEP_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> SIZE_STEP_C_MOVE_IN{interp_mode::CUBE, SIZE_STEP_START_POS, {875.5f, SIZE_STEP_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> SIZE_STEP_I_MOVE_IN{interp_mode::CUBE, SIZE_STEP_START_POS, {985, SIZE_STEP_START_POS.y}, 0.5_s};
+	interp::CUBIC, SPAWN_INTERVAL_START_POS, {985, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INITIAL_SIZE_D_MOVE_IN{interp::CUBIC, INITIAL_SIZE_START_POS, {765, INITIAL_SIZE_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INITIAL_SIZE_C_MOVE_IN{interp::CUBIC, INITIAL_SIZE_START_POS, {875.5f, INITIAL_SIZE_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> INITIAL_SIZE_I_MOVE_IN{interp::CUBIC, INITIAL_SIZE_START_POS, {985, INITIAL_SIZE_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> SIZE_STEP_D_MOVE_IN{interp::CUBIC, SIZE_STEP_START_POS, {765, SIZE_STEP_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> SIZE_STEP_C_MOVE_IN{interp::CUBIC, SIZE_STEP_START_POS, {875.5f, SIZE_STEP_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> SIZE_STEP_I_MOVE_IN{interp::CUBIC, SIZE_STEP_START_POS, {985, SIZE_STEP_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> INITIAL_VELOCITY_D_MOVE_IN{
-	interp_mode::CUBE, INITIAL_VELOCITY_START_POS, {765, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
+	interp::CUBIC, INITIAL_VELOCITY_START_POS, {765, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> INITIAL_VELOCITY_C_MOVE_IN{
-	interp_mode::CUBE, INITIAL_VELOCITY_START_POS, {875.5f, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
+	interp::CUBIC, INITIAL_VELOCITY_START_POS, {875.5f, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> INITIAL_VELOCITY_I_MOVE_IN{
-	interp_mode::CUBE, INITIAL_VELOCITY_START_POS, {985, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> VELOCITY_STEP_D_MOVE_IN{
-	interp_mode::CUBE, VELOCITY_STEP_START_POS, {765, VELOCITY_STEP_START_POS.y}, 0.5_s};
+	interp::CUBIC, INITIAL_VELOCITY_START_POS, {985, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> VELOCITY_STEP_D_MOVE_IN{interp::CUBIC, VELOCITY_STEP_START_POS, {765, VELOCITY_STEP_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> VELOCITY_STEP_C_MOVE_IN{
-	interp_mode::CUBE, VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> VELOCITY_STEP_I_MOVE_IN{
-	interp_mode::CUBE, VELOCITY_STEP_START_POS, {985, VELOCITY_STEP_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+	interp::CUBIC, VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> VELOCITY_STEP_I_MOVE_IN{interp::CUBIC, VELOCITY_STEP_START_POS, {985, VELOCITY_STEP_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -271,7 +268,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	m_ui.emplace<text_widget>(T_VELOCITY_STEP_C, VELOCITY_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
 							  tr::system::ttf_style::NORMAL, 48, cur_velocity_step_tcb);
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
-		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {-50, 298 + i * 75}, {15, 298 + i * 75}, 0.5_s};
+		const interpolator<glm::vec2> move_in{interp::CUBIC, {-50, 298 + i * 75}, {15, 298 + i * 75}, 0.5_s};
 		m_ui.emplace<text_widget>(LABELS[i].tag, move_in, tr::align::CENTER_LEFT, 0.5_s, LABELS[i].tooltip, font::LANGUAGE,
 								  tr::system::ttf_style::NORMAL, 48, loc_text_callback{LABELS[i].tag});
 	}
@@ -315,18 +312,18 @@ void ball_settings_editor_state::set_up_exit_animation()
 {
 	widget& subtitle{m_ui[T_SUBTITLE]};
 	widget& exit{m_ui[T_EXIT]};
-	subtitle.pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	subtitle.pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
 	subtitle.hide(0.5_s);
 	for (tag tag : tr::project(LABELS, &label::tag)) {
 		widget& widget{m_ui[tag]};
-		widget.pos.change(interp_mode::CUBE, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
+		widget.pos.change(interp::CUBIC, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
 		widget.hide(0.5_s);
 	}
 	for (tag tag : RIGHT_WIDGETS) {
 		widget& widget{m_ui[tag]};
-		widget.pos.change(interp_mode::CUBE, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
+		widget.pos.change(interp::CUBIC, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
 		widget.hide(0.5_s);
 	}
-	exit.pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	exit.pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
 	exit.hide(0.5_s);
 }

@@ -11,8 +11,8 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ENTER}, T_CONFIRM},
 };
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 1.0_s};
-constexpr interpolator<glm::vec2> CONFIRM_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 1.0_s};
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 1.0_s};
+constexpr interpolator<glm::vec2> CONFIRM_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 1000}, 1.0_s};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -33,8 +33,8 @@ name_entry_state::name_entry_state()
 		if (!input.buffer.empty()) {
 			m_timer = 0;
 			m_substate = substate::ENTERING_TITLE;
-			m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 1.0_s);
-			m_ui[T_CONFIRM].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 1.0_s);
+			m_ui[T_TITLE].pos.change(interp::CUBIC, TOP_START_POS, 1.0_s);
+			m_ui[T_CONFIRM].pos.change(interp::CUBIC, BOTTOM_START_POS, 1.0_s);
 			m_ui.hide_all(1.0_s);
 			engine::play_sound(sound::CONFIRM, 0.5f, 0.0f);
 			engine::scorefile.name = input.buffer;

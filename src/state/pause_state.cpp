@@ -194,7 +194,7 @@ float pause_state::blur_strength() const
 void pause_state::set_up_full_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
-	constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
+	constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 	m_ui.emplace<text_widget>(T_PAUSED, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
 							  loc_text_callback{T_PAUSED});
 
@@ -237,7 +237,7 @@ void pause_state::set_up_full_ui()
 	for (std::size_t i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
-		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {500 + offset, y}, {500, y}, 0.5_s};
+		const interpolator<glm::vec2> move_in{interp::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
 		m_ui.emplace<clickable_text_widget>(BUTTONS_REGULAR[i], move_in, tr::align::CENTER, 0.5_s, font::LANGUAGE, 48,
 											loc_text_callback{BUTTONS_REGULAR[i]}, i == 0 ? unpause_scb : status_cb,
 											std::move(action_cbs[i]));
@@ -247,7 +247,7 @@ void pause_state::set_up_full_ui()
 void pause_state::set_up_limited_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
-	constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
+	constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 	const tag title_tag{to_type(m_substate) == game_type::REPLAY ? T_REPLAY_PAUSED : T_TEST_PAUSED};
 	m_ui.emplace<text_widget>(title_tag, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
 							  loc_text_callback{title_tag});
@@ -276,7 +276,7 @@ void pause_state::set_up_limited_ui()
 	for (std::size_t i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
-		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {500 + offset, y}, {500, y}, 0.5_s};
+		const interpolator<glm::vec2> move_in{interp::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
 		m_ui.emplace<clickable_text_widget>(BUTTONS_SPECIAL[i], move_in, tr::align::CENTER, 0.5_s, font::LANGUAGE, 48,
 											loc_text_callback{BUTTONS_SPECIAL[i]}, i == 0 ? unpause_scb : status_cb,
 											std::move(action_cbs[i]));
@@ -286,20 +286,20 @@ void pause_state::set_up_limited_ui()
 void pause_state::set_up_exit_animation()
 {
 	if (to_type(m_substate) == game_type::REGULAR) {
-		m_ui[T_PAUSED].pos.change(interp_mode::CUBE, {500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
+		m_ui[T_PAUSED].pos.change(interp::CUBIC, {500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
 		for (std::size_t i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 			widget& widget{m_ui[BUTTONS_REGULAR[i]]};
-			widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
+			widget.pos.change(interp::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}
 	}
 	else {
 		widget& title{m_ui[to_type(m_substate) == game_type::TEST ? T_TEST_PAUSED : T_REPLAY_PAUSED]};
-		title.pos.change(interp_mode::CUBE, {500, 400 - (BUTTONS_SPECIAL.size() + 1) * 30}, 0.5_s);
+		title.pos.change(interp::CUBIC, {500, 400 - (BUTTONS_SPECIAL.size() + 1) * 30}, 0.5_s);
 		for (std::size_t i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 			widget& widget{m_ui[BUTTONS_SPECIAL[i]]};
-			widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
+			widget.pos.change(interp::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}
 	}
 

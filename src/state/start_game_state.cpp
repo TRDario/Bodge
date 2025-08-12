@@ -22,15 +22,15 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::TOP_ROW_1}, T_START}, {{tr::system::keycode::ESCAPE}, T_EXIT}, {{tr::system::keycode::TOP_ROW_2}, T_EXIT},
 };
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr interpolator<glm::vec2> NAME_MOVE_IN{interp_mode::CUBE, {500, 275}, {500, 375}, 0.5_s};
-constexpr interpolator<glm::vec2> AUTHOR_MOVE_IN{interp_mode::CUBE, {400, 450}, {500, 450}, 0.5_s};
-constexpr interpolator<glm::vec2> DESCRIPTION_MOVE_IN{interp_mode::CUBE, {600, 500}, {500, 500}, 0.5_s};
-constexpr interpolator<glm::vec2> PB_MOVE_IN{interp_mode::CUBE, {500, 695}, {500, 595}, 0.5_s};
-constexpr interpolator<glm::vec2> PREV_MOVE_IN{interp_mode::CUBE, {-50, 500}, {10, 500}, 0.5_s};
-constexpr interpolator<glm::vec2> NEXT_MOVE_IN{interp_mode::CUBE, {1050, 500}, {990, 500}, 0.5_s};
-constexpr interpolator<glm::vec2> START_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 950}, 0.5_s};
-constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> NAME_MOVE_IN{interp::CUBIC, {500, 275}, {500, 375}, 0.5_s};
+constexpr interpolator<glm::vec2> AUTHOR_MOVE_IN{interp::CUBIC, {400, 450}, {500, 450}, 0.5_s};
+constexpr interpolator<glm::vec2> DESCRIPTION_MOVE_IN{interp::CUBIC, {600, 500}, {500, 500}, 0.5_s};
+constexpr interpolator<glm::vec2> PB_MOVE_IN{interp::CUBIC, {500, 695}, {500, 595}, 0.5_s};
+constexpr interpolator<glm::vec2> PREV_MOVE_IN{interp::CUBIC, {-50, 500}, {10, 500}, 0.5_s};
+constexpr interpolator<glm::vec2> NEXT_MOVE_IN{interp::CUBIC, {1050, 500}, {990, 500}, 0.5_s};
+constexpr interpolator<glm::vec2> START_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 950}, 0.5_s};
+constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -66,7 +66,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		m_timer = 0;
 		for (tag tag : GAMEMODE_WIDGETS) {
 			widget& widget{m_ui[tag]};
-			widget.pos.change(interp_mode::CUBE, {750, glm::vec2{widget.pos}.y}, 0.25_s);
+			widget.pos.change(interp::CUBIC, {750, glm::vec2{widget.pos}.y}, 0.25_s);
 			widget.hide(0.25_s);
 		}
 	}};
@@ -78,7 +78,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 		m_timer = 0;
 		for (tag tag : GAMEMODE_WIDGETS) {
 			widget& widget{m_ui[tag]};
-			widget.pos.change(interp_mode::CUBE, {250, glm::vec2{widget.pos}.y}, 0.25_s);
+			widget.pos.change(interp::CUBIC, {250, glm::vec2{widget.pos}.y}, 0.25_s);
 			widget.hide(0.25_s);
 		}
 	}};
@@ -150,7 +150,7 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 				const glm::vec2 old_pos{widget.pos};
 				widget.text_cb = std::move(new_cbs[i]);
 				widget.pos = glm::vec2{old_pos.x < 500 ? 600 : 400, old_pos.y};
-				widget.pos.change(interp_mode::CUBE, {500, old_pos.y}, 0.25_s);
+				widget.pos.change(interp::CUBIC, {500, old_pos.y}, 0.25_s);
 				widget.unhide(0.25_s);
 			}
 		}
@@ -180,14 +180,14 @@ void start_game_state::set_up_exit_animation()
 	widget& author{m_ui[T_AUTHOR]};
 	widget& description{m_ui[T_DESCRIPTION]};
 	widget& pb{m_ui[T_PB]};
-	name.pos.change(interp_mode::CUBE, glm::vec2{name.pos} - glm::vec2{0, 100}, 0.5_s);
-	author.pos.change(interp_mode::CUBE, glm::vec2{author.pos} + glm::vec2{100, 0}, 0.5_s);
-	description.pos.change(interp_mode::CUBE, glm::vec2{description.pos} - glm::vec2{100, 0}, 0.5_s);
-	pb.pos.change(interp_mode::CUBE, glm::vec2{pb.pos} + glm::vec2{0, 100}, 0.5_s);
-	m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui[T_PREV].pos.change(interp_mode::CUBE, {-100, 500}, 0.5_s);
-	m_ui[T_NEXT].pos.change(interp_mode::CUBE, {1100, 500}, 0.5_s);
-	m_ui[T_START].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-	m_ui[T_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	name.pos.change(interp::CUBIC, glm::vec2{name.pos} - glm::vec2{0, 100}, 0.5_s);
+	author.pos.change(interp::CUBIC, glm::vec2{author.pos} + glm::vec2{100, 0}, 0.5_s);
+	description.pos.change(interp::CUBIC, glm::vec2{description.pos} - glm::vec2{100, 0}, 0.5_s);
+	pb.pos.change(interp::CUBIC, glm::vec2{pb.pos} + glm::vec2{0, 100}, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
+	m_ui[T_PREV].pos.change(interp::CUBIC, {-100, 500}, 0.5_s);
+	m_ui[T_NEXT].pos.change(interp::CUBIC, {1100, 500}, 0.5_s);
+	m_ui[T_START].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_EXIT].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

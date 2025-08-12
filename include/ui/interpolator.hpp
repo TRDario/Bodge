@@ -2,11 +2,11 @@
 #include "../global.hpp"
 
 // Interpolation modes.
-enum class interp_mode {
+enum class interp {
 	// Uses linear interpolation from start to end.
 	LERP,
 	// Uses cubic interpolation from start to end.
-	CUBE,
+	CUBIC,
 	// Cycles in a sinusoidal pattern from start to end.
 	CYCLE
 };
@@ -16,7 +16,7 @@ template <class T> struct interpolator {
 	// Constructs an interpolator with a value.
 	constexpr interpolator(T value);
 	// Constructs an interpolator with an ongoing interpolation.
-	constexpr interpolator(interp_mode mode, T start, T end, ticks time);
+	constexpr interpolator(interp mode, T start, T end, ticks time);
 
 	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
 
@@ -28,13 +28,13 @@ template <class T> struct interpolator {
 	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
 
 	// Begins an easing interpolation starting from the current value.
-	void change(interp_mode mode, T end, ticks time);
+	void change(interp mode, T end, ticks time);
 	// Sets the interpolator.
 	interpolator& operator=(T r);
 
   private:
 	// The current interpolation mode.
-	interp_mode m_mode;
+	interp m_mode;
 	// The value at the start of the interpolation.
 	T m_start;
 	// The value at the end of the interpolated (or the current value if no interpolation is in progress).
@@ -49,12 +49,12 @@ template <class T> struct interpolator {
 
 template <class T>
 constexpr interpolator<T>::interpolator(T value)
-	: m_mode{interp_mode::CUBE}, m_end{value}, m_len{0}, m_pos{0}
+	: m_mode{interp::CUBIC}, m_end{value}, m_len{0}, m_pos{0}
 {
 }
 
 template <class T>
-constexpr interpolator<T>::interpolator(interp_mode mode, T start, T end, ticks time)
+constexpr interpolator<T>::interpolator(interp mode, T start, T end, ticks time)
 	: m_mode{mode}, m_start{start}, m_end{end}, m_len{static_cast<std::uint16_t>(time)}, m_pos{0}
 {
 }
@@ -63,11 +63,11 @@ template <class T> void interpolator<T>::update()
 {
 	if (m_len != 0 && ++m_pos == m_len) {
 		switch (m_mode) {
-		case interp_mode::LERP:
-		case interp_mode::CUBE:
+		case interp::LERP:
+		case interp::CUBIC:
 			m_len = 0;
 			break;
-		case interp_mode::CYCLE:
+		case interp::CYCLE:
 			m_pos = 0;
 		}
 	}
@@ -81,14 +81,14 @@ template <class T> interpolator<T>::operator T() const
 	else {
 		float ratio;
 		switch (m_mode) {
-		case interp_mode::LERP:
+		case interp::LERP:
 			ratio = static_cast<float>(m_pos) / m_len;
 			break;
-		case interp_mode::CUBE:
+		case interp::CUBIC:
 			ratio = static_cast<float>(m_pos) / m_len;
 			ratio = ratio < 0.5f ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
 			break;
-		case interp_mode::CYCLE:
+		case interp::CYCLE:
 			ratio = (tr::turns(static_cast<float>(m_pos) / m_len).cos() - 1) / -2.0f;
 			break;
 		}
@@ -96,7 +96,7 @@ template <class T> interpolator<T>::operator T() const
 	}
 }
 
-template <class T> void interpolator<T>::change(interp_mode mode, T end, ticks time)
+template <class T> void interpolator<T>::change(interp mode, T end, ticks time)
 {
 	*this = interpolator{mode, *this, end, static_cast<std::uint16_t>(time)};
 }

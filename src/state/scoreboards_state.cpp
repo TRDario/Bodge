@@ -38,16 +38,16 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::RIGHT}, T_PAGE_I},
 };
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr interpolator<glm::vec2> PLAYER_INFO_MOVE_IN{interp_mode::CUBE, TOP_START_POS, {500, 64}, 0.5_s};
-constexpr interpolator<glm::vec2> NO_SCORES_FOUND_MOVE_IN{interp_mode::CUBE, {600, 483}, {500, 483}, 0.5_s};
-constexpr interpolator<glm::vec2> GAMEMODE_D_MOVE_IN{interp_mode::CUBE, {-50, 892.5}, {10, 892.5}, 0.5_s};
-constexpr interpolator<glm::vec2> GAMEMODE_C_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 900}, 0.5_s};
-constexpr interpolator<glm::vec2> GAMEMODE_I_MOVE_IN{interp_mode::CUBE, {1050, 892.5}, {990, 892.5}, 0.5_s};
-constexpr interpolator<glm::vec2> PAGE_D_MOVE_IN{interp_mode::CUBE, {-50, 942.5}, {10, 942.5}, 0.5_s};
-constexpr interpolator<glm::vec2> PAGE_C_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 950}, 0.5_s};
-constexpr interpolator<glm::vec2> PAGE_I_MOVE_IN{interp_mode::CUBE, {1050, 942.5}, {990, 942.5}, 0.5_s};
-constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> PLAYER_INFO_MOVE_IN{interp::CUBIC, TOP_START_POS, {500, 64}, 0.5_s};
+constexpr interpolator<glm::vec2> NO_SCORES_FOUND_MOVE_IN{interp::CUBIC, {600, 483}, {500, 483}, 0.5_s};
+constexpr interpolator<glm::vec2> GAMEMODE_D_MOVE_IN{interp::CUBIC, {-50, 892.5}, {10, 892.5}, 0.5_s};
+constexpr interpolator<glm::vec2> GAMEMODE_C_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 900}, 0.5_s};
+constexpr interpolator<glm::vec2> GAMEMODE_I_MOVE_IN{interp::CUBIC, {1050, 892.5}, {990, 892.5}, 0.5_s};
+constexpr interpolator<glm::vec2> PAGE_D_MOVE_IN{interp::CUBIC, {-50, 942.5}, {10, 942.5}, 0.5_s};
+constexpr interpolator<glm::vec2> PAGE_C_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 950}, 0.5_s};
+constexpr interpolator<glm::vec2> PAGE_I_MOVE_IN{interp::CUBIC, {1050, 942.5}, {990, 942.5}, 0.5_s};
+constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -140,7 +140,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 		return;
 	}
 	for (std::size_t i = 0; i < SCORES_PER_PAGE; ++i) {
-		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s};
+		const interpolator<glm::vec2> move_in{interp::CUBIC, {i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s};
 		const std::size_t rank{m_page * SCORES_PER_PAGE + i + 1};
 		score* const score{m_selected->scores.size() > i ? std::to_address(m_selected->scores.begin() + i) : nullptr};
 		m_ui.emplace<score_widget>(SCORE_TAGS[i], move_in, tr::align::CENTER, 0.5_s, rank, score);
@@ -185,7 +185,7 @@ std::unique_ptr<tr::state> scoreboards_state::update(tr::duration)
 				widget.rank = m_page * SCORES_PER_PAGE + i + 1;
 				widget.score = nonempty ? std::to_address(m_selected->scores.begin() + m_page * SCORES_PER_PAGE + i) : nullptr;
 				widget.pos = {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y};
-				widget.pos.change(interp_mode::CUBE, {500, glm::vec2{widget.pos}.y}, 0.25_s);
+				widget.pos.change(interp::CUBIC, {500, glm::vec2{widget.pos}.y}, 0.25_s);
 				widget.unhide(0.25_s);
 			}
 		}
@@ -209,30 +209,30 @@ void scoreboards_state::set_up_page_switch_animation()
 {
 	for (std::size_t i = 0; i < SCORES_PER_PAGE; i++) {
 		widget& widget{m_ui[SCORE_TAGS[i]]};
-		widget.pos.change(interp_mode::CUBE, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.25_s);
+		widget.pos.change(interp::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.25_s);
 		widget.hide(0.25_s);
 	}
 }
 
 void scoreboards_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui[T_PLAYER_INFO].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui[T_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
+	m_ui[T_PLAYER_INFO].pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
+	m_ui[T_EXIT].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
 	if (engine::scorefile.categories.empty()) {
-		m_ui[T_NO_SCORES_FOUND].pos.change(interp_mode::CUBE, {400, 483}, 0.5_s);
+		m_ui[T_NO_SCORES_FOUND].pos.change(interp::CUBIC, {400, 483}, 0.5_s);
 	}
 	else {
 		for (std::size_t i = 0; i < SCORES_PER_PAGE; i++) {
 			widget& widget{m_ui[SCORE_TAGS[i]]};
-			widget.pos.change(interp_mode::CUBE, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.5_s);
+			widget.pos.change(interp::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.5_s);
 		}
-		m_ui[T_GAMEMODE_C].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-		m_ui[T_GAMEMODE_D].pos.change(interp_mode::CUBE, {-50, 892.5}, 0.5_s);
-		m_ui[T_GAMEMODE_I].pos.change(interp_mode::CUBE, {1050, 892.5}, 0.5_s);
-		m_ui[T_PAGE_C].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-		m_ui[T_PAGE_D].pos.change(interp_mode::CUBE, {-50, 942.5}, 0.5_s);
-		m_ui[T_PAGE_I].pos.change(interp_mode::CUBE, {1050, 942.5}, 0.5_s);
+		m_ui[T_GAMEMODE_C].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
+		m_ui[T_GAMEMODE_D].pos.change(interp::CUBIC, {-50, 892.5}, 0.5_s);
+		m_ui[T_GAMEMODE_I].pos.change(interp::CUBIC, {1050, 892.5}, 0.5_s);
+		m_ui[T_PAGE_C].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
+		m_ui[T_PAGE_D].pos.change(interp::CUBIC, {-50, 942.5}, 0.5_s);
+		m_ui[T_PAGE_I].pos.change(interp::CUBIC, {1050, 942.5}, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }

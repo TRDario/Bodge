@@ -17,13 +17,13 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ESCAPE}, T_DISCARD}, {{tr::system::keycode::C}, T_DISCARD}, {{tr::system::keycode::TOP_ROW_2}, T_DISCARD},
 };
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr interpolator<glm::vec2> NAME_MOVE_IN{interp_mode::CUBE, {400, 200}, {500, 200}, 0.5_s};
-constexpr interpolator<glm::vec2> NAME_INPUT_MOVE_IN{interp_mode::CUBE, {400, 235}, {500, 235}, 0.5_s};
-constexpr interpolator<glm::vec2> DESCRIPTION_MOVE_IN{interp_mode::CUBE, {600, 440}, {500, 440}, 0.5_s};
-constexpr interpolator<glm::vec2> DESCRIPTION_INPUT_MOVE_IN{interp_mode::CUBE, {600, 475}, {500, 475}, 0.5_s};
-constexpr interpolator<glm::vec2> SAVE_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 950}, 0.5_s};
-constexpr interpolator<glm::vec2> DISCARD_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> NAME_MOVE_IN{interp::CUBIC, {400, 200}, {500, 200}, 0.5_s};
+constexpr interpolator<glm::vec2> NAME_INPUT_MOVE_IN{interp::CUBIC, {400, 235}, {500, 235}, 0.5_s};
+constexpr interpolator<glm::vec2> DESCRIPTION_MOVE_IN{interp::CUBIC, {600, 440}, {500, 440}, 0.5_s};
+constexpr interpolator<glm::vec2> DESCRIPTION_INPUT_MOVE_IN{interp::CUBIC, {600, 475}, {500, 475}, 0.5_s};
+constexpr interpolator<glm::vec2> SAVE_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 950}, 0.5_s};
+constexpr interpolator<glm::vec2> DISCARD_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -149,12 +149,12 @@ float save_replay_state::fade_overlay_opacity() const
 
 void save_replay_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui[T_NAME].pos.change(interp_mode::CUBE, {600, 200}, 0.5_s);
-	m_ui[T_NAME_INPUT].pos.change(interp_mode::CUBE, {600, 235}, 0.5_s);
-	m_ui[T_DESCRIPTION].pos.change(interp_mode::CUBE, {400, 440}, 0.5_s);
-	m_ui[T_DESCRIPTION_INPUT].pos.change(interp_mode::CUBE, {400, 475}, 0.5_s);
-	m_ui[T_SAVE].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-	m_ui[T_DISCARD].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
+	m_ui[T_NAME].pos.change(interp::CUBIC, {600, 200}, 0.5_s);
+	m_ui[T_NAME_INPUT].pos.change(interp::CUBIC, {600, 235}, 0.5_s);
+	m_ui[T_DESCRIPTION].pos.change(interp::CUBIC, {400, 440}, 0.5_s);
+	m_ui[T_DESCRIPTION_INPUT].pos.change(interp::CUBIC, {400, 475}, 0.5_s);
+	m_ui[T_SAVE].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_DISCARD].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

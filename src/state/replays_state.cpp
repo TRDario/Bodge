@@ -29,12 +29,12 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::LEFT}, T_PAGE_D},        {{tr::system::keycode::RIGHT}, T_PAGE_I},
 };
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr interpolator<glm::vec2> NO_REPLAYS_FOUND_MOVE_IN{interp_mode::CUBE, {600, 467}, {500, 467}, 0.5_s};
-constexpr interpolator<glm::vec2> PAGE_D_MOVE_IN{interp_mode::CUBE, {-50, 942.5}, {10, 942.5}, 0.5_s};
-constexpr interpolator<glm::vec2> PAGE_C_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 950}, 0.5_s};
-constexpr interpolator<glm::vec2> PAGE_I_MOVE_IN{interp_mode::CUBE, {1050, 942.5}, {990, 942.5}, 0.5_s};
-constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp_mode::CUBE, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> NO_REPLAYS_FOUND_MOVE_IN{interp::CUBIC, {600, 467}, {500, 467}, 0.5_s};
+constexpr interpolator<glm::vec2> PAGE_D_MOVE_IN{interp::CUBIC, {-50, 942.5}, {10, 942.5}, 0.5_s};
+constexpr interpolator<glm::vec2> PAGE_C_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 950}, 0.5_s};
+constexpr interpolator<glm::vec2> PAGE_I_MOVE_IN{interp::CUBIC, {1050, 942.5}, {990, 942.5}, 0.5_s};
+constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -95,7 +95,7 @@ std::unique_ptr<tr::state> replays_state::update(tr::duration)
 				replay_widget& widget{m_ui.as<replay_widget>(REPLAY_TAGS[i])};
 				widget.it = it != m_replays.end() ? std::optional{it++} : std::nullopt;
 				widget.pos = {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y};
-				widget.pos.change(interp_mode::CUBE, {500, glm::vec2{widget.pos}.y}, 0.25_s);
+				widget.pos.change(interp::CUBIC, {500, glm::vec2{widget.pos}.y}, 0.25_s);
 				widget.unhide(0.25_s);
 			}
 		}
@@ -192,7 +192,7 @@ void replays_state::set_up_ui()
 	for (std::size_t i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		const std::optional<std::map<std::string, replay_header>::iterator> opt_it{it != m_replays.end() ? std::optional{it++}
 																										 : std::nullopt};
-		const interpolator<glm::vec2> move_in{interp_mode::CUBE, {i % 2 == 0 ? 400 : 600, 183 + 150 * i}, {500, 183 + 150 * i}, 0.5_s};
+		const interpolator<glm::vec2> move_in{interp::CUBIC, {i % 2 == 0 ? 400 : 600, 183 + 150 * i}, {500, 183 + 150 * i}, 0.5_s};
 		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], move_in, tr::align::CENTER, 0.5_s, status_cb, replay_acb, opt_it);
 	}
 	m_ui.emplace<text_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
@@ -205,26 +205,26 @@ void replays_state::set_up_page_switch_animation()
 {
 	for (std::size_t i = 0; i < REPLAYS_PER_PAGE; i++) {
 		widget& widget{m_ui[REPLAY_TAGS[i]]};
-		widget.pos.change(interp_mode::CUBE, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.25_s);
+		widget.pos.change(interp::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.25_s);
 		widget.hide(0.25_s);
 	}
 }
 
 void replays_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
-	m_ui[T_EXIT].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
+	m_ui[T_EXIT].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
 	if (m_replays.empty()) {
-		m_ui[T_NO_REPLAYS_FOUND].pos.change(interp_mode::CUBE, {400, 467}, 0.5_s);
+		m_ui[T_NO_REPLAYS_FOUND].pos.change(interp::CUBIC, {400, 467}, 0.5_s);
 	}
 	else {
 		for (std::size_t i = 0; i < REPLAYS_PER_PAGE; i++) {
 			widget& widget{m_ui[REPLAY_TAGS[i]]};
-			widget.pos.change(interp_mode::CUBE, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.5_s);
+			widget.pos.change(interp::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.5_s);
 		}
-		m_ui[T_PAGE_C].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
-		m_ui[T_PAGE_D].pos.change(interp_mode::CUBE, {-50, 942.5}, 0.5_s);
-		m_ui[T_PAGE_I].pos.change(interp_mode::CUBE, {1050, 942.5}, 0.5_s);
+		m_ui[T_PAGE_C].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
+		m_ui[T_PAGE_D].pos.change(interp::CUBIC, {-50, 942.5}, 0.5_s);
+		m_ui[T_PAGE_I].pos.change(interp::CUBIC, {1050, 942.5}, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }

@@ -35,12 +35,12 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::TOP_ROW_5}, T_DISCARD},
 };
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr interpolator<glm::vec2> NAME_MOVE_IN{interp_mode::CUBE, glm::vec2{400, 340}, {500, 340}, 0.5_s};
-constexpr interpolator<glm::vec2> AUTHOR_MOVE_IN{interp_mode::CUBE, glm::vec2{600, 415}, glm::vec2{500, 415}, 0.5_s};
-constexpr interpolator<glm::vec2> DESCRIPTION_MOVE_IN{interp_mode::CUBE, glm::vec2{400, 465}, glm::vec2{500, 465}, 0.5_s};
-constexpr interpolator<glm::vec2> BALL_SETTINGS_MOVE_IN{interp_mode::CUBE, glm::vec2{600, 550}, glm::vec2{500, 550}, 0.5_s};
-constexpr interpolator<glm::vec2> PLAYER_SETTINGS_MOVE_IN{interp_mode::CUBE, glm::vec2{400, 650}, glm::vec2{500, 650}, 0.5_s};
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> NAME_MOVE_IN{interp::CUBIC, glm::vec2{400, 340}, {500, 340}, 0.5_s};
+constexpr interpolator<glm::vec2> AUTHOR_MOVE_IN{interp::CUBIC, glm::vec2{600, 415}, glm::vec2{500, 415}, 0.5_s};
+constexpr interpolator<glm::vec2> DESCRIPTION_MOVE_IN{interp::CUBIC, glm::vec2{400, 465}, glm::vec2{500, 465}, 0.5_s};
+constexpr interpolator<glm::vec2> BALL_SETTINGS_MOVE_IN{interp::CUBIC, glm::vec2{600, 550}, glm::vec2{500, 550}, 0.5_s};
+constexpr interpolator<glm::vec2> PLAYER_SETTINGS_MOVE_IN{interp::CUBIC, glm::vec2{400, 650}, glm::vec2{500, 650}, 0.5_s};
 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
@@ -201,7 +201,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
 		const interpolator<glm::vec2> move_in{
-			interp_mode::CUBE, BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s};
+			interp::CUBIC, BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s};
 		m_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
 											loc_text_callback{BOTTOM_BUTTONS[i]}, bottom_scbs[i], bottom_acbs[i], NO_TOOLTIP, sound);
 	}
@@ -214,38 +214,38 @@ void gamemode_designer_state::set_up_subscreen_animation()
 	widget& description{m_ui[T_DESCRIPTION]};
 	widget& ball_settings{m_ui[T_BALL_SETTINGS]};
 	widget& player_settings{m_ui[T_PLAYER_SETTINGS]};
-	name.pos.change(interp_mode::CUBE, {600, glm::vec2{name.pos}.y}, 0.5_s);
+	name.pos.change(interp::CUBIC, {600, glm::vec2{name.pos}.y}, 0.5_s);
 	name.hide(0.5_s);
-	author.pos.change(interp_mode::CUBE, {400, glm::vec2{author.pos}.y}, 0.5_s);
+	author.pos.change(interp::CUBIC, {400, glm::vec2{author.pos}.y}, 0.5_s);
 	author.hide(0.5_s);
-	description.pos.change(interp_mode::CUBE, {600, glm::vec2{description.pos}.y}, 0.5_s);
+	description.pos.change(interp::CUBIC, {600, glm::vec2{description.pos}.y}, 0.5_s);
 	description.hide(0.5_s);
-	ball_settings.pos.change(interp_mode::CUBE, {400, glm::vec2{ball_settings.pos}.y}, 0.5_s);
+	ball_settings.pos.change(interp::CUBIC, {400, glm::vec2{ball_settings.pos}.y}, 0.5_s);
 	ball_settings.hide(0.5_s);
-	player_settings.pos.change(interp_mode::CUBE, {600, glm::vec2{player_settings.pos}.y}, 0.5_s);
+	player_settings.pos.change(interp::CUBIC, {600, glm::vec2{player_settings.pos}.y}, 0.5_s);
 	player_settings.hide(0.5_s);
 	for (tag tag : BOTTOM_BUTTONS) {
 		widget& widget{m_ui[tag]};
-		widget.pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+		widget.pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
 		widget.hide(0.5_s);
 	}
 }
 
 void gamemode_designer_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.change(interp_mode::CUBE, TOP_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
 	widget& name{m_ui[T_NAME]};
 	widget& author{m_ui[T_AUTHOR]};
 	widget& description{m_ui[T_DESCRIPTION]};
 	widget& ball_settings{m_ui[T_BALL_SETTINGS]};
 	widget& player_settings{m_ui[T_PLAYER_SETTINGS]};
-	name.pos.change(interp_mode::CUBE, {600, glm::vec2{name.pos}.y}, 0.5_s);
-	author.pos.change(interp_mode::CUBE, {400, glm::vec2{author.pos}.y}, 0.5_s);
-	description.pos.change(interp_mode::CUBE, {600, glm::vec2{description.pos}.y}, 0.5_s);
-	ball_settings.pos.change(interp_mode::CUBE, {400, glm::vec2{ball_settings.pos}.y}, 0.5_s);
-	player_settings.pos.change(interp_mode::CUBE, {600, glm::vec2{player_settings.pos}.y}, 0.5_s);
+	name.pos.change(interp::CUBIC, {600, glm::vec2{name.pos}.y}, 0.5_s);
+	author.pos.change(interp::CUBIC, {400, glm::vec2{author.pos}.y}, 0.5_s);
+	description.pos.change(interp::CUBIC, {600, glm::vec2{description.pos}.y}, 0.5_s);
+	ball_settings.pos.change(interp::CUBIC, {400, glm::vec2{ball_settings.pos}.y}, 0.5_s);
+	player_settings.pos.change(interp::CUBIC, {600, glm::vec2{player_settings.pos}.y}, 0.5_s);
 	for (tag tag : BOTTOM_BUTTONS) {
-		m_ui[tag].pos.change(interp_mode::CUBE, BOTTOM_START_POS, 0.5_s);
+		m_ui[tag].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }

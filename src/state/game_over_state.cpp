@@ -32,7 +32,7 @@ constexpr shortcut_table SHORTCUTS{
 
 constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp_mode::CUBE, glm::vec2{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, glm::vec2{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
@@ -48,13 +48,13 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 
 	const float time_h{(500 - (BUTTONS.size() - 0.75f) * 30) -
 					   (engine::line_skip(font::LANGUAGE, 48) + 4 + engine::line_skip(font::LANGUAGE, 24)) / 2};
-	const interpolator<glm::vec2> time_move_in{interp_mode::CUBE, {400, time_h}, {500, time_h}, 0.5_s};
+	const interpolator<glm::vec2> time_move_in{interp::CUBIC, {400, time_h}, {500, time_h}, 0.5_s};
 	text_callback time_tcb{string_text_callback{timer_text(m_game->result())}};
 	m_ui.emplace<text_widget>(T_TIME, time_move_in, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
 							  std::move(time_tcb), "FFFF00C0"_rgba8);
 
 	const float pb_h{time_h + engine::line_skip(font::LANGUAGE, 48) + 4};
-	const interpolator<glm::vec2> pb_move_in{interp_mode::CUBE, {600, pb_h}, {500, pb_h}, 0.5_s};
+	const interpolator<glm::vec2> pb_move_in{interp::CUBIC, {600, pb_h}, {500, pb_h}, 0.5_s};
 	text_callback pb_tcb;
 	if (prev_pb < m_game->result()) {
 		pb_tcb = loc_text_callback{"new_pb"};
@@ -93,7 +93,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
-		const interpolator<glm::vec2> pos{interp_mode::CUBE, {500 + offset, y}, {500, y}, 0.5_s};
+		const interpolator<glm::vec2> pos{interp::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
 		m_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER, 0.5_s, font::LANGUAGE, 48, loc_text_callback{BUTTONS[i]},
 											status_cb, std::move(action_cbs[i]));
 	}
@@ -191,15 +191,15 @@ float game_over_state::blur_strength() const
 
 void game_over_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.change(interp_mode::CUBE, {500, TITLE_Y - 100}, 0.5_s);
+	m_ui[T_TITLE].pos.change(interp::CUBIC, {500, TITLE_Y - 100}, 0.5_s);
 	widget& time{m_ui[T_TIME]};
 	widget& pb{m_ui[T_PB]};
-	time.pos.change(interp_mode::CUBE, {400, glm::vec2{time.pos}.y}, 0.5_s);
-	pb.pos.change(interp_mode::CUBE, {600, glm::vec2{pb.pos}.y}, 0.5_s);
+	time.pos.change(interp::CUBIC, {400, glm::vec2{time.pos}.y}, 0.5_s);
+	pb.pos.change(interp::CUBIC, {600, glm::vec2{pb.pos}.y}, 0.5_s);
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		widget& widget{m_ui[BUTTONS[i]]};
-		widget.pos.change(interp_mode::CUBE, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
+		widget.pos.change(interp::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }
