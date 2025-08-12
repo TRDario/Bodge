@@ -195,9 +195,9 @@ void replays_state::set_up_ui()
 		const interpolator<glm::vec2> move_in{interp::CUBIC, {i % 2 == 0 ? 400 : 600, 183 + 150 * i}, {500, 183 + 150 * i}, 0.5_s};
 		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], move_in, tr::align::CENTER, 0.5_s, status_cb, replay_acb, opt_it);
 	}
+	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, page_d_scb, page_d_acb);
 	m_ui.emplace<text_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
 							  page_c_tcb);
-	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, page_d_scb, page_d_acb);
 	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_MOVE_IN, tr::align::BOTTOM_RIGHT, 0.5_s, true, page_i_scb, page_i_acb);
 }
 

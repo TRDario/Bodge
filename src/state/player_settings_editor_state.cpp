@@ -8,15 +8,15 @@ constexpr tag T_TITLE{"gamemode_designer"};
 constexpr tag T_SUBTITLE{"player_settings"};
 constexpr tag T_STARTING_LIVES{"starting_lives"};
 constexpr tag T_STARTING_LIVES_D{"starting_lives_d"};
-constexpr tag T_CUR_STARTING_LIVES{"cur_starting_lives"};
+constexpr tag T_STARTING_LIVES_C{"starting_lives_c"};
 constexpr tag T_STARTING_LIVES_I{"starting_lives_i"};
 constexpr tag T_HITBOX_RADIUS{"hitbox_radius"};
 constexpr tag T_HITBOX_RADIUS_D{"hitbox_radius_d"};
-constexpr tag T_CUR_HITBOX_RADIUS{"cur_hitbox_radius"};
+constexpr tag T_HITBOX_RADIUS_C{"hitbox_radius_c"};
 constexpr tag T_HITBOX_RADIUS_I{"hitbox_radius_i"};
 constexpr tag T_INERTIA_FACTOR{"inertia_factor"};
 constexpr tag T_INERTIA_FACTOR_D{"inertia_factor_d"};
-constexpr tag T_CUR_INERTIA_FACTOR{"cur_inertia_factor"};
+constexpr tag T_INERTIA_FACTOR_C{"inertia_factor_c"};
 constexpr tag T_INERTIA_FACTOR_I{"inertia_factor_i"};
 constexpr tag T_EXIT{"exit"};
 
@@ -27,9 +27,8 @@ constexpr std::array<label, 3> LABELS{{
 	{T_INERTIA_FACTOR, "inertia_factor_tt"},
 }};
 // Right-aligned widgets.
-constexpr std::array<tag, 9> RIGHT_WIDGETS{T_STARTING_LIVES_D, T_CUR_STARTING_LIVES, T_STARTING_LIVES_I,
-										   T_HITBOX_RADIUS_D,  T_CUR_HITBOX_RADIUS,  T_HITBOX_RADIUS_I,
-										   T_INERTIA_FACTOR_D, T_CUR_INERTIA_FACTOR, T_INERTIA_FACTOR_I};
+constexpr std::array<tag, 9> RIGHT_WIDGETS{T_STARTING_LIVES_D, T_STARTING_LIVES_C, T_STARTING_LIVES_I, T_HITBOX_RADIUS_D, T_HITBOX_RADIUS_C,
+										   T_HITBOX_RADIUS_I,  T_INERTIA_FACTOR_D, T_INERTIA_FACTOR_C, T_INERTIA_FACTOR_I};
 
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ESCAPE}, T_EXIT},
@@ -123,22 +122,22 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 							  loc_text_callback{T_SUBTITLE});
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, STARTING_LIVES_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_lives_d_scb,
 							   starting_lives_d_acb);
+	m_ui.emplace<text_widget>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_starting_lives_tcb);
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, STARTING_LIVES_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, starting_lives_i_scb,
 							   starting_lives_i_acb);
-	m_ui.emplace<text_widget>(T_CUR_STARTING_LIVES, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_starting_lives_tcb);
+	m_ui.emplace<text_widget>(T_HITBOX_RADIUS_C, HITBOX_RADIUS_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_hitbox_radius_tcb);
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, HITBOX_RADIUS_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, hitbox_radius_d_scb,
 							   hitbox_radius_d_acb);
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_I, HITBOX_RADIUS_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, hitbox_radius_i_scb,
 							   hitbox_radius_i_acb);
-	m_ui.emplace<text_widget>(T_CUR_HITBOX_RADIUS, HITBOX_RADIUS_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_hitbox_radius_tcb);
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_D, INERTIA_FACTOR_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, inertia_factor_d_scb,
 							   inertia_factor_d_acb);
+	m_ui.emplace<text_widget>(T_INERTIA_FACTOR_C, INERTIA_FACTOR_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
+							  tr::system::ttf_style::NORMAL, 48, cur_inertia_factor_tcb);
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_I, INERTIA_FACTOR_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, inertia_factor_i_scb,
 							   inertia_factor_i_acb);
-	m_ui.emplace<text_widget>(T_CUR_INERTIA_FACTOR, INERTIA_FACTOR_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_inertia_factor_tcb);
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
 		const label& label{LABELS[i]};
 		const interpolator<glm::vec2> move_in{interp::CUBIC, {-50, 450 + i * 75}, {15, 450 + i * 75}, 0.5_s};
