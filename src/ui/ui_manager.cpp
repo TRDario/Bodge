@@ -17,17 +17,204 @@ widget& ui_manager::operator[](tag tag)
 
 //
 
-void ui_manager::move_input_focus_forward() {}
-
-void ui_manager::move_input_focus_backward() {}
-
-void ui_manager::clear_input_focus()
+void ui_manager::set_selection(tag tag)
 {
 	if (m_selected != nullptr) {
-		tr::system::disable_text_input_events();
+		if (m_selected->second->writable()) {
+			tr::system::disable_text_input_events();
+		}
 		m_selected->second->on_unselected();
+	}
+
+	if (tag == nullptr) {
 		m_selected = nullptr;
-		engine::play_sound(sound::CANCEL, 0.5f, 0.0f);
+	}
+	else {
+		TR_ASSERT(m_widgets.contains(tag), "Tried to select nonexistant widget '{}'.", tag);
+		TR_ASSERT(m_widgets[tag]->interactible(), "Tried to select non-interactible widget '{}'.", tag);
+		m_selected = &*m_widgets.find(tag);
+	}
+
+	if (m_selected != nullptr) {
+		if (m_selected->second->writable()) {
+			tr::system::enable_text_input_events();
+		}
+		m_selected->second->on_selected();
+		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+	}
+}
+
+void ui_manager::select_first()
+{
+	for (const selection_tree_row& row : m_selection_tree) {
+		for (tag tag : row) {
+			auto it{m_widgets.find(tag)};
+			if (it != m_widgets.end() && it->second->interactible()) {
+				set_selection(it->first);
+				return;
+			}
+		}
+	}
+}
+
+void ui_manager::select_last()
+{
+	for (const selection_tree_row& row : std::views::reverse(m_selection_tree)) {
+		for (tag tag : std::views::reverse(row)) {
+			auto it{m_widgets.find(tag)};
+			if (it != m_widgets.end() && it->second->interactible()) {
+				set_selection(it->first);
+				return;
+			}
+		}
+	}
+}
+
+void ui_manager::select_next()
+{
+	if (m_selected == nullptr) {
+		select_first();
+	}
+	else {
+		m_selected->second->on_unselected();
+		for (auto row_it = m_selection_tree.begin(); row_it != m_selection_tree.end(); ++row_it) {
+			for (auto it = row_it->begin(); it != row_it->end(); ++it) {
+				if (*it == m_selected->first) {
+					if (std::next(it) != row_it->end()) {
+						set_selection(*std::next(it));
+					}
+					else if (std::next(row_it) != m_selection_tree.end()) {
+						set_selection(*std::next(row_it)->begin());
+					}
+					else {
+						set_selection(*m_selection_tree.begin()->begin());
+					}
+					return;
+				}
+			}
+		}
+	}
+}
+
+void ui_manager::select_prev()
+{
+	if (m_selected == nullptr) {
+		select_last();
+	}
+	else {
+		m_selected->second->on_unselected();
+		const auto reverse_tree{std::views::reverse(m_selection_tree)};
+		for (auto row_it = reverse_tree.begin(); row_it != reverse_tree.end(); ++row_it) {
+			const auto reverse_row{std::views::reverse(*row_it)};
+			for (auto it = reverse_row.begin(); it != reverse_row.end(); ++it) {
+				if (*it == m_selected->first) {
+					if (std::next(it) != reverse_row.end()) {
+						set_selection(*std::next(it));
+					}
+					else if (std::next(row_it) != reverse_tree.end()) {
+						set_selection(*std::next(row_it)->begin());
+					}
+					else {
+						set_selection(*std::prev(std::prev(m_selection_tree.end())->end()));
+					}
+					return;
+				}
+			}
+		}
+	}
+}
+
+void ui_manager::select_up()
+{
+	if (m_selected == nullptr) {
+		select_last();
+	}
+	else {
+		m_selected->second->on_unselected();
+		const auto reverse_tree{std::views::reverse(m_selection_tree)};
+		for (auto row_it = reverse_tree.begin(); row_it != reverse_tree.end(); ++row_it) {
+			const auto reverse_row{std::views::reverse(*row_it)};
+			for (auto it = reverse_row.begin(); it != reverse_row.end(); ++it) {
+				if (*it == m_selected->first) {
+					const std::size_t offset{static_cast<std::size_t>((it.base() - 1) - row_it->begin())};
+					if (std::next(row_it) != reverse_tree.end()) {
+						set_selection(std::next(row_it)->begin()[std::min(offset, std::next(row_it)->size() - 1)]);
+					}
+					else {
+						set_selection(
+							std::prev(m_selection_tree.end())->begin()[std::min(offset, std::prev(m_selection_tree.end())->size() - 1)]);
+					}
+					break;
+				}
+			}
+		}
+	}
+}
+
+void ui_manager::select_down()
+{
+	if (m_selected == nullptr) {
+		select_first();
+	}
+	else {
+		m_selected->second->on_unselected();
+		for (auto row_it = m_selection_tree.begin(); row_it != m_selection_tree.end(); ++row_it) {
+			for (auto it = row_it->begin(); it != row_it->end(); ++it) {
+				if (*it == m_selected->first) {
+					const std::size_t offset{static_cast<std::size_t>(it - row_it->begin())};
+					if (std::next(row_it) != m_selection_tree.end()) {
+						set_selection(std::next(row_it)->begin()[std::min(offset, std::next(row_it)->size() - 1)]);
+					}
+					else {
+						set_selection(*m_selection_tree.begin()->begin());
+						set_selection(m_selection_tree.begin()->begin()[std::min(offset, m_selection_tree.begin()->size() - 1)]);
+					}
+					break;
+				}
+			}
+		}
+	}
+}
+
+void ui_manager::select_left()
+{
+	if (m_selected != nullptr) {
+		m_selected->second->on_unselected();
+		const auto reverse_tree{std::views::reverse(m_selection_tree)};
+		for (auto row_it = reverse_tree.begin(); row_it != reverse_tree.end(); ++row_it) {
+			const auto reverse_row{std::views::reverse(*row_it)};
+			for (auto it = reverse_row.begin(); it != reverse_row.end(); ++it) {
+				if (*it == m_selected->first) {
+					if (std::next(it) != reverse_row.end()) {
+						set_selection(*std::next(it));
+					}
+					else {
+						set_selection(*row_it->begin());
+					}
+					return;
+				}
+			}
+		}
+	}
+}
+
+void ui_manager::select_right()
+{
+	if (m_selected != nullptr) {
+		m_selected->second->on_unselected();
+		for (auto row_it = m_selection_tree.begin(); row_it != m_selection_tree.end(); ++row_it) {
+			for (auto it = row_it->begin(); it != row_it->end(); ++it) {
+				if (*it == m_selected->first) {
+					if (std::next(it) != row_it->end()) {
+						set_selection(*std::next(it));
+					}
+					else {
+						set_selection(*row_it->begin());
+					}
+					return;
+				}
+			}
+		}
 	}
 }
 
@@ -135,15 +322,27 @@ void ui_manager::handle_event(const tr::system::event& event)
 
 		if (key_down.key == tr::system::keycode::TAB) {
 			if (key_down.mods == tr::system::keymod::SHIFT) {
-				move_input_focus_backward();
+				select_prev();
 			}
 			else {
-				move_input_focus_forward();
+				select_next();
 			}
+		}
+		else if (key_down == tr::system::key_chord{tr::system::keycode::UP}) {
+			select_up();
+		}
+		else if (key_down == tr::system::key_chord{tr::system::keycode::DOWN}) {
+			select_down();
+		}
+		else if (key_down == tr::system::key_chord{tr::system::keycode::LEFT} && !m_shortcuts.contains({tr::system::keycode::LEFT})) {
+			select_left();
+		}
+		else if (key_down == tr::system::key_chord{tr::system::keycode::RIGHT} && !m_shortcuts.contains({tr::system::keycode::RIGHT})) {
+			select_right();
 		}
 		else if (m_selected != nullptr) {
 			if (key_down == tr::system::key_chord{tr::system::keycode::ESCAPE}) {
-				clear_input_focus();
+				set_selection(nullptr);
 			}
 			else if (m_selected->second->interactible()) {
 				if (m_selected->second->writable()) {
@@ -171,7 +370,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 				}
 				else if (key_down == tr::system::key_chord{tr::system::keycode::ENTER}) {
 					m_selected->second->on_action();
-					clear_input_focus();
+					set_selection(nullptr);
 				}
 			}
 		}
@@ -181,7 +380,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 				widget& widget{(*this)[it->second]};
 				if (widget.interactible()) {
 					widget.on_action();
-					clear_input_focus();
+					set_selection(nullptr);
 				}
 			}
 		}
@@ -202,7 +401,7 @@ void ui_manager::update()
 	}
 
 	if (m_selected != nullptr && !m_selected->second->interactible()) {
-		clear_input_focus();
+		set_selection(nullptr);
 	}
 }
 

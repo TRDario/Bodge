@@ -50,7 +50,7 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 
 	// ACTION CALLBACKS
 
-	const action_callback name_acb{[this] { m_ui.move_input_focus_forward(); }};
+	const action_callback name_acb{[this] { m_ui.select_next(); }};
 	const action_callback save_acb{[this] {
 		const score_flags flags{!m_game->game_over(), engine::cli_settings.game_speed != 1.0f};
 

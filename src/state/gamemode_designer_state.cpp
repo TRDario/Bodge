@@ -145,8 +145,8 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 
 	// ACTION CALLBACKS
 
-	const action_callback name_enter_cb{[this] { m_ui.move_input_focus_forward(); }};
-	const action_callback description_enter_cb{[this] { m_ui.clear_input_focus(); }};
+	const action_callback name_enter_cb{[this] { m_ui.select_next(); }};
+	const action_callback description_enter_cb{[this] { m_ui.set_selection(nullptr); }};
 	const action_callback ball_settings_acb{[this] {
 		m_substate = substate::ENTERING_BALL_SETTINGS_EDITOR;
 		m_timer = 0;

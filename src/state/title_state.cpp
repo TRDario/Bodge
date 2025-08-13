@@ -27,10 +27,9 @@ constexpr std::array<tag, 7> BUTTONS{
 };
 
 constexpr selection_tree SELECTION_TREE{
-	selection_tree_row{T_START_GAME},  selection_tree_row{T_GAMEMODE_DESIGNER},
-	selection_tree_row{T_SCOREBOARDS}, selection_tree_row{T_SCOREBOARDS},
-	selection_tree_row{T_REPLAYS},     selection_tree_row{T_SETTINGS},
-	selection_tree_row{T_CREDITS},     selection_tree_row{T_EXIT},
+	selection_tree_row{T_START_GAME}, selection_tree_row{T_GAMEMODE_DESIGNER}, selection_tree_row{T_SCOREBOARDS},
+	selection_tree_row{T_REPLAYS},    selection_tree_row{T_SETTINGS},          selection_tree_row{T_CREDITS},
+	selection_tree_row{T_EXIT},
 };
 
 constexpr shortcut_table SHORTCUTS{

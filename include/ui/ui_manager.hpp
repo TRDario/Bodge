@@ -36,12 +36,10 @@ class ui_manager {
 
 	///////////////////////////////////////////////////////////// INPUT FOCUS /////////////////////////////////////////////////////////////
 
-	// Moves the input focus to the next writable widget.
-	void move_input_focus_forward();
-	// Moves the input focus to the previous writable widget.
-	void move_input_focus_backward();
-	// Removes the current input focus if there was one.
-	void clear_input_focus();
+	// Sets the selection to a specific widget, or nullptr to unselect the currently-selected widget.
+	void set_selection(tag tag);
+	// Selects the next widget.
+	void select_next();
 
 	///////////////////////////////////////////////////////////// MASS ACTION /////////////////////////////////////////////////////////////
 
@@ -73,4 +71,21 @@ class ui_manager {
 	kv_pair* m_hovered{nullptr};
 	// Pointer to the widget with input focus, or nullptr.
 	kv_pair* m_selected{nullptr};
+
+	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
+
+	// Selects the first widget.
+	void select_first();
+	// Selects the last widget.
+	void select_last();
+	// Selects the previous widget.
+	void select_prev();
+	// Selects the widget above.
+	void select_up();
+	// Selects the widget below.
+	void select_down();
+	// Selects the widget to the left.
+	void select_left();
+	// Select the widget to the right.
+	void select_right();
 };
