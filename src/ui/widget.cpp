@@ -326,6 +326,13 @@ bool clickable_text_widget::interactible() const
 	return m_scb();
 }
 
+void clickable_text_widget::on_action()
+{
+	color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
+	m_acb();
+	engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+}
+
 void clickable_text_widget::on_hover()
 {
 	color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
@@ -339,38 +346,15 @@ void clickable_text_widget::on_unhover()
 	color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
-void clickable_text_widget::on_hold_begin()
+void clickable_text_widget::on_held()
 {
 	color = {32, 32, 32, 255};
 	engine::play_sound(sound::HOLD, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
-void clickable_text_widget::on_hold_transfer_in()
+void clickable_text_widget::on_unheld()
 {
-	on_hold_begin();
-}
-
-void clickable_text_widget::on_hold_transfer_out()
-{
-	color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
-}
-
-void clickable_text_widget::on_hold_end()
-{
-	color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
-	m_acb();
-	engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
-}
-
-void clickable_text_widget::on_shortcut()
-{
-	if (interactible()) {
-		m_acb();
-		color = "FFFFFF"_rgba8;
-		color.change(interp::LERP, interactible() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
-		m_override_disabled_color_left = 0.2_s;
-		engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
-	}
+	color.change(interp::LERP, "A0A0A0A0"_rgba8, 0.2_s);
 }
 
 /////////////////////////////////////////////////////////////// IMAGE_WIDGET //////////////////////////////////////////////////////////////
@@ -504,6 +488,13 @@ bool arrow_widget::interactible() const
 	return m_scb();
 }
 
+void arrow_widget::on_action()
+{
+	m_color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
+	m_acb();
+	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+}
+
 void arrow_widget::on_hover()
 {
 	m_color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
@@ -517,38 +508,15 @@ void arrow_widget::on_unhover()
 	m_color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
 }
 
-void arrow_widget::on_hold_begin()
+void arrow_widget::on_held()
 {
 	m_color = {32, 32, 32, 255};
 	engine::play_sound(sound::HOLD, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
-void arrow_widget::on_hold_transfer_in()
-{
-	on_hold_begin();
-}
-
-void arrow_widget::on_hold_transfer_out()
+void arrow_widget::on_unheld()
 {
 	m_color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
-}
-
-void arrow_widget::on_hold_end()
-{
-	m_color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
-	m_acb();
-	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
-}
-
-void arrow_widget::on_shortcut()
-{
-	if (interactible()) {
-		m_acb();
-		m_color = "FFFFFF"_rgba8;
-		m_color.change(interp::LERP, interactible() ? tr::rgba8{160, 160, 160, 160} : tr::rgba8{80, 80, 80, 160}, 0.2_s);
-		m_override_disabled_color_left = 0.2_s;
-		engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
-	}
 }
 
 ////////////////////////////////////////////////////// REPLAY_PLAYBACK_INDICATOR_WIDGET ///////////////////////////////////////////////////

@@ -23,10 +23,10 @@ void ui_manager::move_input_focus_backward() {}
 
 void ui_manager::clear_input_focus()
 {
-	if (m_input != nullptr) {
+	if (m_selected != nullptr) {
 		tr::system::disable_text_input_events();
-		m_input->second->on_lose_focus();
-		m_input = nullptr;
+		m_selected->second->on_unselected();
+		m_selected = nullptr;
 		engine::play_sound(sound::CANCEL, 0.5f, 0.0f);
 	}
 }
@@ -64,7 +64,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 		if (m_hovered != new_hovered) {
 			if (m_hovered != nullptr) {
 				if (engine::held_buttons() == tr::system::mouse_button::LEFT && m_hovered->second->interactible()) {
-					m_hovered->second->on_hold_transfer_out();
+					m_hovered->second->on_unheld();
 				}
 				else {
 					m_hovered->second->on_unhover();
@@ -72,7 +72,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 			}
 			if (new_hovered != nullptr) {
 				if (engine::held_buttons() == tr::system::mouse_button::LEFT && new_hovered->second->interactible()) {
-					new_hovered->second->on_hold_transfer_in();
+					new_hovered->second->on_held();
 				}
 				else {
 					new_hovered->second->on_hover();
@@ -83,11 +83,11 @@ void ui_manager::handle_event(const tr::system::event& event)
 	} break;
 	case tr::system::mouse_down_event::ID: {
 		if (tr::system::mouse_down_event{event}.button == tr::system::mouse_button::LEFT) {
-			const bool something_had_input_focus{m_input != nullptr};
+			const bool something_had_input_focus{m_selected != nullptr};
 			if (something_had_input_focus) {
 				tr::system::disable_text_input_events();
-				m_input->second->on_lose_focus();
-				m_input = nullptr;
+				m_selected->second->on_unselected();
+				m_selected = nullptr;
 			}
 
 			kv_pair* new_hovered{nullptr};
@@ -109,7 +109,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 			}
 
 			if (m_hovered != nullptr && m_hovered->second->interactible()) {
-				m_hovered->second->on_hold_begin();
+				m_hovered->second->on_held();
 			}
 			else if (something_had_input_focus) {
 				engine::play_sound(sound::CANCEL, 0.5f, 0.0f);
@@ -120,11 +120,12 @@ void ui_manager::handle_event(const tr::system::event& event)
 		const tr::system::mouse_up_event mouse_up{event};
 		if (mouse_up.button == tr::system::mouse_button::LEFT) {
 			if (m_hovered != nullptr && m_hovered->second->interactible()) {
-				m_hovered->second->on_hold_end();
+				m_hovered->second->on_unheld();
+				m_hovered->second->on_action();
 				if (m_hovered->second->writable()) {
 					tr::system::enable_text_input_events();
-					m_input = m_hovered;
-					m_hovered->second->on_gain_focus();
+					m_selected = m_hovered;
+					m_hovered->second->on_selected();
 				}
 			}
 		}
@@ -132,62 +133,63 @@ void ui_manager::handle_event(const tr::system::event& event)
 	case tr::system::key_down_event::ID: {
 		const tr::system::key_down_event key_down{event};
 
-		if (m_input != nullptr) {
+		if (key_down.key == tr::system::keycode::TAB) {
+			if (key_down.mods == tr::system::keymod::SHIFT) {
+				move_input_focus_backward();
+			}
+			else {
+				move_input_focus_forward();
+			}
+		}
+		else if (m_selected != nullptr) {
 			if (key_down == tr::system::key_chord{tr::system::keycode::ESCAPE}) {
 				clear_input_focus();
 			}
-			else if (key_down.key == tr::system::keycode::TAB) {
-				if (key_down.mods == tr::system::keymod::SHIFT) {
-					move_input_focus_backward();
-				}
-				else {
-					move_input_focus_forward();
-				}
-			}
-			else if (m_input->second->interactible()) {
-				if (key_down == tr::system::key_chord{tr::system::keycode::C, tr::system::keymod::CTRL}) {
-					m_input->second->on_copy();
-				}
-				else if (key_down == tr::system::key_chord{tr::system::keycode::X, tr::system::keymod::CTRL}) {
-					m_input->second->on_copy();
-					m_input->second->on_clear();
-				}
-				else if (key_down == tr::system::key_chord{tr::system::keycode::V, tr::system::keymod::CTRL}) {
-					m_input->second->on_paste();
-				}
-				else if (key_down.key == tr::system::keycode::BACKSPACE || key_down.key == tr::system::keycode::DELETE) {
-					if (key_down.mods == tr::system::keymod::CTRL) {
-						m_input->second->on_clear();
+			else if (m_selected->second->interactible()) {
+				if (m_selected->second->writable()) {
+					if (key_down == tr::system::key_chord{tr::system::keycode::C, tr::system::keymod::CTRL}) {
+						m_selected->second->on_copy();
 					}
-					else {
-						m_input->second->on_erase();
+					else if (key_down == tr::system::key_chord{tr::system::keycode::X, tr::system::keymod::CTRL}) {
+						m_selected->second->on_copy();
+						m_selected->second->on_clear();
+					}
+					else if (key_down == tr::system::key_chord{tr::system::keycode::V, tr::system::keymod::CTRL}) {
+						m_selected->second->on_paste();
+					}
+					else if (key_down.key == tr::system::keycode::BACKSPACE || key_down.key == tr::system::keycode::DELETE) {
+						if (key_down.mods == tr::system::keymod::CTRL) {
+							m_selected->second->on_clear();
+						}
+						else {
+							m_selected->second->on_erase();
+						}
+					}
+					else if (key_down == tr::system::key_chord{tr::system::keycode::ENTER}) {
+						m_selected->second->on_enter();
 					}
 				}
 				else if (key_down == tr::system::key_chord{tr::system::keycode::ENTER}) {
-					m_input->second->on_enter();
+					m_selected->second->on_action();
+					clear_input_focus();
 				}
 			}
 		}
 		else {
-			if (key_down.key == tr::system::keycode::TAB) {
-				if (key_down.mods == tr::system::keymod::SHIFT) {
-					move_input_focus_backward();
-				}
-				else {
-					move_input_focus_forward();
-				}
-			}
-			else {
-				auto it{m_shortcuts.find({key_down.key, key_down.mods})};
-				if (it != m_shortcuts.end()) {
-					(*this)[it->second].on_shortcut();
+			auto it{m_shortcuts.find({key_down.key, key_down.mods})};
+			if (it != m_shortcuts.end()) {
+				widget& widget{(*this)[it->second]};
+				if (widget.interactible()) {
+					widget.on_action();
+					clear_input_focus();
 				}
 			}
 		}
 	} break;
 	case tr::system::text_input_event::ID:
-		if (m_input != nullptr && m_input->second->interactible() && !(engine::held_keymods() & tr::system::keymod::CTRL)) {
-			m_input->second->on_write(tr::system::text_input_event{event}.text);
+		if (m_selected != nullptr && m_selected->second->interactible() && m_selected->second->writable() &&
+			!(engine::held_keymods() & tr::system::keymod::CTRL)) {
+			m_selected->second->on_write(tr::system::text_input_event{event}.text);
 		}
 		break;
 	}
@@ -199,7 +201,7 @@ void ui_manager::update()
 		widget.update();
 	}
 
-	if (m_input != nullptr && !m_input->second->interactible()) {
+	if (m_selected != nullptr && !m_selected->second->interactible()) {
 		clear_input_focus();
 	}
 }

@@ -72,5 +72,5 @@ class ui_manager {
 	// Pointer to the widget being hovered over, or nullptr.
 	kv_pair* m_hovered{nullptr};
 	// Pointer to the widget with input focus, or nullptr.
-	kv_pair* m_input{nullptr};
+	kv_pair* m_selected{nullptr};
 };

@@ -83,27 +83,22 @@ class widget {
 	// Gets whether the widget is writable.
 	bool writable() const;
 
-	////////////////////////////////////////////////////////// MOUSE INTERACTION //////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////// INTERACTION /////////////////////////////////////////////////////////////
 
+	// Callback for the widget being interacted with.
+	virtual void on_action() {}
 	// Callback for the widget being hovered.
 	virtual void on_hover() {}
 	// Callback for the widget being unhovered.
 	virtual void on_unhover() {}
-	// Callback for the widget being clicked and starting to be held.
-	virtual void on_hold_begin() {}
-	// Callback for the widget being held via hold transfer.
-	virtual void on_hold_transfer_in() {}
-	// Callback for the widget being unheld via hold transfer.
-	virtual void on_hold_transfer_out() {}
-	// Callback for the widget being unheld via click release.
-	virtual void on_hold_end() {}
-
-	//////////////////////////////////////////////////////// KEYBOARD INTERACTION /////////////////////////////////////////////////////////
-
-	// Callback for gaining input focus.
-	virtual void on_gain_focus() {};
-	// Callback for losing input focus.
-	virtual void on_lose_focus() {};
+	// Callback for the widget being held.
+	virtual void on_held() {}
+	// Callback for the widget being unheld.
+	virtual void on_unheld() {}
+	// Callback for the widget being selected via keyboard.
+	virtual void on_selected() {};
+	// Callback for the widget being unselected.
+	virtual void on_unselected() {};
 	// Callback for character insertion.
 	virtual void on_write(std::string_view){};
 	// Callback for when enter is pressed.
@@ -116,8 +111,6 @@ class widget {
 	virtual void on_copy() {};
 	// Callback for text pasting.
 	virtual void on_paste() {};
-	// Callback for one of the widget's shortcuts being pressed.
-	virtual void on_shortcut() {}
 
 	////////////////////////////////////////////////////////////// UPDATING ///////////////////////////////////////////////////////////////
 

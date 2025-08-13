@@ -28,14 +28,11 @@ class text_button_widget : public text_widget_base {
 	void add_to_renderer() override;
 
 	bool interactible() const override;
+	void on_action() override;
 	void on_hover() override;
 	void on_unhover() override;
-	void on_hold_begin() override;
-	void on_hold_transfer_in() override;
-	void on_hold_transfer_out() override;
-	void on_hold_end() override;
-
-	void on_shortcut() override;
+	void on_held() override;
+	void on_unheld() override;
 
   private:
 	// Callback used to determine the status of the widget.
@@ -133,14 +130,11 @@ class clickable_text_widget : public text_widget {
 	void add_to_renderer() override;
 
 	bool interactible() const override;
+	void on_action() override;
 	void on_hover() override;
 	void on_unhover() override;
-	void on_hold_begin() override;
-	void on_hold_transfer_in() override;
-	void on_hold_transfer_out() override;
-	void on_hold_end() override;
-
-	void on_shortcut() override;
+	void on_held() override;
+	void on_unheld() override;
 
   private:
 	// Callback used to determine the status of the widget.
@@ -172,14 +166,13 @@ template <std::size_t S> class line_input_widget : public text_widget {
 	void add_to_renderer() override;
 	bool interactible() const override;
 
+	void on_action() override;
 	void on_hover() override;
 	void on_unhover() override;
-	void on_hold_begin() override;
-	void on_hold_transfer_in() override;
-	void on_hold_transfer_out() override;
-	void on_hold_end() override;
-	void on_gain_focus() override;
-	void on_lose_focus() override;
+	void on_held() override;
+	void on_unheld() override;
+	void on_selected() override;
+	void on_unselected() override;
 	void on_write(std::string_view input) override;
 	void on_enter() override;
 	void on_erase() override;
@@ -216,14 +209,13 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 	void add_to_renderer() override;
 	bool interactible() const override;
 
+	void on_action() override;
 	void on_hover() override;
 	void on_unhover() override;
-	void on_hold_begin() override;
-	void on_hold_transfer_in() override;
-	void on_hold_transfer_out() override;
-	void on_hold_end() override;
-	void on_gain_focus() override;
-	void on_lose_focus() override;
+	void on_held() override;
+	void on_unheld() override;
+	void on_selected() override;
+	void on_unselected() override;
 	void on_write(std::string_view input) override;
 	void on_enter() override;
 	void on_erase() override;
@@ -305,14 +297,11 @@ class arrow_widget : public widget {
 	void update() override;
 
 	bool interactible() const override;
+	void on_action() override;
 	void on_hover() override;
 	void on_unhover() override;
-	void on_hold_begin() override;
-	void on_hold_transfer_in() override;
-	void on_hold_transfer_out() override;
-	void on_hold_end() override;
-
-	void on_shortcut() override;
+	void on_held() override;
+	void on_unheld() override;
 
   protected:
 	// Whether this widget is a right arrow.
