@@ -1,6 +1,6 @@
+#include "../../include/state/replays_state.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/replays_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -22,6 +22,11 @@ constexpr tag T_EXIT{"exit"};
 
 constexpr std::array<tag, REPLAYS_PER_PAGE> REPLAY_TAGS{T_REPLAY_0, T_REPLAY_1, T_REPLAY_2, T_REPLAY_3, T_REPLAY_4};
 
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_REPLAY_0}, selection_tree_row{T_REPLAY_1}, selection_tree_row{T_REPLAY_2},
+	selection_tree_row{T_REPLAY_3}, selection_tree_row{T_REPLAY_4}, selection_tree_row{T_EXIT},
+};
+
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::TOP_ROW_1}, T_REPLAY_0}, {{tr::system::keycode::TOP_ROW_2}, T_REPLAY_1},
 	{{tr::system::keycode::TOP_ROW_3}, T_REPLAY_2}, {{tr::system::keycode::TOP_ROW_4}, T_REPLAY_3},
@@ -42,7 +47,7 @@ replays_state::replays_state()
 	: m_substate{substate::RETURNING_FROM_REPLAY}
 	, m_page{0}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_background_game{std::make_unique<game>(pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
 	, m_replays{load_replay_headers()}
 {
@@ -54,7 +59,7 @@ replays_state::replays_state(std::unique_ptr<game>&& game)
 	: m_substate{substate::IN_REPLAYS}
 	, m_page{0}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_background_game{std::move(game)}
 	, m_replays{load_replay_headers()}
 {
@@ -179,13 +184,13 @@ void replays_state::set_up_ui()
 
 	//
 
-	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_TITLE});
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
 	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
 										loc_text_callback{T_EXIT}, status_cb, exit_acb, NO_TOOLTIP, sound::CANCEL);
 	if (m_replays.empty()) {
-		m_ui.emplace<text_widget>(T_NO_REPLAYS_FOUND, NO_REPLAYS_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE,
-								  tr::system::ttf_style::NORMAL, 64, loc_text_callback{T_NO_REPLAYS_FOUND}, "80808080"_rgba8);
+		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, NO_REPLAYS_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
+								   loc_text_callback{T_NO_REPLAYS_FOUND}, tr::system::ttf_style::NORMAL, 64, "80808080"_rgba8);
 		return;
 	}
 	std::map<std::string, replay_header>::iterator it{m_replays.begin()};
@@ -196,8 +201,8 @@ void replays_state::set_up_ui()
 		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], move_in, tr::align::CENTER, 0.5_s, status_cb, replay_acb, opt_it);
 	}
 	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, page_d_scb, page_d_acb);
-	m_ui.emplace<text_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
-							  page_c_tcb);
+	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, page_c_tcb,
+							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_MOVE_IN, tr::align::BOTTOM_RIGHT, 0.5_s, true, page_i_scb, page_i_acb);
 }
 

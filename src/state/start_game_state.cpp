@@ -1,5 +1,5 @@
-#include "../../include/state/game_state.hpp"
 #include "../../include/state/start_game_state.hpp"
+#include "../../include/state/game_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -16,6 +16,11 @@ constexpr tag T_EXIT{"exit"};
 
 // Gamemode display widgets.
 constexpr std::array<tag, 4> GAMEMODE_WIDGETS{T_NAME, T_AUTHOR, T_DESCRIPTION, T_PB};
+
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_START},
+	selection_tree_row{T_EXIT},
+};
 
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::LEFT}, T_PREV},       {{tr::system::keycode::RIGHT}, T_NEXT},  {{tr::system::keycode::ENTER}, T_START},
@@ -37,7 +42,7 @@ constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, 
 start_game_state::start_game_state(std::unique_ptr<game>&& game)
 	: m_substate{substate::IN_START_GAME}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_background_game{std::move(game)}
 	, m_gamemodes{load_gamemodes()}
 	, m_selected{m_gamemodes.begin()}
@@ -98,16 +103,16 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 
 	//
 
-	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_TITLE});
-	m_ui.emplace<text_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 120,
-							  std::move(name_tcb));
-	m_ui.emplace<text_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32,
-							  std::move(author_tcb));
-	m_ui.emplace<text_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::ITALIC,
-							  32, std::move(description_tcb), "80808080"_rgba8);
-	m_ui.emplace<text_widget>(T_PB, PB_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
-							  std::move(pb_tcb), "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(name_tcb),
+							   tr::system::ttf_style::NORMAL, 120);
+	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(author_tcb),
+							   tr::system::ttf_style::NORMAL, 32);
+	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(description_tcb),
+							   tr::system::ttf_style::ITALIC, 32, "80808080"_rgba8);
+	m_ui.emplace<label_widget>(T_PB, PB_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(pb_tcb), tr::system::ttf_style::NORMAL, 48,
+							   "FFFF00C0"_rgba8);
 	m_ui.emplace<arrow_widget>(T_PREV, PREV_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, status_cb, prev_acb);
 	m_ui.emplace<arrow_widget>(T_NEXT, NEXT_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, status_cb, next_acb);
 	m_ui.emplace<clickable_text_widget>(T_START, START_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
@@ -146,7 +151,7 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 				string_text_callback{std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))},
 			};
 			for (std::size_t i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
-				text_widget& widget{m_ui.as<text_widget>(GAMEMODE_WIDGETS[i])};
+				text_widget_base& widget{m_ui.as<text_widget_base>(GAMEMODE_WIDGETS[i])};
 				const glm::vec2 old_pos{widget.pos};
 				widget.text_cb = std::move(new_cbs[i]);
 				widget.pos = glm::vec2{old_pos.x < 500 ? 600 : 400, old_pos.y};

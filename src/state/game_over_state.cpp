@@ -1,5 +1,5 @@
-#include "../../include/graphics.hpp"
 #include "../../include/state/game_over_state.hpp"
+#include "../../include/graphics.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/save_score_state.hpp"
 #include "../../include/state/title_state.hpp"
@@ -15,6 +15,13 @@ constexpr tag T_SAVE_AND_QUIT{"save_and_quit"};
 constexpr tag T_QUIT{"quit"};
 
 constexpr std::array<tag, 4> BUTTONS{T_SAVE_AND_RESTART, T_RESTART, T_SAVE_AND_QUIT, T_QUIT};
+
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_SAVE_AND_RESTART},
+	selection_tree_row{T_RESTART},
+	selection_tree_row{T_SAVE_AND_QUIT},
+	selection_tree_row{T_QUIT},
+};
 
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, T_SAVE_AND_RESTART},
@@ -39,19 +46,18 @@ constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, glm::vec2{500, TI
 game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_in, ticks prev_pb)
 	: m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_game{std::move(game)}
 	, m_prev_pb{prev_pb}
 {
-	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_TITLE});
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
 
 	const float time_h{(500 - (BUTTONS.size() - 0.75f) * 30) -
 					   (engine::line_skip(font::LANGUAGE, 48) + 4 + engine::line_skip(font::LANGUAGE, 24)) / 2};
 	const interpolator<glm::vec2> time_move_in{interp::CUBIC, {400, time_h}, {500, time_h}, 0.5_s};
-	text_callback time_tcb{string_text_callback{timer_text(m_game->result())}};
-	m_ui.emplace<text_widget>(T_TIME, time_move_in, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  std::move(time_tcb), "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_TIME, time_move_in, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
+							   string_text_callback{timer_text(m_game->result())}, tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
 
 	const float pb_h{time_h + engine::line_skip(font::LANGUAGE, 48) + 4};
 	const interpolator<glm::vec2> pb_move_in{interp::CUBIC, {600, pb_h}, {500, pb_h}, 0.5_s};
@@ -62,8 +68,8 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 	else {
 		pb_tcb = string_text_callback{std::format("{}: {}", engine::loc["pb"], timer_text(pb(engine::scorefile, m_game->gamemode())))};
 	}
-	m_ui.emplace<text_widget>(T_PB, pb_move_in, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 24,
-							  std::move(pb_tcb), "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_PB, pb_move_in, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, std::move(pb_tcb), tr::system::ttf_style::NORMAL,
+							   24, "FFFF00C0"_rgba8);
 
 	const status_callback status_cb{[this] { return m_substate == substate::BLURRING_IN || m_substate == substate::GAME_OVER; }};
 	std::array<action_callback, BUTTONS.size()> action_cbs{

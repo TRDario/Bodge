@@ -6,15 +6,63 @@
 
 /////////////////////////////////////////////////////////////// TEXT WIDGETS //////////////////////////////////////////////////////////////
 
+// Non-interactible label widget.
+class label_widget : public text_widget_base {
+  public:
+	label_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
+				 tr::system::ttf_style style, float font_size, tr::rgba8 color = "A0A0A0A0"_rgba8);
+
+	// Adds the widget to the renderer.
+	void add_to_renderer() override;
+
+  private:
+	// The color of the label.
+	tr::rgba8 m_color;
+};
+
+class text_button_widget : public text_widget_base {
+  public:
+	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
+
+	void update() override;
+	void add_to_renderer() override;
+
+	bool interactible() const override;
+	void on_hover() override;
+	void on_unhover() override;
+	void on_hold_begin() override;
+	void on_hold_transfer_in() override;
+	void on_hold_transfer_out() override;
+	void on_hold_end() override;
+
+	void on_shortcut() override;
+
+  private:
+	// Callback used to determine the status of the widget.
+	status_callback m_scb;
+	// Callback called when the widget is interacted with.
+	action_callback m_acb;
+	// Interpolator used for some effects.
+	interpolator<tr::rgba8> m_interp;
+	// State keeping track of whether the button is selected.
+	bool m_input;
+	// State keeping track of whether the button is held.
+	bool m_held;
+	// Timer for how much post-action flashing there is left.
+	ticks m_action_left;
+};
+
+//
+
 // Base text widget class.
 class text_widget : public widget {
   public:
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a text widget.
-	text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, bool hoverable, text_callback tooltip_cb,
-				bool writable, font font, tr::system::ttf_style style, tr::halign text_alignment, float font_size, int max_width,
-				tr::rgba8 color, text_callback text_cb);
+	text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable, font font,
+				tr::system::ttf_style style, tr::halign text_alignment, float font_size, int max_width, tr::rgba8 color,
+				text_callback text_cb);
 
 	// Creates a common type of text widget: non-interactible, single-line.
 	text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, font font, tr::system::ttf_style style,
@@ -84,7 +132,7 @@ class clickable_text_widget : public text_widget {
 	void update() override;
 	void add_to_renderer() override;
 
-	bool active() const override;
+	bool interactible() const override;
 	void on_hover() override;
 	void on_unhover() override;
 	void on_hold_begin() override;
@@ -122,7 +170,7 @@ template <std::size_t S> class line_input_widget : public text_widget {
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
 	void add_to_renderer() override;
-	bool active() const override;
+	bool interactible() const override;
 
 	void on_hover() override;
 	void on_unhover() override;
@@ -166,7 +214,7 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
-	bool active() const override;
+	bool interactible() const override;
 
 	void on_hover() override;
 	void on_unhover() override;
@@ -256,7 +304,7 @@ class arrow_widget : public widget {
 	void add_to_renderer() override;
 	void update() override;
 
-	bool active() const override;
+	bool interactible() const override;
 	void on_hover() override;
 	void on_unhover() override;
 	void on_hold_begin() override;
@@ -295,7 +343,7 @@ struct replay_playback_indicator_widget : public widget {
 ////////////////////////////////////////////////////////////// MIXED WIDGETS //////////////////////////////////////////////////////////////
 
 // Score widget.
-struct score_widget : public text_widget {
+struct score_widget : public text_widget_base {
 	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
 
 	// Sentinel to not display the rank of the widget.

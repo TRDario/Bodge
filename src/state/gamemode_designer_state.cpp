@@ -1,6 +1,6 @@
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/ball_settings_editor_state.hpp"
 #include "../../include/state/game_state.hpp"
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/title_state.hpp"
 
@@ -17,6 +17,13 @@ constexpr tag T_SAVE{"save"};
 constexpr tag T_DISCARD{"discard"};
 
 constexpr std::array<tag, 3> BOTTOM_BUTTONS{T_TEST, T_SAVE, T_DISCARD};
+
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_NAME},          selection_tree_row{T_DESCRIPTION},
+	selection_tree_row{T_BALL_SETTINGS}, selection_tree_row{T_PLAYER_SETTINGS},
+	selection_tree_row{T_TEST},          selection_tree_row{T_SAVE},
+	selection_tree_row{T_DISCARD},
+};
 
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::B}, T_BALL_SETTINGS},
@@ -45,7 +52,11 @@ constexpr interpolator<glm::vec2> PLAYER_SETTINGS_MOVE_IN{interp::CUBIC, glm::ve
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 gamemode_designer_state::gamemode_designer_state(std::unique_ptr<game>&& game, const gamemode& gamemode, bool returning_from_subscreen)
-	: m_substate{substate::IN_GAMEMODE_DESIGNER}, m_timer{0}, m_ui{SHORTCUTS}, m_background_game{std::move(game)}, m_pending{gamemode}
+	: m_substate{substate::IN_GAMEMODE_DESIGNER}
+	, m_timer{0}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
+	, m_background_game{std::move(game)}
+	, m_pending{gamemode}
 {
 	set_up_ui(returning_from_subscreen);
 }
@@ -53,7 +64,7 @@ gamemode_designer_state::gamemode_designer_state(std::unique_ptr<game>&& game, c
 gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 	: m_substate{substate::RETURNING_FROM_TEST_GAME}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_background_game{std::make_unique<game>(pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
 	, m_pending{gamemode}
 {
@@ -181,17 +192,17 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	//
 
 	if (returning_from_subscreen) {
-		m_ui.emplace<text_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-								  loc_text_callback{T_TITLE});
+		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+								   tr::system::ttf_style::NORMAL, 64);
 	}
 	else {
-		m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-								  loc_text_callback{T_TITLE});
+		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+								   tr::system::ttf_style::NORMAL, 64);
 	}
 	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, tr::system::ttf_style::NORMAL, 120, status_cb,
 										name_enter_cb, m_pending.name);
-	m_ui.emplace<text_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32,
-							  std::move(author_tcb));
+	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(author_tcb),
+							   tr::system::ttf_style::NORMAL, 32);
 	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, tr::system::ttf_style::ITALIC, 32,
 										status_cb, description_enter_cb, m_pending.description);
 	m_ui.emplace<clickable_text_widget>(T_BALL_SETTINGS, BALL_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, 64,

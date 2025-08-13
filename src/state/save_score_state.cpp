@@ -1,7 +1,7 @@
+#include "../../include/state/save_score_state.hpp"
 #include "../../include/state/game_over_state.hpp"
 #include "../../include/state/pause_state.hpp"
 #include "../../include/state/save_replay_state.hpp"
-#include "../../include/state/save_score_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -12,6 +12,12 @@ constexpr tag T_DESCRIPTION{"description"};
 constexpr tag T_INPUT{"input"};
 constexpr tag T_SAVE{"save"};
 constexpr tag T_CANCEL{"cancel"};
+
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_INPUT},
+	selection_tree_row{T_SAVE},
+	selection_tree_row{T_CANCEL},
+};
 
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ENTER}, T_SAVE},    {{tr::system::keycode::S}, T_SAVE},   {{tr::system::keycode::TOP_ROW_1}, T_SAVE},
@@ -32,7 +38,7 @@ save_score_state::save_score_state(std::unique_ptr<active_game>&& game, glm::vec
 	: m_substate{substate_base::SAVING_SCORE | flags}
 	, m_substate_data{.mouse_pos = mouse_pos}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_game{std::move(game)}
 	, m_score{{}, unix_now(), m_game->result(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
@@ -43,7 +49,7 @@ save_score_state::save_score_state(std::unique_ptr<active_game>&& game, ticks pr
 	: m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
 	, m_substate_data{.prev_pb = prev_pb}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_game{std::move(game)}
 	, m_score{{}, unix_now(), m_game->result(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
@@ -139,13 +145,13 @@ void save_score_state::set_up_ui()
 
 	//
 
-	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_TITLE});
-	m_ui.emplace<text_widget>(T_PREVIEW, PREVIEW_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
-							  loc_text_callback{T_PREVIEW});
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_PREVIEW, PREVIEW_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PREVIEW},
+							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<score_widget>(T_SCORE, SCORE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, score_widget::DONT_SHOW_RANK, &m_score);
-	m_ui.emplace<text_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-							  48, loc_text_callback{T_DESCRIPTION});
+	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
+							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, tr::halign::CENTER,
 											  24, scb);
 	m_ui.emplace<clickable_text_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,

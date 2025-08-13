@@ -1,5 +1,5 @@
-#include "../../include/graphics.hpp"
 #include "../../include/state/scoreboards_state.hpp"
+#include "../../include/graphics.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -30,6 +30,12 @@ constexpr std::array<tag, SCORES_PER_PAGE> SCORE_TAGS{
 	T_SCORE_0, T_SCORE_1, T_SCORE_2, T_SCORE_3, T_SCORE_4, T_SCORE_5, T_SCORE_6, T_SCORE_7,
 };
 
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_SCORE_0}, selection_tree_row{T_SCORE_1}, selection_tree_row{T_SCORE_2},
+	selection_tree_row{T_SCORE_3}, selection_tree_row{T_SCORE_4}, selection_tree_row{T_SCORE_5},
+	selection_tree_row{T_SCORE_6}, selection_tree_row{T_SCORE_7}, selection_tree_row{T_EXIT},
+};
+
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ESCAPE}, T_EXIT},
 	{{tr::system::keycode::LEFT, tr::system::keymod::SHIFT}, T_GAMEMODE_D},
@@ -55,7 +61,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	: m_substate{substate::IN_SCORES}
 	, m_page{0}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_background_game{std::move(game)}
 	, m_selected{engine::scorefile.categories.begin()}
 {
@@ -128,15 +134,15 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 
 	//
 
-	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_TITLE});
-	m_ui.emplace<text_widget>(T_PLAYER_INFO, PLAYER_INFO_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 32, player_info_tcb);
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_PLAYER_INFO, PLAYER_INFO_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, player_info_tcb,
+							   tr::system::ttf_style::NORMAL, 32);
 	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
 										loc_text_callback{T_EXIT}, status_cb, exit_acb, NO_TOOLTIP, sound::CANCEL);
 	if (engine::scorefile.categories.empty()) {
-		m_ui.emplace<text_widget>(T_NO_SCORES_FOUND, NO_SCORES_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE,
-								  tr::system::ttf_style::NORMAL, 64, loc_text_callback{T_NO_SCORES_FOUND}, "80808080"_rgba8);
+		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, NO_SCORES_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
+								   loc_text_callback{T_NO_SCORES_FOUND}, tr::system::ttf_style::NORMAL, 64, "80808080"_rgba8);
 		return;
 	}
 	for (std::size_t i = 0; i < SCORES_PER_PAGE; ++i) {
@@ -146,13 +152,12 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 		m_ui.emplace<score_widget>(SCORE_TAGS[i], move_in, tr::align::CENTER, 0.5_s, rank, score);
 	}
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_D, GAMEMODE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, gamemode_change_scb, gamemode_d_acb);
-	m_ui.emplace<text_widget>(T_GAMEMODE_C, GAMEMODE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, true, cur_gamemode_ttcb, false,
-							  font::LANGUAGE, tr::system::ttf_style::NORMAL, tr::halign::CENTER, 48, tr::system::UNLIMITED_WIDTH,
-							  "A0A0A0A0"_rgba8, cur_gamemode_tcb);
+	m_ui.emplace<label_widget>(T_GAMEMODE_C, GAMEMODE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, cur_gamemode_ttcb, cur_gamemode_tcb,
+							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_I, GAMEMODE_I_MOVE_IN, tr::align::BOTTOM_RIGHT, 0.5_s, true, gamemode_change_scb, gamemode_i_acb);
 	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, page_d_scb, page_d_acb);
-	m_ui.emplace<text_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
-							  cur_page_tcb);
+	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, cur_page_tcb,
+							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_MOVE_IN, tr::align::BOTTOM_RIGHT, 0.5_s, true, page_i_scb, page_i_acb);
 }
 

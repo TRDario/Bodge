@@ -1,5 +1,5 @@
-#include "../../include/state/game_state.hpp"
 #include "../../include/state/save_replay_state.hpp"
+#include "../../include/state/game_state.hpp"
 #include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -11,6 +11,13 @@ constexpr tag T_DESCRIPTION{"description"};
 constexpr tag T_DESCRIPTION_INPUT{"description_input"};
 constexpr tag T_SAVE{"save"};
 constexpr tag T_DISCARD{"discard"};
+
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_NAME_INPUT},
+	selection_tree_row{T_DESCRIPTION_INPUT},
+	selection_tree_row{T_SAVE},
+	selection_tree_row{T_DISCARD},
+};
 
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ENTER}, T_SAVE},     {{tr::system::keycode::S}, T_SAVE},    {{tr::system::keycode::TOP_ROW_1}, T_SAVE},
@@ -30,7 +37,7 @@ constexpr interpolator<glm::vec2> DISCARD_MOVE_IN{interp::CUBIC, BOTTOM_START_PO
 save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_screen_flags flags)
 	: m_substate{substate_base::SAVING_REPLAY | flags}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_game{std::move(game)}
 	, m_replay{m_game->replay().header()}
 {
@@ -62,14 +69,14 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 
 	//
 
-	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_TITLE});
-	m_ui.emplace<text_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
-							  loc_text_callback{T_NAME});
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_NAME},
+							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, NAME_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, tr::system::ttf_style::NORMAL, 64,
 										scb, name_acb, std::string_view{});
-	m_ui.emplace<text_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-							  48, loc_text_callback{T_DESCRIPTION});
+	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
+							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10,
 											  tr::halign::CENTER, 24, scb);
 	m_ui.emplace<clickable_text_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,

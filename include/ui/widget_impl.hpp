@@ -11,7 +11,6 @@ line_input_widget<S>::line_input_widget(interpolator<glm::vec2> pos, tr::align a
 	: text_widget{pos,
 				  alignment,
 				  unhide_time,
-				  true,
 				  NO_TOOLTIP,
 				  true,
 				  font::LANGUAGE,
@@ -31,7 +30,7 @@ line_input_widget<S>::line_input_widget(interpolator<glm::vec2> pos, tr::align a
 template <std::size_t S> void line_input_widget<S>::add_to_renderer()
 {
 	const interpolator<tr::rgba8> real_color{color};
-	if (!active()) {
+	if (!interactible()) {
 		color = {80, 80, 80, 160};
 	}
 	else if (buffer.empty()) {
@@ -43,7 +42,7 @@ template <std::size_t S> void line_input_widget<S>::add_to_renderer()
 	color = real_color;
 }
 
-template <std::size_t S> bool line_input_widget<S>::active() const
+template <std::size_t S> bool line_input_widget<S>::interactible() const
 {
 	return m_scb();
 }
@@ -219,7 +218,6 @@ multiline_input_widget<S>::multiline_input_widget(interpolator<glm::vec2> pos, t
 	: text_widget{pos,
 				  alignment,
 				  unhide_time,
-				  true,
 				  NO_TOOLTIP,
 				  true,
 				  font::LANGUAGE,
@@ -243,7 +241,7 @@ template <std::size_t S> glm::vec2 multiline_input_widget<S>::size() const
 
 template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 {
-	tr::rgba color{active() ? tr::rgba8{this->color} : "505050A0"_rgba8};
+	tr::rgba color{interactible() ? tr::rgba8{this->color} : "505050A0"_rgba8};
 	color.a *= opacity();
 
 	const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::UI, 4)};
@@ -254,7 +252,7 @@ template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, static_cast<std::uint8_t>(160 * opacity())});
 
 	const interpolator<tr::rgba8> real_color{this->color};
-	if (!active()) {
+	if (!interactible()) {
 		this->color = {80, 80, 80, 160};
 	}
 	else if (buffer.empty()) {
@@ -266,7 +264,7 @@ template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 	this->color = real_color;
 }
 
-template <std::size_t S> bool multiline_input_widget<S>::active() const
+template <std::size_t S> bool multiline_input_widget<S>::interactible() const
 {
 	return m_scb();
 }

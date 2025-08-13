@@ -7,6 +7,11 @@ constexpr tag T_TITLE{"enter_your_name"};
 constexpr tag T_INPUT{"input"};
 constexpr tag T_CONFIRM{"confirm"};
 
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_INPUT},
+	selection_tree_row{T_CONFIRM},
+};
+
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ENTER}, T_CONFIRM},
 };
@@ -19,7 +24,7 @@ constexpr interpolator<glm::vec2> CONFIRM_MOVE_IN{interp::CUBIC, BOTTOM_START_PO
 name_entry_state::name_entry_state()
 	: m_substate{substate::ENTERING_GAME}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_background_game{std::make_unique<game>(pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
 {
 	engine::play_song("menu", 1.0s);
@@ -41,8 +46,8 @@ name_entry_state::name_entry_state()
 		}
 	}};
 
-	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 1.0_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_TITLE});
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 1.0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
 	m_ui.emplace<line_input_widget<20>>(T_INPUT, glm::vec2{500, 500}, tr::align::CENTER, 1.0_s, tr::system::ttf_style::NORMAL, 64,
 										input_scb, action_cb, std::string_view{});
 	m_ui.emplace<clickable_text_widget>(T_CONFIRM, CONFIRM_MOVE_IN, tr::align::BOTTOM_CENTER, 1.0_s, font::LANGUAGE, 48,

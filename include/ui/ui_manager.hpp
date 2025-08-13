@@ -1,6 +1,12 @@
 #pragma once
 #include "widget.hpp"
 
+// List of widgets considered to be on the same row.
+using selection_tree_row = std::initializer_list<const char*>;
+// Widget selection tree (for keyboard navigation).
+using selection_tree = std::initializer_list<selection_tree_row>;
+
+// Table of widget shortcuts.
 using shortcut_table = std::initializer_list<std::pair<const tr::system::key_chord, tag>>;
 
 // UI manager class.
@@ -9,7 +15,7 @@ class ui_manager {
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a UI manager.
-	ui_manager(shortcut_table shortcuts);
+	ui_manager(selection_tree selection_tree, shortcut_table shortcuts);
 
 	///////////////////////////////////////////////////////// INSERTION AND ACCESS ////////////////////////////////////////////////////////
 
@@ -57,6 +63,8 @@ class ui_manager {
 	// Tag-widget pair.
 	using kv_pair = std::pair<const tag, std::unique_ptr<widget>>;
 
+	// The selection tree.
+	selection_tree m_selection_tree;
 	// The widget list.
 	std::unordered_map<tag, std::unique_ptr<widget>> m_widgets;
 	// Shortcut table.

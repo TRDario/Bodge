@@ -54,6 +54,17 @@ constexpr std::array<tag, 21> RIGHT_WIDGETS{
 	T_VELOCITY_STEP_D,  T_VELOCITY_STEP_C,  T_VELOCITY_STEP_I,
 };
 
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_STARTING_COUNT_D, T_STARTING_COUNT_C, T_STARTING_COUNT_I},
+	selection_tree_row{T_MAX_COUNT_D, T_MAX_COUNT_C, T_MAX_COUNT_I},
+	selection_tree_row{T_SPAWN_INTERVAL_D, T_SPAWN_INTERVAL_C, T_SPAWN_INTERVAL_I},
+	selection_tree_row{T_INITIAL_SIZE_D, T_INITIAL_SIZE_C, T_INITIAL_SIZE_I},
+	selection_tree_row{T_SIZE_STEP_D, T_SIZE_STEP_C, T_SIZE_STEP_I},
+	selection_tree_row{T_INITIAL_VELOCITY_D, T_INITIAL_VELOCITY_C, T_INITIAL_VELOCITY_I},
+	selection_tree_row{T_VELOCITY_STEP_D, T_VELOCITY_STEP_C, T_VELOCITY_STEP_I},
+	selection_tree_row{T_EXIT},
+};
+
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ESCAPE}, T_EXIT},
 	{{tr::system::keycode::TOP_ROW_1}, T_EXIT},
@@ -112,7 +123,7 @@ constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
-	: m_substate{substate::IN_EDITOR}, m_timer{0}, m_ui{SHORTCUTS}, m_background_game{std::move(game)}, m_pending{gamemode}
+	: m_substate{substate::IN_EDITOR}, m_timer{0}, m_ui{SELECTION_TREE, SHORTCUTS}, m_background_game{std::move(game)}, m_pending{gamemode}
 {
 	// STATUS CALLBACKS
 
@@ -225,10 +236,10 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 
 	//
 
-	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_TITLE});
-	m_ui.emplace<text_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32,
-							  loc_text_callback{T_SUBTITLE});
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SUBTITLE},
+							   tr::system::ttf_style::NORMAL, 32);
 	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_D, STARTING_COUNT_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_count_d_scb,
 							   starting_count_d_acb);
 	m_ui.emplace<text_widget>(T_STARTING_COUNT_C, STARTING_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
@@ -269,8 +280,8 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 							   velocity_step_i_acb);
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
 		const interpolator<glm::vec2> move_in{interp::CUBIC, {-50, 298 + i * 75}, {15, 298 + i * 75}, 0.5_s};
-		m_ui.emplace<text_widget>(LABELS[i].tag, move_in, tr::align::CENTER_LEFT, 0.5_s, LABELS[i].tooltip, font::LANGUAGE,
-								  tr::system::ttf_style::NORMAL, 48, loc_text_callback{LABELS[i].tag});
+		m_ui.emplace<label_widget>(LABELS[i].tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
+								   loc_text_callback{LABELS[i].tag}, tr::system::ttf_style::NORMAL, 48);
 	}
 	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
 										loc_text_callback{T_EXIT}, scb, exit_acb, NO_TOOLTIP, sound::CANCEL);

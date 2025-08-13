@@ -1,4 +1,5 @@
 #pragma once
+#include "../fonts.hpp"
 #include "interpolator.hpp"
 
 ////////////////////////////////////////////////////////////////// TYPES //////////////////////////////////////////////////////////////////
@@ -7,8 +8,14 @@
 using text_callback = std::function<std::string()>;
 // Sentinel for a mousable to not have a tooltip.
 inline const text_callback NO_TOOLTIP{};
-// Common callback for text widgets: getting a localization std::string using the widget name as the key.
+// Common callback for text widgets: getting a localization string using the widget name as the key.
 struct loc_text_callback {
+	tag tag;
+
+	std::string operator()() const;
+};
+// Common callback for text widgets: getting a tooltip localization string.
+struct tooltip_loc_text_callback {
 	tag tag;
 
 	std::string operator()() const;
@@ -34,7 +41,7 @@ constexpr ticks DONT_UNHIDE{std::numeric_limits<ticks>::max()};
 class widget {
   public:
 	// Creates a widget.
-	widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, bool hoverable, text_callback tooltip_cb, bool writable);
+	widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable);
 	// Virtual destructor.
 	virtual ~widget() = default;
 
@@ -69,12 +76,12 @@ class widget {
 
 	/////////////////////////////////////////////////////////////// STATUS ////////////////////////////////////////////////////////////////
 
-	// Gets whether the widget is hoverable.
-	bool hoverable() const;
+	// Gets whether the widget is hidden.
+	bool hidden() const;
+	// Gets whether the widget is interactible.
+	virtual bool interactible() const;
 	// Gets whether the widget is writable.
 	bool writable() const;
-	// Gets whether the widget is active.
-	virtual bool active() const;
 
 	////////////////////////////////////////////////////////// MOUSE INTERACTION //////////////////////////////////////////////////////////
 
@@ -124,8 +131,54 @@ class widget {
   private:
 	// The opacity of the widget.
 	interpolator<float> m_opacity;
-	// Whether the widget is hoverable.
-	bool m_hoverable;
 	// Whether the widget is writable.
-	bool m_writable;
+	const bool m_writable;
+};
+
+// Base text widget class.
+class text_widget_base : public widget {
+  public:
+	// Creates a text widget.
+	text_widget_base(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
+					 text_callback text_cb, font font, tr::system::ttf_style style, float font_size, int max_width);
+
+	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
+
+	// The callback used when getting the text of the widget.
+	text_callback text_cb;
+
+	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
+
+	// Gets the size of the widget.
+	glm::vec2 size() const override;
+	// Instructs the widget to release its graphical resources.
+	void release_graphical_resources() override;
+
+  protected:
+	// Adds the widget to the renderer.
+	void add_to_renderer_raw(tr::rgba8 tint);
+
+  private:
+	struct cached_t {
+		// The texture of the text.
+		tr::gfx::texture texture;
+		// The amount of texture that's actually being used.
+		glm::vec2 size;
+		// The text in the texture.
+		std::string text;
+	};
+
+	// The font used when drawing the text.
+	font m_font;
+	// The style used when drawing the font.
+	tr::system::ttf_style m_style;
+	// The font size used when drawing the text.
+	float m_font_size;
+	// The maximum allowed width of the widget's text.
+	int m_max_width;
+	// Cached texture and string.
+	mutable std::optional<cached_t> m_cached;
+
+	// Updates the cache.
+	void update_cache() const;
 };

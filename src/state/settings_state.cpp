@@ -1,5 +1,5 @@
-#include "../../include/audio.hpp"
 #include "../../include/state/settings_state.hpp"
+#include "../../include/audio.hpp"
 #include "../../include/state/title_state.hpp"
 #include "../../include/system.hpp"
 
@@ -86,6 +86,21 @@ constexpr std::array<label, 8> LABELS{{
 	{T_LANGUAGE, NO_TOOLTIP_STR},
 }};
 
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I},
+	selection_tree_row{T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I},
+	selection_tree_row{T_REFRESH_RATE_D, T_REFRESH_RATE_C, T_REFRESH_RATE_I},
+	selection_tree_row{T_MSAA_D, T_MSAA_C, T_MSAA_I},
+	selection_tree_row{T_PRIMARY_HUE_D, T_PRIMARY_HUE_C, T_PRIMARY_HUE_I},
+	selection_tree_row{T_SECONDARY_HUE_D, T_SECONDARY_HUE_C, T_SECONDARY_HUE_I},
+	selection_tree_row{T_SFX_VOLUME_D, T_SFX_VOLUME_C, T_SFX_VOLUME_I},
+	selection_tree_row{T_MUSIC_VOLUME_D, T_MUSIC_VOLUME_C, T_MUSIC_VOLUME_I},
+	selection_tree_row{T_LANGUAGE_C},
+	selection_tree_row{T_REVERT},
+	selection_tree_row{T_APPLY},
+	selection_tree_row{T_EXIT},
+};
+
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::Z, tr::system::keymod::CTRL}, T_REVERT},
 	{{tr::system::keycode::S, tr::system::keymod::CTRL}, T_APPLY},
@@ -138,7 +153,11 @@ constexpr interpolator<glm::vec2> LANGUAGE_C_MOVE_IN{interp::CUBIC, LANGUAGE_STA
 /////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
 
 settings_state::settings_state(std::unique_ptr<game>&& game)
-	: m_substate{substate::IN_SETTINGS}, m_timer{0}, m_ui{SHORTCUTS}, m_background_game{std::move(game)}, m_pending{engine::settings}
+	: m_substate{substate::IN_SETTINGS}
+	, m_timer{0}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
+	, m_background_game{std::move(game)}
+	, m_pending{engine::settings}
 {
 	// STATUS CALLBACKS
 
@@ -301,16 +320,13 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	//
 
-	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_TITLE});
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
 		const label& label{LABELS[i]};
 		const interpolator<glm::vec2> move_in{interp::CUBIC, {-50, 196 + i * 75}, {15, 196 + i * 75}, 0.5_s};
-		label.tooltip != NO_TOOLTIP_STR
-			? m_ui.emplace<text_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, LABELS[i].tooltip, font::LANGUAGE,
-										tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag})
-			: m_ui.emplace<text_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-										48, loc_text_callback{label.tag});
+		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
+								   loc_text_callback{label.tag}, tr::system::ttf_style::NORMAL, 48);
 	}
 
 	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, WINDOW_SIZE_D_MOVE_IN, tr::align::CENTER_LEFT, window_size_arrows_unhide_time, false,

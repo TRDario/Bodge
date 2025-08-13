@@ -1,5 +1,5 @@
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/system.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -30,6 +30,13 @@ constexpr std::array<label, 3> LABELS{{
 constexpr std::array<tag, 9> RIGHT_WIDGETS{T_STARTING_LIVES_D, T_STARTING_LIVES_C, T_STARTING_LIVES_I, T_HITBOX_RADIUS_D, T_HITBOX_RADIUS_C,
 										   T_HITBOX_RADIUS_I,  T_INERTIA_FACTOR_D, T_INERTIA_FACTOR_C, T_INERTIA_FACTOR_I};
 
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_STARTING_LIVES_D, T_STARTING_LIVES_C, T_STARTING_LIVES_I},
+	selection_tree_row{T_HITBOX_RADIUS_D, T_HITBOX_RADIUS_C, T_HITBOX_RADIUS_I},
+	selection_tree_row{T_INERTIA_FACTOR_D, T_INERTIA_FACTOR_C, T_INERTIA_FACTOR_I},
+	selection_tree_row{T_EXIT},
+};
+
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ESCAPE}, T_EXIT},
 	{{tr::system::keycode::TOP_ROW_1}, T_EXIT},
@@ -42,7 +49,7 @@ constexpr glm::vec2 HITBOX_RADIUS_START_POS{1050, 525};
 // Starting position of the inertia factor widgets.
 constexpr glm::vec2 INERTIA_FACTOR_START_POS{1050, 600};
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> TITLE_MOVE_IN{TITLE_POS};
 constexpr interpolator<glm::vec2> SUBTITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
 constexpr interpolator<glm::vec2> STARTING_LIVES_D_MOVE_IN{
 	interp::CUBIC, STARTING_LIVES_START_POS, {790, STARTING_LIVES_START_POS.y}, 0.5_s};
@@ -65,7 +72,7 @@ constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, 
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
-	: m_substate{substate::IN_EDITOR}, m_timer{0}, m_ui{SHORTCUTS}, m_background_game{std::move(game)}, m_pending{gamemode}
+	: m_substate{substate::IN_EDITOR}, m_timer{0}, m_ui{SELECTION_TREE, SHORTCUTS}, m_background_game{std::move(game)}, m_pending{gamemode}
 {
 	// STATUS CALLBACKS
 
@@ -116,10 +123,10 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 
 	//
 
-	m_ui.emplace<text_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_TITLE});
-	m_ui.emplace<text_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 32,
-							  loc_text_callback{T_SUBTITLE});
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SUBTITLE},
+							   tr::system::ttf_style::NORMAL, 32);
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, STARTING_LIVES_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_lives_d_scb,
 							   starting_lives_d_acb);
 	m_ui.emplace<text_widget>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
@@ -141,8 +148,8 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
 		const label& label{LABELS[i]};
 		const interpolator<glm::vec2> move_in{interp::CUBIC, {-50, 450 + i * 75}, {15, 450 + i * 75}, 0.5_s};
-		m_ui.emplace<text_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, LABELS[i].tooltip, font::LANGUAGE,
-								  tr::system::ttf_style::NORMAL, 48, loc_text_callback{label.tag});
+		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
+								   loc_text_callback{label.tag}, tr::system::ttf_style::NORMAL, 48);
 	}
 	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
 										loc_text_callback{T_EXIT}, scb, exit_acb, NO_TOOLTIP, sound::CANCEL);

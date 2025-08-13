@@ -1,8 +1,8 @@
 #include "../../include/ui/ui_manager.hpp"
 #include "../../include/system.hpp"
 
-ui_manager::ui_manager(shortcut_table shortcuts)
-	: m_shortcuts{shortcuts}
+ui_manager::ui_manager(selection_tree selection_tree, shortcut_table shortcuts)
+	: m_selection_tree(selection_tree), m_shortcuts{shortcuts}
 {
 }
 
@@ -53,34 +53,32 @@ void ui_manager::handle_event(const tr::system::event& event)
 {
 	switch (event.type()) {
 	case tr::system::mouse_motion_event::ID: {
-		kv_pair* const old_hovered{m_hovered};
-
-		m_hovered = nullptr;
+		kv_pair* new_hovered{nullptr};
 		for (kv_pair& kv : m_widgets) {
-			if (kv.second->hoverable() && tr::frect2{kv.second->tl(), kv.second->size()}.contains(engine::mouse_pos())) {
-				if (m_hovered == nullptr || !m_hovered->second->active()) {
-					m_hovered = &kv;
-				}
+			if (!kv.second->hidden() && tr::frect2{kv.second->tl(), kv.second->size()}.contains(engine::mouse_pos())) {
+				new_hovered = &kv;
+				break;
 			}
 		}
 
-		if (old_hovered != m_hovered) {
-			if (old_hovered != nullptr) {
-				if (engine::held_buttons() == tr::system::mouse_button::LEFT && old_hovered->second->active()) {
-					old_hovered->second->on_hold_transfer_out();
-				}
-				else {
-					old_hovered->second->on_unhover();
-				}
-			}
+		if (m_hovered != new_hovered) {
 			if (m_hovered != nullptr) {
-				if (engine::held_buttons() == tr::system::mouse_button::LEFT && m_hovered->second->active()) {
-					m_hovered->second->on_hold_transfer_in();
+				if (engine::held_buttons() == tr::system::mouse_button::LEFT && m_hovered->second->interactible()) {
+					m_hovered->second->on_hold_transfer_out();
 				}
 				else {
-					m_hovered->second->on_hover();
+					m_hovered->second->on_unhover();
 				}
 			}
+			if (new_hovered != nullptr) {
+				if (engine::held_buttons() == tr::system::mouse_button::LEFT && new_hovered->second->interactible()) {
+					new_hovered->second->on_hold_transfer_in();
+				}
+				else {
+					new_hovered->second->on_hover();
+				}
+			}
+			m_hovered = new_hovered;
 		}
 	} break;
 	case tr::system::mouse_down_event::ID: {
@@ -92,26 +90,25 @@ void ui_manager::handle_event(const tr::system::event& event)
 				m_input = nullptr;
 			}
 
-			kv_pair* const old_hovered{m_hovered};
-			m_hovered = nullptr;
+			kv_pair* new_hovered{nullptr};
 			for (kv_pair& kv : m_widgets) {
-				if (kv.second->hoverable() && tr::frect2{kv.second->tl(), kv.second->size()}.contains(engine::mouse_pos())) {
-					if (m_hovered == nullptr || !m_hovered->second->active()) {
-						m_hovered = &kv;
-					}
+				if (!kv.second->hidden() && tr::frect2{kv.second->tl(), kv.second->size()}.contains(engine::mouse_pos())) {
+					new_hovered = &kv;
+					break;
 				}
 			}
 
-			if (old_hovered != m_hovered) {
-				if (old_hovered != nullptr) {
-					old_hovered->second->on_unhover();
-				}
+			if (m_hovered != new_hovered) {
 				if (m_hovered != nullptr) {
-					m_hovered->second->on_hover();
+					m_hovered->second->on_unhover();
 				}
+				if (new_hovered != nullptr) {
+					new_hovered->second->on_hover();
+				}
+				m_hovered = new_hovered;
 			}
 
-			if (m_hovered != nullptr && m_hovered->second->active()) {
+			if (m_hovered != nullptr && m_hovered->second->interactible()) {
 				m_hovered->second->on_hold_begin();
 			}
 			else if (something_had_input_focus) {
@@ -122,7 +119,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 	case tr::system::mouse_up_event::ID: {
 		const tr::system::mouse_up_event mouse_up{event};
 		if (mouse_up.button == tr::system::mouse_button::LEFT) {
-			if (m_hovered != nullptr && m_hovered->second->active()) {
+			if (m_hovered != nullptr && m_hovered->second->interactible()) {
 				m_hovered->second->on_hold_end();
 				if (m_hovered->second->writable()) {
 					tr::system::enable_text_input_events();
@@ -147,7 +144,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 					move_input_focus_forward();
 				}
 			}
-			else if (m_input->second->active()) {
+			else if (m_input->second->interactible()) {
 				if (key_down == tr::system::key_chord{tr::system::keycode::C, tr::system::keymod::CTRL}) {
 					m_input->second->on_copy();
 				}
@@ -189,7 +186,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 		}
 	} break;
 	case tr::system::text_input_event::ID:
-		if (m_input != nullptr && m_input->second->active() && !(engine::held_keymods() & tr::system::keymod::CTRL)) {
+		if (m_input != nullptr && m_input->second->interactible() && !(engine::held_keymods() & tr::system::keymod::CTRL)) {
 			m_input->second->on_write(tr::system::text_input_event{event}.text);
 		}
 		break;
@@ -202,7 +199,7 @@ void ui_manager::update()
 		widget.update();
 	}
 
-	if (m_input != nullptr && !m_input->second->active()) {
+	if (m_input != nullptr && !m_input->second->interactible()) {
 		clear_input_focus();
 	}
 }

@@ -1,3 +1,4 @@
+#include "../../include/state/title_state.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
@@ -5,7 +6,6 @@
 #include "../../include/state/scoreboards_state.hpp"
 #include "../../include/state/settings_state.hpp"
 #include "../../include/state/start_game_state.hpp"
-#include "../../include/state/title_state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -26,6 +26,13 @@ constexpr std::array<tag, 7> BUTTONS{
 	T_START_GAME, T_GAMEMODE_DESIGNER, T_SCOREBOARDS, T_REPLAYS, T_SETTINGS, T_CREDITS, T_EXIT,
 };
 
+constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_START_GAME},  selection_tree_row{T_GAMEMODE_DESIGNER},
+	selection_tree_row{T_SCOREBOARDS}, selection_tree_row{T_SCOREBOARDS},
+	selection_tree_row{T_REPLAYS},     selection_tree_row{T_SETTINGS},
+	selection_tree_row{T_CREDITS},     selection_tree_row{T_EXIT},
+};
+
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ENTER}, T_START_GAME},    {{tr::system::keycode::TOP_ROW_1}, T_START_GAME},
 	{{tr::system::keycode::G}, T_GAMEMODE_DESIGNER}, {{tr::system::keycode::TOP_ROW_2}, T_GAMEMODE_DESIGNER},
@@ -43,7 +50,7 @@ constexpr interpolator<glm::vec2> LOGO_BALL_MOVE_IN{interp::CUBIC, {-180, 644}, 
 title_state::title_state()
 	: m_substate{substate::ENTERING_GAME}
 	, m_timer{0}
-	, m_ui{SHORTCUTS}
+	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_background_game{std::make_unique<game>(pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
 {
 	set_up_ui();
@@ -51,7 +58,7 @@ title_state::title_state()
 }
 
 title_state::title_state(std::unique_ptr<game>&& game)
-	: m_substate{substate::IN_TITLE}, m_timer{0}, m_ui{SHORTCUTS}, m_background_game{std::move(game)}
+	: m_substate{substate::IN_TITLE}, m_timer{0}, m_ui{SELECTION_TREE, SHORTCUTS}, m_background_game{std::move(game)}
 {
 	set_up_ui();
 }
@@ -131,11 +138,11 @@ void title_state::set_up_ui()
 							   &engine::settings.primary_hue);
 	m_ui.emplace<image_widget>(T_LOGO_BALL, LOGO_BALL_MOVE_IN, tr::align::CENTER, 2.5_s, 2, "logo_ball", &engine::settings.secondary_hue);
 
-	widget& copyright{m_ui.emplace<text_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, 1_s, font::DEFAULT,
-												tr::system::ttf_style::NORMAL, 24, loc_text_callback{T_COPYRIGHT})};
+	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, 1_s, NO_TOOLTIP,
+												 loc_text_callback{T_COPYRIGHT}, tr::system::ttf_style::NORMAL, 24)};
 	copyright.pos.change(interp::CUBIC, {4, 998 - copyright.size().y}, 1_s);
-	widget& version{m_ui.emplace<text_widget>(T_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, 1_s, font::DEFAULT,
-											  tr::system::ttf_style::NORMAL, 24, loc_text_callback{T_VERSION})};
+	widget& version{m_ui.emplace<label_widget>(T_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, 1_s, NO_TOOLTIP,
+											   loc_text_callback{T_VERSION}, tr::system::ttf_style::NORMAL, 24)};
 	version.pos.change(interp::CUBIC, {996, 998 - version.size().y}, 1_s);
 
 	const status_callback status_cb{[this] { return m_substate == substate::IN_TITLE || m_substate == substate::ENTERING_GAME; }};

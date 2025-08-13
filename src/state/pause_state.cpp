@@ -1,6 +1,6 @@
+#include "../../include/state/pause_state.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
-#include "../../include/state/pause_state.hpp"
 #include "../../include/state/replays_state.hpp"
 #include "../../include/state/save_score_state.hpp"
 #include "../../include/state/title_state.hpp"
@@ -22,6 +22,17 @@ constexpr std::array<tag, 5> BUTTONS_REGULAR{T_UNPAUSE, T_SAVE_AND_RESTART, T_RE
 // The special pause screen buttons.
 constexpr std::array<tag, 3> BUTTONS_SPECIAL{T_UNPAUSE, T_RESTART, T_QUIT};
 
+constexpr selection_tree SELECTION_TREE_REGULAR{
+	selection_tree_row{T_UNPAUSE}, selection_tree_row{T_SAVE_AND_RESTART},
+	selection_tree_row{T_RESTART}, selection_tree_row{T_SAVE_AND_QUIT},
+	selection_tree_row{T_QUIT},
+};
+constexpr selection_tree SELECTION_TREE_SPECIAL{
+	selection_tree_row{T_UNPAUSE},
+	selection_tree_row{T_RESTART},
+	selection_tree_row{T_QUIT},
+};
+
 constexpr shortcut_table SHORTCUTS_REGULAR{
 	{{tr::system::keycode::ESCAPE}, T_UNPAUSE},
 	{{tr::system::keycode::TOP_ROW_1}, T_UNPAUSE},
@@ -34,7 +45,6 @@ constexpr shortcut_table SHORTCUTS_REGULAR{
 	{{tr::system::keycode::Q}, T_QUIT},
 	{{tr::system::keycode::TOP_ROW_5}, T_QUIT},
 };
-
 constexpr shortcut_table SHORTCUTS_SPECIAL{
 	{{tr::system::keycode::ESCAPE}, T_UNPAUSE}, {{tr::system::keycode::TOP_ROW_1}, T_UNPAUSE},
 	{{tr::system::keycode::R}, T_RESTART},      {{tr::system::keycode::TOP_ROW_2}, T_RESTART},
@@ -46,7 +56,8 @@ constexpr shortcut_table SHORTCUTS_SPECIAL{
 pause_state::pause_state(std::unique_ptr<game>&& game, game_type type, glm::vec2 mouse_pos, bool blur_in)
 	: m_substate{(blur_in ? substate_base::PAUSING : substate_base::PAUSED) | type}
 	, m_timer{0}
-	, m_ui{type == game_type::REGULAR ? SHORTCUTS_REGULAR : SHORTCUTS_SPECIAL}
+	, m_ui{type == game_type::REGULAR ? SELECTION_TREE_REGULAR : SELECTION_TREE_SPECIAL,
+		   type == game_type::REGULAR ? SHORTCUTS_REGULAR : SHORTCUTS_SPECIAL}
 	, m_game{std::move(game)}
 	, m_start_mouse_pos{mouse_pos}
 {
@@ -195,8 +206,8 @@ void pause_state::set_up_full_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
 	constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
-	m_ui.emplace<text_widget>(T_PAUSED, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{T_PAUSED});
+	m_ui.emplace<label_widget>(T_PAUSED, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PAUSED},
+							   tr::system::ttf_style::NORMAL, 64);
 
 	const status_callback status_cb{
 		[this] { return to_base(m_substate) == substate_base::PAUSED || to_base(m_substate) == substate_base::PAUSING; }};
@@ -249,8 +260,8 @@ void pause_state::set_up_limited_ui()
 	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
 	constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 	const tag title_tag{to_type(m_substate) == game_type::REPLAY ? T_REPLAY_PAUSED : T_TEST_PAUSED};
-	m_ui.emplace<text_widget>(title_tag, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 64,
-							  loc_text_callback{title_tag});
+	m_ui.emplace<label_widget>(title_tag, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PAUSED},
+							   tr::system::ttf_style::NORMAL, 64);
 
 	const status_callback status_cb{
 		[this] { return to_base(m_substate) == substate_base::PAUSED || to_base(m_substate) == substate_base::PAUSING; }};
