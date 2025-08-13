@@ -137,14 +137,10 @@ void ui_manager::select_up()
 			for (auto it = reverse_row.begin(); it != reverse_row.end(); ++it) {
 				if (*it == m_selected->first) {
 					const std::size_t offset{static_cast<std::size_t>((it.base() - 1) - row_it->begin())};
-					if (std::next(row_it) != reverse_tree.end()) {
-						set_selection(std::next(row_it)->begin()[std::min(offset, std::next(row_it)->size() - 1)]);
-					}
-					else {
-						set_selection(
-							std::prev(m_selection_tree.end())->begin()[std::min(offset, std::prev(m_selection_tree.end())->size() - 1)]);
-					}
-					break;
+					const selection_tree_row& prev_row{std::next(row_it) != reverse_tree.end() ? *std::next(row_it)
+																							   : *std::prev(m_selection_tree.end())};
+					set_selection(prev_row.begin()[std::min(offset, prev_row.size() - 1)]);
+					return;
 				}
 			}
 		}
@@ -162,14 +158,10 @@ void ui_manager::select_down()
 			for (auto it = row_it->begin(); it != row_it->end(); ++it) {
 				if (*it == m_selected->first) {
 					const std::size_t offset{static_cast<std::size_t>(it - row_it->begin())};
-					if (std::next(row_it) != m_selection_tree.end()) {
-						set_selection(std::next(row_it)->begin()[std::min(offset, std::next(row_it)->size() - 1)]);
-					}
-					else {
-						set_selection(*m_selection_tree.begin()->begin());
-						set_selection(m_selection_tree.begin()->begin()[std::min(offset, m_selection_tree.begin()->size() - 1)]);
-					}
-					break;
+					const selection_tree_row& next_row{std::next(row_it) != m_selection_tree.end() ? *std::next(row_it)
+																								   : *m_selection_tree.begin()};
+					set_selection(next_row.begin()[std::min(offset, next_row.size() - 1)]);
+					return;
 				}
 			}
 		}
@@ -370,7 +362,6 @@ void ui_manager::handle_event(const tr::system::event& event)
 				}
 				else if (key_down == tr::system::key_chord{tr::system::keycode::ENTER}) {
 					m_selected->second->on_action();
-					set_selection(nullptr);
 				}
 			}
 		}
