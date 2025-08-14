@@ -186,8 +186,8 @@ void replays_state::set_up_ui()
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::system::ttf_style::NORMAL, 64);
-	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-										loc_text_callback{T_EXIT}, status_cb, exit_acb, NO_TOOLTIP, sound::CANCEL);
+	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
+									 font::LANGUAGE, 48, status_cb, exit_acb, sound::CANCEL);
 	if (m_replays.empty()) {
 		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, NO_REPLAYS_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
 								   loc_text_callback{T_NO_REPLAYS_FOUND}, tr::system::ttf_style::NORMAL, 64, "80808080"_rgba8);

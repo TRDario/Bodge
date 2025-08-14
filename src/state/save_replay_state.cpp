@@ -79,10 +79,10 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10,
 											  tr::halign::CENTER, 24, scb);
-	m_ui.emplace<clickable_text_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-										loc_text_callback{T_SAVE}, save_scb, save_acb);
-	m_ui.emplace<clickable_text_widget>(T_DISCARD, DISCARD_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-										loc_text_callback{T_DISCARD}, scb, discard_acb);
+	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
+									 font::LANGUAGE, 48, save_scb, save_acb, sound::CONFIRM);
+	m_ui.emplace<text_button_widget>(T_DISCARD, DISCARD_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DISCARD},
+									 font::LANGUAGE, 48, scb, discard_acb, sound::CONFIRM);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

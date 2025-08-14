@@ -40,6 +40,8 @@ constexpr ticks DONT_UNHIDE{std::numeric_limits<ticks>::max()};
 // Base widget class.
 class widget {
   public:
+	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
+
 	// Creates a widget.
 	widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable);
 	// Virtual destructor.

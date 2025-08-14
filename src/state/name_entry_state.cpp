@@ -50,8 +50,8 @@ name_entry_state::name_entry_state()
 							   tr::system::ttf_style::NORMAL, 64);
 	m_ui.emplace<line_input_widget<20>>(T_INPUT, glm::vec2{500, 500}, tr::align::CENTER, 1.0_s, tr::system::ttf_style::NORMAL, 64,
 										input_scb, action_cb, std::string_view{});
-	m_ui.emplace<clickable_text_widget>(T_CONFIRM, CONFIRM_MOVE_IN, tr::align::BOTTOM_CENTER, 1.0_s, font::LANGUAGE, 48,
-										loc_text_callback{T_CONFIRM}, confirm_scb, action_cb);
+	m_ui.emplace<text_button_widget>(T_CONFIRM, CONFIRM_MOVE_IN, tr::align::BOTTOM_CENTER, 1.0_s, NO_TOOLTIP, loc_text_callback{T_CONFIRM},
+									 font::LANGUAGE, 48, confirm_scb, action_cb, sound::CONFIRM);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

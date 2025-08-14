@@ -22,6 +22,8 @@ template <class T> struct interpolator {
 
 	// Updates the interpolation.
 	void update();
+	// Gets whether the interpolation is done.
+	bool done() const;
 	// Gets the current value of the interpolator.
 	operator T() const;
 
@@ -71,6 +73,11 @@ template <class T> void interpolator<T>::update()
 			m_pos = 0;
 		}
 	}
+}
+
+template <class T> bool interpolator<T>::done() const
+{
+	return m_len == 0;
 }
 
 template <class T> interpolator<T>::operator T() const

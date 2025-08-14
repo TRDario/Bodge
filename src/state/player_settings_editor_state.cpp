@@ -151,8 +151,8 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
 								   loc_text_callback{label.tag}, tr::system::ttf_style::NORMAL, 48);
 	}
-	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-										loc_text_callback{T_EXIT}, scb, exit_acb, NO_TOOLTIP, sound::CANCEL);
+	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
+									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

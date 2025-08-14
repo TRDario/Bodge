@@ -8,38 +8,62 @@
 template <std::size_t S>
 line_input_widget<S>::line_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style,
 										float font_size, status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
-	: text_widget{pos,
-				  alignment,
-				  unhide_time,
-				  NO_TOOLTIP,
-				  true,
-				  font::LANGUAGE,
-				  style,
-				  tr::halign::CENTER,
-				  font_size,
-				  tr::system::UNLIMITED_WIDTH,
-				  {160, 160, 160, 160},
-				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; }}
+	: text_widget_base{pos,
+					   alignment,
+					   unhide_time,
+					   NO_TOOLTIP,
+					   true,
+					   [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; },
+					   font::LANGUAGE,
+					   style,
+					   font_size,
+					   tr::system::UNLIMITED_WIDTH}
 	, buffer{initial_text}
 	, m_scb{std::move(status_cb)}
 	, m_enter_cb{std::move(enter_cb)}
-	, m_has_focus{false}
+	, m_interp{m_scb() ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8}
+	, m_hovered{false}
+	, m_held{false}
+	, m_selected{false}
 {
 }
 
 template <std::size_t S> void line_input_widget<S>::add_to_renderer()
 {
-	const interpolator<tr::rgba8> real_color{color};
-	if (!interactible()) {
-		color = {80, 80, 80, 160};
+	if (buffer.empty()) {
+		tr::rgba8 color{m_interp};
+		color.r /= 2;
+		color.g /= 2;
+		color.b /= 2;
+		text_widget_base::add_to_renderer_raw(color);
 	}
-	else if (buffer.empty()) {
-		tr::rgba8 real{real_color};
-		color = {static_cast<std::uint8_t>(real.r / 2), static_cast<std::uint8_t>(real.g / 2), static_cast<std::uint8_t>(real.b / 2),
-				 real.a};
+	else {
+		text_widget_base::add_to_renderer_raw(m_interp);
 	}
-	text_widget::add_to_renderer();
-	color = real_color;
+}
+
+template <std::size_t S> void line_input_widget<S>::update()
+{
+	text_widget_base::update();
+	m_interp.update();
+
+	if (interactible()) {
+		if (interactible() && !(m_held || m_hovered || m_selected) && m_interp.done() && m_interp != "A0A0A0A0"_rgba8) {
+			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		}
+		else if (m_interp.done() && (m_hovered || m_selected) && !m_held) {
+			m_interp.change(interp::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 0.2f, 1.0f}),
+							4_s);
+		}
+	}
+	else {
+		m_hovered = false;
+		m_held = false;
+		m_selected = false;
+		if (m_interp.done() && m_interp != "505050A0"_rgba8) {
+			m_interp.change(interp::LERP, "505050A0"_rgba8, 0.1_s);
+		}
+	}
 }
 
 template <std::size_t S> bool line_input_widget<S>::interactible() const
@@ -49,47 +73,63 @@ template <std::size_t S> bool line_input_widget<S>::interactible() const
 
 template <std::size_t S> void line_input_widget<S>::on_action()
 {
-	m_has_focus = true;
-	color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
+	m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
 }
 
 template <std::size_t S> void line_input_widget<S>::on_hover()
 {
-	if (!m_has_focus) {
-		color.change(interp::LERP, {220, 220, 220, 220}, 0.2_s);
-		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+	if (interactible()) {
+		m_hovered = true;
+		if (!m_selected) {
+			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+		}
 	}
 }
 
 template <std::size_t S> void line_input_widget<S>::on_unhover()
 {
-	if (!m_has_focus) {
-		color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
+	if (interactible()) {
+		m_hovered = false;
+		if (!m_selected) {
+			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		}
 	}
 }
 
 template <std::size_t S> void line_input_widget<S>::on_held()
 {
-	color = {32, 32, 32, 255};
-	engine::play_sound(sound::HOLD, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+	if (interactible()) {
+		m_held = true;
+		m_interp = "202020"_rgba8;
+	}
 }
 
 template <std::size_t S> void line_input_widget<S>::on_unheld()
 {
-	color = {160, 160, 160, 160};
+	if (interactible()) {
+		m_held = false;
+	}
 }
 
 template <std::size_t S> void line_input_widget<S>::on_selected()
 {
-	m_has_focus = true;
-	color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
-	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+	if (interactible()) {
+		m_selected = true;
+		if (!m_hovered) {
+			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+		}
+	}
 }
 
 template <std::size_t S> void line_input_widget<S>::on_unselected()
 {
-	m_has_focus = false;
-	color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
+	if (interactible()) {
+		m_selected = false;
+		if (!m_hovered) {
+			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		}
+	}
 }
 
 template <std::size_t S> void line_input_widget<S>::on_write(std::string_view input)
@@ -141,65 +181,66 @@ template <std::size_t S> void line_input_widget<S>::on_paste()
 
 replay_widget::replay_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_scb, auto base_acb,
 							 std::optional<std::map<std::string, replay_header>::iterator> it)
-	: clickable_text_widget{pos,
-							alignment,
-							unhide_time,
-							font::LANGUAGE,
-							40,
-							[this] {
-								if (!this->it.has_value()) {
-									return std::string{"----------------------------------"};
-								}
+	: text_button_widget{pos,
+						 alignment,
+						 unhide_time,
+						 [this] {
+							 if (!this->it.has_value()) {
+								 return std::string{};
+							 }
+							 else {
+								 const replay_header& header{(*this->it)->second};
+								 std::string str{header.description};
+								 if ((header.flags.exited_prematurely || header.flags.modified_game_speed) && !str.empty()) {
+									 str.push_back('\n');
+								 }
+								 if (header.flags.exited_prematurely) {
+									 if (!str.empty()) {
+										 str.push_back('\n');
+									 }
+									 str.append(engine::loc["exited_prematurely"]);
+								 }
+								 if (header.flags.modified_game_speed) {
+									 if (!str.empty()) {
+										 str.push_back('\n');
+									 }
+									 str.append(engine::loc["modified_game_speed"]);
+								 }
+								 return str;
+							 }
+						 },
+						 [this] {
+							 if (!this->it.has_value()) {
+								 return std::string{"----------------------------------"};
+							 }
 
-								replay_header& rpy{(*this->it)->second};
-								const ticks result{rpy.result};
-								const ticks result_m{result / 60_s};
-								const ticks result_s{(result % 60_s) / 1_s};
-								const ticks result_ms{(result % 1_s) * 100 / 1_s};
-								const std::chrono::system_clock::time_point utc_tp{std::chrono::seconds{rpy.timestamp}};
-								const auto tp{std::chrono::current_zone()->std::chrono::time_zone::to_local(utc_tp)};
-								const std::chrono::hh_mm_ss hhmmss{tp - std::chrono::floor<std::chrono::days>(tp)};
-								const std::chrono::year_month_day ymd{std::chrono::floor<std::chrono::days>(tp)};
-								const int year{ymd.year()};
-								const unsigned int month{ymd.month()};
-								const unsigned int day{ymd.day()};
-								const auto hour{hhmmss.hours().count()};
-								const auto minute{hhmmss.minutes().count()};
-								return std::format("{} ({}: {})\n{} | {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", rpy.name,
-												   engine::loc["by"], rpy.player, ::name(rpy.gamemode), result_m, result_s, result_ms, year,
-												   month, day, hour, minute);
-							},
-							[=, this] { return base_scb() && this->it.has_value(); },
-							[=, this] {
-								if (this->it.has_value()) {
-									base_acb(*this->it);
-								}
-							},
-							[this] {
-								if (!this->it.has_value()) {
-									return std::string{};
-								}
-								else {
-									const replay_header& header{(*this->it)->second};
-									std::string str{header.description};
-									if ((header.flags.exited_prematurely || header.flags.modified_game_speed) && !str.empty()) {
-										str.push_back('\n');
-									}
-									if (header.flags.exited_prematurely) {
-										if (!str.empty()) {
-											str.push_back('\n');
-										}
-										str.append(engine::loc["exited_prematurely"]);
-									}
-									if (header.flags.modified_game_speed) {
-										if (!str.empty()) {
-											str.push_back('\n');
-										}
-										str.append(engine::loc["modified_game_speed"]);
-									}
-									return str;
-								}
-							}}
+							 replay_header& rpy{(*this->it)->second};
+							 const ticks result{rpy.result};
+							 const ticks result_m{result / 60_s};
+							 const ticks result_s{(result % 60_s) / 1_s};
+							 const ticks result_ms{(result % 1_s) * 100 / 1_s};
+							 const std::chrono::system_clock::time_point utc_tp{std::chrono::seconds{rpy.timestamp}};
+							 const auto tp{std::chrono::current_zone()->std::chrono::time_zone::to_local(utc_tp)};
+							 const std::chrono::hh_mm_ss hhmmss{tp - std::chrono::floor<std::chrono::days>(tp)};
+							 const std::chrono::year_month_day ymd{std::chrono::floor<std::chrono::days>(tp)};
+							 const int year{ymd.year()};
+							 const unsigned int month{ymd.month()};
+							 const unsigned int day{ymd.day()};
+							 const auto hour{hhmmss.hours().count()};
+							 const auto minute{hhmmss.minutes().count()};
+							 return std::format("{} ({}: {})\n{} | {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", rpy.name,
+												engine::loc["by"], rpy.player, ::name(rpy.gamemode), result_m, result_s, result_ms, year,
+												month, day, hour, minute);
+						 },
+						 font::LANGUAGE,
+						 40,
+						 [=, this] { return base_scb() && this->it.has_value(); },
+						 [=, this] {
+							 if (this->it.has_value()) {
+								 base_acb(*this->it);
+							 }
+						 },
+						 sound::CONFIRM}
 	, it{it}
 {
 }

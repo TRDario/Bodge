@@ -60,7 +60,7 @@ void widget::unhide(ticks time)
 
 bool widget::hidden() const
 {
-	return float{m_opacity} != 1.0f;
+	return float{m_opacity} == 0;
 }
 
 bool widget::interactible() const

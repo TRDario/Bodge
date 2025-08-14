@@ -24,7 +24,7 @@ namespace engine {
 	// System state.
 	struct system_data {
 		// Timer that emits ticking events.
-		tr::timer tick_timer{tr::system::create_tick_timer(240, 0)};
+		tr::timer tick_timer{tr::system::create_tick_timer(240 * cli_settings.game_speed, 0)};
 		// Timer that emits drawing events.
 		tr::timer draw_timer{create_draw_timer()};
 		// State manager.

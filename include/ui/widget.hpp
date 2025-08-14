@@ -9,11 +9,15 @@
 // Non-interactible label widget.
 class label_widget : public text_widget_base {
   public:
+	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
+
 	label_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
 				 tr::system::ttf_style style, float font_size, tr::rgba8 color = "A0A0A0A0"_rgba8);
 
 	// Adds the widget to the renderer.
 	void add_to_renderer() override;
+
+	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
   private:
 	// The color of the label.
@@ -22,6 +26,11 @@ class label_widget : public text_widget_base {
 
 class text_button_widget : public text_widget_base {
   public:
+	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
+
+	text_button_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
+					   font font, float font_size, status_callback status_cb, action_callback action_cb, sound sound);
+
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
 	void update() override;
@@ -33,18 +42,28 @@ class text_button_widget : public text_widget_base {
 	void on_unhover() override;
 	void on_held() override;
 	void on_unheld() override;
+	void on_selected() override;
+	void on_unselected() override;
 
   private:
 	// Callback used to determine the status of the widget.
 	status_callback m_scb;
 	// Callback called when the widget is interacted with.
 	action_callback m_acb;
+	// The sound effect that interacting with the widget plays.
+	sound m_sound;
+
+  protected:
 	// Interpolator used for some effects.
 	interpolator<tr::rgba8> m_interp;
-	// State keeping track of whether the button is selected.
-	bool m_input;
+
+  private:
+	// State keeping track of whether the button is hovered.
+	bool m_hovered;
 	// State keeping track of whether the button is held.
 	bool m_held;
+	// State keeping track of whether the button is selected.
+	bool m_selected;
 	// Timer for how much post-action flashing there is left.
 	ticks m_action_left;
 };
@@ -148,7 +167,7 @@ class clickable_text_widget : public text_widget {
 };
 
 // Widget for inputting a line of text.
-template <std::size_t S> class line_input_widget : public text_widget {
+template <std::size_t S> class line_input_widget : public text_widget_base {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
@@ -164,6 +183,7 @@ template <std::size_t S> class line_input_widget : public text_widget {
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
 	void add_to_renderer() override;
+	void update() override;
 	bool interactible() const override;
 
 	void on_action() override;
@@ -185,8 +205,14 @@ template <std::size_t S> class line_input_widget : public text_widget {
 	status_callback m_scb;
 	// Callback called when enter is pressed.
 	action_callback m_enter_cb;
-	// Keeps track of whether the widget has input focus.
-	bool m_has_focus;
+	// Interpolator used for some effects.
+	interpolator<tr::rgba8> m_interp;
+	// State keeping track of whether the button is hovered.
+	bool m_hovered;
+	// State keeping track of whether the button is held.
+	bool m_held;
+	// State keeping track of whether the button is selected.
+	bool m_selected;
 };
 
 // Widget for inputting multiline text.
@@ -302,18 +328,26 @@ class arrow_widget : public widget {
 	void on_unhover() override;
 	void on_held() override;
 	void on_unheld() override;
+	void on_selected() override;
+	void on_unselected() override;
 
   protected:
-	// Whether this widget is a right arrow.
-	bool m_right;
-	// The tint color.
-	interpolator<tr::rgba8> m_color;
 	// Callback used to determine the status of the widget.
 	status_callback m_scb;
 	// Callback called when the widget is interacted with.
 	action_callback m_acb;
-	// Timer used when overriding the disabled color.
-	ticks m_override_disabled_color_left;
+	// Interpolator used for some effects.
+	interpolator<tr::rgba8> m_interp;
+	// Whether this widget is a right arrow.
+	bool m_right;
+	// State keeping track of whether the button is hovered.
+	bool m_hovered;
+	// State keeping track of whether the button is held.
+	bool m_held;
+	// State keeping track of whether the button is selected.
+	bool m_selected;
+	// Timer for how much post-action flashing there is left.
+	ticks m_action_left;
 };
 
 // Replay playback indicator widget.
@@ -357,7 +391,7 @@ struct score_widget : public text_widget_base {
 };
 
 // Replay widget.
-struct replay_widget : public clickable_text_widget {
+struct replay_widget : public text_button_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	replay_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_scb, auto base_acb,

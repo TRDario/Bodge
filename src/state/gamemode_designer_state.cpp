@@ -205,16 +205,17 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 							   tr::system::ttf_style::NORMAL, 32);
 	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, tr::system::ttf_style::ITALIC, 32,
 										status_cb, description_enter_cb, m_pending.description);
-	m_ui.emplace<clickable_text_widget>(T_BALL_SETTINGS, BALL_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, 64,
-										loc_text_callback{T_BALL_SETTINGS}, status_cb, ball_settings_acb);
-	m_ui.emplace<clickable_text_widget>(T_PLAYER_SETTINGS, PLAYER_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, 64,
-										loc_text_callback{T_PLAYER_SETTINGS}, status_cb, player_settings_acb);
+	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, BALL_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+									 loc_text_callback{T_BALL_SETTINGS}, font::LANGUAGE, 64, status_cb, ball_settings_acb, sound::CONFIRM);
+	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, PLAYER_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+									 loc_text_callback{T_PLAYER_SETTINGS}, font::LANGUAGE, 64, status_cb, player_settings_acb,
+									 sound::CONFIRM);
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
 		const interpolator<glm::vec2> move_in{
 			interp::CUBIC, BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s};
-		m_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-											loc_text_callback{BOTTOM_BUTTONS[i]}, bottom_scbs[i], bottom_acbs[i], NO_TOOLTIP, sound);
+		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
+										 loc_text_callback{BOTTOM_BUTTONS[i]}, font::LANGUAGE, 48, bottom_scbs[i], bottom_acbs[i], sound);
 	}
 }
 

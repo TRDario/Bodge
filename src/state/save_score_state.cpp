@@ -154,10 +154,10 @@ void save_score_state::set_up_ui()
 							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, tr::halign::CENTER,
 											  24, scb);
-	m_ui.emplace<clickable_text_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-										loc_text_callback{T_SAVE}, scb, save_acb);
-	m_ui.emplace<clickable_text_widget>(T_CANCEL, CANCEL_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-										loc_text_callback{T_CANCEL}, scb, cancel_acb, NO_TOOLTIP, sound::CANCEL);
+	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
+									 font::LANGUAGE, 48, scb, save_acb, sound::CONFIRM);
+	m_ui.emplace<text_button_widget>(T_CANCEL, CANCEL_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_CANCEL},
+									 font::LANGUAGE, 48, scb, cancel_acb, sound::CANCEL);
 }
 
 void save_score_state::set_up_exit_animation()

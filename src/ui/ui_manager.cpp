@@ -19,12 +19,7 @@ widget& ui_manager::operator[](tag tag)
 
 void ui_manager::set_selection(tag tag)
 {
-	if (m_selected != nullptr) {
-		if (m_selected->second->writable()) {
-			tr::system::disable_text_input_events();
-		}
-		m_selected->second->on_unselected();
-	}
+	kv_pair* old_selected{m_selected};
 
 	if (tag == nullptr) {
 		m_selected = nullptr;
@@ -35,11 +30,19 @@ void ui_manager::set_selection(tag tag)
 		m_selected = &*m_widgets.find(tag);
 	}
 
-	if (m_selected != nullptr) {
-		if (m_selected->second->writable()) {
-			tr::system::enable_text_input_events();
+	if (m_selected != old_selected) {
+		if (old_selected != nullptr) {
+			if (old_selected->second->writable()) {
+				tr::system::disable_text_input_events();
+			}
+			old_selected->second->on_unselected();
 		}
-		m_selected->second->on_selected();
+		if (m_selected != nullptr) {
+			if (m_selected->second->writable()) {
+				tr::system::enable_text_input_events();
+			}
+			m_selected->second->on_selected();
+		}
 		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 	}
 }
@@ -76,7 +79,6 @@ void ui_manager::select_next()
 		select_first();
 	}
 	else {
-		m_selected->second->on_unselected();
 		for (auto row_it = m_selection_tree.begin(); row_it != m_selection_tree.end(); ++row_it) {
 			for (auto it = row_it->begin(); it != row_it->end(); ++it) {
 				if (*it == m_selected->first) {
@@ -102,7 +104,6 @@ void ui_manager::select_prev()
 		select_last();
 	}
 	else {
-		m_selected->second->on_unselected();
 		const auto reverse_tree{std::views::reverse(m_selection_tree)};
 		for (auto row_it = reverse_tree.begin(); row_it != reverse_tree.end(); ++row_it) {
 			const auto reverse_row{std::views::reverse(*row_it)};
@@ -130,7 +131,6 @@ void ui_manager::select_up()
 		select_last();
 	}
 	else {
-		m_selected->second->on_unselected();
 		const auto reverse_tree{std::views::reverse(m_selection_tree)};
 		for (auto row_it = reverse_tree.begin(); row_it != reverse_tree.end(); ++row_it) {
 			const auto reverse_row{std::views::reverse(*row_it)};
@@ -153,7 +153,6 @@ void ui_manager::select_down()
 		select_first();
 	}
 	else {
-		m_selected->second->on_unselected();
 		for (auto row_it = m_selection_tree.begin(); row_it != m_selection_tree.end(); ++row_it) {
 			for (auto it = row_it->begin(); it != row_it->end(); ++it) {
 				if (*it == m_selected->first) {
@@ -171,7 +170,6 @@ void ui_manager::select_down()
 void ui_manager::select_left()
 {
 	if (m_selected != nullptr) {
-		m_selected->second->on_unselected();
 		const auto reverse_tree{std::views::reverse(m_selection_tree)};
 		for (auto row_it = reverse_tree.begin(); row_it != reverse_tree.end(); ++row_it) {
 			const auto reverse_row{std::views::reverse(*row_it)};
@@ -193,7 +191,6 @@ void ui_manager::select_left()
 void ui_manager::select_right()
 {
 	if (m_selected != nullptr) {
-		m_selected->second->on_unselected();
 		for (auto row_it = m_selection_tree.begin(); row_it != m_selection_tree.end(); ++row_it) {
 			for (auto it = row_it->begin(); it != row_it->end(); ++it) {
 				if (*it == m_selected->first) {
@@ -245,16 +242,12 @@ void ui_manager::handle_event(const tr::system::event& event)
 				if (engine::held_buttons() == tr::system::mouse_button::LEFT && m_hovered->second->interactible()) {
 					m_hovered->second->on_unheld();
 				}
-				else {
-					m_hovered->second->on_unhover();
-				}
+				m_hovered->second->on_unhover();
 			}
 			if (new_hovered != nullptr) {
+				new_hovered->second->on_hover();
 				if (engine::held_buttons() == tr::system::mouse_button::LEFT && new_hovered->second->interactible()) {
 					new_hovered->second->on_held();
-				}
-				else {
-					new_hovered->second->on_hover();
 				}
 			}
 			m_hovered = new_hovered;

@@ -184,9 +184,9 @@ void title_state::set_up_ui()
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(35.0f, 75.0f)};
 		const interpolator<glm::vec2> move_in{interp::CUBIC, {end_pos.x + offset, end_pos.y}, end_pos, 1_s};
-		m_ui.emplace<clickable_text_widget>(BUTTONS[i], move_in, tr::align::CENTER_RIGHT, 1_s, font::LANGUAGE, 48,
-											loc_text_callback{BUTTONS[i]}, status_cb, action_cbs[i], NO_TOOLTIP,
-											i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL);
+		m_ui.emplace<text_button_widget>(BUTTONS[i], move_in, tr::align::CENTER_RIGHT, 1_s, NO_TOOLTIP, loc_text_callback{BUTTONS[i]},
+										 font::LANGUAGE, 48, status_cb, action_cbs[i],
+										 i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL);
 		end_pos += glm::vec2{-25, 50};
 	}
 }

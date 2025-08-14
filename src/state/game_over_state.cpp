@@ -100,8 +100,8 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		const interpolator<glm::vec2> pos{interp::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
-		m_ui.emplace<clickable_text_widget>(BUTTONS[i], pos, tr::align::CENTER, 0.5_s, font::LANGUAGE, 48, loc_text_callback{BUTTONS[i]},
-											status_cb, std::move(action_cbs[i]));
+		m_ui.emplace<text_button_widget>(BUTTONS[i], pos, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{BUTTONS[i]},
+										 font::LANGUAGE, 48, status_cb, std::move(action_cbs[i]), sound::CONFIRM);
 	}
 }
 

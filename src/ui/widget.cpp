@@ -162,7 +162,7 @@ void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, fl
 	std::ranges::fill(mesh.colors, color);
 }
 
-///////////////////////////////////////////////////////// LABEL_WIDGET
+////////////////////////////////////////////////////////////// LABEL_WIDGET ///////////////////////////////////////////////////////////////
 
 label_widget::label_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb,
 						   text_callback text_cb, tr::system::ttf_style style, float font_size, tr::rgba8 color)
@@ -183,6 +183,136 @@ label_widget::label_widget(interpolator<glm::vec2> pos, tr::align alignment, tic
 void label_widget::add_to_renderer()
 {
 	add_to_renderer_raw(m_color);
+}
+
+/////////////////////////////////////////////////////////// TEXT BUTTON WIDGET ////////////////////////////////////////////////////////////
+
+text_button_widget::text_button_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb,
+									   text_callback text_cb, font font, float font_size, status_callback status_cb,
+									   action_callback action_cb, sound sound)
+	: text_widget_base{pos,         alignment,
+					   unhide_time, std::move(tooltip_cb),
+					   false,       std::move(text_cb),
+					   font,        tr::system::ttf_style::NORMAL,
+					   font_size,   tr::system::UNLIMITED_WIDTH}
+	, m_scb{std::move(status_cb)}
+	, m_acb{std::move(action_cb)}
+	, m_sound{sound}
+	, m_interp{m_scb() ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8}
+	, m_hovered{false}
+	, m_held{false}
+	, m_selected{false}
+	, m_action_left{0}
+{
+}
+
+void text_button_widget::update()
+{
+	text_widget_base::update();
+	m_interp.update();
+
+	if (interactible()) {
+		if (!m_held && !m_hovered && !m_selected && m_interp.done() && m_action_left == 0 && m_interp != "A0A0A0A0"_rgba8) {
+			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		}
+		else if (m_interp.done() && (m_hovered || m_selected) && !m_held && m_action_left == 0) {
+			m_interp.change(interp::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 0.2f, 1.0f}),
+							4_s);
+		}
+	}
+	else {
+		m_hovered = false;
+		m_held = false;
+		m_selected = false;
+		if (m_interp.done() && m_action_left == 0 && m_interp != "505050A0"_rgba8) {
+			m_interp.change(interp::LERP, "505050A0"_rgba8, 0.1_s);
+		}
+	}
+
+	if (m_action_left > 0) {
+		--m_action_left;
+	}
+}
+
+void text_button_widget::add_to_renderer()
+{
+	if (m_action_left > 0) {
+		text_widget_base::add_to_renderer_raw(m_action_left % 0.12_s >= 0.06_s ? "FFFFFF"_rgba8 : "505050A0"_rgba8);
+	}
+	else {
+		text_widget_base::add_to_renderer_raw(m_interp);
+	}
+}
+
+bool text_button_widget::interactible() const
+{
+	return m_scb();
+}
+
+void text_button_widget::on_action()
+{
+	m_acb();
+	m_action_left = 0.36_s;
+	m_interp = "FFFFFF"_rgba8;
+	engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+}
+
+void text_button_widget::on_hover()
+{
+	if (interactible()) {
+		m_hovered = true;
+		if (!m_selected) {
+			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+		}
+	}
+}
+
+void text_button_widget::on_unhover()
+{
+	if (interactible()) {
+		m_hovered = false;
+		if (!m_selected && m_action_left == 0) {
+			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		}
+	}
+}
+
+void text_button_widget::on_held()
+{
+	if (interactible()) {
+		m_held = true;
+		if (m_action_left == 0) {
+			m_interp = "202020"_rgba8;
+		}
+	}
+}
+
+void text_button_widget::on_unheld()
+{
+	if (interactible()) {
+		m_held = false;
+	}
+}
+
+void text_button_widget::on_selected()
+{
+	if (interactible()) {
+		m_selected = true;
+		if (!m_hovered) {
+			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+		}
+	}
+}
+
+void text_button_widget::on_unselected()
+{
+	if (interactible()) {
+		m_selected = false;
+		if (!m_hovered && m_action_left == 0) {
+			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		}
+	}
 }
 
 /////////////////////////////////////////////////////////////// TEXT_WIDGET ///////////////////////////////////////////////////////////////
@@ -434,11 +564,14 @@ void color_preview_widget::add_to_renderer()
 arrow_widget::arrow_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, bool right_arrow, status_callback status_cb,
 						   action_callback action_cb)
 	: widget{pos, alignment, unhide_time, NO_TOOLTIP, false}
-	, m_right{right_arrow}
-	, m_color{{160, 160, 160, 160}}
 	, m_scb{std::move(status_cb)}
 	, m_acb{std::move(action_cb)}
-	, m_override_disabled_color_left{0}
+	, m_interp{m_scb() ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8}
+	, m_right{right_arrow}
+	, m_hovered{false}
+	, m_held{false}
+	, m_selected{false}
+	, m_action_left{0}
 {
 }
 
@@ -449,9 +582,12 @@ glm::vec2 arrow_widget::size() const
 
 void arrow_widget::add_to_renderer()
 {
-	tr::rgba8 color{m_color};
-	if (!interactible() && m_override_disabled_color_left == 0) {
-		color = {80, 80, 80, 160};
+	tr::rgba8 color;
+	if (m_action_left > 0) {
+		color = m_action_left % 0.12_s >= 0.06_s ? "FFFFFF"_rgba8 : "505050A0"_rgba8;
+	}
+	else {
+		color = m_interp;
 	}
 	color.a *= opacity();
 
@@ -472,15 +608,30 @@ void arrow_widget::add_to_renderer()
 
 void arrow_widget::update()
 {
-	if (m_override_disabled_color_left > 0) {
-		--m_override_disabled_color_left;
-	}
-	// Fixes an edge case of being stuck with the disabled color after using a shortcut.
-	if (interactible() && m_color == tr::rgba8{80, 80, 80, 160}) {
-		m_color = tr::rgba8{160, 160, 160, 160};
-	}
-	m_color.update();
 	widget::update();
+	m_interp.update();
+
+	if (interactible()) {
+		if (!m_held && !m_hovered && !m_selected && m_interp.done() && m_action_left == 0 && m_interp != "A0A0A0A0"_rgba8) {
+			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		}
+		else if (m_interp.done() && (m_hovered || m_selected) && !m_held && m_action_left == 0) {
+			m_interp.change(interp::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 0.2f, 1.0f}),
+							4_s);
+		}
+	}
+	else {
+		m_hovered = false;
+		m_held = false;
+		m_selected = false;
+		if (m_interp.done() && m_action_left == 0 && m_interp != "505050A0"_rgba8) {
+			m_interp.change(interp::LERP, "505050A0"_rgba8, 0.1_s);
+		}
+	}
+
+	if (m_action_left > 0) {
+		--m_action_left;
+	}
 }
 
 bool arrow_widget::interactible() const
@@ -490,33 +641,68 @@ bool arrow_widget::interactible() const
 
 void arrow_widget::on_action()
 {
-	m_color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
 	m_acb();
+	m_action_left = 0.36_s;
+	m_interp = "FFFFFF"_rgba8;
 	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 }
 
 void arrow_widget::on_hover()
 {
-	m_color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
 	if (interactible()) {
-		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+		m_hovered = true;
+		if (!m_selected) {
+			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+		}
 	}
 }
 
 void arrow_widget::on_unhover()
 {
-	m_color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
+	if (interactible()) {
+		m_hovered = false;
+		if (!m_selected && m_action_left == 0) {
+			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		}
+	}
 }
 
 void arrow_widget::on_held()
 {
-	m_color = {32, 32, 32, 255};
-	engine::play_sound(sound::HOLD, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+	if (interactible()) {
+		m_held = true;
+		if (m_action_left == 0) {
+			m_interp = "202020"_rgba8;
+		}
+	}
 }
 
 void arrow_widget::on_unheld()
 {
-	m_color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
+	if (interactible()) {
+		m_held = false;
+	}
+}
+
+void arrow_widget::on_selected()
+{
+	if (interactible()) {
+		m_selected = true;
+		if (!m_hovered) {
+			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+		}
+	}
+}
+
+void arrow_widget::on_unselected()
+{
+	if (interactible()) {
+		m_selected = false;
+		if (!m_hovered && m_action_left == 0) {
+			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		}
+	}
 }
 
 ////////////////////////////////////////////////////// REPLAY_PLAYBACK_INDICATOR_WIDGET ///////////////////////////////////////////////////
@@ -673,25 +859,25 @@ glm::vec2 replay_widget::size() const
 		const score_flags flags{(*it)->second.flags};
 		const auto icons{flags.exited_prematurely + flags.modified_game_speed};
 		if (icons != 0) {
-			return clickable_text_widget::size() + glm::vec2{0, 20};
+			return text_button_widget::size() + glm::vec2{0, 20};
 		}
 	}
-	return clickable_text_widget::size();
+	return text_button_widget::size();
 }
 
 void replay_widget::add_to_renderer()
 {
-	const interpolator<tr::rgba8> real_color{color};
 	if (!it.has_value()) {
-		color = {80, 80, 80, 160};
+		text_widget_base::add_to_renderer_raw("505050A0"_rgba8);
 	}
-	text_widget::add_to_renderer();
-	color = real_color;
+	else {
+		text_button_widget::add_to_renderer();
+	}
 
 	if (it.has_value()) {
 		const score_flags flags{(*it)->second.flags};
-		const glm::vec2 text_size{clickable_text_widget::size()};
-		const tr::rgba8 color{interactible() ? tr::rgba8{this->color} : "80808080"_rgba8};
+		const glm::vec2 text_size{text_button_widget::size()};
+		const tr::rgba8 color{interactible() ? tr::rgba8{m_interp} : "80808080"_rgba8};
 		const auto icons{flags.exited_prematurely + flags.modified_game_speed};
 		int i = 0;
 

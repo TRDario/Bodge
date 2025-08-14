@@ -373,14 +373,14 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 							  tr::system::ttf_style::NORMAL, 48, music_volume_c_tcb);
 	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_I, MUSIC_VOLUME_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, music_volume_i_scb,
 							   music_volume_i_acb);
-	m_ui.emplace<clickable_text_widget>(T_LANGUAGE_C, LANGUAGE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, font::LANGUAGE_PREVIEW, 48,
-										language_c_tcb, language_c_scb, language_c_acb);
+	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, LANGUAGE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, language_c_tcb,
+									 font::LANGUAGE_PREVIEW, 48, language_c_scb, language_c_acb, sound::CONFIRM);
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const interpolator<glm::vec2> move_in{
 			interp::CUBIC, BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s};
 		const sound sound{i == 1 ? sound::CONFIRM : sound::CANCEL};
-		m_ui.emplace<clickable_text_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-											loc_text_callback{BOTTOM_BUTTONS[i]}, bottom_scbs[i], bottom_acbs[i], NO_TOOLTIP, sound);
+		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
+										 loc_text_callback{BOTTOM_BUTTONS[i]}, font::LANGUAGE, 48, bottom_scbs[i], bottom_acbs[i], sound);
 	}
 }
 

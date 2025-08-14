@@ -115,10 +115,10 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 							   "FFFF00C0"_rgba8);
 	m_ui.emplace<arrow_widget>(T_PREV, PREV_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, status_cb, prev_acb);
 	m_ui.emplace<arrow_widget>(T_NEXT, NEXT_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, status_cb, next_acb);
-	m_ui.emplace<clickable_text_widget>(T_START, START_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-										loc_text_callback{T_START}, status_cb, start_acb, NO_TOOLTIP);
-	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-										loc_text_callback{T_EXIT}, status_cb, exit_acb, NO_TOOLTIP, sound::CANCEL);
+	m_ui.emplace<text_button_widget>(T_START, START_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_START},
+									 font::LANGUAGE, 48, status_cb, start_acb, sound::CONFIRM);
+	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
+									 font::LANGUAGE, 48, status_cb, exit_acb, sound::CANCEL);
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////

@@ -138,8 +138,8 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 							   tr::system::ttf_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_PLAYER_INFO, PLAYER_INFO_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, player_info_tcb,
 							   tr::system::ttf_style::NORMAL, 32);
-	m_ui.emplace<clickable_text_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, font::LANGUAGE, 48,
-										loc_text_callback{T_EXIT}, status_cb, exit_acb, NO_TOOLTIP, sound::CANCEL);
+	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
+									 font::LANGUAGE, 48, status_cb, exit_acb, sound::CANCEL);
 	if (engine::scorefile.categories.empty()) {
 		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, NO_SCORES_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
 								   loc_text_callback{T_NO_SCORES_FOUND}, tr::system::ttf_style::NORMAL, 64, "80808080"_rgba8);
