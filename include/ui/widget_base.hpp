@@ -150,10 +150,6 @@ class text_widget_base : public widget {
 	void release_graphical_resources() override;
 
   protected:
-	// Adds the widget to the renderer.
-	void add_to_renderer_raw(tr::rgba8 tint);
-
-  private:
 	struct cached_t {
 		// The texture of the text.
 		tr::gfx::texture texture;
@@ -176,4 +172,6 @@ class text_widget_base : public widget {
 
 	// Updates the cache.
 	void update_cache() const;
+	// Adds the widget to the renderer.
+	void add_to_renderer_raw(tr::rgba8 tint);
 };

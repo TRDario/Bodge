@@ -8,25 +8,6 @@ using namespace std::chrono_literals;
 using namespace tr::angle_literals;
 using namespace tr::color_literals;
 
-//////////////////////////////////////////////////////////// SETTINGS CONSTANTS ///////////////////////////////////////////////////////////
-
-// Sentinel for a fullscreen window.
-constexpr int FULLSCREEN{0};
-// The minimum allowed window size.
-constexpr int MIN_WINDOW_SIZE{500};
-// The maximum supported window size.
-int max_window_size();
-
-// Sentinel for a native refresh rate.
-constexpr std::uint16_t NATIVE_REFRESH_RATE{0};
-// The minimum allowed refresh rate.
-constexpr std::uint16_t MIN_REFRESH_RATE{15};
-// The maximum supported refresh rate.
-std::uint16_t max_refresh_rate();
-
-// Sentinel for disabled multisampled anti-aliasing.
-constexpr std::uint8_t NO_MSAA{0};
-
 ///////////////////////////////////////////////////////////////// TICKRATE ////////////////////////////////////////////////////////////////
 
 // Tick datatype.

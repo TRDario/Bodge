@@ -2,6 +2,7 @@
 #include "../../include/state/game_over_state.hpp"
 #include "../../include/state/pause_state.hpp"
 #include "../../include/state/save_replay_state.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -152,8 +153,7 @@ void save_score_state::set_up_ui()
 	m_ui.emplace<score_widget>(T_SCORE, SCORE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, score_widget::DONT_SHOW_RANK, &m_score);
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
 							   tr::system::ttf_style::NORMAL, 48);
-	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, tr::halign::CENTER,
-											  24, scb);
+	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24, scb);
 	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
 									 font::LANGUAGE, 48, scb, save_acb, sound::CONFIRM);
 	m_ui.emplace<text_button_widget>(T_CANCEL, CANCEL_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_CANCEL},

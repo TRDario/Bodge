@@ -2,18 +2,17 @@
 #include "../../include/audio.hpp"
 #include "../../include/state/title_state.hpp"
 #include "../../include/system.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 constexpr tag T_TITLE{"settings"};
+constexpr tag T_DISPLAY_MODE{"display_mode"};
+constexpr tag T_DISPLAY_MODE_C{"display_mode_c"};
 constexpr tag T_WINDOW_SIZE{"window_size"};
 constexpr tag T_WINDOW_SIZE_D{"window_size_d"};
 constexpr tag T_WINDOW_SIZE_C{"window_size_c"};
 constexpr tag T_WINDOW_SIZE_I{"window_size_i"};
-constexpr tag T_REFRESH_RATE{"refresh_rate"};
-constexpr tag T_REFRESH_RATE_D{"refresh_rate_d"};
-constexpr tag T_REFRESH_RATE_C{"refresh_rate_c"};
-constexpr tag T_REFRESH_RATE_I{"refresh_rate_i"};
 constexpr tag T_MSAA{"msaa"};
 constexpr tag T_MSAA_D{"msaa_d"};
 constexpr tag T_MSAA_C{"msaa_c"};
@@ -43,13 +42,11 @@ constexpr tag T_APPLY{"apply"};
 constexpr tag T_EXIT{"exit"};
 
 // Right-aligned widgets.
-constexpr std::array<tag, 24> RIGHT_WIDGETS{
+constexpr std::array<tag, 22> RIGHT_WIDGETS{
+	T_DISPLAY_MODE_C,
 	T_WINDOW_SIZE_D,
 	T_WINDOW_SIZE_C,
 	T_WINDOW_SIZE_I,
-	T_REFRESH_RATE_D,
-	T_REFRESH_RATE_C,
-	T_REFRESH_RATE_I,
 	T_MSAA_D,
 	T_MSAA_C,
 	T_MSAA_I,
@@ -76,8 +73,8 @@ constexpr std::array<tag, 3> BOTTOM_BUTTONS{T_REVERT, T_APPLY, T_EXIT};
 constexpr const char* NO_TOOLTIP_STR{nullptr};
 // Left-aligned label widgets.
 constexpr std::array<label, 8> LABELS{{
+	{T_DISPLAY_MODE, "display_mode_tt"},
 	{T_WINDOW_SIZE, "window_size_tt"},
-	{T_REFRESH_RATE, "refresh_rate_tt"},
 	{T_MSAA, "msaa_tt"},
 	{T_PRIMARY_HUE, "primary_hue_tt"},
 	{T_SECONDARY_HUE, "secondary_hue_tt"},
@@ -87,9 +84,8 @@ constexpr std::array<label, 8> LABELS{{
 }};
 
 constexpr selection_tree SELECTION_TREE{
+	selection_tree_row{T_DISPLAY_MODE_C},
 	selection_tree_row{T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I},
-	selection_tree_row{T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I},
-	selection_tree_row{T_REFRESH_RATE_D, T_REFRESH_RATE_C, T_REFRESH_RATE_I},
 	selection_tree_row{T_MSAA_D, T_MSAA_C, T_MSAA_I},
 	selection_tree_row{T_PRIMARY_HUE_D, T_PRIMARY_HUE_C, T_PRIMARY_HUE_I},
 	selection_tree_row{T_SECONDARY_HUE_D, T_SECONDARY_HUE_C, T_SECONDARY_HUE_I},
@@ -108,9 +104,9 @@ constexpr shortcut_table SHORTCUTS{
 };
 
 // Starting position of the window size widgets.
-constexpr glm::vec2 WINDOW_SIZE_START_POS{1050, 196};
-// Starting position of the refresh rate widgets.
-constexpr glm::vec2 REFRESH_RATE_START_POS{1050, 271};
+constexpr glm::vec2 DISPLAY_MODE_START_POS{1050, 196};
+// Starting position of the window size widgets.
+constexpr glm::vec2 WINDOW_SIZE_START_POS{1050, 271};
 // Starting position of the MSAA widgets.
 constexpr glm::vec2 MSAA_START_POS{1050, 346};
 // Starting position of the primary hue widgets.
@@ -125,10 +121,10 @@ constexpr glm::vec2 MUSIC_VOLUME_START_POS{1050, 646};
 constexpr glm::vec2 LANGUAGE_START_POS{1050, 721};
 
 constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr interpolator<glm::vec2> DISPLAY_MODE_C_MOVE_IN{interp::CUBIC, DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> WINDOW_SIZE_D_MOVE_IN{interp::CUBIC, WINDOW_SIZE_START_POS, {765, WINDOW_SIZE_START_POS.y}, 0.5_s};
+constexpr interpolator<glm::vec2> WINDOW_SIZE_C_MOVE_IN{interp::CUBIC, WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> WINDOW_SIZE_I_MOVE_IN{interp::CUBIC, WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> REFRESH_RATE_D_MOVE_IN{interp::CUBIC, REFRESH_RATE_START_POS, {800, REFRESH_RATE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> REFRESH_RATE_I_MOVE_IN{interp::CUBIC, REFRESH_RATE_START_POS, {985, REFRESH_RATE_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> MSAA_D_MOVE_IN{interp::CUBIC, MSAA_START_POS, {830, MSAA_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> MSAA_C_MOVE_IN{interp::CUBIC, MSAA_START_POS, {907.5, MSAA_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> MSAA_I_MOVE_IN{interp::CUBIC, MSAA_START_POS, {985, MSAA_START_POS.y}, 0.5_s};
@@ -161,25 +157,19 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 {
 	// STATUS CALLBACKS
 
+	const status_callback scb{[this] { return m_substate != substate::ENTERING_TITLE; }};
 	const status_callback window_size_d_scb{[this] {
-		return m_substate != substate::ENTERING_TITLE && m_pending.window_size != FULLSCREEN && m_pending.window_size > MIN_WINDOW_SIZE;
+		return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN &&
+			   m_pending.window_size > MIN_WINDOW_SIZE;
 	}};
 	const status_callback window_size_i_scb{[this] {
-		return m_substate != substate::ENTERING_TITLE && m_pending.window_size != FULLSCREEN && m_pending.window_size < max_window_size();
+		return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN &&
+			   m_pending.window_size < max_window_size();
 	}};
-	const status_callback window_size_c_scb{[this] { return m_substate != substate::ENTERING_TITLE; }};
-	const status_callback refresh_rate_d_scb{[this] {
-		return m_substate != substate::ENTERING_TITLE && m_pending.refresh_rate != NATIVE_REFRESH_RATE &&
-			   m_pending.refresh_rate > MIN_REFRESH_RATE;
-	}};
-	const status_callback refresh_rate_i_scb{[this] {
-		return m_substate != substate::ENTERING_TITLE && m_pending.refresh_rate != NATIVE_REFRESH_RATE &&
-			   m_pending.refresh_rate < max_refresh_rate();
-	}};
-	const status_callback refresh_rate_c_scb{[this] { return m_substate != substate::ENTERING_TITLE; }};
+	const status_callback window_size_c_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN; }};
 	const status_callback msaa_d_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != NO_MSAA; }};
 	const status_callback msaa_i_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != tr::system::max_msaa(); }};
-	const status_callback hue_arrow_scb{[this] { return m_substate != substate::ENTERING_TITLE; }};
 	const status_callback sfx_volume_d_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume > 0; }};
 	const status_callback sfx_volume_i_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume < 100; }};
 	const status_callback music_volume_d_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.music_volume > 0; }};
@@ -193,35 +183,23 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	// ACTION CALLBACKS
 
+	const action_callback display_mode_c_acb{[&, &display_mode = m_pending.display_mode] {
+		switch (display_mode) {
+		case display_mode::WINDOWED:
+			display_mode = display_mode::FULLSCREEN;
+			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(interp::LERP, "505050A0"_rgba8, 0.1_s);
+			break;
+		case display_mode::FULLSCREEN:
+			display_mode = display_mode::WINDOWED;
+			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			break;
+		}
+	}};
 	const action_callback window_size_d_acb{[&window_size = m_pending.window_size] {
-		window_size = std::max(MIN_WINDOW_SIZE, window_size - engine::keymods_choose(1, 10, 100));
+		window_size = std::max(MIN_WINDOW_SIZE, static_cast<std::uint16_t>(window_size - engine::keymods_choose(1, 10, 100)));
 	}};
 	const action_callback window_size_i_acb{[&window_size = m_pending.window_size] {
-		window_size = std::min(max_window_size(), window_size + engine::keymods_choose(1, 10, 100));
-	}};
-	const action_callback window_size_c_acb{[this] {
-		if (m_pending.window_size == FULLSCREEN) {
-			m_pending.window_size = 500;
-		}
-		else {
-			m_pending.window_size = FULLSCREEN;
-		}
-		update_window_size_buttons();
-	}};
-	const action_callback refresh_rate_d_acb{[&refresh_rate = m_pending.refresh_rate] {
-		refresh_rate = static_cast<std::uint16_t>(std::max(15, refresh_rate - engine::keymods_choose(1, 10, 25)));
-	}};
-	const action_callback refresh_rate_i_acb{[&refresh_rate = m_pending.refresh_rate] {
-		refresh_rate = static_cast<std::uint16_t>(std::max(15, refresh_rate + engine::keymods_choose(1, 10, 25)));
-	}};
-	const action_callback refresh_rate_c_acb{[this] {
-		if (m_pending.refresh_rate == NATIVE_REFRESH_RATE) {
-			m_pending.refresh_rate = max_refresh_rate();
-		}
-		else {
-			m_pending.refresh_rate = NATIVE_REFRESH_RATE;
-		}
-		update_refresh_rate_buttons();
+		window_size = std::min(max_window_size(), static_cast<std::uint16_t>(window_size + engine::keymods_choose(1, 10, 100)));
 	}};
 	const action_callback msaa_d_acb{[&msaa = m_pending.msaa] { msaa = msaa == 2 ? NO_MSAA : static_cast<std::uint8_t>(msaa / 2); }};
 	const action_callback msaa_i_acb{[&msaa = m_pending.msaa] { msaa = msaa == NO_MSAA ? 2 : static_cast<std::uint8_t>(msaa * 2); }};
@@ -261,13 +239,13 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		[this] {
 			m_pending = engine::settings;
 			engine::reload_language_preview_font(m_pending);
-			update_window_size_buttons();
-			update_refresh_rate_buttons();
+			const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8};
+			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(interp::LERP, window_size_color, 0.1_s);
 		},
 		[this] {
 			const settings old{engine::settings};
 			engine::settings = m_pending;
-			if (old.window_size != engine::settings.window_size || old.msaa != engine::settings.msaa) {
+			if (engine::restart_required(old)) {
 				m_ui.release_graphical_resources();
 			}
 			if (old.language != engine::settings.language) {
@@ -286,14 +264,17 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		},
 	};
 
+	// VALIDATION CALLBACKS
+
+	const validation_callback<std::uint16_t> window_size_c_vcb{
+		[](std::uint16_t v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); }};
+
 	// TEXT CALLBACKS
 
-	const text_callback window_size_c_tcb{[&window_size = m_pending.window_size] {
-		return window_size == FULLSCREEN ? std::string{engine::loc["fullscreen"]} : std::to_string(window_size);
+	const text_callback display_mode_c_tcb{[&display_mode = m_pending.display_mode] {
+		return std::string{engine::loc[display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]};
 	}};
-	const text_callback refresh_rate_c_tcb{[&refresh_rate = m_pending.refresh_rate] {
-		return refresh_rate == NATIVE_REFRESH_RATE ? std::string{engine::loc["native"]} : std::to_string(refresh_rate);
-	}};
+	const text_callback window_size_c_tcb{[&window_size = m_pending.window_size] { return std::to_string(window_size); }};
 	const text_callback msaa_c_tcb{[this] { return m_pending.msaa == NO_MSAA ? "--" : std::format("x{}", m_pending.msaa); }};
 	const text_callback primary_hue_c_tcb{[this] { return std::to_string(m_pending.primary_hue); }};
 	const text_callback secondary_hue_c_tcb{[this] { return std::to_string(m_pending.secondary_hue); }};
@@ -302,22 +283,6 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	const text_callback language_c_tcb{
 		[this] { return engine::languages.contains(m_pending.language) ? engine::languages[m_pending.language].name : "???"; }};
 
-	// MISCELLANEOUS
-
-	const tr::align window_size_c_alignment{engine::settings.window_size == FULLSCREEN ? tr::align::CENTER_RIGHT : tr::align::CENTER};
-	const interpolator<glm::vec2> window_size_c_move_in{
-		interp::CUBIC, WINDOW_SIZE_START_POS, {engine::settings.window_size == FULLSCREEN ? 985 : 875, WINDOW_SIZE_START_POS.y}, 0.5_s};
-	const ticks window_size_arrows_unhide_time{m_pending.window_size != FULLSCREEN ? 0.5_s : DONT_UNHIDE};
-
-	const tr::align refresh_rate_c_alignment{engine::settings.refresh_rate == NATIVE_REFRESH_RATE ? tr::align::CENTER_RIGHT
-																								  : tr::align::CENTER};
-	const interpolator<glm::vec2> refresh_rate_c_move_in{
-		interp::CUBIC,
-		REFRESH_RATE_START_POS,
-		{engine::settings.refresh_rate == NATIVE_REFRESH_RATE ? 985 : 892.5, REFRESH_RATE_START_POS.y},
-		0.5_s};
-	const ticks refresh_rate_arrows_unhide_time{m_pending.refresh_rate != NATIVE_REFRESH_RATE ? 0.5_s : DONT_UNHIDE};
-
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
@@ -325,40 +290,34 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
 		const label& label{LABELS[i]};
 		const interpolator<glm::vec2> move_in{interp::CUBIC, {-50, 196 + i * 75}, {15, 196 + i * 75}, 0.5_s};
+		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? "505050A0"_rgba8
+																											   : "A0A0A0A0"_rgba8};
 		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
-								   loc_text_callback{label.tag}, tr::system::ttf_style::NORMAL, 48);
+								   loc_text_callback{label.tag}, tr::system::ttf_style::NORMAL, 48, color);
 	}
 
-	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, WINDOW_SIZE_D_MOVE_IN, tr::align::CENTER_LEFT, window_size_arrows_unhide_time, false,
-							   window_size_d_scb, window_size_d_acb);
-	m_ui.emplace<clickable_text_widget>(T_WINDOW_SIZE_C, window_size_c_move_in, window_size_c_alignment, 0.5_s, font::LANGUAGE, 48,
-										window_size_c_tcb, window_size_c_scb, window_size_c_acb);
-	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, WINDOW_SIZE_I_MOVE_IN, tr::align::CENTER_RIGHT, window_size_arrows_unhide_time, true,
-							   window_size_i_scb, window_size_i_acb);
-	m_ui.emplace<arrow_widget>(T_REFRESH_RATE_D, REFRESH_RATE_D_MOVE_IN, tr::align::CENTER_LEFT, refresh_rate_arrows_unhide_time, false,
-							   refresh_rate_d_scb, refresh_rate_d_acb);
-	m_ui.emplace<clickable_text_widget>(T_REFRESH_RATE_C, refresh_rate_c_move_in, refresh_rate_c_alignment, 0.5_s, font::LANGUAGE, 48,
-										refresh_rate_c_tcb, refresh_rate_c_scb, refresh_rate_c_acb);
-	m_ui.emplace<arrow_widget>(T_REFRESH_RATE_I, REFRESH_RATE_I_MOVE_IN, tr::align::CENTER_RIGHT, refresh_rate_arrows_unhide_time, true,
-							   refresh_rate_i_scb, refresh_rate_i_acb);
+	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, DISPLAY_MODE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP,
+									 display_mode_c_tcb, font::LANGUAGE, 48, scb, display_mode_c_acb, sound::CONFIRM);
+	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, WINDOW_SIZE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, window_size_d_scb,
+							   window_size_d_acb);
+	m_ui.emplace<numeric_input_widget<std::uint16_t, 4, "{}", "{}">>(T_WINDOW_SIZE_C, WINDOW_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
+																	 m_ui, m_pending.window_size, window_size_c_scb, window_size_c_vcb);
+	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, WINDOW_SIZE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, window_size_i_scb,
+							   window_size_i_acb);
 	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, msaa_d_scb, msaa_d_acb);
 	m_ui.emplace<text_widget>(T_MSAA_C, MSAA_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
 							  msaa_c_tcb);
 	m_ui.emplace<arrow_widget>(T_MSAA_I, MSAA_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, msaa_i_scb, msaa_i_acb);
-	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, hue_arrow_scb,
-							   primary_hue_d_acb);
+	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, scb, primary_hue_d_acb);
 	m_ui.emplace<text_widget>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
 							  tr::system::ttf_style::NORMAL, 48, primary_hue_c_tcb);
-	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, PRIMARY_HUE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, hue_arrow_scb,
-							   primary_hue_i_acb);
+	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, PRIMARY_HUE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, scb, primary_hue_i_acb);
 	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, PRIMARY_HUE_PREVIEW_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s,
 									   m_pending.primary_hue);
-	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, SECONDARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, hue_arrow_scb,
-							   secondary_hue_d_acb);
+	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, SECONDARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, scb, secondary_hue_d_acb);
 	m_ui.emplace<text_widget>(T_SECONDARY_HUE_C, SECONDARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
 							  tr::system::ttf_style::NORMAL, 48, secondary_hue_c_tcb);
-	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, SECONDARY_HUE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, hue_arrow_scb,
-							   secondary_hue_i_acb);
+	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, SECONDARY_HUE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, scb, secondary_hue_i_acb);
 	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, SECONDARY_HUE_PREVIEW_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s,
 									   m_pending.secondary_hue);
 	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_D, SFX_VOLUME_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, sfx_volume_d_scb,
@@ -415,40 +374,6 @@ void settings_state::draw()
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
-
-void settings_state::update_window_size_buttons()
-{
-	widget& window_size_c{m_ui[T_WINDOW_SIZE_C]};
-	if (m_pending.window_size == FULLSCREEN) {
-		window_size_c.pos = glm::vec2{985, 196};
-		window_size_c.alignment = tr::align::CENTER_RIGHT;
-		m_ui[T_WINDOW_SIZE_D].hide();
-		m_ui[T_WINDOW_SIZE_I].hide();
-	}
-	else {
-		window_size_c.pos = glm::vec2{875, 196};
-		window_size_c.alignment = tr::align::CENTER;
-		m_ui[T_WINDOW_SIZE_D].unhide();
-		m_ui[T_WINDOW_SIZE_I].unhide();
-	}
-}
-
-void settings_state::update_refresh_rate_buttons()
-{
-	widget& refresh_rate_c{m_ui[T_REFRESH_RATE_C]};
-	if (m_pending.refresh_rate == NATIVE_REFRESH_RATE) {
-		refresh_rate_c.pos = glm::vec2{985, 271};
-		refresh_rate_c.alignment = tr::align::CENTER_RIGHT;
-		m_ui[T_REFRESH_RATE_D].hide();
-		m_ui[T_REFRESH_RATE_I].hide();
-	}
-	else {
-		refresh_rate_c.pos = glm::vec2{892.5, 271};
-		refresh_rate_c.alignment = tr::align::CENTER;
-		m_ui[T_REFRESH_RATE_D].unhide();
-		m_ui[T_REFRESH_RATE_I].unhide();
-	}
-}
 
 void settings_state::set_up_exit_animation()
 {

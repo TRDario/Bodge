@@ -1,4 +1,5 @@
 #include "../include/system.hpp"
+#include "../include/audio.hpp"
 #include "../include/graphics.hpp"
 #include "../include/settings.hpp"
 #include "../include/state/name_entry_state.hpp"
@@ -18,8 +19,6 @@ namespace engine {
 	void draw_cursor();
 	// Determines the upper limit for an acceptable render time.
 	tr::dsecs max_render_time();
-	// Determines whether the new settings require a full engine restart.
-	bool restart_required(const ::settings& old);
 
 	// System state.
 	struct system_data {
@@ -43,8 +42,8 @@ namespace engine {
 
 tr::timer engine::create_draw_timer()
 {
-	if (settings.refresh_rate != NATIVE_REFRESH_RATE) {
-		return tr::system::create_draw_timer(settings.refresh_rate);
+	if (cli_settings.refresh_rate != NATIVE_REFRESH_RATE) {
+		return tr::system::create_draw_timer(cli_settings.refresh_rate);
 	}
 	else {
 		return tr::system::create_draw_timer();
@@ -85,17 +84,18 @@ void engine::draw_cursor()
 
 tr::dsecs engine::max_render_time()
 {
-	if (settings.refresh_rate == NATIVE_REFRESH_RATE) {
+	if (cli_settings.refresh_rate == NATIVE_REFRESH_RATE) {
 		return 1.0s / tr::system::refresh_rate();
 	}
 	else {
-		return 1.0s / settings.refresh_rate;
+		return 1.0s / cli_settings.refresh_rate;
 	}
 }
 
 bool engine::restart_required(const ::settings& old)
 {
-	return old.window_size != settings.window_size || old.msaa != settings.msaa;
+	return old.display_mode != settings.display_mode ||
+		   (settings.display_mode == display_mode::WINDOWED && old.window_size != settings.window_size) || old.msaa != settings.msaa;
 }
 
 ///////////////////////////////////////////////////////////////// LIFETIME ////////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ void engine::initialize_system()
 		.double_buffer = true,
 		.multisamples = settings.msaa,
 	};
-	if (settings.window_size == FULLSCREEN) {
+	if (settings.display_mode == display_mode::FULLSCREEN) {
 		tr::system::open_fullscreen_window("Bodge", tr::system::window_flag::DEFAULT, gfx);
 	}
 	else {
@@ -140,9 +140,6 @@ void engine::apply_settings(const ::settings& old)
 		initialize_system();
 		initialize_graphics();
 		system->state = std::move(temp);
-	}
-	else if (old.refresh_rate != settings.refresh_rate) {
-		system->draw_timer = create_draw_timer();
 	}
 	apply_audio_settings();
 }

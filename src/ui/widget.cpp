@@ -176,13 +176,19 @@ label_widget::label_widget(interpolator<glm::vec2> pos, tr::align alignment, tic
 					   style,
 					   font_size,
 					   tr::system::UNLIMITED_WIDTH}
-	, m_color{color}
+	, color{color}
 {
+}
+
+void label_widget::update()
+{
+	widget::update();
+	color.update();
 }
 
 void label_widget::add_to_renderer()
 {
-	add_to_renderer_raw(m_color);
+	add_to_renderer_raw(color);
 }
 
 /////////////////////////////////////////////////////////// TEXT BUTTON WIDGET ////////////////////////////////////////////////////////////

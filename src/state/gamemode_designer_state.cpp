@@ -3,6 +3,7 @@
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/title_state.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 

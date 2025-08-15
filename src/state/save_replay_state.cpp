@@ -1,6 +1,7 @@
 #include "../../include/state/save_replay_state.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/title_state.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -77,8 +78,8 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 										scb, name_acb, std::string_view{});
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
 							   tr::system::ttf_style::NORMAL, 48);
-	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10,
-											  tr::halign::CENTER, 24, scb);
+	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24,
+											  scb);
 	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
 									 font::LANGUAGE, 48, save_scb, save_acb, sound::CONFIRM);
 	m_ui.emplace<text_button_widget>(T_DISCARD, DISCARD_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DISCARD},

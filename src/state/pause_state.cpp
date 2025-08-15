@@ -5,6 +5,7 @@
 #include "../../include/state/save_score_state.hpp"
 #include "../../include/state/title_state.hpp"
 #include "../../include/system.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 

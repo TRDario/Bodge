@@ -1,6 +1,7 @@
 #include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/system.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 

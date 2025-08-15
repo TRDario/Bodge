@@ -2,6 +2,7 @@
 #include "../../include/graphics.hpp"
 #include "../../include/state/game_state.hpp"
 #include "../../include/state/title_state.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 

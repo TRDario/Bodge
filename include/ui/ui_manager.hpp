@@ -1,5 +1,5 @@
 #pragma once
-#include "widget.hpp"
+#include "widget_base.hpp"
 
 // List of widgets considered to be on the same row.
 using selection_tree_row = std::initializer_list<const char*>;
@@ -60,6 +60,11 @@ class ui_manager {
   private:
 	// Tag-widget pair.
 	using kv_pair = std::pair<const tag, std::unique_ptr<widget>>;
+	// Selection tree pair returned from find_in_selection_tree.
+	struct selection_tree_pair {
+		const selection_tree_row* row;
+		const tag* tag;
+	};
 
 	// The selection tree.
 	selection_tree m_selection_tree;
@@ -74,6 +79,8 @@ class ui_manager {
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
+	// Finds the tag in the selection tree.
+	selection_tree_pair find_in_selection_tree(tag tag) const;
 	// Selects the first widget.
 	void select_first();
 	// Selects the last widget.

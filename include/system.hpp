@@ -8,6 +8,8 @@ namespace engine {
 	void initialize_system();
 	// Sets the game state to the main menu state.
 	void set_main_menu_state();
+	// Determines whether new settings require a full engine restart.
+	bool restart_required(const ::settings& old);
 	// Applies new settings to the engine.
 	void apply_settings(const ::settings& old);
 	// Shuts the engine down.

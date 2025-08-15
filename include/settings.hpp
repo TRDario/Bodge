@@ -1,12 +1,19 @@
 #pragma once
 #include "localization.hpp"
 
+////////////////////////////////////////////////////////////// CLI SETTINGS ///////////////////////////////////////////////////////////////
+
+// Sentinel for a native refresh rate.
+constexpr float NATIVE_REFRESH_RATE{0};
+
 // Settings gotten from command-line arguments.
 struct cli_settings {
 	// The path to the data directroy.
 	std::filesystem::path datadir;
 	// The path to the save directory.
 	std::filesystem::path userdir;
+	// The refresh rate of the game.
+	float refresh_rate{NATIVE_REFRESH_RATE};
 	// The game speed factor.
 	float game_speed{1.0f};
 #ifdef TR_ENABLE_ASSERTS
@@ -18,14 +25,32 @@ struct cli_settings {
 #endif
 };
 
+//////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
+
+// The minimum allowed window size.
+constexpr std::uint16_t MIN_WINDOW_SIZE{500};
+// The maximum supported window size.
+std::uint16_t max_window_size();
+
+// Game display modes.
+enum class display_mode : bool {
+	// Game is displayed in a window.
+	WINDOWED,
+	// Game is displayed fullscreen.
+	FULLSCREEN
+};
+
+// Sentinel for disabled multisampled anti-aliasing.
+constexpr std::uint8_t NO_MSAA{0};
+
 // Main program settings.
 struct settings {
-	// The size of the window to use or FULLSCREEN.
-	int window_size{500};
+	// The size of the window in pixels if the game is run in windowed mode.
+	std::uint16_t window_size{500};
+	// Whether to display the game in fullscreen.
+	display_mode display_mode{display_mode::WINDOWED};
 	// The number of MSAA samples to use.
 	std::uint8_t msaa{0};
-	// The refresh rate to use in Hz or NATIVE_REFRESH_RATE.
-	std::uint16_t refresh_rate{NATIVE_REFRESH_RATE};
 	// The language to use.
 	language_code language{'e', 'n'};
 

@@ -1,4 +1,6 @@
 #include "../../include/ui/ui_manager.hpp"
+#include "../../include/audio.hpp"
+#include "../../include/graphics.hpp"
 #include "../../include/system.hpp"
 
 ui_manager::ui_manager(selection_tree selection_tree, shortcut_table shortcuts)
@@ -47,6 +49,20 @@ void ui_manager::set_selection(tag tag)
 	}
 }
 
+ui_manager::selection_tree_pair ui_manager::find_in_selection_tree(tag tag) const
+{
+	for (const selection_tree_row* row = m_selection_tree.begin(); row != m_selection_tree.end(); ++row) {
+		for (const ::tag* it = row->begin(); it != row->end(); ++it) {
+			if (*it == tag) {
+				return {row, it};
+			}
+		}
+	}
+
+	TR_ASSERT(false, "Failed to find tag '{}' in the selection tree.", tag);
+	return {};
+}
+
 void ui_manager::select_first()
 {
 	for (const selection_tree_row& row : m_selection_tree) {
@@ -79,22 +95,21 @@ void ui_manager::select_next()
 		select_first();
 	}
 	else {
-		for (auto row_it = m_selection_tree.begin(); row_it != m_selection_tree.end(); ++row_it) {
-			for (auto it = row_it->begin(); it != row_it->end(); ++it) {
-				if (*it == m_selected->first) {
-					if (std::next(it) != row_it->end()) {
-						set_selection(*std::next(it));
-					}
-					else if (std::next(row_it) != m_selection_tree.end()) {
-						set_selection(*std::next(row_it)->begin());
-					}
-					else {
-						set_selection(*m_selection_tree.begin()->begin());
-					}
+		auto [row_it, tag_it]{find_in_selection_tree(m_selected->first)};
+		++tag_it;
+		while (row_it != m_selection_tree.end()) {
+			while (tag_it != row_it->end()) {
+				auto it{m_widgets.find(*tag_it)};
+				if (it->second->interactible()) {
+					set_selection(it->first);
 					return;
 				}
+				++tag_it;
 			}
+			++row_it;
+			tag_it = row_it->begin();
 		}
+		select_first();
 	}
 }
 
@@ -104,24 +119,21 @@ void ui_manager::select_prev()
 		select_last();
 	}
 	else {
-		const auto reverse_tree{std::views::reverse(m_selection_tree)};
-		for (auto row_it = reverse_tree.begin(); row_it != reverse_tree.end(); ++row_it) {
-			const auto reverse_row{std::views::reverse(*row_it)};
-			for (auto it = reverse_row.begin(); it != reverse_row.end(); ++it) {
-				if (*it == m_selected->first) {
-					if (std::next(it) != reverse_row.end()) {
-						set_selection(*std::next(it));
-					}
-					else if (std::next(row_it) != reverse_tree.end()) {
-						set_selection(*std::next(row_it)->begin());
-					}
-					else {
-						set_selection(*std::prev(std::prev(m_selection_tree.end())->end()));
-					}
+		auto [row_it, tag_it]{find_in_selection_tree(m_selected->first)};
+		--tag_it;
+		while (row_it >= m_selection_tree.begin()) {
+			while (tag_it >= row_it->begin()) {
+				auto it{m_widgets.find(*tag_it)};
+				if (it->second->interactible()) {
+					set_selection(it->first);
 					return;
 				}
+				--tag_it;
 			}
+			--row_it;
+			tag_it = std::prev(row_it->end());
 		}
+		select_last();
 	}
 }
 
@@ -131,19 +143,26 @@ void ui_manager::select_up()
 		select_last();
 	}
 	else {
-		const auto reverse_tree{std::views::reverse(m_selection_tree)};
-		for (auto row_it = reverse_tree.begin(); row_it != reverse_tree.end(); ++row_it) {
-			const auto reverse_row{std::views::reverse(*row_it)};
-			for (auto it = reverse_row.begin(); it != reverse_row.end(); ++it) {
-				if (*it == m_selected->first) {
-					const std::size_t offset{static_cast<std::size_t>((it.base() - 1) - row_it->begin())};
-					const selection_tree_row& prev_row{std::next(row_it) != reverse_tree.end() ? *std::next(row_it)
-																							   : *std::prev(m_selection_tree.end())};
-					set_selection(prev_row.begin()[std::min(offset, prev_row.size() - 1)]);
+		auto [row_it, tag_it]{find_in_selection_tree(m_selected->first)};
+		const std::size_t offset{static_cast<std::size_t>(tag_it - row_it->begin())};
+		--row_it;
+		while (row_it >= m_selection_tree.begin()) {
+			auto it{m_widgets.find(row_it->begin()[std::min(offset, row_it->size() - 1)])};
+			if (it->second->interactible()) {
+				set_selection(it->first);
+				return;
+			}
+
+			for (tag tag : *row_it) {
+				if (m_widgets.at(tag)->interactible()) {
+					set_selection(tag);
 					return;
 				}
 			}
+
+			--row_it;
 		}
+		select_last();
 	}
 }
 
@@ -153,57 +172,60 @@ void ui_manager::select_down()
 		select_first();
 	}
 	else {
-		for (auto row_it = m_selection_tree.begin(); row_it != m_selection_tree.end(); ++row_it) {
-			for (auto it = row_it->begin(); it != row_it->end(); ++it) {
-				if (*it == m_selected->first) {
-					const std::size_t offset{static_cast<std::size_t>(it - row_it->begin())};
-					const selection_tree_row& next_row{std::next(row_it) != m_selection_tree.end() ? *std::next(row_it)
-																								   : *m_selection_tree.begin()};
-					set_selection(next_row.begin()[std::min(offset, next_row.size() - 1)]);
+		auto [row_it, tag_it]{find_in_selection_tree(m_selected->first)};
+		const std::size_t offset{static_cast<std::size_t>(tag_it - row_it->begin())};
+		++row_it;
+		while (row_it != m_selection_tree.end()) {
+			auto it{m_widgets.find(row_it->begin()[std::min(offset, row_it->size() - 1)])};
+			if (it->second->interactible()) {
+				set_selection(it->first);
+				return;
+			}
+
+			for (tag tag : *row_it) {
+				if (m_widgets.at(tag)->interactible()) {
+					set_selection(tag);
 					return;
 				}
 			}
+
+			++row_it;
 		}
+		select_first();
 	}
 }
 
 void ui_manager::select_left()
 {
 	if (m_selected != nullptr) {
-		const auto reverse_tree{std::views::reverse(m_selection_tree)};
-		for (auto row_it = reverse_tree.begin(); row_it != reverse_tree.end(); ++row_it) {
-			const auto reverse_row{std::views::reverse(*row_it)};
-			for (auto it = reverse_row.begin(); it != reverse_row.end(); ++it) {
-				if (*it == m_selected->first) {
-					if (std::next(it) != reverse_row.end()) {
-						set_selection(*std::next(it));
-					}
-					else {
-						set_selection(*row_it->begin());
-					}
-					return;
-				}
+		auto [row_it, tag_it]{find_in_selection_tree(m_selected->first)};
+		--tag_it;
+		while (tag_it >= row_it->begin()) {
+			auto it{m_widgets.find(*tag_it)};
+			if (it->second->interactible()) {
+				set_selection(it->first);
+				return;
 			}
+			--tag_it;
 		}
+		set_selection(*std::prev(row_it->end()));
 	}
 }
 
 void ui_manager::select_right()
 {
 	if (m_selected != nullptr) {
-		for (auto row_it = m_selection_tree.begin(); row_it != m_selection_tree.end(); ++row_it) {
-			for (auto it = row_it->begin(); it != row_it->end(); ++it) {
-				if (*it == m_selected->first) {
-					if (std::next(it) != row_it->end()) {
-						set_selection(*std::next(it));
-					}
-					else {
-						set_selection(*row_it->begin());
-					}
-					return;
-				}
+		auto [row_it, tag_it]{find_in_selection_tree(m_selected->first)};
+		++tag_it;
+		while (tag_it != row_it->end()) {
+			auto it{m_widgets.find(*tag_it)};
+			if (it->second->interactible()) {
+				set_selection(it->first);
+				return;
 			}
+			++tag_it;
 		}
+		set_selection(*row_it->begin());
 	}
 }
 
@@ -255,8 +277,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 	} break;
 	case tr::system::mouse_down_event::ID: {
 		if (tr::system::mouse_down_event{event}.button == tr::system::mouse_button::LEFT) {
-			const bool something_had_input_focus{m_selected != nullptr};
-			if (something_had_input_focus) {
+			if (m_selected != nullptr) {
 				tr::system::disable_text_input_events();
 				m_selected->second->on_unselected();
 				m_selected = nullptr;
@@ -282,9 +303,6 @@ void ui_manager::handle_event(const tr::system::event& event)
 
 			if (m_hovered != nullptr && m_hovered->second->interactible()) {
 				m_hovered->second->on_held();
-			}
-			else if (something_had_input_focus) {
-				engine::play_sound(sound::CANCEL, 0.5f, 0.0f);
 			}
 		}
 	} break;

@@ -1,6 +1,7 @@
 #include "../../include/state/scoreboards_state.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/state/title_state.hpp"
+#include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 

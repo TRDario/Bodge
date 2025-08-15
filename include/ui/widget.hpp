@@ -4,6 +4,8 @@
 #include "../replay.hpp"
 #include "widget_base.hpp"
 
+class ui_manager;
+
 /////////////////////////////////////////////////////////////// TEXT WIDGETS //////////////////////////////////////////////////////////////
 
 // Non-interactible label widget.
@@ -14,16 +16,18 @@ class label_widget : public text_widget_base {
 	label_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
 				 tr::system::ttf_style style, float font_size, tr::rgba8 color = "A0A0A0A0"_rgba8);
 
-	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
+
+	// The color of the label.
+	interpolator<tr::rgba8> color;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
-  private:
-	// The color of the label.
-	tr::rgba8 m_color;
+	void update() override;
+	void add_to_renderer() override;
 };
 
+// Interactible text button.
 class text_button_widget : public text_widget_base {
   public:
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
@@ -66,6 +70,57 @@ class text_button_widget : public text_widget_base {
 	bool m_selected;
 	// Timer for how much post-action flashing there is left.
 	ticks m_action_left;
+};
+
+// Numeric input validation callback.
+template <class T> using validation_callback = std::function<T(T)>;
+// Numeric input widget.
+template <class T, std::size_t S, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
+class numeric_input_widget : public text_widget_base {
+  public:
+	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
+
+	// Creates a numeric input wiget.
+	numeric_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
+						 status_callback status_cb, validation_callback<T> validation_cb);
+
+	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
+
+	void add_to_renderer() override;
+	void update() override;
+	bool interactible() const override;
+
+	void on_action() override;
+	void on_hover() override;
+	void on_unhover() override;
+	void on_held() override;
+	void on_unheld() override;
+	void on_selected() override;
+	void on_unselected() override;
+	void on_write(std::string_view input) override;
+	void on_enter() override;
+	void on_erase() override;
+	void on_clear() override;
+
+  private:
+	// A reference to the parent UI manager.
+	ui_manager& m_ui;
+	// A reference to the value being modified.
+	T& m_ref;
+	// The buffer used for input.
+	tr::static_string<S> m_buffer;
+	// Callback used to determine the status of the widget.
+	status_callback m_scb;
+	// The callback run upon input finish.
+	validation_callback<T> m_vcb;
+	// Interpolator used for some effects.
+	interpolator<tr::rgba8> m_interp;
+	// State keeping track of whether the button is hovered.
+	bool m_hovered;
+	// State keeping track of whether the button is held.
+	bool m_held;
+	// State keeping track of whether the button is selected.
+	bool m_selected;
 };
 
 //
@@ -216,13 +271,13 @@ template <std::size_t S> class line_input_widget : public text_widget_base {
 };
 
 // Widget for inputting multiline text.
-template <std::size_t S> class multiline_input_widget : public text_widget {
+template <std::size_t S> class multiline_input_widget : public text_widget_base {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a multiline input wiget.
 	multiline_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width, std::uint8_t max_lines,
-						   tr::halign text_alignment, float font_size, status_callback status_cb);
+						   float font_size, status_callback status_cb);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
@@ -233,6 +288,7 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
+	void update() override;
 	bool interactible() const override;
 
 	void on_action() override;
@@ -256,8 +312,14 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 	glm::vec2 m_size;
 	// The maximum allowed number of lines of text.
 	std::uint8_t m_max_lines;
-	// Keeps track of whether the widget has input focus.
-	bool m_has_focus;
+	// Interpolator used for some effects.
+	interpolator<tr::rgba8> m_interp;
+	// State keeping track of whether the button is hovered.
+	bool m_hovered;
+	// State keeping track of whether the button is held.
+	bool m_held;
+	// State keeping track of whether the button is selected.
+	bool m_selected;
 };
 
 ///////////////////////////////////////////////////////////// NON-TEXT WIDGETS ////////////////////////////////////////////////////////////

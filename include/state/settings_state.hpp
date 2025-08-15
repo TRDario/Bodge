@@ -41,10 +41,6 @@ class settings_state : public tr::state {
 
 	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
 
-	// Updates the window size buttons based on the pending settings.
-	void update_window_size_buttons();
-	// Updates the refresh rate buttons based on the pending settings.
-	void update_refresh_rate_buttons();
 	// Sets up the exit animation.
 	void set_up_exit_animation();
 };

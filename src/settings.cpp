@@ -6,7 +6,7 @@ template <> struct tr::binary_writer<settings> : tr::default_binary_writer<setti
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings file version identifier.
-constexpr std::uint8_t SETTINGS_VERSION{0};
+constexpr std::uint8_t SETTINGS_VERSION{1};
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
@@ -28,6 +28,12 @@ void engine::parse_command_line(int argc, const char** argv)
 		else if (arg == "--userdir" && ++i < argc) {
 			cli_settings.userdir = argv[i];
 		}
+		else if (arg == "--refreshrate" && ++i < argc) {
+			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.refresh_rate);
+			if (cli_settings.refresh_rate != NATIVE_REFRESH_RATE) {
+				cli_settings.refresh_rate = std::clamp(cli_settings.refresh_rate, 1.0f, tr::system::refresh_rate());
+			}
+		}
 		else if (arg == "--gamespeed" && ++i < argc) {
 			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.game_speed);
 		}
@@ -37,10 +43,11 @@ void engine::parse_command_line(int argc, const char** argv)
 		else if (arg == "--help") {
 			std::cout << "Bodge v0.1.0 by TRDario, 2025.\n"
 						 "Supported arguments:\n"
-						 "--datadir <path>     - Redirects the game data directory.\n"
-						 "--userdir <path>     - Redirects the game user directory.\n"
-						 "--gamespeed <factor> - Sets the game speed multiplier.\n"
-						 "--debug              - Enables debug mode.\n";
+						 "--datadir <path>       - Overrides the data directory.\n"
+						 "--userdir <path>       - Overrides the user directory.\n"
+						 "--refreshrate <number> - Overrides the refresh rate.\n"
+						 "--gamespeed <factor>   - Overrides the speed multiplier.\n"
+						 "--debug                - Enables debug mode.\n";
 			std::exit(EXIT_SUCCESS);
 		}
 	}
@@ -93,19 +100,10 @@ void engine::raw_load_settings()
 
 void engine::validate_settings()
 {
-	if (settings.window_size != FULLSCREEN) {
-		const int clamped{std::clamp(settings.window_size, MIN_WINDOW_SIZE, max_window_size())};
-		if (clamped != settings.window_size) {
-			LOG(tr::severity::WARN, "Clamped window size from {} to {}.", settings.window_size, clamped);
-			settings.window_size = clamped;
-		}
-	}
-	if (settings.refresh_rate != NATIVE_REFRESH_RATE) {
-		const std::uint16_t clamped{std::clamp(settings.refresh_rate, MIN_REFRESH_RATE, max_refresh_rate())};
-		if (clamped != settings.refresh_rate) {
-			LOG(tr::severity::WARN, "Clamped refresh rate from {} to {}.", settings.refresh_rate, clamped);
-			settings.refresh_rate = clamped;
-		}
+	const int clamped_window_size{std::clamp(settings.window_size, MIN_WINDOW_SIZE, max_window_size())};
+	if (clamped_window_size != settings.window_size) {
+		LOG(tr::severity::WARN, "Clamped window size from {} to {}.", settings.window_size, clamped_window_size);
+		settings.window_size = clamped_window_size;
 	}
 	const std::uint8_t adjusted{std::clamp(settings.msaa, NO_MSAA, tr::system::max_msaa())};
 	if (adjusted != settings.msaa) {
