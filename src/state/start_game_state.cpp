@@ -152,7 +152,7 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 				string_text_callback{std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))},
 			};
 			for (std::size_t i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
-				text_widget_base& widget{m_ui.as<text_widget_base>(GAMEMODE_WIDGETS[i])};
+				text_widget& widget{m_ui.as<text_widget>(GAMEMODE_WIDGETS[i])};
 				const glm::vec2 old_pos{widget.pos};
 				widget.text_cb = std::move(new_cbs[i]);
 				widget.pos = glm::vec2{old_pos.x < 500 ? 600 : 400, old_pos.y};

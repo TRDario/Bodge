@@ -166,16 +166,16 @@ void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, fl
 
 label_widget::label_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb,
 						   text_callback text_cb, tr::system::ttf_style style, float font_size, tr::rgba8 color)
-	: text_widget_base{pos,
-					   alignment,
-					   unhide_time,
-					   std::move(tooltip_cb),
-					   false,
-					   std::move(text_cb),
-					   font::LANGUAGE,
-					   style,
-					   font_size,
-					   tr::system::UNLIMITED_WIDTH}
+	: text_widget{pos,
+				  alignment,
+				  unhide_time,
+				  std::move(tooltip_cb),
+				  false,
+				  std::move(text_cb),
+				  font::LANGUAGE,
+				  style,
+				  font_size,
+				  tr::system::UNLIMITED_WIDTH}
 	, color{color}
 {
 }
@@ -196,11 +196,11 @@ void label_widget::add_to_renderer()
 text_button_widget::text_button_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb,
 									   text_callback text_cb, font font, float font_size, status_callback status_cb,
 									   action_callback action_cb, sound sound)
-	: text_widget_base{pos,         alignment,
-					   unhide_time, std::move(tooltip_cb),
-					   false,       std::move(text_cb),
-					   font,        tr::system::ttf_style::NORMAL,
-					   font_size,   tr::system::UNLIMITED_WIDTH}
+	: text_widget{pos,         alignment,
+				  unhide_time, std::move(tooltip_cb),
+				  false,       std::move(text_cb),
+				  font,        tr::system::ttf_style::NORMAL,
+				  font_size,   tr::system::UNLIMITED_WIDTH}
 	, m_scb{std::move(status_cb)}
 	, m_acb{std::move(action_cb)}
 	, m_sound{sound}
@@ -214,7 +214,7 @@ text_button_widget::text_button_widget(interpolator<glm::vec2> pos, tr::align al
 
 void text_button_widget::update()
 {
-	text_widget_base::update();
+	text_widget::update();
 	m_interp.update();
 
 	if (interactible()) {
@@ -243,10 +243,10 @@ void text_button_widget::update()
 void text_button_widget::add_to_renderer()
 {
 	if (m_action_left > 0) {
-		text_widget_base::add_to_renderer_raw(m_action_left % 0.12_s >= 0.06_s ? "FFFFFF"_rgba8 : "505050A0"_rgba8);
+		text_widget::add_to_renderer_raw(m_action_left % 0.12_s >= 0.06_s ? "FFFFFF"_rgba8 : "505050A0"_rgba8);
 	}
 	else {
-		text_widget_base::add_to_renderer_raw(m_interp);
+		text_widget::add_to_renderer_raw(m_interp);
 	}
 }
 
@@ -319,178 +319,6 @@ void text_button_widget::on_unselected()
 			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 	}
-}
-
-/////////////////////////////////////////////////////////////// TEXT_WIDGET ///////////////////////////////////////////////////////////////
-
-text_widget::text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
-						 font font, tr::system::ttf_style style, tr::halign text_alignment, float font_size, int max_width, tr::rgba8 color,
-						 text_callback text_cb)
-	: widget{pos, alignment, unhide_time, std::move(tooltip_cb), writable}
-	, color{color}
-	, text_cb{std::move(text_cb)}
-	, m_font{font}
-	, m_style{style}
-	, m_text_alignment{text_alignment}
-	, m_font_size{font_size}
-	, m_max_width{max_width}
-{
-}
-
-text_widget::text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, font font, tr::system::ttf_style style,
-						 float font_size, text_callback text_cb, tr::rgba8 color)
-	: text_widget{
-		  pos,   alignment,         unhide_time, NO_TOOLTIP, false, font, style, tr::halign::CENTER, font_size, tr::system::UNLIMITED_WIDTH,
-		  color, std::move(text_cb)}
-{
-}
-
-text_widget::text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, const char* tooltip_key, font font,
-						 tr::system::ttf_style style, float font_size, text_callback text_cb)
-	: text_widget{pos,
-				  alignment,
-				  unhide_time,
-				  string_text_callback{tooltip_key},
-				  false,
-				  font,
-				  style,
-				  tr::halign::CENTER,
-				  font_size,
-				  tr::system::UNLIMITED_WIDTH,
-				  {160, 160, 160, 160},
-				  std::move(text_cb)}
-{
-}
-
-glm::vec2 text_widget::size() const
-{
-	if (!m_cached.has_value()) {
-		update_cache();
-	}
-	return m_cached->size / engine::render_scale();
-}
-
-void text_widget::update()
-{
-	widget::update();
-	color.update();
-}
-
-void text_widget::release_graphical_resources()
-{
-	m_cached.reset();
-}
-
-void text_widget::add_to_renderer()
-{
-	update_cache();
-
-	tr::rgba8 real_color{color};
-	real_color.a = static_cast<std::uint8_t>(real_color.a * opacity());
-
-	const tr::gfx::simple_textured_mesh_ref quad{tr::gfx::renderer_2d::new_textured_fan(layer::UI, 4, m_cached->texture)};
-	tr::fill_rect_vtx(quad.positions, {tl(), text_widget::size()});
-	tr::fill_rect_vtx(quad.uvs, {{}, m_cached->size / glm::vec2{m_cached->texture.size()}});
-	std::ranges::fill(quad.tints, tr::rgba8{real_color});
-}
-
-void text_widget::update_cache() const
-{
-	std::string text{text_cb()};
-	if (!m_cached.has_value() || m_cached->text != text) {
-		tr::bitmap render{engine::render_text(text, engine::determine_font(text, m_font), m_style, m_font_size, m_font_size / 12,
-											  m_max_width, m_text_alignment)};
-		if (!m_cached || m_cached->texture.size().x < render.size().x || m_cached->texture.size().y < render.size().y) {
-			m_cached.emplace(tr::gfx::texture{render}, render.size(), std::move(text));
-			if (tr::gfx::debug()) {
-				m_cached->texture.set_label(std::format("(Bodge) Widget texture"));
-			}
-		}
-		else {
-			m_cached->texture.clear({});
-			m_cached->texture.set_region({}, render);
-			m_cached->size = render.size();
-			m_cached->text = std::move(text);
-		}
-	}
-}
-
-////////////////////////////////////////////////////////// CLICKABLE_TEXT_WIDGET //////////////////////////////////////////////////////////
-
-clickable_text_widget::clickable_text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, font font,
-											 float font_size, text_callback text_cb, status_callback status_cb, action_callback action_cb,
-											 text_callback tooltip_cb, sound sound)
-	: text_widget{pos,
-				  alignment,
-				  unhide_time,
-				  std::move(tooltip_cb),
-				  false,
-				  font,
-				  tr::system::ttf_style::NORMAL,
-				  tr::halign::CENTER,
-				  font_size,
-				  tr::system::UNLIMITED_WIDTH,
-				  {160, 160, 160, 160},
-				  std::move(text_cb)}
-	, m_scb{std::move(status_cb)}
-	, m_acb{std::move(action_cb)}
-	, m_override_disabled_color_left{0}
-	, m_sound{sound}
-{
-}
-
-void clickable_text_widget::update()
-{
-	if (m_override_disabled_color_left > 0) {
-		--m_override_disabled_color_left;
-	}
-	text_widget::update();
-}
-
-void clickable_text_widget::add_to_renderer()
-{
-	const interpolator<tr::rgba8> real_color{color};
-	if (!interactible() && m_override_disabled_color_left == 0) {
-		color = {80, 80, 80, 160};
-	}
-	text_widget::add_to_renderer();
-	color = real_color;
-}
-
-bool clickable_text_widget::interactible() const
-{
-	return m_scb();
-}
-
-void clickable_text_widget::on_action()
-{
-	color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
-	m_acb();
-	engine::play_sound(m_sound, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
-}
-
-void clickable_text_widget::on_hover()
-{
-	color.change(interp::LERP, "FFFFFF"_rgba8, 0.2_s);
-	if (interactible()) {
-		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
-	}
-}
-
-void clickable_text_widget::on_unhover()
-{
-	color.change(interp::LERP, {160, 160, 160, 160}, 0.2_s);
-}
-
-void clickable_text_widget::on_held()
-{
-	color = {32, 32, 32, 255};
-	engine::play_sound(sound::HOLD, 0.2f, 0.0f, engine::rng.generate(0.9f, 1.1f));
-}
-
-void clickable_text_widget::on_unheld()
-{
-	color.change(interp::LERP, "A0A0A0A0"_rgba8, 0.2_s);
 }
 
 /////////////////////////////////////////////////////////////// IMAGE_WIDGET //////////////////////////////////////////////////////////////
@@ -757,7 +585,7 @@ void replay_playback_indicator_widget::add_to_renderer()
 ////////////////////////////////////////////////////////////// SCORE WIDGET ///////////////////////////////////////////////////////////////
 
 score_widget::score_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::size_t rank, ::score* score)
-	: text_widget_base{
+	: text_widget{
 		  pos,
 		  alignment,
 		  unhide_time,
@@ -829,19 +657,19 @@ glm::vec2 score_widget::size() const
 	if (score != nullptr) {
 		const auto icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
 		if (icons != 0) {
-			return text_widget_base::size() + glm::vec2{0, 20};
+			return text_widget::size() + glm::vec2{0, 20};
 		}
 	}
-	return text_widget_base::size();
+	return text_widget::size();
 }
 
 void score_widget::add_to_renderer()
 {
 	const tr::rgba8 color{score != nullptr ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8};
-	text_widget_base::add_to_renderer_raw(color);
+	text_widget::add_to_renderer_raw(color);
 	if (score != nullptr) {
 		const score_flags flags{score->flags};
-		const glm::vec2 text_size{text_widget_base::size()};
+		const glm::vec2 text_size{text_widget::size()};
 		const auto icons{flags.exited_prematurely + flags.modified_game_speed};
 		int i = 0;
 
@@ -874,7 +702,7 @@ glm::vec2 replay_widget::size() const
 void replay_widget::add_to_renderer()
 {
 	if (!it.has_value()) {
-		text_widget_base::add_to_renderer_raw("505050A0"_rgba8);
+		text_widget::add_to_renderer_raw("505050A0"_rgba8);
 	}
 	else {
 		text_button_widget::add_to_renderer();

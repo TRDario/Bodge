@@ -131,11 +131,11 @@ class widget {
 };
 
 // Base text widget class.
-class text_widget_base : public widget {
+class text_widget : public widget {
   public:
 	// Creates a text widget.
-	text_widget_base(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
-					 text_callback text_cb, font font, tr::system::ttf_style style, float font_size, int max_width);
+	text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
+				text_callback text_cb, font font, tr::system::ttf_style style, float font_size, int max_width);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 

@@ -121,6 +121,33 @@ constexpr interpolator<glm::vec2> VELOCITY_STEP_C_MOVE_IN{
 constexpr interpolator<glm::vec2> VELOCITY_STEP_I_MOVE_IN{interp::CUBIC, VELOCITY_STEP_START_POS, {985, VELOCITY_STEP_START_POS.y}, 0.5_s};
 constexpr interpolator<glm::vec2> EXIT_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
+//////////////////////////////////////////////////////// SPAWN INTERVAL FORMATTER /////////////////////////////////////////////////////////
+
+// Formatter used for tick input widgets.
+struct spawn_interval_formatter {
+	static void from_string(ticks& out, std::string_view str);
+	static std::string to_string(ticks v);
+	static std::string to_string(std::string_view str);
+};
+using tick_input_widget = basic_numeric_input_widget<ticks, 4, spawn_interval_formatter>;
+
+void spawn_interval_formatter::from_string(ticks& out, std::string_view str)
+{
+	float temp{out / 1.0_sf};
+	std::from_chars(str.data(), str.data() + str.size(), temp);
+	out = static_cast<ticks>(temp * SECOND_TICKS);
+}
+
+std::string spawn_interval_formatter::to_string(ticks v)
+{
+	return std::format("{:.1f}s", v / 1.0_sf);
+}
+
+std::string spawn_interval_formatter::to_string(std::string_view str)
+{
+	return std::format("{}s", str);
+}
+
 ////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
@@ -225,15 +252,17 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 		set_up_exit_animation();
 	}};
 
-	// TEXT CALLBACKS
+	// VALIDATION CALLBACKS
 
-	const text_callback cur_starting_count_tcb{[this] { return std::to_string(m_pending.ball.starting_count); }};
-	const text_callback cur_max_count_tcb{[this] { return std::to_string(m_pending.ball.max_count); }};
-	const text_callback cur_spawn_interval_tcb{[this] { return std::format("{:.1f}s", m_pending.ball.spawn_interval / 1_sf); }};
-	const text_callback cur_initial_size_tcb{[this] { return std::format("{:.0f}", m_pending.ball.initial_size); }};
-	const text_callback cur_size_step_tcb{[this] { return std::format("{:.1f}", m_pending.ball.size_step); }};
-	const text_callback cur_initial_velocity_tcb{[this] { return std::format("{:.0f}", m_pending.ball.initial_velocity); }};
-	const text_callback cur_velocity_step_tcb{[this] { return std::format("{:.0f}", m_pending.ball.velocity_step); }};
+	const validation_callback<std::uint8_t> starting_count_c_vcb{
+		[&max = m_pending.ball.max_count](std::uint8_t v) { return std::min(v, max); }};
+	const validation_callback<std::uint8_t> max_count_c_vcb{
+		[&min = m_pending.ball.starting_count](std::uint8_t v) { return std::max(min, v); }};
+	const validation_callback<ticks> spawn_interval_c_vcb{[](ticks v) { return std::clamp(v, 1_s, 60_s); }};
+	const validation_callback<float> initial_size_c_vcb{[](float v) { return std::clamp(v, 10.0f, 250.0f); }};
+	const validation_callback<float> size_step_c_vcb{[](float v) { return std::clamp(v, 0.0f, 50.0f); }};
+	const validation_callback<float> initial_velocity_c_vcb{[](float v) { return std::clamp(v, 100.0f, 5000.0f); }};
+	const validation_callback<float> velocity_step_c_vcb{[](float v) { return std::clamp(v, 0.0f, 1000.0f); }};
 
 	//
 
@@ -243,40 +272,40 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 							   tr::system::ttf_style::NORMAL, 32);
 	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_D, STARTING_COUNT_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_count_d_scb,
 							   starting_count_d_acb);
-	m_ui.emplace<text_widget>(T_STARTING_COUNT_C, STARTING_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_starting_count_tcb);
+	m_ui.emplace<numeric_input_widget<std::uint8_t, 3, "{}", "{}">>(T_STARTING_COUNT_C, STARTING_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s,
+																	48, m_ui, m_pending.ball.starting_count, scb, starting_count_c_vcb);
 	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_I, STARTING_COUNT_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, starting_count_i_scb,
 							   starting_count_i_acb);
 	m_ui.emplace<arrow_widget>(T_MAX_COUNT_D, MAX_COUNT_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, max_count_d_scb, max_count_d_acb);
-	m_ui.emplace<text_widget>(T_MAX_COUNT_C, MAX_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-							  48, cur_max_count_tcb);
+	m_ui.emplace<numeric_input_widget<std::uint8_t, 3, "{}", "{}">>(T_MAX_COUNT_C, MAX_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+																	m_pending.ball.max_count, scb, max_count_c_vcb);
 	m_ui.emplace<arrow_widget>(T_MAX_COUNT_I, MAX_COUNT_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, max_count_i_scb, max_count_i_acb);
 	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_D, SPAWN_INTERVAL_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, spawn_interval_d_scb,
 							   spawn_interval_d_acb);
-	m_ui.emplace<text_widget>(T_SPAWN_INTERVAL_C, SPAWN_INTERVAL_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_spawn_interval_tcb);
+	m_ui.emplace<tick_input_widget>(T_SPAWN_INTERVAL_C, SPAWN_INTERVAL_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+									m_pending.ball.spawn_interval, scb, spawn_interval_c_vcb);
 	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_I, SPAWN_INTERVAL_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, spawn_interval_i_scb,
 							   spawn_interval_i_acb);
 	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_D, INITIAL_SIZE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, initial_size_d_scb,
 							   initial_size_d_acb);
-	m_ui.emplace<text_widget>(T_INITIAL_SIZE_C, INITIAL_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_initial_size_tcb);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}", "{}">>(T_INITIAL_SIZE_C, INITIAL_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
+																 m_ui, m_pending.ball.initial_size, scb, initial_size_c_vcb);
 	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_I, INITIAL_SIZE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, initial_size_i_scb,
 							   initial_size_i_acb);
 	m_ui.emplace<arrow_widget>(T_SIZE_STEP_D, SIZE_STEP_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, size_step_d_scb, size_step_d_acb);
-	m_ui.emplace<text_widget>(T_SIZE_STEP_C, SIZE_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-							  48, cur_size_step_tcb);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.1f}", "{}">>(T_SIZE_STEP_C, SIZE_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+																 m_pending.ball.size_step, scb, size_step_c_vcb);
 	m_ui.emplace<arrow_widget>(T_SIZE_STEP_I, SIZE_STEP_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, size_step_i_scb, size_step_i_acb);
 	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_D, INITIAL_VELOCITY_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false,
 							   initial_velocity_d_scb, initial_velocity_d_acb);
-	m_ui.emplace<text_widget>(T_INITIAL_VELOCITY_C, INITIAL_VELOCITY_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_initial_velocity_tcb);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}", "{}">>(T_INITIAL_VELOCITY_C, INITIAL_VELOCITY_C_MOVE_IN, tr::align::CENTER, 0.5_s,
+																 48, m_ui, m_pending.ball.initial_velocity, scb, initial_velocity_c_vcb);
 	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_I, INITIAL_VELOCITY_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true,
 							   initial_velocity_i_scb, initial_velocity_i_acb);
 	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_D, VELOCITY_STEP_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, velocity_step_d_scb,
 							   velocity_step_d_acb);
-	m_ui.emplace<text_widget>(T_VELOCITY_STEP_C, VELOCITY_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_velocity_step_tcb);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}", "{}">>(T_VELOCITY_STEP_C, VELOCITY_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
+																 m_ui, m_pending.ball.velocity_step, scb, velocity_step_c_vcb);
 	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_I, VELOCITY_STEP_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, velocity_step_i_scb,
 							   velocity_step_i_acb);
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {

@@ -1,5 +1,5 @@
-#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/state/player_settings_editor_state.hpp"
+#include "../../include/state/gamemode_designer_state.hpp"
 #include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -116,12 +116,6 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 		set_up_exit_animation();
 	}};
 
-	// TEXT CALLBACKS
-
-	const text_callback cur_starting_lives_tcb{[this] { return std::format("{}", m_pending.player.starting_lives); }};
-	const text_callback cur_hitbox_radius_tcb{[this] { return std::format("{:.0f}", m_pending.player.hitbox_radius); }};
-	const text_callback cur_inertia_factor_tcb{[this] { return std::format("{:.2f}", m_pending.player.inertia_factor); }};
-
 	// VALIDATION CALLBACKS
 
 	const validation_callback<std::uint32_t> starting_lives_c_vcb{[](std::uint32_t v) { return std::min<std::uint32_t>(v, 255); }};
@@ -138,8 +132,6 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 							   starting_lives_d_acb);
 	m_ui.emplace<numeric_input_widget<std::uint32_t, 3, "{}", "{}">>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s,
 																	 48, m_ui, m_pending.player.starting_lives, scb, starting_lives_c_vcb);
-	m_ui.emplace<text_widget>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_starting_lives_tcb);
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, STARTING_LIVES_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, starting_lives_i_scb,
 							   starting_lives_i_acb);
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, HITBOX_RADIUS_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, hitbox_radius_d_scb,

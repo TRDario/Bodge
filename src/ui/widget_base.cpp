@@ -81,9 +81,8 @@ void widget::update()
 
 /////////////////////////////////////////////////////////////// TEXT WIDGET ///////////////////////////////////////////////////////////////
 
-text_widget_base::text_widget_base(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb,
-								   bool writable, text_callback text_cb, font font, tr::system::ttf_style style, float font_size,
-								   int max_width)
+text_widget::text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
+						 text_callback text_cb, font font, tr::system::ttf_style style, float font_size, int max_width)
 	: widget{pos, alignment, unhide_time, tooltip_cb, writable}
 	, text_cb{text_cb}
 	, m_font{font}
@@ -93,7 +92,7 @@ text_widget_base::text_widget_base(interpolator<glm::vec2> pos, tr::align alignm
 {
 }
 
-glm::vec2 text_widget_base::size() const
+glm::vec2 text_widget::size() const
 {
 	if (!m_cached.has_value()) {
 		update_cache();
@@ -101,24 +100,24 @@ glm::vec2 text_widget_base::size() const
 	return m_cached->size / engine::render_scale();
 }
 
-void text_widget_base::release_graphical_resources()
+void text_widget::release_graphical_resources()
 {
 	m_cached.reset();
 }
 
-void text_widget_base::add_to_renderer_raw(tr::rgba8 tint)
+void text_widget::add_to_renderer_raw(tr::rgba8 tint)
 {
 	update_cache();
 
 	tint.a *= opacity();
 
 	const tr::gfx::simple_textured_mesh_ref quad{tr::gfx::renderer_2d::new_textured_fan(layer::UI, 4, m_cached->texture)};
-	tr::fill_rect_vtx(quad.positions, {tl(), text_widget_base::size()});
+	tr::fill_rect_vtx(quad.positions, {tl(), text_widget::size()});
 	tr::fill_rect_vtx(quad.uvs, {{}, m_cached->size / glm::vec2{m_cached->texture.size()}});
 	std::ranges::fill(quad.tints, tint);
 }
 
-void text_widget_base::update_cache() const
+void text_widget::update_cache() const
 {
 	std::string text{text_cb()};
 	if (!m_cached.has_value() || m_cached->text != text) {

@@ -28,7 +28,7 @@ template <class T, std::size_t S, class Formatter>
 basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size,
 												 ui_manager& ui, T& ref, status_callback status_cb,
 												 validation_callback<T> validation_cb)
-	: text_widget_base{
+	: text_widget{
 		  pos,
 		  alignment,
 		  unhide_time,
@@ -65,12 +65,12 @@ basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(interpol
 
 template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::add_to_renderer()
 {
-	text_widget_base::add_to_renderer_raw(m_interp);
+	text_widget::add_to_renderer_raw(m_interp);
 }
 
 template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::update()
 {
-	text_widget_base::update();
+	text_widget::update();
 	m_interp.update();
 
 	if (interactible()) {
@@ -199,16 +199,16 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 template <std::size_t S>
 line_input_widget<S>::line_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style,
 										float font_size, status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
-	: text_widget_base{pos,
-					   alignment,
-					   unhide_time,
-					   NO_TOOLTIP,
-					   true,
-					   [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; },
-					   font::LANGUAGE,
-					   style,
-					   font_size,
-					   tr::system::UNLIMITED_WIDTH}
+	: text_widget{pos,
+				  alignment,
+				  unhide_time,
+				  NO_TOOLTIP,
+				  true,
+				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; },
+				  font::LANGUAGE,
+				  style,
+				  font_size,
+				  tr::system::UNLIMITED_WIDTH}
 	, buffer{initial_text}
 	, m_scb{std::move(status_cb)}
 	, m_enter_cb{std::move(enter_cb)}
@@ -226,16 +226,16 @@ template <std::size_t S> void line_input_widget<S>::add_to_renderer()
 		color.r /= 2;
 		color.g /= 2;
 		color.b /= 2;
-		text_widget_base::add_to_renderer_raw(color);
+		text_widget::add_to_renderer_raw(color);
 	}
 	else {
-		text_widget_base::add_to_renderer_raw(m_interp);
+		text_widget::add_to_renderer_raw(m_interp);
 	}
 }
 
 template <std::size_t S> void line_input_widget<S>::update()
 {
-	text_widget_base::update();
+	text_widget::update();
 	m_interp.update();
 
 	if (interactible()) {
@@ -444,16 +444,16 @@ replay_widget::replay_widget(interpolator<glm::vec2> pos, tr::align alignment, t
 template <std::size_t S>
 multiline_input_widget<S>::multiline_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width,
 												  std::uint8_t max_lines, float font_size, status_callback status_cb)
-	: text_widget_base{pos,
-					   alignment,
-					   unhide_time,
-					   NO_TOOLTIP,
-					   true,
-					   [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; },
-					   font::LANGUAGE,
-					   tr::system::ttf_style::NORMAL,
-					   font_size,
-					   static_cast<int>(width)}
+	: text_widget{pos,
+				  alignment,
+				  unhide_time,
+				  NO_TOOLTIP,
+				  true,
+				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; },
+				  font::LANGUAGE,
+				  tr::system::ttf_style::NORMAL,
+				  font_size,
+				  static_cast<int>(width)}
 	, m_scb{std::move(status_cb)}
 	, m_size{width, engine::line_skip(font::LANGUAGE, font_size) * max_lines + 4}
 	, m_max_lines{max_lines}
@@ -476,10 +476,10 @@ template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 		color.r /= 2;
 		color.g /= 2;
 		color.b /= 2;
-		text_widget_base::add_to_renderer_raw(color);
+		text_widget::add_to_renderer_raw(color);
 	}
 	else {
-		text_widget_base::add_to_renderer_raw(m_interp);
+		text_widget::add_to_renderer_raw(m_interp);
 	}
 	color.a *= opacity();
 
@@ -493,7 +493,7 @@ template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 
 template <std::size_t S> void multiline_input_widget<S>::update()
 {
-	text_widget_base::update();
+	text_widget::update();
 	m_interp.update();
 
 	if (interactible()) {
