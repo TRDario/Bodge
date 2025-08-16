@@ -1,5 +1,5 @@
-#include "../../include/state/settings_state.hpp"
 #include "../../include/audio.hpp"
+#include "../../include/state/settings_state.hpp"
 #include "../../include/state/title_state.hpp"
 #include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
@@ -268,18 +268,15 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	const validation_callback<std::uint16_t> window_size_c_vcb{
 		[](std::uint16_t v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); }};
+	const validation_callback<std::uint16_t> hue_c_vcb{[](std::uint16_t v) { return v % 360; }};
+	const validation_callback<std::uint8_t> volume_c_vcb{[](std::uint8_t v) { return std::min<std::uint8_t>(v, 100); }};
 
 	// TEXT CALLBACKS
 
 	const text_callback display_mode_c_tcb{[&display_mode = m_pending.display_mode] {
 		return std::string{engine::loc[display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]};
 	}};
-	const text_callback window_size_c_tcb{[&window_size = m_pending.window_size] { return std::to_string(window_size); }};
 	const text_callback msaa_c_tcb{[this] { return m_pending.msaa == NO_MSAA ? "--" : std::format("x{}", m_pending.msaa); }};
-	const text_callback primary_hue_c_tcb{[this] { return std::to_string(m_pending.primary_hue); }};
-	const text_callback secondary_hue_c_tcb{[this] { return std::to_string(m_pending.secondary_hue); }};
-	const text_callback sound_volume_c_tcb{[this] { return std::format("{}%", m_pending.sfx_volume); }};
-	const text_callback music_volume_c_tcb{[this] { return std::format("{}%", m_pending.music_volume); }};
 	const text_callback language_c_tcb{
 		[this] { return engine::languages.contains(m_pending.language) ? engine::languages[m_pending.language].name : "???"; }};
 
@@ -305,31 +302,31 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, WINDOW_SIZE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, window_size_i_scb,
 							   window_size_i_acb);
 	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, msaa_d_scb, msaa_d_acb);
-	m_ui.emplace<text_widget>(T_MSAA_C, MSAA_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL, 48,
-							  msaa_c_tcb);
+	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, msaa_c_tcb, tr::system::ttf_style::NORMAL,
+							   48);
 	m_ui.emplace<arrow_widget>(T_MSAA_I, MSAA_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, msaa_i_scb, msaa_i_acb);
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, scb, primary_hue_d_acb);
-	m_ui.emplace<text_widget>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, primary_hue_c_tcb);
+	m_ui.emplace<numeric_input_widget<std::uint16_t, 3, "{}", "{}">>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
+																	 m_ui, m_pending.primary_hue, scb, hue_c_vcb);
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, PRIMARY_HUE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, scb, primary_hue_i_acb);
 	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, PRIMARY_HUE_PREVIEW_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s,
 									   m_pending.primary_hue);
 	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, SECONDARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, scb, secondary_hue_d_acb);
-	m_ui.emplace<text_widget>(T_SECONDARY_HUE_C, SECONDARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, secondary_hue_c_tcb);
+	m_ui.emplace<numeric_input_widget<std::uint16_t, 3, "{}", "{}">>(T_SECONDARY_HUE_C, SECONDARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s,
+																	 48, m_ui, m_pending.secondary_hue, scb, hue_c_vcb);
 	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, SECONDARY_HUE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, scb, secondary_hue_i_acb);
 	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, SECONDARY_HUE_PREVIEW_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s,
 									   m_pending.secondary_hue);
 	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_D, SFX_VOLUME_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, sfx_volume_d_scb,
 							   sfx_volume_d_acb);
-	m_ui.emplace<text_widget>(T_SFX_VOLUME_C, SFX_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE, tr::system::ttf_style::NORMAL,
-							  48, sound_volume_c_tcb);
+	m_ui.emplace<numeric_input_widget<std::uint8_t, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, SFX_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
+																	  m_ui, m_pending.sfx_volume, scb, volume_c_vcb);
 	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_I, SFX_VOLUME_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, sfx_volume_i_scb,
 							   sfx_volume_i_acb);
 	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_D, MUSIC_VOLUME_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, music_volume_d_scb,
 							   music_volume_d_acb);
-	m_ui.emplace<text_widget>(T_MUSIC_VOLUME_C, MUSIC_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, music_volume_c_tcb);
+	m_ui.emplace<numeric_input_widget<std::uint8_t, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, MUSIC_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s,
+																	  48, m_ui, m_pending.music_volume, scb, volume_c_vcb);
 	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_I, MUSIC_VOLUME_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, music_volume_i_scb,
 							   music_volume_i_acb);
 	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, LANGUAGE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, language_c_tcb,

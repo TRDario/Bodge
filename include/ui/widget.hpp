@@ -74,15 +74,21 @@ class text_button_widget : public text_widget_base {
 
 // Numeric input validation callback.
 template <class T> using validation_callback = std::function<T(T)>;
+// Default numeric input widget formatter.
+template <class T, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt> struct default_numeric_input_formatter {
+	static void from_string(T& out, std::string_view str);
+	static std::string to_string(T v);
+	static std::string to_string(std::string_view str);
+};
+
 // Numeric input widget.
-template <class T, std::size_t S, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
-class numeric_input_widget : public text_widget_base {
+template <class T, std::size_t S, class Formatter> class basic_numeric_input_widget : public text_widget_base {
   public:
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a numeric input wiget.
-	numeric_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
-						 status_callback status_cb, validation_callback<T> validation_cb);
+	basic_numeric_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
+							   status_callback status_cb, validation_callback<T> validation_cb);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -122,6 +128,9 @@ class numeric_input_widget : public text_widget_base {
 	// State keeping track of whether the button is selected.
 	bool m_selected;
 };
+// Alias for the most common type of numeric input widget.
+template <class T, std::size_t S, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
+using numeric_input_widget = basic_numeric_input_widget<T, S, default_numeric_input_formatter<T, Fmt, BufferFmt>>;
 
 //
 

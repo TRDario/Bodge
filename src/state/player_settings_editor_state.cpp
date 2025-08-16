@@ -1,5 +1,5 @@
-#include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/state/gamemode_designer_state.hpp"
+#include "../../include/state/player_settings_editor_state.hpp"
 #include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -122,6 +122,12 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 	const text_callback cur_hitbox_radius_tcb{[this] { return std::format("{:.0f}", m_pending.player.hitbox_radius); }};
 	const text_callback cur_inertia_factor_tcb{[this] { return std::format("{:.2f}", m_pending.player.inertia_factor); }};
 
+	// VALIDATION CALLBACKS
+
+	const validation_callback<std::uint32_t> starting_lives_c_vcb{[](std::uint32_t v) { return std::min<std::uint32_t>(v, 255); }};
+	const validation_callback<float> hitbox_radius_c_vcb{[](float v) { return std::clamp(v, 0.0f, 100.0f); }};
+	const validation_callback<float> inertia_factor_c_vcb{[](float v) { return std::clamp(v, 0.0f, 0.99f); }};
+
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
@@ -130,20 +136,22 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 							   tr::system::ttf_style::NORMAL, 32);
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, STARTING_LIVES_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_lives_d_scb,
 							   starting_lives_d_acb);
+	m_ui.emplace<numeric_input_widget<std::uint32_t, 3, "{}", "{}">>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s,
+																	 48, m_ui, m_pending.player.starting_lives, scb, starting_lives_c_vcb);
 	m_ui.emplace<text_widget>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
 							  tr::system::ttf_style::NORMAL, 48, cur_starting_lives_tcb);
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, STARTING_LIVES_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, starting_lives_i_scb,
 							   starting_lives_i_acb);
-	m_ui.emplace<text_widget>(T_HITBOX_RADIUS_C, HITBOX_RADIUS_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_hitbox_radius_tcb);
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, HITBOX_RADIUS_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, hitbox_radius_d_scb,
 							   hitbox_radius_d_acb);
+	m_ui.emplace<numeric_input_widget<float, 3, "{:.0f}", "{}">>(T_HITBOX_RADIUS_C, HITBOX_RADIUS_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
+																 m_ui, m_pending.player.hitbox_radius, scb, hitbox_radius_c_vcb);
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_I, HITBOX_RADIUS_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, hitbox_radius_i_scb,
 							   hitbox_radius_i_acb);
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_D, INERTIA_FACTOR_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, inertia_factor_d_scb,
 							   inertia_factor_d_acb);
-	m_ui.emplace<text_widget>(T_INERTIA_FACTOR_C, INERTIA_FACTOR_C_MOVE_IN, tr::align::CENTER, 0.5_s, font::LANGUAGE,
-							  tr::system::ttf_style::NORMAL, 48, cur_inertia_factor_tcb);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.2f}", "{}">>(T_INERTIA_FACTOR_C, INERTIA_FACTOR_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
+																 m_ui, m_pending.player.inertia_factor, scb, inertia_factor_c_vcb);
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_I, INERTIA_FACTOR_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, inertia_factor_i_scb,
 							   inertia_factor_i_acb);
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
