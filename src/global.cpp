@@ -1,16 +1,5 @@
 #include "../include/global.hpp"
 
-int max_window_size()
-{
-	const glm::ivec2 display_size{tr::system::display_size()};
-	return std::min(display_size.x, display_size.y);
-}
-
-std::uint16_t max_refresh_rate()
-{
-	return tr::round_cast<std::uint16_t>(tr::system::refresh_rate());
-}
-
 // Gets the formatted timer text string.
 std::string timer_text(ticks time)
 {

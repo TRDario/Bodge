@@ -15,6 +15,12 @@ namespace engine {
 	void validate_settings();
 } // namespace engine
 
+std::uint16_t max_window_size()
+{
+	const glm::ivec2 display_size{tr::system::display_size()};
+	return std::uint16_t(std::min(display_size.x, display_size.y));
+}
+
 ///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
 
 void engine::parse_command_line(int argc, const char** argv)

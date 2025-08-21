@@ -74,7 +74,7 @@ std::vector<std::string> engine::create_available_song_list()
 		const std::filesystem::path userdir{engine::cli_settings.userdir / "music"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{userdir}) {
 			if (file.is_regular_file() && file.path().extension() == ".ogg") {
-				songs.push_back(file.path().stem());
+				songs.push_back(file.path().stem().string());
 			}
 		}
 		LOG(tr::severity::INFO, "Created a list of {} available song(s).", songs.size());
