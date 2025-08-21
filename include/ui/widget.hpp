@@ -13,13 +13,13 @@ class label_widget : public text_widget {
   public:
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
-	label_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
+	label_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
 				 tr::system::ttf_style style, float font_size, tr::rgba8 color = "A0A0A0A0"_rgba8);
 
 	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
 
 	// The color of the label.
-	interpolator<tr::rgba8> color;
+	tweener<tr::rgba8> color;
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -32,7 +32,7 @@ class text_button_widget : public text_widget {
   public:
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
-	text_button_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
+	text_button_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
 					   font font, float font_size, status_callback status_cb, action_callback action_cb, sound sound);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ class text_button_widget : public text_widget {
 
   protected:
 	// Interpolator used for some effects.
-	interpolator<tr::rgba8> m_interp;
+	tweener<tr::rgba8> m_interp;
 
   private:
 	// State keeping track of whether the button is hovered.
@@ -87,7 +87,7 @@ template <class T, std::size_t S, class Formatter> class basic_numeric_input_wid
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a numeric input wiget.
-	basic_numeric_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
+	basic_numeric_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
 							   status_callback status_cb, validation_callback<T> validation_cb);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ template <class T, std::size_t S, class Formatter> class basic_numeric_input_wid
 	// The callback run upon input finish.
 	validation_callback<T> m_vcb;
 	// Interpolator used for some effects.
-	interpolator<tr::rgba8> m_interp;
+	tweener<tr::rgba8> m_interp;
 	// State keeping track of whether the button is hovered.
 	bool m_hovered;
 	// State keeping track of whether the button is held.
@@ -138,7 +138,7 @@ template <std::size_t S> class line_input_widget : public text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a text line input wiget.
-	line_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style, float font_size,
+	line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style, float font_size,
 					  status_callback status_cb, action_callback enter_cb, std::string_view initial_text);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
@@ -172,7 +172,7 @@ template <std::size_t S> class line_input_widget : public text_widget {
 	// Callback called when enter is pressed.
 	action_callback m_enter_cb;
 	// Interpolator used for some effects.
-	interpolator<tr::rgba8> m_interp;
+	tweener<tr::rgba8> m_interp;
 	// State keeping track of whether the button is hovered.
 	bool m_hovered;
 	// State keeping track of whether the button is held.
@@ -187,7 +187,7 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a multiline input wiget.
-	multiline_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width, std::uint8_t max_lines,
+	multiline_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width, std::uint8_t max_lines,
 						   float font_size, status_callback status_cb);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
@@ -224,7 +224,7 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 	// The maximum allowed number of lines of text.
 	std::uint8_t m_max_lines;
 	// Interpolator used for some effects.
-	interpolator<tr::rgba8> m_interp;
+	tweener<tr::rgba8> m_interp;
 	// State keeping track of whether the button is hovered.
 	bool m_hovered;
 	// State keeping track of whether the button is held.
@@ -241,7 +241,7 @@ class image_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates an image widget.
-	image_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
+	image_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
 				 std::uint16_t* hue_ref = nullptr);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
@@ -268,7 +268,7 @@ class color_preview_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a color preview widget.
-	color_preview_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::uint16_t& hue_ref);
+	color_preview_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::uint16_t& hue_ref);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -286,7 +286,7 @@ class arrow_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates an arrow widget.
-	arrow_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, bool right_arrow, status_callback status_cb,
+	arrow_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, bool right_arrow, status_callback status_cb,
 				 action_callback action_cb);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
@@ -310,7 +310,7 @@ class arrow_widget : public widget {
 	// Callback called when the widget is interacted with.
 	action_callback m_acb;
 	// Interpolator used for some effects.
-	interpolator<tr::rgba8> m_interp;
+	tweener<tr::rgba8> m_interp;
 	// Whether this widget is a right arrow.
 	bool m_right;
 	// State keeping track of whether the button is hovered.
@@ -328,7 +328,7 @@ struct replay_playback_indicator_widget : public widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a replay playback indicator widget.
-	replay_playback_indicator_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time);
+	replay_playback_indicator_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time);
 
 	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
@@ -348,7 +348,7 @@ struct score_widget : public text_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
 	// Creates a score widget.
-	score_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::size_t rank, score* score);
+	score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::size_t rank, score* score);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
 
@@ -367,7 +367,7 @@ struct score_widget : public text_widget {
 struct replay_widget : public text_button_widget {
 	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
 
-	replay_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_scb, auto base_acb,
+	replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_scb, auto base_acb,
 				  std::optional<std::map<std::string, replay_header>::iterator> it);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////

@@ -20,7 +20,7 @@ std::string string_text_callback::operator()() const
 
 ///////////////////////////////////////////////////////////////// WIDGET //////////////////////////////////////////////////////////////////
 
-widget::widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable)
+widget::widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable)
 	: alignment{alignment}, pos{pos}, tooltip_cb{std::move(tooltip_cb)}, m_opacity{0}, m_writable{writable}
 {
 	if (unhide_time != DONT_UNHIDE) {
@@ -45,7 +45,7 @@ void widget::hide()
 
 void widget::hide(ticks time)
 {
-	m_opacity.change(interp::CUBIC, 0, time);
+	m_opacity.change(tween::CUBIC, 0, time);
 }
 
 void widget::unhide()
@@ -55,7 +55,7 @@ void widget::unhide()
 
 void widget::unhide(ticks time)
 {
-	m_opacity.change(interp::CUBIC, 1, time);
+	m_opacity.change(tween::CUBIC, 1, time);
 }
 
 bool widget::hidden() const
@@ -81,7 +81,7 @@ void widget::update()
 
 /////////////////////////////////////////////////////////////// TEXT WIDGET ///////////////////////////////////////////////////////////////
 
-text_widget::text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
+text_widget::text_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
 						 text_callback text_cb, font font, tr::system::ttf_style style, float font_size, int max_width)
 	: widget{pos, alignment, unhide_time, tooltip_cb, writable}
 	, text_cb{text_cb}

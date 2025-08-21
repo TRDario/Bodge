@@ -1,62 +1,29 @@
 #pragma once
-#include "../game/game.hpp"
-#include "../ui/ui_manager.hpp"
+#include "state.hpp"
 
-// Title screen state.
-class title_state : public tr::state {
+class title_state : public menu_state {
   public:
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
-
-	// Creates a title state with a randomly chosen background gamemode.
 	title_state();
-	// Creates a title state with an ongoing game.
 	title_state(std::unique_ptr<game>&& game);
 
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
-
-	// Handles an event.
-	std::unique_ptr<tr::state> handle_event(const tr::system::event& event) override;
-	// Updates the state.
 	std::unique_ptr<tr::state> update(tr::duration) override;
-	// Draws the state.
-	void draw() override;
 
   private:
-	// Substates within the title screen state.
-	enum class substate : std::uint8_t {
-		// Entering the game.
+	enum class substate {
 		ENTERING_GAME,
-		// In the main menu.
 		IN_TITLE,
-		// Entering the "Start Game" menu.
 		ENTERING_START_GAME,
-		// Entering the gamemode editor.
 		ENTERING_GAMEMODE_DESIGNER,
-		// Entering the replays screen.
 		ENTERING_REPLAYS,
-		// Entering the scores screen.
 		ENTERING_SCOREBOARDS,
-		// Entering the settings screen.
 		ENTERING_SETTINGS,
-		// Exiting the game.
+		ENTERING_CREDITS,
 		EXITING_GAME
 	};
 
-	// The current menu substate.
 	substate m_substate;
-	// Internal timer.
-	ticks m_timer;
-	// The UI manager.
-	ui_manager m_ui;
-	// Background game.
-	std::unique_ptr<game> m_background_game;
 
-	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
-
-	// Calculates the fade overlay opacity.
-	float fade_overlay_opacity() const;
-	// Sets up the UI.
+	float fade_overlay_opacity() override;
 	void set_up_ui();
-	// Sets up the exit animation.
 	void set_up_exit_animation();
 };

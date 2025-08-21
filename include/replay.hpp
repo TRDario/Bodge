@@ -70,5 +70,7 @@ class replay {
 	std::vector<glm::vec2>::iterator m_next_it;
 };
 
-// Loads all found replay headers.
-std::map<std::string, replay_header> load_replay_headers();
+namespace engine {
+	// Loads all found replay headers.
+	std::map<std::string, replay_header> load_replay_headers();
+} // namespace engine

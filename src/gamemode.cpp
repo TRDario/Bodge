@@ -3,17 +3,22 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
+// Gamemode file version identifier.
+constexpr std::uint8_t GAMEMODE_VERSION{0};
+
 // The gamemodes that can appear in the main menu background.
 const std::array<gamemode, 3> BUILTIN_GAMEMODES{
-	gamemode{true, "gm_classic", "TRDario", "gm_classic_d", "classic", player_settings{}, ball_settings{3, 50, 8.33_s, 30, 0, 400, 10}},
-	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", "chonk", player_settings{}, ball_settings{5, 20, 15_s, 75, 0, 350, 25}},
+	gamemode{true, "gm_classic", "TRDario", "gm_classic_d", "classic", player_settings{}, ball_settings{3, 50, 8.334_s, 30, 0, 400, 10}},
+	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", "chonk", player_settings{}, ball_settings{5, 20, 19.59183674_s, 75, 0, 350, 25}},
 	gamemode{true, "gm_swarm", "TRDario", "gm_swarm_d", "swarm", player_settings{2, 15, 0.05f},
 			 ball_settings{15, 50, 3.42857143_s, 10, 0, 250, 10}},
 };
 // The gamemodes that can appear in the main menu background.
-constexpr std::array<gamemode, 2> MENU_GAMEMODES{
-	gamemode{false, "gm_chonk", "TRDario", "gm_chonk_d", {}, NO_PLAYER, ball_settings{5, 20, 15_s, 75, 0, 350, 25}},
-	gamemode{false, "gm_swarm", "TRDario", "gm_swarm_d", {}, NO_PLAYER, ball_settings{15, 50, 2.5_s, 10, 0, 250, 10}},
+constexpr std::array<gamemode, 4> MENU_GAMEMODES{
+	gamemode{.player{NO_PLAYER}, .ball{12, 12, 10_s, 25, 0, 350, 0}},
+	gamemode{.player{NO_PLAYER}, .ball{5, 5, 10_s, 25, 0, 1000, 0}},
+	gamemode{.player{NO_PLAYER}, .ball{5, 20, 19.59183674_s, 75, 0, 350, 25}},
+	gamemode{.player{NO_PLAYER}, .ball{15, 50, 3.42857143_s, 10, 0, 250, 10}},
 };
 
 ///////////////////////////////////////////////////////////// PLAYER SETTINGS /////////////////////////////////////////////////////////////
@@ -52,14 +57,6 @@ gamemode pick_menu_gamemode()
 	return MENU_GAMEMODES[engine::rng.generate(MENU_GAMEMODES.size())];
 }
 
-gamemode load_gamemode(const std::filesystem::path& path)
-{
-	gamemode gm;
-	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
-	tr::binary_read(tr::decrypt(tr::flush_binary(file)), gm);
-	return gm;
-}
-
 std::vector<gamemode> load_gamemodes()
 {
 	std::vector<gamemode> gamemodes;
@@ -72,7 +69,11 @@ std::vector<gamemode> load_gamemodes()
 				if (!file.is_regular_file() || path.extension() != ".gmd") {
 					continue;
 				}
-				gamemodes.push_back(load_gamemode(path));
+				std::ifstream is{tr::open_file_r(path, std::ios::binary)};
+				if (tr::binary_read<std::uint8_t>(is) != GAMEMODE_VERSION) {
+					continue;
+				}
+				gamemodes.push_back(tr::binary_read<gamemode>(tr::decrypt(tr::flush_binary(is))));
 				LOG(tr::severity::INFO, "Loaded gamemode '{}'.", gamemodes.back().name);
 				LOG_CONTINUE("From: '{}'", path.string());
 			}
@@ -105,6 +106,7 @@ void save_gamemode(const gamemode& gm)
 		std::ostringstream bufstream{std::ios::binary};
 		tr::binary_write(bufstream, gm);
 		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), engine::rng.generate<std::uint8_t>())};
+		tr::binary_write(file, GAMEMODE_VERSION);
 		tr::binary_write(file, std::span{encrypted});
 
 		LOG(tr::severity::INFO, "Saved gamemode '{}'.", gm.name);

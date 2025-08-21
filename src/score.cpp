@@ -2,6 +2,11 @@
 #include "../include/gamemode.hpp"
 #include "../include/settings.hpp"
 
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+
+// Settings file version identifier.
+constexpr std::uint8_t SCOREFILE_VERSION{0};
+
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
 
 std::strong_ordering operator<=>(const score& l, const score& r)
@@ -76,10 +81,11 @@ void engine::load_scorefile()
 	const std::filesystem::path path{cli_settings.userdir / "scorefile.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
-		if (tr::binary_read<std::uint8_t>(file) != SCOREFILE_VERSION) {
+		const std::uint8_t version{tr::binary_read<std::uint8_t>(file)};
+		if (version != SCOREFILE_VERSION) {
 			LOG(tr::severity::ERROR, "Failed to load scorefile.");
 			LOG_CONTINUE("From: '{}'", path.string());
-			LOG_CONTINUE("Invalid scorefile version.");
+			LOG_CONTINUE("Unsupported scorefile version {:d}.", version);
 			return;
 		}
 		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};

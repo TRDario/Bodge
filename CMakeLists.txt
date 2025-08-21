@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30.0)
-project(Bodge VERSION 0.3.0 LANGUAGES C CXX)
+project(Bodge VERSION 0.9.0 LANGUAGES C CXX)
 
 include (FetchContent)
 
@@ -15,10 +15,10 @@ add_executable(
     src/main.cpp
     src/audio.cpp src/blur_renderer.cpp src/fonts.cpp src/graphics.cpp src/system.cpp src/tooltip_manager.cpp
     src/game/ball.cpp src/game/game.cpp src/game/player.cpp src/game/trail.cpp
-    src/state/ball_settings_editor_state.cpp src/state/game_over_state.cpp src/state/game_state.cpp src/state/gamemode_designer_state.cpp
-        src/state/name_entry_state.cpp src/state/pause_state.cpp src/state/player_settings_editor_state.cpp src/state/replays_state.cpp
-        src/state/save_score_state.cpp src/state/save_replay_state.cpp src/state/scoreboards_state.cpp src/state/settings_state.cpp
-        src/state/start_game_state.cpp src/state/title_state.cpp
+    src/state/ball_settings_editor_state.cpp src/state/credits_state.cpp src/state/game_over_state.cpp src/state/game_state.cpp
+        src/state/gamemode_designer_state.cpp src/state/name_entry_state.cpp src/state/pause_state.cpp src/state/player_settings_editor_state.cpp
+        src/state/replays_state.cpp src/state/save_score_state.cpp src/state/save_replay_state.cpp src/state/scoreboards_state.cpp src/state/settings_state.cpp
+        src/state/state.cpp src/state/start_game_state.cpp src/state/title_state.cpp
     src/ui/ui_manager.cpp src/ui/widget_base.cpp src/ui/widget.cpp
     src/gamemode.cpp src/global.cpp src/localization.cpp src/replay.cpp src/score.cpp src/settings.cpp
 )

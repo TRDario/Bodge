@@ -1,6 +1,11 @@
 #include "../include/replay.hpp"
 #include "../include/settings.hpp"
 
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+
+// Replay file version identifier.
+constexpr std::uint8_t REPLAY_VERSION{0};
+
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
 std::string to_filename(std::string_view name)
@@ -49,6 +54,8 @@ replay::replay(const std::string& filename)
 	std::vector<std::byte> decrypted;
 	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 
+	std::ignore = tr::binary_read<std::uint8_t>(file);
+
 	tr::binary_read(file, encrypted);
 	tr::decrypt_to(decrypted, encrypted);
 	tr::binary_read(decrypted, m_header);
@@ -75,7 +82,7 @@ void replay::append(glm::vec2 input)
 
 void replay::set_header(const score& header, std::string_view name)
 {
-	static_cast<score&>(m_header) = header;
+	(score&)(m_header) = header;
 	m_header.name = name;
 }
 
@@ -98,6 +105,8 @@ void replay::save_to_file() const
 
 		std::ostringstream bufstream{std::ios::binary};
 		std::vector<std::byte> buffer;
+
+		tr::binary_write(bufstream, REPLAY_VERSION);
 		tr::binary_write(bufstream, m_header);
 		tr::encrypt_to(buffer, bufstream.view(), engine::rng.generate<std::uint8_t>());
 		tr::binary_write(file, buffer);
@@ -137,27 +146,32 @@ glm::vec2 replay::current() const
 	return done() ? *std::prev(m_next_it) : *m_next_it;
 }
 
-std::map<std::string, replay_header> load_replay_headers()
+std::map<std::string, replay_header> engine::load_replay_headers()
 {
 	std::map<std::string, replay_header> replays;
 	try {
 		const std::filesystem::path replay_dir{engine::cli_settings.userdir / "replays"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{replay_dir}) {
-			const std::filesystem::path path{file};
-			if (!file.is_regular_file() || path.extension() != ".dat") {
+			if (!file.is_regular_file() || file.path().extension() != ".dat") {
 				continue;
 			}
 
 			try {
 				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
-				replays.emplace(path.filename().string(),
+				const std::uint8_t version{tr::binary_read<std::uint8_t>(is)};
+				if (version != REPLAY_VERSION) {
+					LOG(tr::severity::ERROR, "Failed to load replay header.");
+					LOG_CONTINUE("From: '{}'", file.path().string());
+					LOG_CONTINUE("Unsupported replay version {:d}.", version);
+				}
+				replays.emplace(file.path().filename().string(),
 								tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
 				LOG(tr::severity::INFO, "Loaded replay header.");
-				LOG_CONTINUE("From: '{}'", path.string());
+				LOG_CONTINUE("From: '{}'", file.path().string());
 			}
 			catch (std::exception& err) {
 				LOG(tr::severity::ERROR, "Failed to load replay header.");
-				LOG_CONTINUE("From: '{}'", path.string());
+				LOG_CONTINUE("From: '{}'", file.path().string());
 				LOG_CONTINUE(err);
 			}
 		}

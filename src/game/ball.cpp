@@ -3,16 +3,16 @@
 #include "../../include/graphics.hpp"
 #include "../../include/settings.hpp"
 
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+//
 
-// The amount of time it takes a ball to become tangible.
+// The amount of time it takes a ball to become tangible after spawning.
 inline constexpr ticks BALL_SPAWN_TIME{1.5_s};
-// The amount of time it takes a ball to become tangible.
+// The amount of time it takes a ball to become tangible after colliding with something.
 inline constexpr ticks BALL_COLLISION_TIME{0.1_s};
 // Ball fill color.
 inline constexpr tr::rgb8 BALL_FILL_COLOR{0, 0, 0};
 
-///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+//
 
 void play_ball_sound(glm::vec2 pos, float velocity)
 {
@@ -21,10 +21,10 @@ void play_ball_sound(glm::vec2 pos, float velocity)
 	engine::play_sound(sound::BOUNCE, 0.15f, pan, engine::rng.generate(pitch - 0.2f, pitch + 0.2f));
 }
 
-////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
+//
 
 ball::ball(const tr::circle& hitbox, const glm::vec2& velocity)
-	: m_hitbox{hitbox}, m_trail{hitbox.c}, m_velocity{velocity}, m_age{0}, m_last_collision{0}
+	: m_hitbox{hitbox}, m_trail{hitbox.c}, m_velocity{velocity}, m_time_since_spawned{0}, m_time_since_last_collision{0}
 {
 }
 
@@ -34,11 +34,11 @@ ball::ball(tr::xorshiftr_128p& rng, float size, float velocity)
 {
 }
 
-///////////////////////////////////////////////////////////////// GETTERS /////////////////////////////////////////////////////////////////
+//
 
 bool ball::tangible() const
 {
-	return m_age >= BALL_SPAWN_TIME;
+	return m_time_since_spawned >= BALL_SPAWN_TIME;
 }
 
 const tr::circle& ball::hitbox() const
@@ -51,7 +51,7 @@ bool colliding(const ball& a, const ball& b)
 	return tr::intersecting(a.hitbox(), b.hitbox()) && glm::dot(a.m_hitbox.c - b.m_hitbox.c, b.m_velocity - a.m_velocity) >= 0;
 }
 
-///////////////////////////////////////////////////////////////// SETTERS /////////////////////////////////////////////////////////////////
+//
 
 void handle_collision(ball& a, ball& b)
 {
@@ -67,16 +67,16 @@ void handle_collision(ball& a, ball& b)
 	a.m_velocity -= ((2 * b_mass / total_mass) * (glm::dot(dist_vec, vel_diff) / dist2) * dist_vec);
 	b.m_velocity -= ((2 * a_mass / total_mass) * (glm::dot(-dist_vec, -vel_diff) / dist2) * -dist_vec);
 
-	a.m_last_collision = 0;
-	b.m_last_collision = 0;
+	a.m_time_since_last_collision = 0;
+	b.m_time_since_last_collision = 0;
 }
 
 void ball::update()
 {
-	++m_age;
-	++m_last_collision;
+	++m_time_since_spawned;
+	++m_time_since_last_collision;
 
-	if (m_age >= BALL_SPAWN_TIME) {
+	if (m_time_since_spawned >= BALL_SPAWN_TIME) {
 		m_trail.push(m_hitbox.c);
 
 		const glm::vec2 target{m_hitbox.c + m_velocity / 1_sf};
@@ -106,21 +106,21 @@ void ball::update()
 		}
 
 		m_hitbox.c = clamped;
-		m_last_collision = 0;
+		m_time_since_last_collision = 0;
 	}
 }
 
-///////////////////////////////////////////////////////////////// GRAPHICS ////////////////////////////////////////////////////////////////
+//
 
 void ball::add_to_renderer() const
 {
-	const tr::rgb8 tint{tr::color_cast<tr::rgb8>(tr::hsv{static_cast<float>(engine::settings.secondary_hue), 1, 1})};
-	const float raw_age_factor{std::min(static_cast<float>(m_age) / BALL_SPAWN_TIME, 1.0f)};
+	const tr::rgb8 tint{tr::color_cast<tr::rgb8>(tr::hsv{float(engine::settings.secondary_hue), 1, 1})};
+	const float raw_age_factor{std::min(float(m_time_since_spawned) / BALL_SPAWN_TIME, 1.0f)};
 	const float eased_age_factor{raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor)};
 	const float size{m_hitbox.r * (5 - 4 * eased_age_factor)};
 	const std::size_t vertices{tr::smooth_poly_vtx(size, engine::render_scale())};
 	const std::uint8_t base_opacity{tr::norm_cast<std::uint8_t>(raw_age_factor)};
-	const float thickness{3 + 4 * std::max((static_cast<float>(BALL_COLLISION_TIME) - m_last_collision) / BALL_COLLISION_TIME, 0.0f)};
+	const float thickness{3 + 4 * std::max((float(BALL_COLLISION_TIME) - m_time_since_last_collision) / BALL_COLLISION_TIME, 0.0f)};
 
 	// Add the ball.
 	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::BALLS, vertices)};
@@ -131,7 +131,7 @@ void ball::add_to_renderer() const
 	std::ranges::fill(outline.colors, tr::rgba8{tint, base_opacity});
 
 	// Add the trail.
-	if (m_age > BALL_SPAWN_TIME) {
+	if (m_time_since_spawned > BALL_SPAWN_TIME) {
 		std::size_t drawn_trails{2};
 		for (std::size_t i = 0; i < m_trail.SIZE - 1; ++i) {
 			const glm::vec2 prev{i == 0 ? m_hitbox.c : m_trail[i - 1]};
@@ -162,12 +162,12 @@ void ball::add_to_renderer() const
 			tr::fill_poly_vtx(positions, vertices, {m_trail[i], m_hitbox.r});
 			std::ranges::fill(colors, tr::rgba8{tint, opacity});
 			for (std::size_t j = 0; j < vertices; ++j) {
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + trail_index * vertices + j);
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + trail_index * vertices + (j + 1) % vertices);
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (trail_index - 1) * vertices + (j + 1) % vertices);
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + trail_index * vertices + j);
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (trail_index - 1) * vertices + (j + 1) % vertices);
-				*indices_it++ = static_cast<std::uint16_t>(trail.base_index + (trail_index - 1) * vertices + j);
+				*indices_it++ = std::uint16_t(trail.base_index + trail_index * vertices + j);
+				*indices_it++ = std::uint16_t(trail.base_index + trail_index * vertices + (j + 1) % vertices);
+				*indices_it++ = std::uint16_t(trail.base_index + (trail_index - 1) * vertices + (j + 1) % vertices);
+				*indices_it++ = std::uint16_t(trail.base_index + trail_index * vertices + j);
+				*indices_it++ = std::uint16_t(trail.base_index + (trail_index - 1) * vertices + (j + 1) % vertices);
+				*indices_it++ = std::uint16_t(trail.base_index + (trail_index - 1) * vertices + j);
 			}
 			++trail_index;
 		}

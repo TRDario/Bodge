@@ -6,7 +6,7 @@ template <> struct tr::binary_writer<settings> : tr::default_binary_writer<setti
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings file version identifier.
-constexpr std::uint8_t SETTINGS_VERSION{1};
+constexpr std::uint8_t SETTINGS_VERSION{0};
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
@@ -59,7 +59,7 @@ void engine::parse_command_line(int argc, const char** argv)
 		cli_settings.userdir = tr::system::user_dir();
 	}
 
-	constexpr std::array<const char*, 4> DIRECTORIES{"localization", "fonts", "replays", "gamemodes"};
+	constexpr std::array<const char*, 5> DIRECTORIES{"localization", "fonts", "music", "replays", "gamemodes"};
 	for (const char* directory : DIRECTORIES) {
 		const std::filesystem::path path{cli_settings.userdir / directory};
 		if (!std::filesystem::is_directory(path)) {
@@ -111,12 +111,12 @@ void engine::validate_settings()
 		settings.msaa = adjusted;
 	}
 	if (settings.primary_hue >= 360) {
-		const std::uint16_t clamped{static_cast<std::uint16_t>(settings.primary_hue % 360)};
+		const std::uint16_t clamped{std::uint16_t(settings.primary_hue % 360)};
 		LOG(tr::severity::WARN, "Clamped primary hue from {} to {}.", settings.primary_hue, clamped);
 		settings.primary_hue = clamped;
 	}
 	if (settings.secondary_hue >= 360) {
-		const std::uint16_t clamped{static_cast<std::uint16_t>(settings.secondary_hue % 360)};
+		const std::uint16_t clamped{std::uint16_t(settings.secondary_hue % 360)};
 		LOG(tr::severity::WARN, "Clamped secondary hue from {} to {}.", settings.secondary_hue, clamped);
 		settings.secondary_hue = clamped;
 	}

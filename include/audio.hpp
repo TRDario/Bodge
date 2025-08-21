@@ -37,6 +37,8 @@ namespace engine {
 	// Initializes the audio system.
 	// Note that the program has a high tolerance to audio errors and will even survive a complete failure.
 	void initialize_audio();
+	// Creates a list containing the names of available songs.
+	std::vector<std::string> create_available_song_list();
 	// Plays a sound effect.
 	void play_sound(sound sound, float volume, float pan, float pitch = 1);
 	// Plays a song.

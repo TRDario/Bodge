@@ -25,7 +25,7 @@ std::string default_numeric_input_formatter<T, Fmt, BufferFmt>::to_string(std::s
 }
 
 template <class T, std::size_t S, class Formatter>
-basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size,
+basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size,
 												 ui_manager& ui, T& ref, status_callback status_cb,
 												 validation_callback<T> validation_cb)
 	: text_widget{
@@ -75,11 +75,10 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 
 	if (interactible()) {
 		if (interactible() && !(m_held || m_hovered || m_selected) && m_interp.done() && m_interp != "A0A0A0A0"_rgba8) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 		else if (m_interp.done() && (m_hovered || m_selected) && !m_held) {
-			m_interp.change(interp::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 0.2f, 1.0f}),
-							4_s);
+			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 0.2f, 1.0f}), 4_s);
 		}
 	}
 	else {
@@ -87,7 +86,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 		m_held = false;
 		m_selected = false;
 		if (m_interp.done() && m_interp != "505050A0"_rgba8) {
-			m_interp.change(interp::LERP, "505050A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -99,7 +98,7 @@ template <class T, std::size_t S, class Formatter> bool basic_numeric_input_widg
 
 template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_action()
 {
-	m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+	m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 }
 
 template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_hover()
@@ -107,7 +106,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	if (interactible()) {
 		m_hovered = true;
 		if (!m_selected) {
-			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 		}
 	}
@@ -118,7 +117,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	if (interactible()) {
 		m_hovered = false;
 		if (!m_selected) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -143,7 +142,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	if (interactible()) {
 		m_selected = true;
 		if (!m_hovered) {
-			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 		}
 		else {
 			engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
@@ -158,7 +157,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	if (interactible()) {
 		m_selected = false;
 		if (!m_hovered) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 
 		T temp{m_ref};
@@ -197,7 +196,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
 template <std::size_t S>
-line_input_widget<S>::line_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style,
+line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style,
 										float font_size, status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
 	: text_widget{pos,
 				  alignment,
@@ -240,11 +239,10 @@ template <std::size_t S> void line_input_widget<S>::update()
 
 	if (interactible()) {
 		if (interactible() && !(m_held || m_hovered || m_selected) && m_interp.done() && m_interp != "A0A0A0A0"_rgba8) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 		else if (m_interp.done() && (m_hovered || m_selected) && !m_held) {
-			m_interp.change(interp::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 0.2f, 1.0f}),
-							4_s);
+			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 0.2f, 1.0f}), 4_s);
 		}
 	}
 	else {
@@ -252,7 +250,7 @@ template <std::size_t S> void line_input_widget<S>::update()
 		m_held = false;
 		m_selected = false;
 		if (m_interp.done() && m_interp != "505050A0"_rgba8) {
-			m_interp.change(interp::LERP, "505050A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -264,7 +262,7 @@ template <std::size_t S> bool line_input_widget<S>::interactible() const
 
 template <std::size_t S> void line_input_widget<S>::on_action()
 {
-	m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+	m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 }
 
 template <std::size_t S> void line_input_widget<S>::on_hover()
@@ -272,7 +270,7 @@ template <std::size_t S> void line_input_widget<S>::on_hover()
 	if (interactible()) {
 		m_hovered = true;
 		if (!m_selected) {
-			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 		}
 	}
@@ -283,7 +281,7 @@ template <std::size_t S> void line_input_widget<S>::on_unhover()
 	if (interactible()) {
 		m_hovered = false;
 		if (!m_selected) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -308,7 +306,7 @@ template <std::size_t S> void line_input_widget<S>::on_selected()
 	if (interactible()) {
 		m_selected = true;
 		if (!m_hovered) {
-			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 		}
 		else {
 			engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
@@ -321,7 +319,7 @@ template <std::size_t S> void line_input_widget<S>::on_unselected()
 	if (interactible()) {
 		m_selected = false;
 		if (!m_hovered) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -373,7 +371,7 @@ template <std::size_t S> void line_input_widget<S>::on_paste()
 
 ////////////////////////////////////////////////////////////// REPLAY WIDGET //////////////////////////////////////////////////////////////
 
-replay_widget::replay_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_scb, auto base_acb,
+replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_scb, auto base_acb,
 							 std::optional<std::map<std::string, replay_header>::iterator> it)
 	: text_button_widget{pos,
 						 alignment,
@@ -442,7 +440,7 @@ replay_widget::replay_widget(interpolator<glm::vec2> pos, tr::align alignment, t
 ////////////////////////////////////////////////////////// MULTILINE TEXT INPUT ///////////////////////////////////////////////////////////
 
 template <std::size_t S>
-multiline_input_widget<S>::multiline_input_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width,
+multiline_input_widget<S>::multiline_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width,
 												  std::uint8_t max_lines, float font_size, status_callback status_cb)
 	: text_widget{pos,
 				  alignment,
@@ -453,7 +451,7 @@ multiline_input_widget<S>::multiline_input_widget(interpolator<glm::vec2> pos, t
 				  font::LANGUAGE,
 				  tr::system::ttf_style::NORMAL,
 				  font_size,
-				  static_cast<int>(width)}
+				  int(width)}
 	, m_scb{std::move(status_cb)}
 	, m_size{width, engine::line_skip(font::LANGUAGE, font_size) * max_lines + 4}
 	, m_max_lines{max_lines}
@@ -488,7 +486,7 @@ template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 	std::ranges::fill(outline.colors, color);
 	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(fill.positions, {tl() + 2.0f, size() - 4.0f});
-	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, static_cast<std::uint8_t>(160 * opacity())});
+	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, std::uint8_t(160 * opacity())});
 }
 
 template <std::size_t S> void multiline_input_widget<S>::update()
@@ -498,11 +496,10 @@ template <std::size_t S> void multiline_input_widget<S>::update()
 
 	if (interactible()) {
 		if (interactible() && !(m_held || m_hovered || m_selected) && m_interp.done() && m_interp != "A0A0A0A0"_rgba8) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 		else if (m_interp.done() && (m_hovered || m_selected) && !m_held) {
-			m_interp.change(interp::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 0.2f, 1.0f}),
-							4_s);
+			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 0.2f, 1.0f}), 4_s);
 		}
 	}
 	else {
@@ -510,7 +507,7 @@ template <std::size_t S> void multiline_input_widget<S>::update()
 		m_held = false;
 		m_selected = false;
 		if (m_interp.done() && m_interp != "505050A0"_rgba8) {
-			m_interp.change(interp::LERP, "505050A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -522,7 +519,7 @@ template <std::size_t S> bool multiline_input_widget<S>::interactible() const
 
 template <std::size_t S> void multiline_input_widget<S>::on_action()
 {
-	m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+	m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 }
 
 template <std::size_t S> void multiline_input_widget<S>::on_hover()
@@ -530,7 +527,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_hover()
 	if (interactible()) {
 		m_hovered = true;
 		if (!m_selected) {
-			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 		}
 	}
@@ -541,7 +538,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_unhover()
 	if (interactible()) {
 		m_hovered = false;
 		if (!m_selected) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -566,7 +563,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_selected()
 	if (interactible()) {
 		m_selected = true;
 		if (!m_hovered) {
-			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 		}
 		else {
 			engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
@@ -579,7 +576,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_unselected()
 	if (interactible()) {
 		m_selected = false;
 		if (!m_hovered) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 	}
 }

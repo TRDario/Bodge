@@ -7,15 +7,15 @@
 #include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+//
 
 constexpr tag T_REPLAY{"replay"};
 constexpr tag T_INDICATOR{"indicator"};
 
-/////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
+//
 
 game_state::game_state(std::unique_ptr<game>&& game, game_type type, bool fade_in)
-	: m_substate{(fade_in ? substate_base::STARTING : substate_base::ONGOING) | type}, m_timer{0}, m_ui{{}, {}}, m_game{std::move(game)}
+	: state{{}, {}}, m_substate{(fade_in ? substate_base::FADING_IN : substate_base::ONGOING) | type}, m_game{std::move(game)}
 {
 	if (!fade_in) {
 		engine::unpause_song();
@@ -28,11 +28,11 @@ game_state::game_state(std::unique_ptr<game>&& game, game_type type, bool fade_i
 	}
 }
 
-///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
+//
 
 std::unique_ptr<tr::state> game_state::handle_event(const tr::system::event& event)
 {
-	if (to_base(m_substate) != substate_base::STARTING && event.type() == tr::system::key_down_event::ID &&
+	if (to_base(m_substate) != substate_base::FADING_IN && event.type() == tr::system::key_down_event::ID &&
 		tr::system::key_down_event{event}.key == tr::system::keycode::ESCAPE) {
 		engine::play_sound(sound::PAUSE, 0.8f, 0.0f);
 		return std::make_unique<pause_state>(std::move(m_game), to_type(m_substate), engine::mouse_pos(), true);
@@ -42,10 +42,9 @@ std::unique_ptr<tr::state> game_state::handle_event(const tr::system::event& eve
 
 std::unique_ptr<tr::state> game_state::update(tr::duration)
 {
-	++m_timer;
-	m_ui.update();
+	state::update({});
 	switch (to_base(m_substate)) {
-	case substate_base::STARTING:
+	case substate_base::FADING_IN:
 		if (m_timer >= 0.5_s) {
 			m_substate = substate_base::ONGOING | to_type(m_substate);
 			m_timer = 0;
@@ -62,7 +61,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 			else if (engine::held_keymods() & tr::system::keymod::CTRL) {
 				for (int i = 0; i < 4; ++i) {
 					m_game->update();
-					if (static_cast<replay_game*>(m_game.get())->done()) {
+					if (((replay_game*)m_game.get())->done()) {
 						break;
 					}
 				}
@@ -71,7 +70,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 				m_game->update();
 			}
 
-			if (static_cast<replay_game*>(m_game.get())->done()) {
+			if (((replay_game*)m_game.get())->done()) {
 				if (m_game->game_over()) {
 					m_substate = substate_base::GAME_OVER | game_type::REPLAY;
 					engine::fade_song_out(0.5s);
@@ -104,11 +103,10 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 			switch (to_type(m_substate)) {
 			case game_type::REGULAR: {
 				const ticks prev_pb{pb(engine::scorefile, m_game->gamemode())};
-				update_pb(engine::scorefile, m_game->gamemode(), m_game->result());
-				return std::make_unique<game_over_state>(std::unique_ptr<active_game>{static_cast<active_game*>(m_game.release())}, true,
-														 prev_pb);
+				update_pb(engine::scorefile, m_game->gamemode(), m_game->final_time());
+				return std::make_unique<game_over_state>(std::unique_ptr<active_game>{(active_game*)m_game.release()}, true, prev_pb);
 			}
-			case game_type::TEST:
+			case game_type::GAMEMODE_DESIGNER_TEST:
 			case game_type::REPLAY:
 				m_substate = substate_base::EXITING | to_type(m_substate);
 				m_timer = 0;
@@ -135,39 +133,39 @@ void game_state::draw()
 	m_game->add_to_renderer();
 	if (to_type(m_substate) == game_type::REPLAY) {
 		m_ui.add_to_renderer();
-		add_replay_cursor_to_renderer(static_cast<replay_game*>(m_game.get())->cursor_pos());
+		add_replay_cursor_to_renderer(((replay_game*)m_game.get())->cursor_pos());
 	}
 	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
 	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
-///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+//
 
 game_state::substate operator|(const game_state::substate_base& l, const game_type& r)
 {
-	return static_cast<game_state::substate>(static_cast<int>(l) | static_cast<int>(r));
+	return game_state::substate(int(l) | int(r));
 }
 
 game_state::substate_base to_base(game_state::substate state)
 {
-	return static_cast<game_state::substate_base>(static_cast<int>(state) & 0x3);
+	return game_state::substate_base(int(state) & 0x3);
 }
 
 game_type to_type(game_state::substate state)
 {
-	return static_cast<game_type>(static_cast<int>(state) & 0x18);
+	return game_type(int(state) & 0x18);
 }
 
 float game_state::fade_overlay_opacity() const
 {
 	switch (to_base(m_substate)) {
-	case substate_base::STARTING:
+	case substate_base::FADING_IN:
 		return 1 - m_timer / 0.5_sf;
 	case substate_base::ONGOING:
 	case substate_base::GAME_OVER:
 		return 0;
 	case substate_base::EXITING:
-		return std::max(static_cast<int>(m_timer - 0.5_s), 0) / 0.5_sf;
+		return std::max(int(m_timer - 0.5_s), 0) / 0.5_sf;
 	}
 }
 
@@ -175,8 +173,8 @@ void game_state::add_replay_cursor_to_renderer(glm::vec2 pos) const
 {
 	tr::gfx::simple_color_mesh_ref quad{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, 45_deg);
-	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 1, 1}));
+	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 1, 1}));
 	quad = tr::gfx::renderer_2d::new_color_fan(layer::UI, 4);
 	fill_rotated_rect_vtx(quad.positions, pos, {6, 1}, {12, 2}, -45_deg);
-	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 1, 1}));
+	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 1, 1}));
 }

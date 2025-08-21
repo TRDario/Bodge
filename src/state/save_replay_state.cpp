@@ -3,7 +3,7 @@
 #include "../../include/state/title_state.hpp"
 #include "../../include/ui/widget.hpp"
 
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+// clang-format off
 
 constexpr tag T_TITLE{"save_replay"};
 constexpr tag T_NAME{"name"};
@@ -21,52 +21,66 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ENTER}, T_SAVE},     {{tr::system::keycode::S}, T_SAVE},    {{tr::system::keycode::TOP_ROW_1}, T_SAVE},
-	{{tr::system::keycode::ESCAPE}, T_DISCARD}, {{tr::system::keycode::C}, T_DISCARD}, {{tr::system::keycode::TOP_ROW_2}, T_DISCARD},
+	{{tr::system::keycode::ENTER}, T_SAVE},
+	{{tr::system::keycode::S}, T_SAVE},
+	{{tr::system::keycode::TOP_ROW_1}, T_SAVE},
+	{{tr::system::keycode::ESCAPE}, T_DISCARD},
+	{{tr::system::keycode::C}, T_DISCARD},
+	{{tr::system::keycode::TOP_ROW_2}, T_DISCARD},
 };
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr interpolator<glm::vec2> NAME_MOVE_IN{interp::CUBIC, {400, 200}, {500, 200}, 0.5_s};
-constexpr interpolator<glm::vec2> NAME_INPUT_MOVE_IN{interp::CUBIC, {400, 235}, {500, 235}, 0.5_s};
-constexpr interpolator<glm::vec2> DESCRIPTION_MOVE_IN{interp::CUBIC, {600, 440}, {500, 440}, 0.5_s};
-constexpr interpolator<glm::vec2> DESCRIPTION_INPUT_MOVE_IN{interp::CUBIC, {600, 475}, {500, 475}, 0.5_s};
-constexpr interpolator<glm::vec2> SAVE_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 950}, 0.5_s};
-constexpr interpolator<glm::vec2> DISCARD_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr tweener<glm::vec2> NAME_MOVE_IN{tween::CUBIC, {400, 200}, {500, 200}, 0.5_s};
+constexpr tweener<glm::vec2> NAME_INPUT_MOVE_IN{tween::CUBIC, {400, 235}, {500, 235}, 0.5_s};
+constexpr tweener<glm::vec2> DESCRIPTION_MOVE_IN{tween::CUBIC, {600, 440}, {500, 440}, 0.5_s};
+constexpr tweener<glm::vec2> DESCRIPTION_INPUT_MOVE_IN{tween::CUBIC, {600, 475}, {500, 475}, 0.5_s};
+constexpr tweener<glm::vec2> SAVE_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 950}, 0.5_s};
+constexpr tweener<glm::vec2> DISCARD_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
-////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
+// clang-format on
 
 save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_screen_flags flags)
-	: m_substate{substate_base::SAVING_REPLAY | flags}
-	, m_timer{0}
-	, m_ui{SELECTION_TREE, SHORTCUTS}
+	: state{SELECTION_TREE, SHORTCUTS}
+	, m_substate{substate_base::SAVING_REPLAY | flags}
 	, m_game{std::move(game)}
 	, m_replay{m_game->replay().header()}
 {
 	// STATUS CALLBACKS
 
-	const status_callback scb{[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }};
-	const status_callback save_scb{[this] {
-		return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(T_NAME_INPUT).buffer.empty();
-	}};
+	const status_callback scb{
+		[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; },
+	};
+	const status_callback save_scb{
+		[this] {
+			return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(T_NAME_INPUT).buffer.empty();
+		},
+	};
 
 	// ACTION CALLBACKS
 
-	const action_callback name_acb{[this] { m_ui.select_next(); }};
-	const action_callback save_acb{[this] {
-		const score_flags flags{!m_game->game_over(), engine::cli_settings.game_speed != 1.0f};
+	const action_callback name_acb{
+		[this] { m_ui.select_next(); },
+	};
+	const action_callback save_acb{
+		[this] {
+			const score_flags flags{!m_game->game_over(), engine::cli_settings.game_speed != 1.0f};
+			const auto& description{m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).buffer};
+			const auto& name{m_ui.as<line_input_widget<20>>("name_input").buffer};
 
-		m_substate = substate_base::EXITING | to_flags(m_substate);
-		m_timer = 0;
-		set_up_exit_animation();
-		m_game->replay().set_header({m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).buffer, unix_now(), m_game->result(), flags},
-									m_ui.as<line_input_widget<20>>("name_input").buffer);
-		m_game->replay().save_to_file();
-	}};
-	const action_callback discard_acb{[this] {
-		m_substate = substate_base::EXITING | to_flags(m_substate);
-		m_timer = 0;
-		set_up_exit_animation();
-	}};
+			m_substate = substate_base::EXITING | to_flags(m_substate);
+			m_timer = 0;
+			set_up_exit_animation();
+			m_game->replay().set_header(score{description, unix_now(), m_game->final_time(), flags}, name);
+			m_game->replay().save_to_file();
+		},
+	};
+	const action_callback discard_acb{
+		[this] {
+			m_substate = substate_base::EXITING | to_flags(m_substate);
+			m_timer = 0;
+			set_up_exit_animation();
+		},
+	};
 
 	//
 
@@ -86,18 +100,11 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 									 font::LANGUAGE, 48, scb, discard_acb, sound::CONFIRM);
 }
 
-///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
-
-std::unique_ptr<tr::state> save_replay_state::handle_event(const tr::system::event& event)
-{
-	m_ui.handle_event(event);
-	return nullptr;
-}
+//
 
 std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
 {
-	++m_timer;
-	m_ui.update();
+	state::update({});
 	if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
 		m_game->update();
 	}
@@ -128,21 +135,21 @@ void save_replay_state::draw()
 	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
-///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+//
 
 save_replay_state::substate operator|(const save_replay_state::substate_base& l, const save_screen_flags& r)
 {
-	return static_cast<save_replay_state::substate>(static_cast<int>(l) | static_cast<int>(r));
+	return save_replay_state::substate(int(l) | int(r));
 }
 
 save_replay_state::substate_base to_base(save_replay_state::substate state)
 {
-	return static_cast<save_replay_state::substate_base>(static_cast<int>(state) & 0x1);
+	return save_replay_state::substate_base(int(state) & 0x1);
 }
 
 save_screen_flags to_flags(save_replay_state::substate state)
 {
-	return static_cast<save_screen_flags>(static_cast<int>(state) & static_cast<int>(save_screen_flags::MASK));
+	return save_screen_flags(int(state) & int(save_screen_flags::MASK));
 }
 
 float save_replay_state::fade_overlay_opacity() const
@@ -157,12 +164,12 @@ float save_replay_state::fade_overlay_opacity() const
 
 void save_replay_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
-	m_ui[T_NAME].pos.change(interp::CUBIC, {600, 200}, 0.5_s);
-	m_ui[T_NAME_INPUT].pos.change(interp::CUBIC, {600, 235}, 0.5_s);
-	m_ui[T_DESCRIPTION].pos.change(interp::CUBIC, {400, 440}, 0.5_s);
-	m_ui[T_DESCRIPTION_INPUT].pos.change(interp::CUBIC, {400, 475}, 0.5_s);
-	m_ui[T_SAVE].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
-	m_ui[T_DISCARD].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 0.5_s);
+	m_ui[T_NAME].pos.change(tween::CUBIC, {600, 200}, 0.5_s);
+	m_ui[T_NAME_INPUT].pos.change(tween::CUBIC, {600, 235}, 0.5_s);
+	m_ui[T_DESCRIPTION].pos.change(tween::CUBIC, {400, 440}, 0.5_s);
+	m_ui[T_DESCRIPTION_INPUT].pos.change(tween::CUBIC, {400, 475}, 0.5_s);
+	m_ui[T_SAVE].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_DISCARD].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

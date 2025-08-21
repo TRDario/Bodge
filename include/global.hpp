@@ -2,6 +2,9 @@
 #include <tr/audio.hpp>
 #include <tr/sysgfx.hpp>
 
+// Bodge version string.
+constexpr const char* VERSION_STRING{"v0.9.0b"};
+
 ////////////////////////////////////////////////////////////////// USING //////////////////////////////////////////////////////////////////
 
 using namespace std::chrono_literals;
@@ -17,22 +20,22 @@ inline constexpr ticks SECOND_TICKS{240};
 // Seconds -> Ticks literal.
 constexpr ticks operator""_s(unsigned long long seconds)
 {
-	return static_cast<ticks>(240 * seconds);
+	return ticks(SECOND_TICKS * seconds);
 }
 // Seconds -> Ticks literal.
 constexpr ticks operator""_s(long double seconds)
 {
-	return static_cast<ticks>(240 * seconds);
+	return ticks(SECOND_TICKS * seconds);
 }
 // Seconds -> Ticks literal (float).
 constexpr float operator""_sf(unsigned long long seconds)
 {
-	return static_cast<float>(240 * seconds);
+	return float(SECOND_TICKS * seconds);
 }
 // Seconds -> Ticks literal (float).
 constexpr float operator""_sf(long double seconds)
 {
-	return static_cast<float>(240 * seconds);
+	return float(SECOND_TICKS * seconds);
 }
 
 // Formats timer text.
@@ -79,7 +82,7 @@ std::int64_t unix_now();
 // Widget tag type.
 using tag = const char*;
 // Struct containing information about a label widget.
-struct label {
+struct label_info {
 	// The tag of the label.
 	tag tag;
 	// The tooltip of the label.

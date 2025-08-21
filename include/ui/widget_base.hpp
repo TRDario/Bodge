@@ -43,7 +43,7 @@ class widget {
 	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
 
 	// Creates a widget.
-	widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable);
+	widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable);
 	// Virtual destructor.
 	virtual ~widget() = default;
 
@@ -52,7 +52,7 @@ class widget {
 	// The alignment of the widget.
 	tr::align alignment;
 	// The position of the widget.
-	interpolator<glm::vec2> pos;
+	tweener<glm::vec2> pos;
 	// An optional tooltip callback (the widget must be hoverable for it to be used).
 	text_callback tooltip_cb;
 
@@ -125,7 +125,7 @@ class widget {
 
   private:
 	// The opacity of the widget.
-	interpolator<float> m_opacity;
+	tweener<float> m_opacity;
 	// Whether the widget is writable.
 	const bool m_writable;
 };
@@ -134,7 +134,7 @@ class widget {
 class text_widget : public widget {
   public:
 	// Creates a text widget.
-	text_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
+	text_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
 				text_callback text_cb, font font, tr::system::ttf_style style, float font_size, int max_width);
 
 	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////

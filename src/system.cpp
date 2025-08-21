@@ -64,7 +64,7 @@ void engine::set_icon()
 void engine::draw_cursor()
 {
 	const glm::vec2 mouse_pos{engine::mouse_pos()};
-	const tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{static_cast<float>(settings.primary_hue), 1, 1})};
+	const tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(settings.primary_hue), 1, 1})};
 
 	tr::gfx::simple_color_mesh_ref quad{tr::gfx::renderer_2d::new_color_fan(layer::CURSOR, 4)};
 	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});

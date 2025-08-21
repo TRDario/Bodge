@@ -24,14 +24,14 @@ class ui_manager {
 	// Gets a widget by name.
 	template <class T> T& as(tag tag)
 	{
-		return static_cast<T&>((*this)[tag]);
+		return (T&)((*this)[tag]);
 	}
 	// Emplaces a new widget into the UI.
 	template <class T, class... Args>
 		requires(std::constructible_from<T, Args...>)
 	T& emplace(tag tag, Args&&... args)
 	{
-		return *static_cast<T*>(m_widgets.emplace(tag, std::make_unique<T>(std::forward<Args>(args)...)).first->second.get());
+		return *((T*)(m_widgets.emplace(tag, std::make_unique<T>(std::forward<Args>(args)...)).first->second.get()));
 	}
 
 	///////////////////////////////////////////////////////////// INPUT FOCUS /////////////////////////////////////////////////////////////

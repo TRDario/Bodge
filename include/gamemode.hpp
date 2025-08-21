@@ -77,8 +77,6 @@ template <> struct tr::binary_writer<gamemode> {
 
 // Randomly picks a menu gamemode.
 gamemode pick_menu_gamemode();
-// Loads a gamemode from file.
-gamemode load_gamemode(const std::filesystem::path& path);
 // Loads all found gamemodes.
 std::vector<gamemode> load_gamemodes();
 // Saves a gamemode to file.

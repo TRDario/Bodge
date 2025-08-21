@@ -127,7 +127,7 @@ constexpr std::array<std::uint16_t, 48> FAST_SPEED_INDICES{
 // Adds an instance of the "Exited prematurely" icon to the renderer.
 void add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity)
 {
-	color = {color.r, color.g, color.b, static_cast<std::uint8_t>(color.a * opacity)};
+	color = {color.r, color.g, color.b, std::uint8_t(color.a * opacity)};
 
 	tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
@@ -146,7 +146,7 @@ void add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, flo
 // Adds an instance of the "Modified ame speed" icon to the renderer.
 void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity)
 {
-	color = {color.r, color.g, color.b, static_cast<std::uint8_t>(color.a * opacity)};
+	color = {color.r, color.g, color.b, std::uint8_t(color.a * opacity)};
 
 	tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
@@ -164,8 +164,8 @@ void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, fl
 
 ////////////////////////////////////////////////////////////// LABEL_WIDGET ///////////////////////////////////////////////////////////////
 
-label_widget::label_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb,
-						   text_callback text_cb, tr::system::ttf_style style, float font_size, tr::rgba8 color)
+label_widget::label_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
+						   tr::system::ttf_style style, float font_size, tr::rgba8 color)
 	: text_widget{pos,
 				  alignment,
 				  unhide_time,
@@ -193,7 +193,7 @@ void label_widget::add_to_renderer()
 
 /////////////////////////////////////////////////////////// TEXT BUTTON WIDGET ////////////////////////////////////////////////////////////
 
-text_button_widget::text_button_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb,
+text_button_widget::text_button_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb,
 									   text_callback text_cb, font font, float font_size, status_callback status_cb,
 									   action_callback action_cb, sound sound)
 	: text_widget{pos,         alignment,
@@ -219,11 +219,10 @@ void text_button_widget::update()
 
 	if (interactible()) {
 		if (!m_held && !m_hovered && !m_selected && m_interp.done() && m_action_left == 0 && m_interp != "A0A0A0A0"_rgba8) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 		else if (m_interp.done() && (m_hovered || m_selected) && !m_held && m_action_left == 0) {
-			m_interp.change(interp::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 0.2f, 1.0f}),
-							4_s);
+			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 0.2f, 1.0f}), 4_s);
 		}
 	}
 	else {
@@ -231,7 +230,7 @@ void text_button_widget::update()
 		m_held = false;
 		m_selected = false;
 		if (m_interp.done() && m_action_left == 0 && m_interp != "505050A0"_rgba8) {
-			m_interp.change(interp::LERP, "505050A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
 		}
 	}
 
@@ -268,7 +267,7 @@ void text_button_widget::on_hover()
 	if (interactible()) {
 		m_hovered = true;
 		if (!m_selected) {
-			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 		}
 	}
@@ -279,7 +278,7 @@ void text_button_widget::on_unhover()
 	if (interactible()) {
 		m_hovered = false;
 		if (!m_selected && m_action_left == 0) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -306,7 +305,7 @@ void text_button_widget::on_selected()
 	if (interactible()) {
 		m_selected = true;
 		if (!m_hovered) {
-			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -316,7 +315,7 @@ void text_button_widget::on_unselected()
 	if (interactible()) {
 		m_selected = false;
 		if (!m_hovered && m_action_left == 0) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -341,11 +340,11 @@ tr::bitmap load_image(std::string_view texture)
 	}
 }
 
-image_widget::image_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
+image_widget::image_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
 						   std::uint16_t* hue_ref)
-	: widget{pos, alignment, unhide_time, NO_TOOLTIP, false}, m_texture{load_image(file)}, m_hue_ref{hue_ref}, m_priority{priority}
+	: widget{pos, alignment, unhide_time, NO_TOOLTIP, false}, m_texture{load_image(file), true}, m_hue_ref{hue_ref}, m_priority{priority}
 {
-	m_texture.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
+	m_texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
 }
 
 glm::vec2 image_widget::size() const
@@ -357,9 +356,9 @@ void image_widget::add_to_renderer()
 {
 	tr::rgba8 color{255, 255, 255, 255};
 	if (m_hue_ref != nullptr) {
-		color = tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(*m_hue_ref), 1, 1});
+		color = tr::color_cast<tr::rgba8>(tr::hsv{float(*m_hue_ref), 1, 1});
 	}
-	color.a = static_cast<std::uint8_t>(color.a * opacity());
+	color.a = std::uint8_t(color.a * opacity());
 
 	const tr::gfx::simple_textured_mesh_ref quad{tr::gfx::renderer_2d::new_textured_fan(layer::UI + m_priority, 4, m_texture)};
 	tr::fill_rect_vtx(quad.positions, {tl(), size()});
@@ -369,7 +368,7 @@ void image_widget::add_to_renderer()
 
 /////////////////////////////////////////////////////////// COLOR_PREVIEW_WIDGET //////////////////////////////////////////////////////////
 
-color_preview_widget::color_preview_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::uint16_t& hue_ref)
+color_preview_widget::color_preview_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::uint16_t& hue_ref)
 	: widget{pos, alignment, unhide_time, NO_TOOLTIP, false}, m_hue_ref{hue_ref}
 {
 }
@@ -381,9 +380,9 @@ glm::vec2 color_preview_widget::size() const
 
 void color_preview_widget::add_to_renderer()
 {
-	const tr::rgba8 color{color_cast<tr::rgb8>(tr::hsv{static_cast<float>(m_hue_ref), 1, 1}), tr::norm_cast<std::uint8_t>(opacity())};
-	const tr::rgba8 outline_color{static_cast<std::uint8_t>(color.r / 2), static_cast<std::uint8_t>(color.g / 2),
-								  static_cast<std::uint8_t>(color.b / 2), static_cast<std::uint8_t>(color.a / 2)};
+	const tr::rgba8 color{color_cast<tr::rgb8>(tr::hsv{float(m_hue_ref), 1, 1}), tr::norm_cast<std::uint8_t>(opacity())};
+	const tr::rgba8 outline_color{std::uint8_t(color.r / 2), std::uint8_t(color.g / 2), std::uint8_t(color.b / 2),
+								  std::uint8_t(color.a / 2)};
 
 	const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::UI, 4)};
 	tr::fill_rect_outline_vtx(outline.positions, {tl() + 2.0f, size() - 4.0f}, 4.0f);
@@ -395,7 +394,7 @@ void color_preview_widget::add_to_renderer()
 
 /////////////////////////////////////////////////////////////// ARROW_WIDGET //////////////////////////////////////////////////////////////
 
-arrow_widget::arrow_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, bool right_arrow, status_callback status_cb,
+arrow_widget::arrow_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, bool right_arrow, status_callback status_cb,
 						   action_callback action_cb)
 	: widget{pos, alignment, unhide_time, NO_TOOLTIP, false}
 	, m_scb{std::move(status_cb)}
@@ -432,10 +431,8 @@ void arrow_widget::add_to_renderer()
 	tr::fill_poly_idx(arrow.indices.begin() + tr::poly_outline_idx(5), 5, arrow.base_index + 10);
 	std::ranges::copy(positions | std::views::transform([&](glm::vec2 p) { return p + tl; }), arrow.positions.begin());
 	std::ranges::copy(ARROW_COLORS | std::views::transform([&](tr::rgba8 c) -> tr::rgba8 {
-						  return {static_cast<std::uint8_t>(c.r * tr::norm_cast<float>(color.r)),
-								  static_cast<std::uint8_t>(c.g * tr::norm_cast<float>(color.g)),
-								  static_cast<std::uint8_t>(c.b * tr::norm_cast<float>(color.b)),
-								  static_cast<std::uint8_t>(c.a * tr::norm_cast<float>(color.a))};
+						  return {std::uint8_t(c.r * tr::norm_cast<float>(color.r)), std::uint8_t(c.g * tr::norm_cast<float>(color.g)),
+								  std::uint8_t(c.b * tr::norm_cast<float>(color.b)), std::uint8_t(c.a * tr::norm_cast<float>(color.a))};
 					  }),
 					  arrow.colors.begin());
 }
@@ -447,11 +444,10 @@ void arrow_widget::update()
 
 	if (interactible()) {
 		if (!m_held && !m_hovered && !m_selected && m_interp.done() && m_action_left == 0 && m_interp != "A0A0A0A0"_rgba8) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 		else if (m_interp.done() && (m_hovered || m_selected) && !m_held && m_action_left == 0) {
-			m_interp.change(interp::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{static_cast<float>(engine::settings.primary_hue), 0.2f, 1.0f}),
-							4_s);
+			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 0.2f, 1.0f}), 4_s);
 		}
 	}
 	else {
@@ -459,7 +455,7 @@ void arrow_widget::update()
 		m_held = false;
 		m_selected = false;
 		if (m_interp.done() && m_action_left == 0 && m_interp != "505050A0"_rgba8) {
-			m_interp.change(interp::LERP, "505050A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
 		}
 	}
 
@@ -486,7 +482,7 @@ void arrow_widget::on_hover()
 	if (interactible()) {
 		m_hovered = true;
 		if (!m_selected) {
-			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
 		}
 	}
@@ -497,7 +493,7 @@ void arrow_widget::on_unhover()
 	if (interactible()) {
 		m_hovered = false;
 		if (!m_selected && m_action_left == 0) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -524,7 +520,7 @@ void arrow_widget::on_selected()
 	if (interactible()) {
 		m_selected = true;
 		if (!m_hovered) {
-			m_interp.change(interp::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -534,7 +530,7 @@ void arrow_widget::on_unselected()
 	if (interactible()) {
 		m_selected = false;
 		if (!m_hovered && m_action_left == 0) {
-			m_interp.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 	}
 }
@@ -542,7 +538,7 @@ void arrow_widget::on_unselected()
 ////////////////////////////////////////////////////// REPLAY_PLAYBACK_INDICATOR_WIDGET ///////////////////////////////////////////////////
 
 // Creates a replay playback indicator widget.
-replay_playback_indicator_widget::replay_playback_indicator_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time)
+replay_playback_indicator_widget::replay_playback_indicator_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time)
 	: widget{pos, alignment, unhide_time, NO_TOOLTIP, false}
 {
 }
@@ -584,7 +580,7 @@ void replay_playback_indicator_widget::add_to_renderer()
 
 ////////////////////////////////////////////////////////////// SCORE WIDGET ///////////////////////////////////////////////////////////////
 
-score_widget::score_widget(interpolator<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::size_t rank, ::score* score)
+score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::size_t rank, ::score* score)
 	: text_widget{
 		  pos,
 		  alignment,

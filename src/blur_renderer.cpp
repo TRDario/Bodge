@@ -34,7 +34,7 @@ blur_renderer::blur_renderer(int texture_size)
 {
 	m_texture_unit.set_texture(m_input_texture);
 	m_pipeline.fragment_shader().set_uniform(0, m_texture_unit);
-	m_pipeline.fragment_shader().set_uniform(1, static_cast<glm::vec2>(m_input_texture.size()));
+	m_pipeline.fragment_shader().set_uniform(1, glm::vec2{m_input_texture.size()});
 	if (tr::gfx::debug()) {
 		m_input_texture.set_label("(Bodge) Blur Renderer Input Texture");
 		m_auxiliary_texture.set_label("(Bodge) Blur Renderer Auxilliary Texture");

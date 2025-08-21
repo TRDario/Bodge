@@ -6,12 +6,16 @@ trail::trail(const glm::vec2& value)
 	m_buffer.fill(value);
 }
 
+//
+
 const glm::vec2& trail::operator[](std::size_t i) const
 {
 	assert(i < SIZE);
 
 	return m_buffer[((m_head - i) + SIZE) % SIZE];
 }
+
+//
 
 void trail::push(const glm::vec2& value)
 {

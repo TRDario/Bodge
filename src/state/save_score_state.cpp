@@ -4,7 +4,7 @@
 #include "../../include/state/save_replay_state.hpp"
 #include "../../include/ui/widget.hpp"
 
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+// clang-format off
 
 constexpr tag T_TITLE{"save_score"};
 constexpr tag T_PREVIEW{"preview"};
@@ -21,54 +21,49 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ENTER}, T_SAVE},    {{tr::system::keycode::S}, T_SAVE},   {{tr::system::keycode::TOP_ROW_1}, T_SAVE},
-	{{tr::system::keycode::ESCAPE}, T_CANCEL}, {{tr::system::keycode::C}, T_CANCEL}, {{tr::system::keycode::TOP_ROW_2}, T_CANCEL},
+	{{tr::system::keycode::ENTER}, T_SAVE},
+	{{tr::system::keycode::S}, T_SAVE},
+	{{tr::system::keycode::TOP_ROW_1}, T_SAVE},
+	{{tr::system::keycode::ESCAPE}, T_CANCEL},
+	{{tr::system::keycode::C}, T_CANCEL},
+	{{tr::system::keycode::TOP_ROW_2}, T_CANCEL},
 };
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr interpolator<glm::vec2> PREVIEW_MOVE_IN{interp::CUBIC, {400, 200}, {500, 200}, 0.5_s};
-constexpr interpolator<glm::vec2> SCORE_MOVE_IN{interp::CUBIC, {400, 235}, {500, 235}, 0.5_s};
-constexpr interpolator<glm::vec2> DESCRIPTION_MOVE_IN{interp::CUBIC, {600, 440}, {500, 440}, 0.5_s};
-constexpr interpolator<glm::vec2> DESCRIPTION_INPUT_MOVE_IN{interp::CUBIC, {600, 475}, {500, 475}, 0.5_s};
-constexpr interpolator<glm::vec2> SAVE_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 950}, 0.5_s};
-constexpr interpolator<glm::vec2> CANCEL_MOVE_IN{interp::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr tweener<glm::vec2> PREVIEW_MOVE_IN{tween::CUBIC, {400, 200}, {500, 200}, 0.5_s};
+constexpr tweener<glm::vec2> SCORE_MOVE_IN{tween::CUBIC, {400, 235}, {500, 235}, 0.5_s};
+constexpr tweener<glm::vec2> DESCRIPTION_MOVE_IN{tween::CUBIC, {600, 440}, {500, 440}, 0.5_s};
+constexpr tweener<glm::vec2> DESCRIPTION_INPUT_MOVE_IN{tween::CUBIC, {600, 475}, {500, 475}, 0.5_s};
+constexpr tweener<glm::vec2> SAVE_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 950}, 0.5_s};
+constexpr tweener<glm::vec2> CANCEL_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
-////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
+// clang-format on
 
 save_score_state::save_score_state(std::unique_ptr<active_game>&& game, glm::vec2 mouse_pos, save_screen_flags flags)
-	: m_substate{substate_base::SAVING_SCORE | flags}
-	, m_substate_data{.mouse_pos = mouse_pos}
-	, m_timer{0}
-	, m_ui{SELECTION_TREE, SHORTCUTS}
+	: state{SELECTION_TREE, SHORTCUTS}
+	, m_substate{substate_base::SAVING_SCORE | flags}
+	, m_substate_data{.start_mouse_pos = mouse_pos}
 	, m_game{std::move(game)}
-	, m_score{{}, unix_now(), m_game->result(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
+	, m_score{{}, unix_now(), m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
 	set_up_ui();
 }
 
 save_score_state::save_score_state(std::unique_ptr<active_game>&& game, ticks prev_pb, save_screen_flags flags)
-	: m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
+	: state{SELECTION_TREE, SHORTCUTS}
+	, m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
 	, m_substate_data{.prev_pb = prev_pb}
-	, m_timer{0}
-	, m_ui{SELECTION_TREE, SHORTCUTS}
 	, m_game{std::move(game)}
-	, m_score{{}, unix_now(), m_game->result(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
+	, m_score{{}, unix_now(), m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
 	set_up_ui();
 }
 
-///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
-
-std::unique_ptr<tr::state> save_score_state::handle_event(const tr::system::event& event)
-{
-	m_ui.handle_event(event);
-	return nullptr;
-}
+//
 
 std::unique_ptr<tr::state> save_score_state::update(tr::duration)
 {
-	++m_timer;
-	m_ui.update();
+	state::update({});
 	if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
 		m_game->update();
 	}
@@ -83,7 +78,7 @@ std::unique_ptr<tr::state> save_score_state::update(tr::duration)
 				return std::make_unique<game_over_state>(std::move(m_game), false, m_substate_data.prev_pb);
 			}
 			else {
-				return std::make_unique<pause_state>(std::move(m_game), game_type::REGULAR, m_substate_data.mouse_pos, false);
+				return std::make_unique<pause_state>(std::move(m_game), game_type::REGULAR, m_substate_data.start_mouse_pos, false);
 			}
 		}
 		else {
@@ -105,44 +100,50 @@ void save_score_state::draw()
 	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
-///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+//
 
 save_score_state::substate operator|(const save_score_state::substate_base& l, const save_screen_flags& r)
 {
-	return static_cast<save_score_state::substate>(static_cast<int>(l) | static_cast<int>(r));
+	return save_score_state::substate(int(l) | int(r));
 }
 
 save_score_state::substate_base to_base(save_score_state::substate state)
 {
-	return static_cast<save_score_state::substate_base>(static_cast<int>(state) & 0x3);
+	return save_score_state::substate_base(int(state) & 0x3);
 }
 
 save_screen_flags to_flags(save_score_state::substate state)
 {
-	return static_cast<save_screen_flags>(static_cast<int>(state) & static_cast<int>(save_screen_flags::MASK));
+	return save_screen_flags(int(state) & int(save_screen_flags::MASK));
 }
 
 void save_score_state::set_up_ui()
 {
 	// STATUS CALLBACKS
 
-	const status_callback scb{[this] { return to_base(m_substate) == substate_base::SAVING_SCORE; }};
+	const status_callback scb{
+		[this] { return to_base(m_substate) == substate_base::SAVING_SCORE; },
+	};
 
 	// ACTION CALLBACKS
 
-	const action_callback save_acb{[this] {
-		m_substate = substate_base::ENTERING_SAVE_REPLAY | to_flags(m_substate);
-		m_timer = 0;
-		set_up_exit_animation();
-		engine::scorefile.playtime += m_score.result;
-		add_score(engine::scorefile, m_game->gamemode(), m_score);
-		update_pb(engine::scorefile, m_game->gamemode(), m_game->result());
-	}};
-	const action_callback cancel_acb{[this] {
-		m_substate = substate_base::RETURNING | to_flags(m_substate);
-		m_timer = 0;
-		set_up_exit_animation();
-	}};
+	const action_callback save_acb{
+		[this] {
+			m_substate = substate_base::ENTERING_SAVE_REPLAY | to_flags(m_substate);
+			m_timer = 0;
+			set_up_exit_animation();
+			engine::scorefile.playtime += m_score.result;
+			add_score(engine::scorefile, m_game->gamemode(), m_score);
+			update_pb(engine::scorefile, m_game->gamemode(), m_game->final_time());
+		},
+	};
+	const action_callback cancel_acb{
+		[this] {
+			m_substate = substate_base::RETURNING | to_flags(m_substate);
+			m_timer = 0;
+			set_up_exit_animation();
+		},
+	};
 
 	//
 
@@ -162,12 +163,12 @@ void save_score_state::set_up_ui()
 
 void save_score_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
-	m_ui[T_PREVIEW].pos.change(interp::CUBIC, {600, 200}, 0.5_s);
-	m_ui[T_SCORE].pos.change(interp::CUBIC, {600, 235}, 0.5_s);
-	m_ui[T_DESCRIPTION].pos.change(interp::CUBIC, {400, 440}, 0.5_s);
-	m_ui[T_INPUT].pos.change(interp::CUBIC, {400, 475}, 0.5_s);
-	m_ui[T_SAVE].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
-	m_ui[T_CANCEL].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 0.5_s);
+	m_ui[T_PREVIEW].pos.change(tween::CUBIC, {600, 200}, 0.5_s);
+	m_ui[T_SCORE].pos.change(tween::CUBIC, {600, 235}, 0.5_s);
+	m_ui[T_DESCRIPTION].pos.change(tween::CUBIC, {400, 440}, 0.5_s);
+	m_ui[T_INPUT].pos.change(tween::CUBIC, {400, 475}, 0.5_s);
+	m_ui[T_SAVE].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
+	m_ui[T_CANCEL].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	m_ui.hide_all(0.5_s);
 }

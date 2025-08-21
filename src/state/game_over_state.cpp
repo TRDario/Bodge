@@ -5,7 +5,7 @@
 #include "../../include/state/title_state.hpp"
 #include "../../include/ui/widget.hpp"
 
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+//
 
 constexpr tag T_TITLE{"game_over"};
 constexpr tag T_TIME{"time"};
@@ -40,39 +40,33 @@ constexpr shortcut_table SHORTCUTS{
 
 constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, glm::vec2{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
+constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, glm::vec2{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 
-/////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
+//
 
 game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_in, ticks prev_pb)
-	: m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}
-	, m_timer{0}
-	, m_ui{SELECTION_TREE, SHORTCUTS}
+	: state{SELECTION_TREE, SHORTCUTS}
+	, m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}
 	, m_game{std::move(game)}
 	, m_prev_pb{prev_pb}
 {
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::system::ttf_style::NORMAL, 64);
+	// HEIGHTS AND MOVE-INS
 
 	const float time_h{(500 - (BUTTONS.size() - 0.75f) * 30) -
 					   (engine::line_skip(font::LANGUAGE, 48) + 4 + engine::line_skip(font::LANGUAGE, 24)) / 2};
-	const interpolator<glm::vec2> time_move_in{interp::CUBIC, {400, time_h}, {500, time_h}, 0.5_s};
-	m_ui.emplace<label_widget>(T_TIME, time_move_in, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
-							   string_text_callback{timer_text(m_game->result())}, tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
-
 	const float pb_h{time_h + engine::line_skip(font::LANGUAGE, 48) + 4};
-	const interpolator<glm::vec2> pb_move_in{interp::CUBIC, {600, pb_h}, {500, pb_h}, 0.5_s};
-	text_callback pb_tcb;
-	if (prev_pb < m_game->result()) {
-		pb_tcb = loc_text_callback{"new_pb"};
-	}
-	else {
-		pb_tcb = string_text_callback{std::format("{}: {}", engine::loc["pb"], timer_text(pb(engine::scorefile, m_game->gamemode())))};
-	}
-	m_ui.emplace<label_widget>(T_PB, pb_move_in, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, std::move(pb_tcb), tr::system::ttf_style::NORMAL,
-							   24, "FFFF00C0"_rgba8);
 
-	const status_callback status_cb{[this] { return m_substate == substate::BLURRING_IN || m_substate == substate::GAME_OVER; }};
+	const tweener<glm::vec2> time_move_in{tween::CUBIC, {400, time_h}, {500, time_h}, 0.5_s};
+	const tweener<glm::vec2> pb_move_in{tween::CUBIC, {600, pb_h}, {500, pb_h}, 0.5_s};
+
+	// STATUS CALLBACKS
+
+	const status_callback scb{
+		[this] { return m_substate == substate::BLURRING_IN || m_substate == substate::GAME_OVER; },
+	};
+
+	// ACTION CALLBACKS
+
 	std::array<action_callback, BUTTONS.size()> action_cbs{
 		[this] {
 			m_timer = 0;
@@ -82,7 +76,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 		[this] {
 			m_timer = 0;
 			m_substate = substate::RESTARTING;
-			engine::scorefile.playtime += m_game->result();
+			engine::scorefile.playtime += m_game->final_time();
 			set_up_exit_animation();
 		},
 		[this] {
@@ -93,33 +87,44 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 		[this] {
 			m_timer = 0;
 			m_substate = substate::QUITTING;
-			engine::scorefile.playtime += m_game->result();
+			engine::scorefile.playtime += m_game->final_time();
 			set_up_exit_animation();
 		},
 	};
+
+	// TEXT CALLBACKS
+
+	text_callback pb_tcb;
+	if (prev_pb < m_game->final_time()) {
+		pb_tcb = loc_text_callback{"new_pb"};
+	}
+	else {
+		pb_tcb = string_text_callback{std::format("{}: {}", engine::loc["pb"], timer_text(pb(engine::scorefile, m_game->gamemode())))};
+	}
+
+	//
+
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   tr::system::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_TIME, time_move_in, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
+							   string_text_callback{timer_text(m_game->final_time())}, tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_PB, pb_move_in, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, std::move(pb_tcb), tr::system::ttf_style::NORMAL,
+							   24, "FFFF00C0"_rgba8);
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
-		const interpolator<glm::vec2> pos{interp::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
+		const tweener<glm::vec2> pos{tween::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], pos, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{BUTTONS[i]},
-										 font::LANGUAGE, 48, status_cb, std::move(action_cbs[i]), sound::CONFIRM);
+										 font::LANGUAGE, 48, scb, std::move(action_cbs[i]), sound::CONFIRM);
 	}
 }
 
-///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
-
-std::unique_ptr<tr::state> game_over_state::handle_event(const tr::system::event& event)
-{
-	m_ui.handle_event(event);
-	return nullptr;
-}
+//
 
 std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 {
-	++m_timer;
-	m_ui.update();
+	state::update({});
 	m_game->update();
-
 	switch (m_substate) {
 	case substate::BLURRING_IN:
 		if (m_timer >= 0.5_s) {
@@ -128,7 +133,7 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 		}
 		[[fallthrough]];
 	case substate::GAME_OVER:
-		if (m_prev_pb < m_game->result()) {
+		if (m_prev_pb < m_game->final_time()) {
 			if (m_timer % 0.5_s == 0) {
 				m_ui[T_PB].hide();
 			}
@@ -160,15 +165,15 @@ void game_over_state::draw()
 {
 	m_game->add_to_renderer();
 	tr::gfx::renderer_2d::draw(engine::blur().input());
-	engine::blur().draw(saturation_factor(), blur_strength());
+	engine::blur().draw(shader_saturation_factor(), shader_blur_strength());
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(m_substate == substate::RESTARTING || m_substate == substate::QUITTING ? m_timer / 0.5_sf : 0);
 	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
-///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+//
 
-float game_over_state::saturation_factor() const
+float game_over_state::shader_saturation_factor() const
 {
 	switch (m_substate) {
 	case substate::GAME_OVER:
@@ -182,7 +187,7 @@ float game_over_state::saturation_factor() const
 	}
 }
 
-float game_over_state::blur_strength() const
+float game_over_state::shader_blur_strength() const
 {
 	switch (m_substate) {
 	case substate::GAME_OVER:
@@ -198,15 +203,15 @@ float game_over_state::blur_strength() const
 
 void game_over_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.change(interp::CUBIC, {500, TITLE_Y - 100}, 0.5_s);
+	m_ui[T_TITLE].pos.change(tween::CUBIC, {500, TITLE_Y - 100}, 0.5_s);
 	widget& time{m_ui[T_TIME]};
 	widget& pb{m_ui[T_PB]};
-	time.pos.change(interp::CUBIC, {400, glm::vec2{time.pos}.y}, 0.5_s);
-	pb.pos.change(interp::CUBIC, {600, glm::vec2{pb.pos}.y}, 0.5_s);
+	time.pos.change(tween::CUBIC, {400, glm::vec2{time.pos}.y}, 0.5_s);
+	pb.pos.change(tween::CUBIC, {600, glm::vec2{pb.pos}.y}, 0.5_s);
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		widget& widget{m_ui[BUTTONS[i]]};
-		widget.pos.change(interp::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
+		widget.pos.change(tween::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }

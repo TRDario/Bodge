@@ -145,7 +145,7 @@ std::vector<std::string> split_overlong_lines(std::vector<std::string>&& lines, 
 			continue;
 		}
 
-		const tr::system::ttf_measure_result measure{font.measure_text(*it, static_cast<int>(max_w))};
+		const tr::system::ttf_measure_result measure{font.measure_text(*it, int(max_w))};
 		if (measure.text != std::string_view{*it}) {
 			it = std::prev(lines.emplace(std::next(it), it->begin() + measure.text.size(), it->end()));
 			it->erase(it->begin() + measure.text.size(), it->end());
@@ -262,12 +262,11 @@ float engine::line_skip(font font, float size)
 
 glm::vec2 engine::text_size(std::string_view text, font font, tr::system::ttf_style style, float size, float outline, float max_w)
 {
-	const int scaled_outline{static_cast<int>(outline * render_scale())};
+	const int scaled_outline{int(outline * render_scale())};
 	if (max_w != tr::system::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * render_scale();
 	}
-	const int outline_max_w{max_w != tr::system::UNLIMITED_WIDTH ? static_cast<int>(max_w + 2 * scaled_outline)
-																 : tr::system::UNLIMITED_WIDTH};
+	const int outline_max_w{max_w != tr::system::UNLIMITED_WIDTH ? int(max_w + 2 * scaled_outline) : tr::system::UNLIMITED_WIDTH};
 
 	tr::system::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * render_scale());
@@ -284,12 +283,12 @@ glm::vec2 engine::text_size(std::string_view text, font font, tr::system::ttf_st
 			text_size.x = std::max(text_size.x, result.size);
 		}
 	}
-	return static_cast<glm::vec2>(text_size) / render_scale();
+	return glm::vec2{text_size} / render_scale();
 }
 
 std::size_t engine::count_lines(std::string_view text, font font, tr::system::ttf_style style, float size, float outline, float max_w)
 {
-	const int scaled_outline{static_cast<int>(outline * render_scale())};
+	const int scaled_outline{int(outline * render_scale())};
 	if (max_w != tr::system::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * render_scale();
 	}
@@ -305,12 +304,11 @@ std::size_t engine::count_lines(std::string_view text, font font, tr::system::tt
 tr::bitmap engine::render_text(std::string_view text, font font, tr::system::ttf_style style, float size, float outline, float max_w,
 							   tr::halign align)
 {
-	const int scaled_outline{static_cast<int>(outline * render_scale())};
+	const int scaled_outline{int(outline * render_scale())};
 	if (max_w != tr::system::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * render_scale();
 	}
-	const int outline_max_w{max_w != tr::system::UNLIMITED_WIDTH ? static_cast<int>(max_w + 2 * scaled_outline)
-																 : tr::system::UNLIMITED_WIDTH};
+	const int outline_max_w{max_w != tr::system::UNLIMITED_WIDTH ? int(max_w + 2 * scaled_outline) : tr::system::UNLIMITED_WIDTH};
 
 	tr::system::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * render_scale());
@@ -318,14 +316,14 @@ tr::bitmap engine::render_text(std::string_view text, font font, tr::system::ttf
 	font_ref.set_outline(scaled_outline);
 	tr::bitmap render{font_ref.render(text, outline_max_w, align, "80808080"_rgba8)};
 	font_ref.set_outline(0);
-	const tr::bitmap fill{font_ref.render(text, static_cast<int>(max_w), align, "FFFFFF"_rgba8)};
+	const tr::bitmap fill{font_ref.render(text, int(max_w), align, "FFFFFF"_rgba8)};
 	render.blit(glm::ivec2{scaled_outline}, fill.sub({{}, render.size() - scaled_outline * 2}));
 	return render;
 }
 
 tr::bitmap engine::render_gradient_glyph(std::uint32_t glyph, font font, tr::system::ttf_style style, float size, float outline)
 {
-	const int scaled_outline{static_cast<int>(outline * render_scale())};
+	const int scaled_outline{int(outline * render_scale())};
 
 	tr::system::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * render_scale());
@@ -336,7 +334,7 @@ tr::bitmap engine::render_gradient_glyph(std::uint32_t glyph, font font, tr::sys
 	tr::bitmap fill{font_ref.render(glyph, "FFFFFF"_rgba8)};
 	for (tr::bitmap::mut_it it = fill.begin(); it != fill.end(); ++it) {
 		const tr::rgba8 value{*it};
-		std::uint8_t shade{static_cast<std::uint8_t>(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};
+		std::uint8_t shade{std::uint8_t(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};
 		*it = tr::rgba8{shade, shade, shade, value.a};
 	}
 	render.blit(glm::ivec2{scaled_outline}, fill.sub({{}, render.size() - 2 * scaled_outline}));

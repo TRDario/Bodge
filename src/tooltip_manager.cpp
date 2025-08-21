@@ -12,8 +12,8 @@ void tooltip_manager::render(std::string_view text)
 
 	if (m_texture.size().x < scaled_last_size.x || m_texture.size().y < scaled_last_size.y) {
 		const glm::ivec2 new_size{
-			static_cast<int>(std::bit_ceil(static_cast<std::uint32_t>(scaled_last_size.x))),
-			static_cast<int>(std::bit_ceil(static_cast<std::uint32_t>(scaled_last_size.y))),
+			int(std::bit_ceil(std::uint32_t(scaled_last_size.x))),
+			int(std::bit_ceil(std::uint32_t(scaled_last_size.y))),
 		};
 		std::exchange(m_texture, tr::gfx::texture{new_size});
 		m_texture.set_region({}, render.sub({{}, scaled_last_size}));

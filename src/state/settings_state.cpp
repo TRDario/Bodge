@@ -1,10 +1,10 @@
-#include "../../include/audio.hpp"
 #include "../../include/state/settings_state.hpp"
+#include "../../include/audio.hpp"
 #include "../../include/state/title_state.hpp"
 #include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+// clang-format off
 
 constexpr tag T_TITLE{"settings"};
 constexpr tag T_DISPLAY_MODE{"display_mode"};
@@ -41,38 +41,21 @@ constexpr tag T_REVERT{"revert"};
 constexpr tag T_APPLY{"apply"};
 constexpr tag T_EXIT{"exit"};
 
-// Right-aligned widgets.
 constexpr std::array<tag, 22> RIGHT_WIDGETS{
 	T_DISPLAY_MODE_C,
-	T_WINDOW_SIZE_D,
-	T_WINDOW_SIZE_C,
-	T_WINDOW_SIZE_I,
-	T_MSAA_D,
-	T_MSAA_C,
-	T_MSAA_I,
-	T_PRIMARY_HUE_D,
-	T_PRIMARY_HUE_C,
-	T_PRIMARY_HUE_I,
-	T_PRIMARY_HUE_PREVIEW,
-	T_SECONDARY_HUE_D,
-	T_SECONDARY_HUE_C,
-	T_SECONDARY_HUE_I,
-	T_SECONDARY_HUE_PREVIEW,
-	T_SFX_VOLUME_D,
-	T_SFX_VOLUME_C,
-	T_SFX_VOLUME_I,
-	T_MUSIC_VOLUME_D,
-	T_MUSIC_VOLUME_C,
-	T_MUSIC_VOLUME_I,
+	T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I,
+	T_MSAA_D, T_MSAA_C, T_MSAA_I,
+	T_PRIMARY_HUE_D, T_PRIMARY_HUE_C, T_PRIMARY_HUE_I, T_PRIMARY_HUE_PREVIEW,
+	T_SECONDARY_HUE_D, T_SECONDARY_HUE_C, T_SECONDARY_HUE_I, T_SECONDARY_HUE_PREVIEW,
+	T_SFX_VOLUME_D, T_SFX_VOLUME_C, T_SFX_VOLUME_I,
+	T_MUSIC_VOLUME_D, T_MUSIC_VOLUME_C, T_MUSIC_VOLUME_I,
 	T_LANGUAGE_C,
 };
-// Bottom set of buttons.
+
 constexpr std::array<tag, 3> BOTTOM_BUTTONS{T_REVERT, T_APPLY, T_EXIT};
 
-// Sentinel string for having no tooltip.
 constexpr const char* NO_TOOLTIP_STR{nullptr};
-// Left-aligned label widgets.
-constexpr std::array<label, 8> LABELS{{
+constexpr std::array<label_info, 8> LABELS{{
 	{T_DISPLAY_MODE, "display_mode_tt"},
 	{T_WINDOW_SIZE, "window_size_tt"},
 	{T_MSAA, "msaa_tt"},
@@ -103,78 +86,85 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ESCAPE}, T_EXIT},
 };
 
-// Starting position of the window size widgets.
 constexpr glm::vec2 DISPLAY_MODE_START_POS{1050, 196};
-// Starting position of the window size widgets.
 constexpr glm::vec2 WINDOW_SIZE_START_POS{1050, 271};
-// Starting position of the MSAA widgets.
 constexpr glm::vec2 MSAA_START_POS{1050, 346};
-// Starting position of the primary hue widgets.
 constexpr glm::vec2 PRIMARY_HUE_START_POS{1050, 421};
-// Starting position of the secondary hue widgets.
 constexpr glm::vec2 SECONDARY_HUE_START_POS{1050, 496};
-// Starting position of the SFX volume widgets.
 constexpr glm::vec2 SFX_VOLUME_START_POS{1050, 571};
-// Starting position of the music volume widgets.
 constexpr glm::vec2 MUSIC_VOLUME_START_POS{1050, 646};
-// Starting position of the language widgets.
 constexpr glm::vec2 LANGUAGE_START_POS{1050, 721};
 
-constexpr interpolator<glm::vec2> TITLE_MOVE_IN{interp::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr interpolator<glm::vec2> DISPLAY_MODE_C_MOVE_IN{interp::CUBIC, DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> WINDOW_SIZE_D_MOVE_IN{interp::CUBIC, WINDOW_SIZE_START_POS, {765, WINDOW_SIZE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> WINDOW_SIZE_C_MOVE_IN{interp::CUBIC, WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> WINDOW_SIZE_I_MOVE_IN{interp::CUBIC, WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> MSAA_D_MOVE_IN{interp::CUBIC, MSAA_START_POS, {830, MSAA_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> MSAA_C_MOVE_IN{interp::CUBIC, MSAA_START_POS, {907.5, MSAA_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> MSAA_I_MOVE_IN{interp::CUBIC, MSAA_START_POS, {985, MSAA_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> PRIMARY_HUE_D_MOVE_IN{interp::CUBIC, PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> PRIMARY_HUE_C_MOVE_IN{interp::CUBIC, PRIMARY_HUE_START_POS, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> PRIMARY_HUE_I_MOVE_IN{interp::CUBIC, PRIMARY_HUE_START_POS, {930, PRIMARY_HUE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> PRIMARY_HUE_PREVIEW_MOVE_IN{interp::CUBIC, PRIMARY_HUE_START_POS, {985, PRIMARY_HUE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> SECONDARY_HUE_D_MOVE_IN{interp::CUBIC, SECONDARY_HUE_START_POS, {745, SECONDARY_HUE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> SECONDARY_HUE_C_MOVE_IN{
-	interp::CUBIC, SECONDARY_HUE_START_POS, {837.5, SECONDARY_HUE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> SECONDARY_HUE_I_MOVE_IN{interp::CUBIC, SECONDARY_HUE_START_POS, {930, SECONDARY_HUE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> SECONDARY_HUE_PREVIEW_MOVE_IN{
-	interp::CUBIC, SECONDARY_HUE_START_POS, {985, SECONDARY_HUE_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> SFX_VOLUME_D_MOVE_IN{interp::CUBIC, SFX_VOLUME_START_POS, {765, SFX_VOLUME_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> SFX_VOLUME_C_MOVE_IN{interp::CUBIC, SFX_VOLUME_START_POS, {875, SFX_VOLUME_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> SFX_VOLUME_I_MOVE_IN{interp::CUBIC, SFX_VOLUME_START_POS, {985, SFX_VOLUME_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> MUSIC_VOLUME_D_MOVE_IN{interp::CUBIC, MUSIC_VOLUME_START_POS, {765, MUSIC_VOLUME_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> MUSIC_VOLUME_C_MOVE_IN{interp::CUBIC, MUSIC_VOLUME_START_POS, {875, MUSIC_VOLUME_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> MUSIC_VOLUME_I_MOVE_IN{interp::CUBIC, MUSIC_VOLUME_START_POS, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s};
-constexpr interpolator<glm::vec2> LANGUAGE_C_MOVE_IN{interp::CUBIC, LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
+constexpr tweener<glm::vec2> DISPLAY_MODE_C_MOVE_IN{tween::CUBIC, DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> WINDOW_SIZE_D_MOVE_IN{tween::CUBIC, WINDOW_SIZE_START_POS, {765, WINDOW_SIZE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> WINDOW_SIZE_C_MOVE_IN{tween::CUBIC, WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> WINDOW_SIZE_I_MOVE_IN{tween::CUBIC, WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> MSAA_D_MOVE_IN{tween::CUBIC, MSAA_START_POS, {830, MSAA_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> MSAA_C_MOVE_IN{tween::CUBIC, MSAA_START_POS, {907.5, MSAA_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> MSAA_I_MOVE_IN{tween::CUBIC, MSAA_START_POS, {985, MSAA_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> PRIMARY_HUE_D_MOVE_IN{tween::CUBIC, PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> PRIMARY_HUE_C_MOVE_IN{tween::CUBIC, PRIMARY_HUE_START_POS, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> PRIMARY_HUE_I_MOVE_IN{tween::CUBIC, PRIMARY_HUE_START_POS, {930, PRIMARY_HUE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> PRIMARY_HUE_PREVIEW_MOVE_IN{tween::CUBIC, PRIMARY_HUE_START_POS, {985, PRIMARY_HUE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> SECONDARY_HUE_D_MOVE_IN{tween::CUBIC, SECONDARY_HUE_START_POS, {745, SECONDARY_HUE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> SECONDARY_HUE_C_MOVE_IN{tween::CUBIC, SECONDARY_HUE_START_POS, {837.5, SECONDARY_HUE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> SECONDARY_HUE_I_MOVE_IN{tween::CUBIC, SECONDARY_HUE_START_POS, {930, SECONDARY_HUE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> SECONDARY_HUE_PREVIEW_MOVE_IN{tween::CUBIC, SECONDARY_HUE_START_POS, {985, SECONDARY_HUE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> SFX_VOLUME_D_MOVE_IN{tween::CUBIC, SFX_VOLUME_START_POS, {765, SFX_VOLUME_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> SFX_VOLUME_C_MOVE_IN{tween::CUBIC, SFX_VOLUME_START_POS, {875, SFX_VOLUME_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> SFX_VOLUME_I_MOVE_IN{tween::CUBIC, SFX_VOLUME_START_POS, {985, SFX_VOLUME_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> MUSIC_VOLUME_D_MOVE_IN{tween::CUBIC, MUSIC_VOLUME_START_POS, {765, MUSIC_VOLUME_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> MUSIC_VOLUME_C_MOVE_IN{tween::CUBIC, MUSIC_VOLUME_START_POS, {875, MUSIC_VOLUME_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> MUSIC_VOLUME_I_MOVE_IN{tween::CUBIC, MUSIC_VOLUME_START_POS, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> LANGUAGE_C_MOVE_IN{tween::CUBIC, LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s};
 
-/////////////////////////////////////////////////////////////// CONSTRUCTORS //////////////////////////////////////////////////////////////
+// clang-format on
 
 settings_state::settings_state(std::unique_ptr<game>&& game)
-	: m_substate{substate::IN_SETTINGS}
-	, m_timer{0}
-	, m_ui{SELECTION_TREE, SHORTCUTS}
-	, m_background_game{std::move(game)}
-	, m_pending{engine::settings}
+	: menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SETTINGS}, m_pending{engine::settings}
 {
 	// STATUS CALLBACKS
 
-	const status_callback scb{[this] { return m_substate != substate::ENTERING_TITLE; }};
-	const status_callback window_size_d_scb{[this] {
-		return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN &&
-			   m_pending.window_size > MIN_WINDOW_SIZE;
-	}};
-	const status_callback window_size_i_scb{[this] {
-		return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN &&
-			   m_pending.window_size < max_window_size();
-	}};
+	const status_callback scb{
+		[this] { return m_substate != substate::ENTERING_TITLE; },
+	};
+	const status_callback window_size_d_scb{
+		[this] {
+			return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN &&
+				   m_pending.window_size > MIN_WINDOW_SIZE;
+		},
+	};
+	const status_callback window_size_i_scb{
+		[this] {
+			return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN &&
+				   m_pending.window_size < max_window_size();
+		},
+	};
 	const status_callback window_size_c_scb{
-		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN; }};
-	const status_callback msaa_d_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != NO_MSAA; }};
-	const status_callback msaa_i_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != tr::system::max_msaa(); }};
-	const status_callback sfx_volume_d_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume > 0; }};
-	const status_callback sfx_volume_i_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume < 100; }};
-	const status_callback music_volume_d_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.music_volume > 0; }};
-	const status_callback music_volume_i_scb{[this] { return m_substate != substate::ENTERING_TITLE && m_pending.music_volume < 100; }};
-	const status_callback language_c_scb{[this] { return m_substate != substate::ENTERING_TITLE && engine::languages.size() > 1; }};
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN; },
+	};
+	const status_callback msaa_d_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != NO_MSAA; },
+	};
+	const status_callback msaa_i_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != tr::system::max_msaa(); },
+	};
+	const status_callback sfx_volume_d_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume > 0; },
+	};
+	const status_callback sfx_volume_i_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume < 100; },
+	};
+	const status_callback music_volume_d_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.music_volume > 0; },
+	};
+	const status_callback music_volume_i_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.music_volume < 100; },
+	};
+	const status_callback language_c_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && engine::languages.size() > 1; },
+	};
 	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_scbs{
 		[this] { return m_substate != substate::ENTERING_TITLE && m_pending != engine::settings; },
 		[this] { return m_substate != substate::ENTERING_TITLE && m_pending != engine::settings; },
@@ -183,64 +173,72 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	// ACTION CALLBACKS
 
-	const action_callback display_mode_c_acb{[&, &display_mode = m_pending.display_mode] {
-		switch (display_mode) {
-		case display_mode::WINDOWED:
-			display_mode = display_mode::FULLSCREEN;
-			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(interp::LERP, "505050A0"_rgba8, 0.1_s);
-			break;
-		case display_mode::FULLSCREEN:
-			display_mode = display_mode::WINDOWED;
-			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(interp::LERP, "A0A0A0A0"_rgba8, 0.1_s);
-			break;
-		}
-	}};
-	const action_callback window_size_d_acb{[&window_size = m_pending.window_size] {
-		window_size = std::max(MIN_WINDOW_SIZE, static_cast<std::uint16_t>(window_size - engine::keymods_choose(1, 10, 100)));
-	}};
-	const action_callback window_size_i_acb{[&window_size = m_pending.window_size] {
-		window_size = std::min(max_window_size(), static_cast<std::uint16_t>(window_size + engine::keymods_choose(1, 10, 100)));
-	}};
-	const action_callback msaa_d_acb{[&msaa = m_pending.msaa] { msaa = msaa == 2 ? NO_MSAA : static_cast<std::uint8_t>(msaa / 2); }};
-	const action_callback msaa_i_acb{[&msaa = m_pending.msaa] { msaa = msaa == NO_MSAA ? 2 : static_cast<std::uint8_t>(msaa * 2); }};
-	const action_callback primary_hue_d_acb{[&primary_hue = m_pending.primary_hue] {
-		primary_hue = static_cast<std::uint16_t>((primary_hue - engine::keymods_choose(1, 10, 100) + 360) % 360);
-	}};
-	const action_callback primary_hue_i_acb{[&primary_hue = m_pending.primary_hue] {
-		primary_hue = static_cast<std::uint16_t>((primary_hue + engine::keymods_choose(1, 10, 100)) % 360);
-	}};
-	const action_callback secondary_hue_d_acb{[&secondary_hue = m_pending.secondary_hue] {
-		secondary_hue = static_cast<std::uint16_t>((secondary_hue - engine::keymods_choose(1, 10, 100) + 360) % 360);
-	}};
-	const action_callback secondary_hue_i_acb{[&secondary_hue = m_pending.secondary_hue] {
-		secondary_hue = static_cast<std::uint16_t>((secondary_hue + engine::keymods_choose(1, 10, 100)) % 360);
-	}};
-	const action_callback sfx_volume_d_acb{[&sfx_volume = m_pending.sfx_volume] {
-		sfx_volume = static_cast<std::uint8_t>(std::max(sfx_volume - engine::keymods_choose(1, 10, 25), 0));
-	}};
-	const action_callback sfx_volume_i_acb{[&sfx_volume = m_pending.sfx_volume] {
-		sfx_volume = static_cast<std::uint8_t>(std::min(sfx_volume + engine::keymods_choose(1, 10, 25), 100));
-	}};
-	const action_callback music_volume_d_acb{[&music_volume = m_pending.music_volume] {
-		music_volume = static_cast<std::uint8_t>(std::max(music_volume - engine::keymods_choose(1, 10, 25), 0));
-	}};
-	const action_callback music_volume_i_acb{[&music_volume = m_pending.music_volume] {
-		music_volume = static_cast<std::uint8_t>(std::min(music_volume + engine::keymods_choose(1, 10, 25), 100));
-	}};
-	const action_callback language_c_acb{[this] {
-		std::map<language_code, language>::iterator it{std::next(engine::languages.find(m_pending.language))};
-		if (it == engine::languages.end()) {
-			it = engine::languages.begin();
-		}
-		m_pending.language = it->first;
-		engine::reload_language_preview_font(m_pending);
-	}};
+	const action_callback display_mode_c_acb{
+		[&, &dm = m_pending.display_mode] {
+			switch (dm) {
+			case display_mode::WINDOWED:
+				dm = display_mode::FULLSCREEN;
+				m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
+				break;
+			case display_mode::FULLSCREEN:
+				dm = display_mode::WINDOWED;
+				m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+				break;
+			}
+		},
+	};
+	const action_callback window_size_d_acb{
+		[&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, std::uint16_t(ws - engine::keymods_choose(1, 10, 100))); },
+	};
+	const action_callback window_size_i_acb{
+		[&ws = m_pending.window_size] { ws = std::min(max_window_size(), std::uint16_t(ws + engine::keymods_choose(1, 10, 100))); },
+	};
+	const action_callback msaa_d_acb{
+		[&msaa = m_pending.msaa] { msaa = msaa == 2 ? NO_MSAA : std::uint8_t(msaa / 2); },
+	};
+	const action_callback msaa_i_acb{
+		[&msaa = m_pending.msaa] { msaa = msaa == NO_MSAA ? 2 : std::uint8_t(msaa * 2); },
+	};
+	const action_callback primary_hue_d_acb{
+		[&ph = m_pending.primary_hue] { ph = std::uint16_t((ph - engine::keymods_choose(1, 10, 100) + 360) % 360); },
+	};
+	const action_callback primary_hue_i_acb{
+		[&ph = m_pending.primary_hue] { ph = std::uint16_t((ph + engine::keymods_choose(1, 10, 100)) % 360); },
+	};
+	const action_callback secondary_hue_d_acb{
+		[&sh = m_pending.secondary_hue] { sh = std::uint16_t((sh - engine::keymods_choose(1, 10, 100) + 360) % 360); },
+	};
+	const action_callback secondary_hue_i_acb{
+		[&sh = m_pending.secondary_hue] { sh = std::uint16_t((sh + engine::keymods_choose(1, 10, 100)) % 360); },
+	};
+	const action_callback sfx_volume_d_acb{
+		[&sv = m_pending.sfx_volume] { sv = std::uint8_t(std::max(sv - engine::keymods_choose(1, 10, 25), 0)); },
+	};
+	const action_callback sfx_volume_i_acb{
+		[&sv = m_pending.sfx_volume] { sv = std::uint8_t(std::min(sv + engine::keymods_choose(1, 10, 25), 100)); },
+	};
+	const action_callback music_volume_d_acb{
+		[&mv = m_pending.music_volume] { mv = std::uint8_t(std::max(mv - engine::keymods_choose(1, 10, 25), 0)); },
+	};
+	const action_callback music_volume_i_acb{
+		[&mv = m_pending.music_volume] { mv = std::uint8_t(std::min(mv + engine::keymods_choose(1, 10, 25), 100)); },
+	};
+	const action_callback language_c_acb{
+		[this] {
+			std::map<language_code, language>::iterator it{std::next(engine::languages.find(m_pending.language))};
+			if (it == engine::languages.end()) {
+				it = engine::languages.begin();
+			}
+			m_pending.language = it->first;
+			engine::reload_language_preview_font(m_pending);
+		},
+	};
 	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_acbs{
 		[this] {
 			m_pending = engine::settings;
 			engine::reload_language_preview_font(m_pending);
 			const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8};
-			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(interp::LERP, window_size_color, 0.1_s);
+			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, window_size_color, 0.1_s);
 		},
 		[this] {
 			const settings old{engine::settings};
@@ -267,26 +265,34 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	// VALIDATION CALLBACKS
 
 	const validation_callback<std::uint16_t> window_size_c_vcb{
-		[](std::uint16_t v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); }};
-	const validation_callback<std::uint16_t> hue_c_vcb{[](std::uint16_t v) { return v % 360; }};
-	const validation_callback<std::uint8_t> volume_c_vcb{[](std::uint8_t v) { return std::min<std::uint8_t>(v, 100); }};
+		[](std::uint16_t v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); },
+	};
+	const validation_callback<std::uint16_t> hue_c_vcb{
+		[](std::uint16_t v) { return v % 360; },
+	};
+	const validation_callback<std::uint8_t> volume_c_vcb{
+		[](std::uint8_t v) { return std::min(v, std::uint8_t(100)); },
+	};
 
 	// TEXT CALLBACKS
 
-	const text_callback display_mode_c_tcb{[&display_mode = m_pending.display_mode] {
-		return std::string{engine::loc[display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]};
-	}};
-	const text_callback msaa_c_tcb{[this] { return m_pending.msaa == NO_MSAA ? "--" : std::format("x{}", m_pending.msaa); }};
+	const text_callback display_mode_c_tcb{
+		[&dm = m_pending.display_mode] { return std::string{engine::loc[dm == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
+	};
+	const text_callback msaa_c_tcb{
+		[this] { return m_pending.msaa == NO_MSAA ? "--" : std::format("x{}", m_pending.msaa); },
+	};
 	const text_callback language_c_tcb{
-		[this] { return engine::languages.contains(m_pending.language) ? engine::languages[m_pending.language].name : "???"; }};
+		[this] { return engine::languages.contains(m_pending.language) ? engine::languages[m_pending.language].name : "???"; },
+	};
 
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::system::ttf_style::NORMAL, 64);
 	for (std::size_t i = 0; i < LABELS.size(); ++i) {
-		const label& label{LABELS[i]};
-		const interpolator<glm::vec2> move_in{interp::CUBIC, {-50, 196 + i * 75}, {15, 196 + i * 75}, 0.5_s};
+		const label_info& label{LABELS[i]};
+		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 196 + i * 75}, {15, 196 + i * 75}, 0.5_s};
 		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? "505050A0"_rgba8
 																											   : "A0A0A0A0"_rgba8};
 		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
@@ -332,59 +338,41 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, LANGUAGE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, language_c_tcb,
 									 font::LANGUAGE_PREVIEW, 48, language_c_scb, language_c_acb, sound::CONFIRM);
 	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
-		const interpolator<glm::vec2> move_in{
-			interp::CUBIC, BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s};
+		const tweener<glm::vec2> move_in{tween::CUBIC, BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s};
 		const sound sound{i == 1 ? sound::CONFIRM : sound::CANCEL};
 		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
 										 loc_text_callback{BOTTOM_BUTTONS[i]}, font::LANGUAGE, 48, bottom_scbs[i], bottom_acbs[i], sound);
 	}
 }
 
-///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
-
-std::unique_ptr<tr::state> settings_state::handle_event(const tr::system::event& event)
-{
-	m_ui.handle_event(event);
-	return nullptr;
-}
+//
 
 std::unique_ptr<tr::state> settings_state::update(tr::duration)
 {
-	++m_timer;
-	m_background_game->update({});
-	m_ui.update();
-
+	menu_state::update({});
 	switch (m_substate) {
 	case substate::IN_SETTINGS:
 		return nullptr;
 	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? std::make_unique<title_state>(std::move(m_background_game)) : nullptr;
+		return m_timer >= 0.5_s ? std::make_unique<title_state>(release_game()) : nullptr;
 	}
 }
 
-void settings_state::draw()
-{
-	m_background_game->add_to_renderer();
-	engine::add_menu_game_overlay_to_renderer();
-	m_ui.add_to_renderer();
-	tr::gfx::renderer_2d::draw(engine::screen());
-}
-
-///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+//
 
 void settings_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.change(interp::CUBIC, TOP_START_POS, 0.5_s);
+	m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 0.5_s);
 	for (tag tag : BOTTOM_BUTTONS) {
-		m_ui[tag].pos.change(interp::CUBIC, BOTTOM_START_POS, 0.5_s);
+		m_ui[tag].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	}
-	for (tag tag : tr::project(LABELS, &label::tag)) {
+	for (tag tag : tr::project(LABELS, &label_info::tag)) {
 		widget& widget{m_ui[tag]};
-		widget.pos.change(interp::CUBIC, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
+		widget.pos.change(tween::CUBIC, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
 	}
 	for (tag tag : RIGHT_WIDGETS) {
 		widget& widget{m_ui[tag]};
-		widget.pos.change(interp::CUBIC, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
+		widget.pos.change(tween::CUBIC, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
 	}
 	m_ui.hide_all(0.5_s);
 }

@@ -1,0 +1,11 @@
+Gamemode format:
+0: v0.9.0b
+
+Replay format:
+0: v0.9.0b
+
+Scorefile format:
+0: v0.9.0b
+
+Settings format:
+0: v0.9.0b

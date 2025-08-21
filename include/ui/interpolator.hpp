@@ -1,86 +1,66 @@
 #pragma once
 #include "../global.hpp"
 
-// Interpolation modes.
-enum class interp {
-	// Uses linear interpolation from start to end.
+enum class tween {
 	LERP,
-	// Uses cubic interpolation from start to end.
 	CUBIC,
-	// Cycles in a sinusoidal pattern from start to end.
 	CYCLE
 };
 
-template <class T> struct interpolator {
+template <class T> struct tweener {
   public:
-	// Constructs an interpolator with a value.
-	constexpr interpolator(T value);
-	// Constructs an interpolator with an ongoing interpolation.
-	constexpr interpolator(interp mode, T start, T end, ticks time);
+	constexpr tweener(T value);
+	constexpr tweener(tween mode, T start, T end, ticks time);
 
-	/////////////////////////////////////////////////////////////// GETTERS ///////////////////////////////////////////////////////////////
-
-	// Updates the interpolation.
 	void update();
-	// Gets whether the interpolation is done.
 	bool done() const;
-	// Gets the current value of the interpolator.
 	operator T() const;
 
-	/////////////////////////////////////////////////////////////// SETTERS ///////////////////////////////////////////////////////////////
-
-	// Begins an easing interpolation starting from the current value.
-	void change(interp mode, T end, ticks time);
-	// Sets the interpolator.
-	interpolator& operator=(T r);
+	void change(tween mode, T end, ticks time);
+	tweener& operator=(T r);
 
   private:
-	// The current interpolation mode.
-	interp m_mode;
-	// The value at the start of the interpolation.
+	tween m_mode;
 	T m_start;
-	// The value at the end of the interpolated (or the current value if no interpolation is in progress).
 	T m_end;
-	// The length of the interpolation, or 0 to mark no ongoing interpolation.
-	std::uint16_t m_len;
-	// The current position within the interpolation.
+	std::uint16_t m_len; // 0 to mark no ongoing tweening.
 	std::uint16_t m_pos;
 };
 
 ///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
 
 template <class T>
-constexpr interpolator<T>::interpolator(T value)
-	: m_mode{interp::CUBIC}, m_end{value}, m_len{0}, m_pos{0}
+constexpr tweener<T>::tweener(T value)
+	: m_mode{tween::CUBIC}, m_end{value}, m_len{0}, m_pos{0}
 {
 }
 
 template <class T>
-constexpr interpolator<T>::interpolator(interp mode, T start, T end, ticks time)
-	: m_mode{mode}, m_start{start}, m_end{end}, m_len{static_cast<std::uint16_t>(time)}, m_pos{0}
+constexpr tweener<T>::tweener(tween mode, T start, T end, ticks time)
+	: m_mode{mode}, m_start{start}, m_end{end}, m_len{std::uint16_t(time)}, m_pos{0}
 {
 }
 
-template <class T> void interpolator<T>::update()
+template <class T> void tweener<T>::update()
 {
 	if (m_len != 0 && ++m_pos == m_len) {
 		switch (m_mode) {
-		case interp::LERP:
-		case interp::CUBIC:
+		case tween::LERP:
+		case tween::CUBIC:
 			m_len = 0;
 			break;
-		case interp::CYCLE:
+		case tween::CYCLE:
 			m_pos = 0;
 		}
 	}
 }
 
-template <class T> bool interpolator<T>::done() const
+template <class T> bool tweener<T>::done() const
 {
 	return m_len == 0;
 }
 
-template <class T> interpolator<T>::operator T() const
+template <class T> tweener<T>::operator T() const
 {
 	if (m_len == 0) {
 		return m_end;
@@ -88,27 +68,27 @@ template <class T> interpolator<T>::operator T() const
 	else {
 		float ratio;
 		switch (m_mode) {
-		case interp::LERP:
-			ratio = static_cast<float>(m_pos) / m_len;
+		case tween::LERP:
+			ratio = float(m_pos) / m_len;
 			break;
-		case interp::CUBIC:
-			ratio = static_cast<float>(m_pos) / m_len;
+		case tween::CUBIC:
+			ratio = float(m_pos) / m_len;
 			ratio = ratio < 0.5f ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
 			break;
-		case interp::CYCLE:
-			ratio = (tr::turns(static_cast<float>(m_pos) / m_len).cos() - 1) / -2.0f;
+		case tween::CYCLE:
+			ratio = (tr::turns(float(m_pos) / m_len).cos() - 1) / -2.0f;
 			break;
 		}
 		return m_start + m_end * ratio - m_start * ratio;
 	}
 }
 
-template <class T> void interpolator<T>::change(interp mode, T end, ticks time)
+template <class T> void tweener<T>::change(tween mode, T end, ticks time)
 {
-	*this = interpolator{mode, *this, end, static_cast<std::uint16_t>(time)};
+	*this = tweener{mode, *this, end, std::uint16_t(time)};
 }
 
-template <class T> interpolator<T>& interpolator<T>::operator=(T r)
+template <class T> tweener<T>& tweener<T>::operator=(T r)
 {
-	return *this = interpolator{r};
+	return *this = tweener{r};
 }

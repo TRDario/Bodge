@@ -11,9 +11,7 @@ language_name = "English"
     save    = "SAVE"
 
 # Title screen
-    copyright         = "©2025 TRDario"
     enter_your_name   = "ENTER YOUR NAME"
-    version           = "a0.3.0"
     start_game        = "START GAME"
     gamemode_designer = "GAMEMODE DESIGNER"
     replays           = "REPLAYS"
@@ -28,6 +26,7 @@ language_name = "English"
 # Gamemode editor
     ball_settings       = "BALL SETTINGS"
     player_settings     = "PLAYER SETTINGS"
+    song                = "SONG:"
     test                = "TEST"
     starting_count      = "STARTING COUNT:"
     starting_count_tt   = "THE STARTING NUMBER OF BALLS.\nSIZE AND VELOCITY STEPS WILL BE APPLIED AS USUAL."
@@ -105,3 +104,9 @@ language_name = "English"
     gm_chonk_d   = "THEY'RE ACTUALLY JUST BIG BONED."
     gm_swarm     = "SWARM"
     gm_swarm_d   = "QUICKLY DEVOLVES INTO A BULLET HELL."
+
+# Credits
+    credits = "CREDITS"
+    developed_by = "DEVELOPED BY:"
+    trdario_tt = "(Bikeshedder-in-chief)"
+    playtesters = "PLAYTESTERS:"
