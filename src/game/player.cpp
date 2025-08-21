@@ -21,6 +21,8 @@ inline constexpr int LIVES_PER_LINE{10};
 // Screen shake duration.
 inline constexpr ticks SCREEN_SHAKE_TIME{2_s / 3};
 
+inline constexpr ticks INITIAL_INVULNERABILITY{2.5_s};
+
 //
 
 tr::gfx::dyn_atlas<char> create_timer_atlas()
@@ -52,7 +54,7 @@ player::player(const player_settings& settings, ticks prev_pb)
 	, m_inertia{settings.inertia_factor}
 	, m_timer{0}
 	, m_game_over_timer{0}
-	, m_iframes_left{0}
+	, m_iframes_left{INITIAL_INVULNERABILITY}
 	, m_lives_hover_time{0}
 	, m_timer_hover_time{0}
 	, m_atlas{create_timer_atlas()}
@@ -99,7 +101,9 @@ void player::update()
 {
 	if (m_iframes_left > 0) {
 		--m_iframes_left;
-		set_screen_shake();
+		if (m_timer > INITIAL_INVULNERABILITY) {
+			set_screen_shake();
+		}
 	}
 
 	if (!game_over()) {
@@ -143,7 +147,9 @@ void player::update(glm::vec2 target)
 {
 	if (m_iframes_left > 0) {
 		--m_iframes_left;
-		set_screen_shake();
+		if (m_timer > INITIAL_INVULNERABILITY) {
+			set_screen_shake();
+		}
 	}
 
 	if (!game_over()) {
@@ -199,7 +205,9 @@ void player::add_to_renderer() const
 {
 	constexpr float PI{std::numbers::pi_v<float>};
 
-	const tr::rgb8 tint{m_iframes_left ? PLAYER_HIT_COLOR : color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
+	const tr::rgb8 tint{(m_iframes_left && m_timer > INITIAL_INVULNERABILITY)
+							? PLAYER_HIT_COLOR
+							: color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
 	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(std::abs(std::cos(m_iframes_left * PI * 8 / PLAYER_INVULN_TIME)))};
 	const tr::angle rotation{tr::degs(270.0f * m_timer / SECOND_TICKS)};
 	const float size_offset{3.0f * std::sin(PI * m_timer / SECOND_TICKS)};

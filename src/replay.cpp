@@ -103,10 +103,11 @@ void replay::save_to_file() const
 			file = tr::open_file_w(path, std::ios::binary);
 		}
 
+		tr::binary_write(file, REPLAY_VERSION);
+
 		std::ostringstream bufstream{std::ios::binary};
 		std::vector<std::byte> buffer;
 
-		tr::binary_write(bufstream, REPLAY_VERSION);
 		tr::binary_write(bufstream, m_header);
 		tr::encrypt_to(buffer, bufstream.view(), engine::rng.generate<std::uint8_t>());
 		tr::binary_write(file, buffer);
