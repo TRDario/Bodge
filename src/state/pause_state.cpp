@@ -1,9 +1,4 @@
-#include "../../include/state/pause_state.hpp"
-#include "../../include/state/game_state.hpp"
-#include "../../include/state/gamemode_designer_state.hpp"
-#include "../../include/state/replays_state.hpp"
-#include "../../include/state/save_score_state.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -58,10 +53,9 @@ constexpr shortcut_table SHORTCUTS_SPECIAL{
 // clang-format on
 
 pause_state::pause_state(std::unique_ptr<game>&& game, game_type type, glm::vec2 mouse_pos, bool blur_in)
-	: state{type == game_type::REGULAR ? SELECTION_TREE_REGULAR : SELECTION_TREE_SPECIAL,
-			type == game_type::REGULAR ? SHORTCUTS_REGULAR : SHORTCUTS_SPECIAL}
+	: game_menu_state{type == game_type::REGULAR ? SELECTION_TREE_REGULAR : SELECTION_TREE_SPECIAL,
+					  type == game_type::REGULAR ? SHORTCUTS_REGULAR : SHORTCUTS_SPECIAL, std::move(game), false}
 	, m_substate{(blur_in ? substate_base::PAUSING : substate_base::PAUSED) | type}
-	, m_game{std::move(game)}
 	, m_start_mouse_pos{mouse_pos}
 {
 	if (blur_in) {
@@ -82,7 +76,7 @@ pause_state::pause_state(std::unique_ptr<game>&& game, game_type type, glm::vec2
 
 std::unique_ptr<tr::state> pause_state::update(tr::duration)
 {
-	state::update({});
+	game_menu_state::update({});
 	switch (to_base(m_substate)) {
 	case substate_base::PAUSING:
 		if (m_timer >= 0.5_s) {
@@ -139,15 +133,6 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 	}
 }
 
-void pause_state::draw()
-{
-	engine::blur().draw(shader_saturation_factor(), shader_blur_strength());
-	m_ui.add_to_renderer();
-	engine::add_fade_overlay_to_renderer(
-		to_base(m_substate) == substate_base::RESTARTING || to_base(m_substate) == substate_base::QUITTING ? m_timer / 0.5_sf : 0);
-	tr::gfx::renderer_2d::draw(engine::screen());
-}
-
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
 pause_state::substate operator|(const pause_state::substate_base& l, const game_type& r)
@@ -165,7 +150,12 @@ game_type to_type(pause_state::substate state)
 	return game_type(int(state) & 0x18);
 }
 
-float pause_state::shader_saturation_factor() const
+float pause_state::fade_overlay_opacity()
+{
+	return to_base(m_substate) == substate_base::RESTARTING || to_base(m_substate) == substate_base::QUITTING ? m_timer / 0.5_sf : 0;
+}
+
+float pause_state::saturation_factor()
 {
 	switch (to_base(m_substate)) {
 	case substate_base::PAUSED:
@@ -181,7 +171,7 @@ float pause_state::shader_saturation_factor() const
 	}
 }
 
-float pause_state::shader_blur_strength() const
+float pause_state::blur_strength()
 {
 	switch (to_base(m_substate)) {
 	case substate_base::PAUSED:
@@ -224,7 +214,7 @@ void pause_state::set_up_full_ui()
 			m_timer = 0;
 			m_substate = substate_base::RESTARTING | game_type::REGULAR;
 			engine::scorefile.playtime += m_game->final_time();
-			update_pb(engine::scorefile, m_game->gamemode(), m_game->final_time());
+			engine::scorefile.update_personal_best(m_game->gamemode(), m_game->final_time());
 			set_up_exit_animation();
 		},
 		[this] {
@@ -236,7 +226,7 @@ void pause_state::set_up_full_ui()
 			m_timer = 0;
 			m_substate = substate_base::QUITTING | game_type::REGULAR;
 			engine::scorefile.playtime += m_game->final_time();
-			update_pb(engine::scorefile, m_game->gamemode(), m_game->final_time());
+			engine::scorefile.update_personal_best(m_game->gamemode(), m_game->final_time());
 			set_up_exit_animation();
 		},
 	};
@@ -309,5 +299,5 @@ void pause_state::set_up_exit_animation()
 		}
 	}
 
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 }

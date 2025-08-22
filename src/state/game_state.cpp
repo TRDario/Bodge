@@ -1,9 +1,5 @@
-#include "../../include/state/game_state.hpp"
 #include "../../include/graphics.hpp"
-#include "../../include/state/game_over_state.hpp"
-#include "../../include/state/gamemode_designer_state.hpp"
-#include "../../include/state/pause_state.hpp"
-#include "../../include/state/replays_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -102,8 +98,8 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 			tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
 			switch (to_type(m_substate)) {
 			case game_type::REGULAR: {
-				const ticks prev_pb{pb(engine::scorefile, m_game->gamemode())};
-				update_pb(engine::scorefile, m_game->gamemode(), m_game->final_time());
+				const ticks prev_pb{engine::scorefile.personal_best(m_game->gamemode())};
+				engine::scorefile.update_personal_best(m_game->gamemode(), m_game->final_time());
 				return std::make_unique<game_over_state>(std::unique_ptr<active_game>{(active_game*)m_game.release()}, true, prev_pb);
 			}
 			case game_type::GAMEMODE_DESIGNER_TEST:

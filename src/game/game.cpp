@@ -13,8 +13,8 @@ game::game(const ::gamemode& gamemode, std::uint64_t rng_seed)
 	, m_time_since_start{0}
 	, m_time_since_last_spawn{0}
 {
-	if (!autoplay(m_gamemode.player)) {
-		m_player.emplace(gamemode.player, pb(engine::scorefile, m_gamemode));
+	if (!m_gamemode.player.is_autoplay()) {
+		m_player.emplace(gamemode.player, engine::scorefile.personal_best(m_gamemode));
 	}
 
 	for (int i = 0; i < gamemode.ball.starting_count; ++i) {
@@ -160,12 +160,12 @@ bool replay_game::done() const
 
 glm::vec2 replay_game::cursor_pos() const
 {
-	return m_replay.current();
+	return m_replay.prev_input();
 }
 
 //
 
 void replay_game::update()
 {
-	update(done() ? m_replay.current() : m_replay.next());
+	update(done() ? m_replay.prev_input() : m_replay.next_input());
 }

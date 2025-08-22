@@ -1,5 +1,4 @@
-#include "../../include/state/player_settings_editor_state.hpp"
-#include "../../include/state/gamemode_designer_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -65,7 +64,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 // clang-format on
 
 player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
-	: menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_EDITOR}, m_pending{gamemode}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_EDITOR}, m_pending{gamemode}
 {
 	// STATUS CALLBACKS
 
@@ -169,7 +168,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 
 std::unique_ptr<tr::state> player_settings_editor_state::update(tr::duration)
 {
-	menu_state::update({});
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::IN_EDITOR:
 		return nullptr;

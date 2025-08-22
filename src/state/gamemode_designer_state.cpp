@@ -1,8 +1,4 @@
-#include "../../include/state/gamemode_designer_state.hpp"
-#include "../../include/state/ball_settings_editor_state.hpp"
-#include "../../include/state/game_state.hpp"
-#include "../../include/state/player_settings_editor_state.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 // clang-format off
@@ -61,7 +57,7 @@ constexpr tweener<glm::vec2> SONG_C_MOVE_IN{tween::CUBIC, glm::vec2{400, 700}, g
 // clang-format on
 
 gamemode_designer_state::gamemode_designer_state(std::unique_ptr<game>&& game, const gamemode& gamemode, bool returning_from_subscreen)
-	: menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_GAMEMODE_DESIGNER}
 	, m_pending{gamemode}
 	, m_available_songs{engine::create_available_song_list()}
@@ -70,20 +66,20 @@ gamemode_designer_state::gamemode_designer_state(std::unique_ptr<game>&& game, c
 }
 
 gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
-	: menu_state{SELECTION_TREE, SHORTCUTS}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS}
 	, m_substate{substate::RETURNING_FROM_TEST_GAME}
 	, m_pending{gamemode}
 	, m_available_songs{engine::create_available_song_list()}
 {
 	set_up_ui(false);
-	engine::play_song("menu", SKIP_MENU_SONG_INTRO, 0.5s);
+	engine::play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
 }
 
 //
 
 std::unique_ptr<tr::state> gamemode_designer_state::update(tr::duration)
 {
-	menu_state::update({});
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::RETURNING_FROM_TEST_GAME:
 		if (m_timer >= 0.5_s) {
@@ -139,10 +135,10 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	// ACTION CALLBACKS
 
 	const action_callback name_enter_cb{
-		[this] { m_ui.select_next(); },
+		[this] { m_ui.select_next_widget(); },
 	};
 	const action_callback description_enter_cb{
-		[this] { m_ui.set_selection(nullptr); },
+		[this] { m_ui.clear_selection(); },
 	};
 	const action_callback ball_settings_acb{
 		[this] {
@@ -185,7 +181,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 			m_timer = 0;
 			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
 			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
-			save_gamemode(m_pending);
+			m_pending.save_to_file();
 			set_up_exit_animation();
 		},
 		[this] {
@@ -255,7 +251,7 @@ void gamemode_designer_state::set_up_subscreen_animation()
 	for (tag tag : BOTTOM_BUTTONS) {
 		m_ui[tag].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	}
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 	m_ui[T_TITLE].unhide();
 }
 
@@ -279,5 +275,5 @@ void gamemode_designer_state::set_up_exit_animation()
 	for (tag tag : BOTTOM_BUTTONS) {
 		m_ui[tag].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	}
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 }

@@ -7,7 +7,7 @@ std::string timer_text(ticks time)
 						 : std::format("{:02}:{:02}", time / 1_s, (time % 1_s) * 100 / 1_s)};
 }
 
-std::int64_t unix_now()
+std::int64_t current_timestamp()
 {
 	return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }

@@ -1,5 +1,4 @@
-#include "../../include/state/name_entry_state.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 //
@@ -23,7 +22,7 @@ constexpr tweener<glm::vec2> CONFIRM_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {50
 //
 
 name_entry_state::name_entry_state()
-	: menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::FADING_IN}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::FADING_IN}
 {
 	// STATUS CALLBACKS
 
@@ -44,7 +43,7 @@ name_entry_state::name_entry_state()
 				m_substate = substate::ENTERING_TITLE;
 				m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 1.0_s);
 				m_ui[T_CONFIRM].pos.change(tween::CUBIC, BOTTOM_START_POS, 1.0_s);
-				m_ui.hide_all(1.0_s);
+				m_ui.hide_all_widgets(1.0_s);
 				engine::play_sound(sound::CONFIRM, 0.5f, 0.0f);
 				engine::scorefile.name = input.buffer;
 			}
@@ -67,7 +66,7 @@ name_entry_state::name_entry_state()
 
 std::unique_ptr<tr::state> name_entry_state::update(tr::duration)
 {
-	menu_state::update({});
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::FADING_IN:
 		if (m_timer >= 1.0_s) {

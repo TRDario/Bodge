@@ -2,32 +2,24 @@
 #include "../include/settings.hpp"
 
 namespace engine {
-	// Blending mode used by layer::BALL_TRAILS.
 	inline constexpr tr::gfx::blend_mode MAX_ALPHA_BLENDING{
 		tr::gfx::blend_multiplier::ONE, tr::gfx::blend_fn::MAX, tr::gfx::blend_multiplier::ONE,
 		tr::gfx::blend_multiplier::ONE, tr::gfx::blend_fn::MAX, tr::gfx::blend_multiplier::ONE,
 	};
-	// Blending mode used by layer::BALL_TRAILS_OVERLAY.
 	inline constexpr tr::gfx::blend_mode REVERSE_ALPHA_BLENDING{
 		tr::gfx::blend_multiplier::ONE_MINUS_DST_ALPHA, tr::gfx::blend_fn::ADD, tr::gfx::blend_multiplier::DST_ALPHA,
 		tr::gfx::blend_multiplier::ONE_MINUS_DST_ALPHA, tr::gfx::blend_fn::MAX, tr::gfx::blend_multiplier::DST_ALPHA,
 	};
 
-	// Creates the screen render target.
 	tr::gfx::render_target setup_screen();
 
-	// Graphics state.
 	struct graphics_data {
-		// The screen render target.
 		tr::gfx::render_target screen{setup_screen()};
-		// Renderer for drawing blurred and desaturated images.
 		blur_renderer blur{screen.size().x};
-		// Tooltip manager.
 		tooltip_manager tooltip;
 	};
 	std::optional<graphics_data> graphics;
 
-	// Initializes the 2D renderer.
 	void initialize_2d_renderer();
 } // namespace engine
 

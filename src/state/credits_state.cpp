@@ -1,5 +1,4 @@
-#include "../../include/state/credits_state.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 //
@@ -29,7 +28,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 //
 
 credits_state::credits_state(std::unique_ptr<game>&& game)
-	: menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_CREDITS}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_CREDITS}
 {
 	// STATUS CALLBACKS
 
@@ -45,7 +44,7 @@ credits_state::credits_state(std::unique_ptr<game>&& game)
 			m_timer = 0;
 			m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 0.5_s);
 			m_ui[T_EXIT].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
-			m_ui.hide_all(0.5_s);
+			m_ui.hide_all_widgets(0.5_s);
 		},
 	};
 
@@ -64,10 +63,10 @@ credits_state::credits_state(std::unique_ptr<game>&& game)
 	m_ui.emplace<image_widget>(T_ART, glm::vec2{500, 550}, tr::align::TOP_CENTER, DONT_UNHIDE, 0, "credits_art");
 	m_ui.emplace<label_widget>(T_PLAYTESTERS, glm::vec2{400, 710}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
 							   loc_text_callback{T_PLAYTESTERS}, tr::system::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_STARSURGE, glm::vec2{600, 770}, tr::align::CENTER, DONT_UNHIDE, loc_text_callback{"starsurge_tt"},
+	m_ui.emplace<label_widget>(T_STARSURGE, glm::vec2{600, 770}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
 							   string_text_callback{T_STARSURGE}, tr::system::ttf_style::NORMAL, 48);
-	m_ui.emplace<label_widget>(T_TOWELI, glm::vec2{400, 820}, tr::align::CENTER, DONT_UNHIDE, loc_text_callback{"toweli_tt"},
-							   string_text_callback{T_TOWELI}, tr::system::ttf_style::NORMAL, 48);
+	m_ui.emplace<label_widget>(T_TOWELI, glm::vec2{400, 820}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text_callback{T_TOWELI},
+							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 }
@@ -76,7 +75,7 @@ credits_state::credits_state(std::unique_ptr<game>&& game)
 
 std::unique_ptr<tr::state> credits_state::update(tr::duration)
 {
-	menu_state::update({});
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::IN_CREDITS:
 		switch (m_timer) {

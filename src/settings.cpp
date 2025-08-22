@@ -1,14 +1,16 @@
 #include "../include/settings.hpp"
 
+//
+
 template <> struct tr::binary_reader<settings> : tr::default_binary_reader<settings> {};
 template <> struct tr::binary_writer<settings> : tr::default_binary_writer<settings> {};
 
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+//
 
 // Settings file version identifier.
 constexpr std::uint8_t SETTINGS_VERSION{0};
 
-///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+//
 
 namespace engine {
 	void raw_load_settings();
@@ -21,7 +23,7 @@ std::uint16_t max_window_size()
 	return std::uint16_t(std::min(display_size.x, display_size.y));
 }
 
-///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
+//
 
 void engine::parse_command_line(int argc, const char** argv)
 {
@@ -29,10 +31,10 @@ void engine::parse_command_line(int argc, const char** argv)
 		const std::string_view arg{argv[i]};
 
 		if (arg == "--datadir" && ++i < argc) {
-			cli_settings.datadir = argv[i];
+			cli_settings.data_directory = argv[i];
 		}
 		else if (arg == "--userdir" && ++i < argc) {
-			cli_settings.userdir = argv[i];
+			cli_settings.user_directory = argv[i];
 		}
 		else if (arg == "--refreshrate" && ++i < argc) {
 			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.refresh_rate);
@@ -58,31 +60,31 @@ void engine::parse_command_line(int argc, const char** argv)
 		}
 	}
 
-	if (cli_settings.datadir.empty()) {
-		cli_settings.datadir = tr::system::executable_dir() / "data";
+	if (cli_settings.data_directory.empty()) {
+		cli_settings.data_directory = tr::system::executable_dir() / "data";
 	}
-	if (cli_settings.userdir.empty()) {
-		cli_settings.userdir = tr::system::user_dir();
+	if (cli_settings.user_directory.empty()) {
+		cli_settings.user_directory = tr::system::user_dir();
 	}
 
 	constexpr std::array<const char*, 5> DIRECTORIES{"localization", "fonts", "music", "replays", "gamemodes"};
 	for (const char* directory : DIRECTORIES) {
-		const std::filesystem::path path{cli_settings.userdir / directory};
+		const std::filesystem::path path{cli_settings.user_directory / directory};
 		if (!std::filesystem::is_directory(path)) {
 			std::filesystem::create_directory(path);
 		}
 	}
 
 	if (cli_settings.debug_mode) {
-		tr::log = tr::logger{"tr", cli_settings.userdir / "tr.log"};
-		tr::gfx::log = tr::logger{"gl", cli_settings.userdir / "gl.log"};
-		logger = tr::logger{"Bodge", cli_settings.userdir / "Bodge.log"};
+		tr::log = tr::logger{"tr", cli_settings.user_directory / "tr.log"};
+		tr::gfx::log = tr::logger{"gl", cli_settings.user_directory / "gl.log"};
+		logger = tr::logger{"Bodge", cli_settings.user_directory / "Bodge.log"};
 	}
 }
 
 void engine::raw_load_settings()
 {
-	const std::filesystem::path path{cli_settings.userdir / "settings.dat"};
+	const std::filesystem::path path{cli_settings.user_directory / "settings.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
@@ -144,7 +146,7 @@ void engine::load_settings()
 
 void engine::save_settings()
 {
-	const std::filesystem::path path{cli_settings.userdir / "settings.dat"};
+	const std::filesystem::path path{cli_settings.user_directory / "settings.dat"};
 	try {
 		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
 		std::ostringstream buffer;

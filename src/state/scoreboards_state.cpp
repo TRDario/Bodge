@@ -1,5 +1,4 @@
-#include "../../include/state/scoreboards_state.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 // clang-format off
@@ -63,7 +62,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 // clang-format on
 
 scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
-	: menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_SCOREBOARDS}
 	, m_page{0}
 	, m_selected{engine::scorefile.categories.begin()}
@@ -71,7 +70,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	// TOOLTIP CALLBACKS
 
 	const text_callback cur_gamemode_ttcb{
-		[this] { return std::string{description(m_selected->gamemode)}; },
+		[this] { return std::string{m_selected->gamemode.description_loc()}; },
 	};
 
 	// STATUS CALLBACKS
@@ -152,7 +151,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 		},
 	};
 	const text_callback cur_gamemode_tcb{
-		[this] { return std::string{name(m_selected->gamemode)}; },
+		[this] { return std::string{m_selected->gamemode.name_loc()}; },
 	};
 	const text_callback cur_page_tcb{
 		[this] { return std::format("{}/{}", m_page + 1, std::max(int(m_selected->scores.size()) - 1, 0) / SCORES_PER_PAGE + 1); },
@@ -174,7 +173,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	for (std::size_t i = 0; i < SCORES_PER_PAGE; ++i) {
 		const tweener<glm::vec2> move_in{tween::CUBIC, {i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s};
 		const std::size_t rank{m_page * SCORES_PER_PAGE + i + 1};
-		score* const score{m_selected->scores.size() > i ? std::to_address(m_selected->scores.begin() + i) : nullptr};
+		const tr::opt_ref<score> score{m_selected->scores.size() > i ? tr::opt_ref{m_selected->scores.begin()[i]} : std::nullopt};
 		m_ui.emplace<score_widget>(SCORE_TAGS[i], move_in, tr::align::CENTER, 0.5_s, rank, score);
 	}
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_D, GAMEMODE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, gamemode_change_scb, gamemode_d_acb);
@@ -191,7 +190,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 
 std::unique_ptr<tr::state> scoreboards_state::update(tr::duration)
 {
-	menu_state::update({});
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::IN_SCOREBOARDS:
 		return nullptr;
@@ -205,7 +204,7 @@ std::unique_ptr<tr::state> scoreboards_state::update(tr::duration)
 				const bool nonempty{m_selected->scores.size() > m_page * SCORES_PER_PAGE + i};
 				score_widget& widget{m_ui.as<score_widget>(SCORE_TAGS[i])};
 				widget.rank = m_page * SCORES_PER_PAGE + i + 1;
-				widget.score = nonempty ? std::to_address(m_selected->scores.begin() + m_page * SCORES_PER_PAGE + i) : nullptr;
+				widget.score = nonempty ? tr::opt_ref{m_selected->scores.begin()[m_page * SCORES_PER_PAGE + i]} : std::nullopt;
 				widget.pos = {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y};
 				widget.pos.change(tween::CUBIC, {500, glm::vec2{widget.pos}.y}, 0.25_s);
 				widget.unhide(0.25_s);
@@ -248,5 +247,5 @@ void scoreboards_state::set_up_exit_animation()
 		m_ui[T_PAGE_D].pos.change(tween::CUBIC, {-50, 942.5}, 0.5_s);
 		m_ui[T_PAGE_I].pos.change(tween::CUBIC, {1050, 942.5}, 0.5_s);
 	}
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 }

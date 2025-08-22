@@ -1,11 +1,5 @@
-#include "../../include/state/title_state.hpp"
 #include "../../include/audio.hpp"
-#include "../../include/state/credits_state.hpp"
-#include "../../include/state/gamemode_designer_state.hpp"
-#include "../../include/state/replays_state.hpp"
-#include "../../include/state/scoreboards_state.hpp"
-#include "../../include/state/settings_state.hpp"
-#include "../../include/state/start_game_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 // clang-format off
@@ -56,14 +50,14 @@ constexpr tweener<glm::vec2> LOGO_BALL_MOVE_IN{tween::CUBIC, {-180, 644}, {327, 
 // clang-format on
 
 title_state::title_state()
-	: menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::ENTERING_GAME}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::ENTERING_GAME}
 {
 	set_up_ui();
 	engine::play_song("menu", 1.0s);
 }
 
 title_state::title_state(std::unique_ptr<game>&& game)
-	: menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_TITLE}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_TITLE}
 {
 	set_up_ui();
 }
@@ -72,7 +66,7 @@ title_state::title_state(std::unique_ptr<game>&& game)
 
 std::unique_ptr<tr::state> title_state::update(tr::duration)
 {
-	menu_state::update({});
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::ENTERING_GAME:
 		if (m_timer >= 1.0_s) {
@@ -125,8 +119,8 @@ void title_state::set_up_ui()
 {
 	m_ui.emplace<image_widget>(T_LOGO_TEXT, LOGO_TEXT_MOVE_IN, tr::align::CENTER, 2.5_s, 0, "logo_text");
 	m_ui.emplace<image_widget>(T_LOGO_OVERLAY, LOGO_TEXT_MOVE_IN, tr::align::CENTER, 2.5_s, 1, "logo_overlay",
-							   &engine::settings.primary_hue);
-	m_ui.emplace<image_widget>(T_LOGO_BALL, LOGO_BALL_MOVE_IN, tr::align::CENTER, 2.5_s, 2, "logo_ball", &engine::settings.secondary_hue);
+							   engine::settings.primary_hue);
+	m_ui.emplace<image_widget>(T_LOGO_BALL, LOGO_BALL_MOVE_IN, tr::align::CENTER, 2.5_s, 2, "logo_ball", engine::settings.secondary_hue);
 
 	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, 1_s, NO_TOOLTIP,
 												 string_text_callback{T_COPYRIGHT}, tr::system::ttf_style::NORMAL, 24)};
@@ -200,5 +194,5 @@ void title_state::set_up_exit_animation()
 	m_ui[T_LOGO_BALL].pos.change(tween::CUBIC, {487, 57}, 0.5_s);
 	m_ui[T_COPYRIGHT].pos.change(tween::CUBIC, {4, 1000}, 0.5_s);
 	m_ui[T_VERSION].pos.change(tween::CUBIC, {996, 1000}, 0.5_s);
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 }

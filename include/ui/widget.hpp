@@ -6,36 +6,25 @@
 
 class ui_manager;
 
-/////////////////////////////////////////////////////////////// TEXT WIDGETS //////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////// LABEL WIDGET //////////////////////////////////////////////////////////////
 
-// Non-interactible label widget.
 class label_widget : public text_widget {
   public:
-	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
-
 	label_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
 				 tr::system::ttf_style style, float font_size, tr::rgba8 color = "A0A0A0A0"_rgba8);
 
-	////////////////////////////////////////////////////////////// ATTRIBUTES /////////////////////////////////////////////////////////////
-
-	// The color of the label.
 	tweener<tr::rgba8> color;
-
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
 	void update() override;
 	void add_to_renderer() override;
 };
 
-// Interactible text button.
+//////////////////////////////////////////////////////////// TEXT BUTTON WIDGET ///////////////////////////////////////////////////////////
+
 class text_button_widget : public text_widget {
   public:
-	///////////////////////////////////////////////////////////// CONSTRUCTORS ////////////////////////////////////////////////////////////
-
 	text_button_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
-					   font font, float font_size, status_callback status_cb, action_callback action_cb, sound sound);
-
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
+					   font font, float font_size, status_callback status_cb, action_callback action_cb, sound action_sound);
 
 	void update() override;
 	void add_to_renderer() override;
@@ -50,48 +39,33 @@ class text_button_widget : public text_widget {
 	void on_unselected() override;
 
   private:
-	// Callback used to determine the status of the widget.
 	status_callback m_scb;
-	// Callback called when the widget is interacted with.
 	action_callback m_acb;
-	// The sound effect that interacting with the widget plays.
-	sound m_sound;
+	sound m_action_sound;
 
   protected:
-	// Interpolator used for some effects.
 	tweener<tr::rgba8> m_interp;
 
   private:
-	// State keeping track of whether the button is hovered.
 	bool m_hovered;
-	// State keeping track of whether the button is held.
 	bool m_held;
-	// State keeping track of whether the button is selected.
 	bool m_selected;
-	// Timer for how much post-action flashing there is left.
 	ticks m_action_left;
 };
 
-// Numeric input validation callback.
-template <class T> using validation_callback = std::function<T(T)>;
-// Default numeric input widget formatter.
+/////////////////////////////////////////////////////////// NUMERIC INPUT WIDGET //////////////////////////////////////////////////////////
+
 template <class T, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt> struct default_numeric_input_formatter {
 	static void from_string(T& out, std::string_view str);
 	static std::string to_string(T v);
 	static std::string to_string(std::string_view str);
 };
 
-// Numeric input widget.
 template <class T, std::size_t S, class Formatter> class basic_numeric_input_widget : public text_widget {
   public:
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
-
-	// Creates a numeric input wiget.
 	basic_numeric_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
 							   status_callback status_cb, validation_callback<T> validation_cb);
 
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
-
 	void add_to_renderer() override;
 	void update() override;
 	bool interactible() const override;
@@ -109,44 +83,28 @@ template <class T, std::size_t S, class Formatter> class basic_numeric_input_wid
 	void on_clear() override;
 
   private:
-	// A reference to the parent UI manager.
 	ui_manager& m_ui;
-	// A reference to the value being modified.
 	T& m_ref;
-	// The buffer used for input.
 	tr::static_string<S> m_buffer;
-	// Callback used to determine the status of the widget.
 	status_callback m_scb;
-	// The callback run upon input finish.
 	validation_callback<T> m_vcb;
-	// Interpolator used for some effects.
 	tweener<tr::rgba8> m_interp;
-	// State keeping track of whether the button is hovered.
 	bool m_hovered;
-	// State keeping track of whether the button is held.
 	bool m_held;
-	// State keeping track of whether the button is selected.
 	bool m_selected;
 };
-// Alias for the most common type of numeric input widget.
+
 template <class T, std::size_t S, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
 using numeric_input_widget = basic_numeric_input_widget<T, S, default_numeric_input_formatter<T, Fmt, BufferFmt>>;
 
-// Widget for inputting a line of text.
+//////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
+
 template <std::size_t S> class line_input_widget : public text_widget {
   public:
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
-
-	// Creates a text line input wiget.
 	line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style, float font_size,
 					  status_callback status_cb, action_callback enter_cb, std::string_view initial_text);
 
-	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
-
-	// The input buffer.
 	tr::static_string<S * 4> buffer;
-
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
 	void add_to_renderer() override;
 	void update() override;
@@ -167,35 +125,22 @@ template <std::size_t S> class line_input_widget : public text_widget {
 	void on_paste() override;
 
   private:
-	// Callback used to determine the status of the widget.
 	status_callback m_scb;
-	// Callback called when enter is pressed.
 	action_callback m_enter_cb;
-	// Interpolator used for some effects.
 	tweener<tr::rgba8> m_interp;
-	// State keeping track of whether the button is hovered.
 	bool m_hovered;
-	// State keeping track of whether the button is held.
 	bool m_held;
-	// State keeping track of whether the button is selected.
 	bool m_selected;
 };
 
-// Widget for inputting multiline text.
+////////////////////////////////////////////////////////// MULTILINE INPUT WIDGET /////////////////////////////////////////////////////////
+
 template <std::size_t S> class multiline_input_widget : public text_widget {
   public:
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
-
-	// Creates a multiline input wiget.
 	multiline_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width, std::uint8_t max_lines,
 						   float font_size, status_callback status_cb);
 
-	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
-
-	// The input buffer.
 	tr::static_string<S * 4> buffer;
-
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
@@ -217,79 +162,50 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 	void on_paste() override;
 
   private:
-	// Callback used to determine the status of the widget.
 	status_callback m_scb;
-	// The size of the widget.
 	glm::vec2 m_size;
-	// The maximum allowed number of lines of text.
 	std::uint8_t m_max_lines;
-	// Interpolator used for some effects.
 	tweener<tr::rgba8> m_interp;
-	// State keeping track of whether the button is hovered.
 	bool m_hovered;
-	// State keeping track of whether the button is held.
 	bool m_held;
-	// State keeping track of whether the button is selected.
 	bool m_selected;
 };
 
-///////////////////////////////////////////////////////////// NON-TEXT WIDGETS ////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////// IMAGE WIDGET //////////////////////////////////////////////////////////////
 
-// Image widget.
 class image_widget : public widget {
   public:
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
-
-	// Creates an image widget.
 	image_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
-				 std::uint16_t* hue_ref = nullptr);
+				 tr::opt_ref<std::uint16_t> hue = std::nullopt);
 
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
-
-	// Gets the size of the widget.
 	glm::vec2 size() const override;
-	// Adds the widget to the renderer.
 	void add_to_renderer() override;
 
-	// No need to specialize release_graphical_resources because this class of widget is not used in the settings menu.
-
   private:
-	// The image texture.
 	tr::gfx::texture m_texture;
-	// A reference to the hue to apply to the widget, or nullptr to not tint the widget.
-	std::uint16_t* m_hue_ref;
-	// The drawing priority of the image.
+	tr::opt_ref<std::uint16_t> m_hue;
 	int m_priority;
 };
 
-// Color preview widget.
+/////////////////////////////////////////////////////////// COLOR PREVIEW WIDGET //////////////////////////////////////////////////////////
+
 class color_preview_widget : public widget {
   public:
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
-
-	// Creates a color preview widget.
-	color_preview_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::uint16_t& hue_ref);
-
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
+	color_preview_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::uint16_t& hue);
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
 
   private:
-	// Reference to the hue value.
-	std::uint16_t& m_hue_ref;
+	std::uint16_t& m_hue;
 };
 
-// Clickable arrow widget.
+/////////////////////////////////////////////////////////////// ARROW WIDGET //////////////////////////////////////////////////////////////
+
 class arrow_widget : public widget {
   public:
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
-
-	// Creates an arrow widget.
 	arrow_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, bool right_arrow, status_callback status_cb,
 				 action_callback action_cb);
-
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
@@ -305,80 +221,53 @@ class arrow_widget : public widget {
 	void on_unselected() override;
 
   protected:
-	// Callback used to determine the status of the widget.
 	status_callback m_scb;
-	// Callback called when the widget is interacted with.
 	action_callback m_acb;
-	// Interpolator used for some effects.
 	tweener<tr::rgba8> m_interp;
-	// Whether this widget is a right arrow.
 	bool m_right;
-	// State keeping track of whether the button is hovered.
 	bool m_hovered;
-	// State keeping track of whether the button is held.
 	bool m_held;
-	// State keeping track of whether the button is selected.
 	bool m_selected;
-	// Timer for how much post-action flashing there is left.
 	ticks m_action_left;
 };
 
-// Replay playback indicator widget.
-struct replay_playback_indicator_widget : public widget {
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////// ARROW WIDGET //////////////////////////////////////////////////////////////
 
-	// Creates a replay playback indicator widget.
+struct replay_playback_indicator_widget : public widget {
 	replay_playback_indicator_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time);
 
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
-
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
 };
 
-////////////////////////////////////////////////////////////// MIXED WIDGETS //////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////// SCORE WIDGET //////////////////////////////////////////////////////////////
 
-// Score widget.
 struct score_widget : public text_widget {
-	////////////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////////////
-
-	// Sentinel to not display the rank of the widget.
 	static constexpr std::size_t DONT_SHOW_RANK{std::numeric_limits<std::size_t>::max()};
 
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
+	score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::size_t rank, tr::opt_ref<score> score);
 
-	// Creates a score widget.
-	score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::size_t rank, score* score);
-
-	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
-
-	// The rank of the score.
 	std::size_t rank;
-	// Pointer to the score this widget is displaying information for.
-	score* score;
-
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
+	tr::opt_ref<score> score;
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
 };
 
-// Replay widget.
-struct replay_widget : public text_button_widget {
-	//////////////////////////////////////////////////////////// CONSTRUCTORS /////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////// REPLAY WIDGET //////////////////////////////////////////////////////////////
 
-	replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, auto base_scb, auto base_acb,
+using replay_widget_action_callback = std::function<void(std::map<std::string, replay_header>::iterator)>;
+
+struct replay_widget : public text_button_widget {
+	replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, status_callback scb, replay_widget_action_callback acb,
 				  std::optional<std::map<std::string, replay_header>::iterator> it);
 
-	///////////////////////////////////////////////////////////// ATTRIBUTES //////////////////////////////////////////////////////////////
-
-	// The replay header.
 	std::optional<std::map<std::string, replay_header>::iterator> it;
-
-	/////////////////////////////////////////////////////////// VIRTUAL METHODS ///////////////////////////////////////////////////////////
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
 };
 
-#include "widget_impl.hpp"
+#include "line_input_widget_impl.hpp"
+#include "multiline_input_widget_impl.hpp"
+#include "numeric_input_widget_impl.hpp"

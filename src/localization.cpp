@@ -22,8 +22,8 @@ void engine::load_language(const std::filesystem::path& entry)
 void engine::load_languages()
 {
 	try {
-		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.datadir / "localization"}, load_language);
-		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.userdir / "localization"}, load_language);
+		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.data_directory / "localization"}, load_language);
+		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.user_directory / "localization"}, load_language);
 		LOG(tr::severity::INFO, "Found {} language(s).", languages.size());
 	}
 	catch (std::exception& err) {
@@ -45,9 +45,9 @@ void engine::load_localization()
 	tr::localization_map old{std::move(loc)};
 	try {
 		const std::string filename{std::format("localization/{}.txt", name)};
-		std::filesystem::path path{cli_settings.datadir / filename};
+		std::filesystem::path path{cli_settings.data_directory / filename};
 		if (!std::filesystem::exists(path)) {
-			path = cli_settings.userdir / filename;
+			path = cli_settings.user_directory / filename;
 		}
 
 		std::vector<std::string> errors{loc.load(path)};

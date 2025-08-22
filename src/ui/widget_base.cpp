@@ -1,7 +1,7 @@
 #include "../../include/ui/widget_base.hpp"
 #include "../../include/graphics.hpp"
 
-/////////////////////////////////////////////////////////////// TEXT CALLBACKS
+///////////////////////////////////////////////////////////// TEXT CALLBACKS //////////////////////////////////////////////////////////////
 
 std::string loc_text_callback::operator()() const
 {
@@ -94,15 +94,15 @@ text_widget::text_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhi
 
 glm::vec2 text_widget::size() const
 {
-	if (!m_cached.has_value()) {
+	if (!m_cache.has_value()) {
 		update_cache();
 	}
-	return m_cached->size / engine::render_scale();
+	return m_cache->size / engine::render_scale();
 }
 
 void text_widget::release_graphical_resources()
 {
-	m_cached.reset();
+	m_cache.reset();
 }
 
 void text_widget::add_to_renderer_raw(tr::rgba8 tint)
@@ -111,29 +111,29 @@ void text_widget::add_to_renderer_raw(tr::rgba8 tint)
 
 	tint.a *= opacity();
 
-	const tr::gfx::simple_textured_mesh_ref quad{tr::gfx::renderer_2d::new_textured_fan(layer::UI, 4, m_cached->texture)};
+	const tr::gfx::simple_textured_mesh_ref quad{tr::gfx::renderer_2d::new_textured_fan(layer::UI, 4, m_cache->texture)};
 	tr::fill_rect_vtx(quad.positions, {tl(), text_widget::size()});
-	tr::fill_rect_vtx(quad.uvs, {{}, m_cached->size / glm::vec2{m_cached->texture.size()}});
+	tr::fill_rect_vtx(quad.uvs, {{}, m_cache->size / glm::vec2{m_cache->texture.size()}});
 	std::ranges::fill(quad.tints, tint);
 }
 
 void text_widget::update_cache() const
 {
 	std::string text{text_cb()};
-	if (!m_cached.has_value() || m_cached->text != text) {
+	if (!m_cache.has_value() || m_cache->text != text) {
 		tr::bitmap render{engine::render_text(text, engine::determine_font(text, m_font), m_style, m_font_size, m_font_size / 12,
 											  m_max_width, tr::halign::CENTER)};
-		if (!m_cached || m_cached->texture.size().x < render.size().x || m_cached->texture.size().y < render.size().y) {
-			m_cached.emplace(tr::gfx::texture{render}, render.size(), std::string{text});
+		if (!m_cache || m_cache->texture.size().x < render.size().x || m_cache->texture.size().y < render.size().y) {
+			m_cache.emplace(tr::gfx::texture{render}, render.size(), std::string{text});
 			if (tr::gfx::debug()) {
-				m_cached->texture.set_label(std::format("(Bodge) Widget texture"));
+				m_cache->texture.set_label(std::format("(Bodge) Widget texture"));
 			}
 		}
 		else {
-			m_cached->texture.clear({});
-			m_cached->texture.set_region({}, render);
-			m_cached->size = render.size();
-			m_cached->text = std::move(text);
+			m_cache->texture.clear({});
+			m_cache->texture.set_region({}, render);
+			m_cache->size = render.size();
+			m_cache->text = std::move(text);
 		}
 	}
 }

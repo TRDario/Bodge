@@ -1,6 +1,4 @@
-#include "../../include/state/save_replay_state.hpp"
-#include "../../include/state/game_state.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 // clang-format off
@@ -39,11 +37,10 @@ constexpr tweener<glm::vec2> DISCARD_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {50
 
 // clang-format on
 
-save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_screen_flags flags)
-	: state{SELECTION_TREE, SHORTCUTS}
+save_replay_state::save_replay_state(std::unique_ptr<game>&& game, save_screen_flags flags)
+	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), bool(flags & save_screen_flags::GAME_OVER)}
 	, m_substate{substate_base::SAVING_REPLAY | flags}
-	, m_game{std::move(game)}
-	, m_replay{m_game->replay().header()}
+	, m_replay{((active_game&)*m_game).replay().header()}
 {
 	// STATUS CALLBACKS
 
@@ -59,7 +56,7 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 	// ACTION CALLBACKS
 
 	const action_callback name_acb{
-		[this] { m_ui.select_next(); },
+		[this] { m_ui.select_next_widget(); },
 	};
 	const action_callback save_acb{
 		[this] {
@@ -70,8 +67,8 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 			m_substate = substate_base::EXITING | to_flags(m_substate);
 			m_timer = 0;
 			set_up_exit_animation();
-			m_game->replay().set_header(score{description, unix_now(), m_game->final_time(), flags}, name);
-			m_game->replay().save_to_file();
+			((active_game&)*m_game).replay().set_header(score{description, current_timestamp(), m_game->final_time(), flags}, name);
+			((active_game&)*m_game).replay().save_to_file();
 		},
 	};
 	const action_callback discard_acb{
@@ -104,11 +101,7 @@ save_replay_state::save_replay_state(std::unique_ptr<active_game>&& game, save_s
 
 std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
 {
-	state::update({});
-	if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
-		m_game->update();
-	}
-
+	game_menu_state::update({});
 	if (m_timer >= 0.5_s && to_base(m_substate) == substate_base::EXITING) {
 		tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
 		if (to_flags(m_substate) & save_screen_flags::RESTARTING) {
@@ -121,18 +114,6 @@ std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
 	else {
 		return nullptr;
 	}
-}
-
-void save_replay_state::draw()
-{
-	if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
-		m_game->add_to_renderer();
-		tr::gfx::renderer_2d::draw(engine::blur().input());
-	}
-	engine::blur().draw(0.35f, 10.0f);
-	m_ui.add_to_renderer();
-	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
-	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 //
@@ -152,7 +133,7 @@ save_screen_flags to_flags(save_replay_state::substate state)
 	return save_screen_flags(int(state) & int(save_screen_flags::MASK));
 }
 
-float save_replay_state::fade_overlay_opacity() const
+float save_replay_state::fade_overlay_opacity()
 {
 	if (to_base(m_substate) == substate_base::EXITING) {
 		return m_timer / 0.5_sf;
@@ -171,5 +152,5 @@ void save_replay_state::set_up_exit_animation()
 	m_ui[T_DESCRIPTION_INPUT].pos.change(tween::CUBIC, {400, 475}, 0.5_s);
 	m_ui[T_SAVE].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	m_ui[T_DISCARD].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 }

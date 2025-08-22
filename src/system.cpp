@@ -2,8 +2,7 @@
 #include "../include/audio.hpp"
 #include "../include/graphics.hpp"
 #include "../include/settings.hpp"
-#include "../include/state/name_entry_state.hpp"
-#include "../include/state/title_state.hpp"
+#include "../include/state/state.hpp"
 
 using namespace std::chrono_literals;
 
@@ -53,7 +52,7 @@ tr::timer engine::create_draw_timer()
 void engine::set_icon()
 {
 	try {
-		tr::system::set_window_icon(tr::load_bitmap_file(cli_settings.datadir / "graphics" / "icon.qoi"));
+		tr::system::set_window_icon(tr::load_bitmap_file(cli_settings.data_directory / "graphics" / "icon.qoi"));
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to set window icon.");
@@ -118,6 +117,7 @@ void engine::initialize_system()
 	tr::system::show_cursor(false);
 	tr::system::set_mouse_relative_mode(true);
 	system.emplace();
+	tr::system::flush_events();
 	LOG(tr::severity::INFO, "Initialized system.");
 }
 

@@ -1,15 +1,11 @@
-#include "../../include/state/game_over_state.hpp"
-#include "../../include/graphics.hpp"
-#include "../../include/state/game_state.hpp"
-#include "../../include/state/save_score_state.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 //
 
 constexpr tag T_TITLE{"game_over"};
 constexpr tag T_TIME{"time"};
-constexpr tag T_PB{"pb"};
+constexpr tag T_PERSONAL_BEST{"personal_best"};
 constexpr tag T_SAVE_AND_RESTART{"save_and_restart"};
 constexpr tag T_RESTART{"restart"};
 constexpr tag T_SAVE_AND_QUIT{"save_and_quit"};
@@ -44,10 +40,9 @@ constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, glm::vec2{500, TITLE_Y 
 
 //
 
-game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_in, ticks prev_pb)
-	: state{SELECTION_TREE, SHORTCUTS}
+game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in, ticks prev_pb)
+	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), true}
 	, m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}
-	, m_game{std::move(game)}
 	, m_prev_pb{prev_pb}
 {
 	// HEIGHTS AND MOVE-INS
@@ -99,7 +94,8 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 		pb_tcb = loc_text_callback{"new_pb"};
 	}
 	else {
-		pb_tcb = string_text_callback{std::format("{}: {}", engine::loc["pb"], timer_text(pb(engine::scorefile, m_game->gamemode())))};
+		pb_tcb = string_text_callback{
+			std::format("{}: {}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(m_game->gamemode())))};
 	}
 
 	//
@@ -108,8 +104,8 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 							   tr::system::ttf_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_TIME, time_move_in, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
 							   string_text_callback{timer_text(m_game->final_time())}, tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
-	m_ui.emplace<label_widget>(T_PB, pb_move_in, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, std::move(pb_tcb), tr::system::ttf_style::NORMAL,
-							   24, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_PERSONAL_BEST, pb_move_in, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, std::move(pb_tcb),
+							   tr::system::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
@@ -123,8 +119,7 @@ game_over_state::game_over_state(std::unique_ptr<active_game>&& game, bool blur_
 
 std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 {
-	state::update({});
-	m_game->update();
+	game_menu_state::update({});
 	switch (m_substate) {
 	case substate::BLURRING_IN:
 		if (m_timer >= 0.5_s) {
@@ -135,10 +130,10 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 	case substate::GAME_OVER:
 		if (m_prev_pb < m_game->final_time()) {
 			if (m_timer % 0.5_s == 0) {
-				m_ui[T_PB].hide();
+				m_ui[T_PERSONAL_BEST].hide();
 			}
 			else if (m_timer % 0.5_s == 0.25_s) {
-				m_ui[T_PB].unhide();
+				m_ui[T_PERSONAL_BEST].unhide();
 			}
 		}
 		return nullptr;
@@ -161,19 +156,14 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 	}
 }
 
-void game_over_state::draw()
-{
-	m_game->add_to_renderer();
-	tr::gfx::renderer_2d::draw(engine::blur().input());
-	engine::blur().draw(shader_saturation_factor(), shader_blur_strength());
-	m_ui.add_to_renderer();
-	engine::add_fade_overlay_to_renderer(m_substate == substate::RESTARTING || m_substate == substate::QUITTING ? m_timer / 0.5_sf : 0);
-	tr::gfx::renderer_2d::draw(engine::screen());
-}
-
 //
 
-float game_over_state::shader_saturation_factor() const
+float game_over_state::fade_overlay_opacity()
+{
+	return m_substate == substate::RESTARTING || m_substate == substate::QUITTING ? m_timer / 0.5_sf : 0;
+}
+
+float game_over_state::saturation_factor()
 {
 	switch (m_substate) {
 	case substate::GAME_OVER:
@@ -187,7 +177,7 @@ float game_over_state::shader_saturation_factor() const
 	}
 }
 
-float game_over_state::shader_blur_strength() const
+float game_over_state::blur_strength()
 {
 	switch (m_substate) {
 	case substate::GAME_OVER:
@@ -205,7 +195,7 @@ void game_over_state::set_up_exit_animation()
 {
 	m_ui[T_TITLE].pos.change(tween::CUBIC, {500, TITLE_Y - 100}, 0.5_s);
 	widget& time{m_ui[T_TIME]};
-	widget& pb{m_ui[T_PB]};
+	widget& pb{m_ui[T_PERSONAL_BEST]};
 	time.pos.change(tween::CUBIC, {400, glm::vec2{time.pos}.y}, 0.5_s);
 	pb.pos.change(tween::CUBIC, {600, glm::vec2{pb.pos}.y}, 0.5_s);
 	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
@@ -213,5 +203,5 @@ void game_over_state::set_up_exit_animation()
 		widget& widget{m_ui[BUTTONS[i]]};
 		widget.pos.change(tween::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 }

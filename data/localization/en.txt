@@ -1,14 +1,14 @@
 language_name = "English"
 
 # Common
-    by      = "BY"
-    cancel  = "CANCEL"
-    confirm = "CONFIRM"
-    discard = "DISCARD"
-    empty   = "(EMPTY...)"
-    exit    = "EXIT"
-    pb      = "PERSONAL BEST"
-    save    = "SAVE"
+    by            = "BY"
+    cancel        = "CANCEL"
+    confirm       = "CONFIRM"
+    discard       = "DISCARD"
+    empty         = "(EMPTY...)"
+    exit          = "EXIT"
+    personal_best = "PERSONAL BEST"
+    save          = "SAVE"
 
 # Title screen
     enter_your_name   = "ENTER YOUR NAME"
@@ -106,7 +106,6 @@ language_name = "English"
     gm_swarm_d   = "QUICKLY DEVOLVES INTO A BULLET HELL."
 
 # Credits
-    credits = "CREDITS"
     developed_by = "DEVELOPED BY:"
     trdario_tt = "(Bikeshedder-in-chief)"
     playtesters = "PLAYTESTERS:"

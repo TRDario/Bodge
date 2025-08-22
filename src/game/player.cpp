@@ -4,24 +4,21 @@
 #include "../../include/game/ball.hpp"
 #include "../../include/graphics.hpp"
 
-// Damaged player color.
-inline constexpr tr::rgb8 PLAYER_HIT_COLOR{255, 0, 0};
-// Position of the timer text.
-inline constexpr glm::vec2 TIMER_TEXT_POS{500, 50};
-// The amount of time it takes for a full hover fade to occur.
-inline constexpr ticks HOVER_TIME{0.25_s};
-// The size of a small life in the UI.
-inline constexpr float SMALL_LIFE_SIZE{10};
-// The size of a large life in the UI.
-inline constexpr float LARGE_LIFE_SIZE{20};
-// The maximum allowed number of large lives in the UI.
-inline constexpr int MAX_LARGE_LIVES{5};
-// The number of (small) lives per line in the UI.
-inline constexpr int LIVES_PER_LINE{10};
-// Screen shake duration.
-inline constexpr ticks SCREEN_SHAKE_TIME{2_s / 3};
+//
 
-inline constexpr ticks INITIAL_INVULNERABILITY{2.5_s};
+inline constexpr tr::rgb8 PLAYER_HIT_COLOR{255, 0, 0};
+
+inline constexpr glm::vec2 TIMER_TEXT_POS{500, 50};
+
+inline constexpr float SMALL_LIFE_SIZE{10};
+inline constexpr float LARGE_LIFE_SIZE{20};
+inline constexpr int MAX_LARGE_LIVES{5};
+inline constexpr int LIVES_PER_LINE{10};
+
+inline constexpr ticks UI_HIDING_TIME{0.25_s};
+inline constexpr ticks INVULNERABILITY_TIME{2_s};
+inline constexpr ticks SCREEN_SHAKE_TIME{2_s / 3};
+inline constexpr ticks INITIAL_INVULNERABILITY_TIME{2.5_s};
 
 //
 
@@ -54,7 +51,7 @@ player::player(const player_settings& settings, ticks prev_pb)
 	, m_inertia{settings.inertia_factor}
 	, m_timer{0}
 	, m_game_over_timer{0}
-	, m_iframes_left{INITIAL_INVULNERABILITY}
+	, m_iframes_left{INITIAL_INVULNERABILITY_TIME}
 	, m_lives_hover_time{0}
 	, m_timer_hover_time{0}
 	, m_atlas{create_timer_atlas()}
@@ -86,7 +83,7 @@ bool player::colliding_with_any_of(const tr::static_vector<ball, 255>& balls)
 void player::hit()
 {
 	--m_lives_left;
-	m_iframes_left = PLAYER_INVULN_TIME;
+	m_iframes_left = INVULNERABILITY_TIME;
 
 	if (game_over()) {
 		set_up_death_fragments();
@@ -101,7 +98,7 @@ void player::update()
 {
 	if (m_iframes_left > 0) {
 		--m_iframes_left;
-		if (m_timer > INITIAL_INVULNERABILITY) {
+		if (m_timer > INITIAL_INVULNERABILITY_TIME) {
 			set_screen_shake();
 		}
 	}
@@ -120,7 +117,7 @@ void player::update()
 		const int lines{m_lives_left / LIVES_PER_LINE + 1};
 		tr::frect2 lives_ui_bounds{{}, {2.5f * life_size * (lives_in_line + 0.5f) + 16, 2.5f * life_size * lines + 16}};
 		if (lives_ui_bounds.contains(m_hitbox.c)) {
-			m_lives_hover_time = std::min(m_lives_hover_time + 1, HOVER_TIME);
+			m_lives_hover_time = std::min(m_lives_hover_time + 1, UI_HIDING_TIME);
 		}
 		else if (m_lives_hover_time > 0) {
 			--m_lives_hover_time;
@@ -129,7 +126,7 @@ void player::update()
 		const glm::vec2 text_size{timer_text_size(timer_text(m_timer), 1 / engine::render_scale())};
 		const tr::frect2 timer_text_bounds{TIMER_TEXT_POS - text_size / 2.0f - 8.0f, text_size + 16.0f};
 		if (timer_text_bounds.contains(m_hitbox.c)) {
-			m_timer_hover_time = std::min(m_timer_hover_time + 1, HOVER_TIME);
+			m_timer_hover_time = std::min(m_timer_hover_time + 1, UI_HIDING_TIME);
 		}
 		else if (m_timer_hover_time > 0) {
 			--m_timer_hover_time;
@@ -147,7 +144,7 @@ void player::update(glm::vec2 target)
 {
 	if (m_iframes_left > 0) {
 		--m_iframes_left;
-		if (m_timer > INITIAL_INVULNERABILITY) {
+		if (m_timer > INITIAL_INVULNERABILITY_TIME) {
 			set_screen_shake();
 		}
 	}
@@ -176,7 +173,7 @@ void player::update(glm::vec2 target)
 		const int lines{m_lives_left / LIVES_PER_LINE + 1};
 		tr::frect2 lives_ui_bounds{{}, {2.5f * life_size * (lives_in_line + 0.5f) + 16, 2.5f * life_size * lines + 16}};
 		if (lives_ui_bounds.contains(target)) {
-			m_lives_hover_time = std::min(m_lives_hover_time + 1, HOVER_TIME);
+			m_lives_hover_time = std::min(m_lives_hover_time + 1, UI_HIDING_TIME);
 		}
 		else if (m_lives_hover_time > 0) {
 			--m_lives_hover_time;
@@ -185,7 +182,7 @@ void player::update(glm::vec2 target)
 		const glm::vec2 text_size{timer_text_size(timer_text(m_timer), 1 / engine::render_scale())};
 		const tr::frect2 timer_text_bounds{TIMER_TEXT_POS - text_size / 2.0f - 8.0f, text_size + 16.0f};
 		if (timer_text_bounds.contains(target)) {
-			m_timer_hover_time = std::min(m_timer_hover_time + 1, HOVER_TIME);
+			m_timer_hover_time = std::min(m_timer_hover_time + 1, UI_HIDING_TIME);
 		}
 		else if (m_timer_hover_time > 0) {
 			--m_timer_hover_time;
@@ -205,10 +202,10 @@ void player::add_to_renderer() const
 {
 	constexpr float PI{std::numbers::pi_v<float>};
 
-	const tr::rgb8 tint{(m_iframes_left && m_timer > INITIAL_INVULNERABILITY)
+	const tr::rgb8 tint{(m_iframes_left && m_timer > INITIAL_INVULNERABILITY_TIME)
 							? PLAYER_HIT_COLOR
 							: color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
-	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(std::abs(std::cos(m_iframes_left * PI * 8 / PLAYER_INVULN_TIME)))};
+	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(std::abs(std::cos(m_iframes_left * PI * 8 / INVULNERABILITY_TIME)))};
 	const tr::angle rotation{tr::degs(270.0f * m_timer / SECOND_TICKS)};
 	const float size_offset{3.0f * std::sin(PI * m_timer / SECOND_TICKS)};
 	const float size{m_hitbox.r + 6 + size_offset};
@@ -299,7 +296,7 @@ void player::add_lives_to_renderer() const
 {
 	const float life_size{m_lives_left > MAX_LARGE_LIVES ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
-	const std::uint8_t opacity{std::uint8_t(255 - 180 * std::min(m_lives_hover_time, HOVER_TIME) / HOVER_TIME)};
+	const std::uint8_t opacity{std::uint8_t(255 - 180 * std::min(m_lives_hover_time, UI_HIDING_TIME) / UI_HIDING_TIME)};
 	const tr::angle rotation{tr::degs(120.0f * m_timer / SECOND_TICKS)};
 
 	for (int i = 0; i < m_lives_left; ++i) {
@@ -326,8 +323,8 @@ void player::add_timer_to_renderer() const
 	else {
 		const float factor{std::min(m_timer % 1_s, 0.2_s) / float(0.2_s)};
 		const std::uint8_t tint_factor{tr::norm_cast<std::uint8_t>(1 - 0.25f * factor)};
-		const ticks clamped_hover_time{std::min(m_timer_hover_time, HOVER_TIME)};
-		const std::uint8_t opacity{std::uint8_t((255 - clamped_hover_time * 180 / HOVER_TIME) * tint_factor / 255)};
+		const ticks clamped_hover_time{std::min(m_timer_hover_time, UI_HIDING_TIME)};
+		const std::uint8_t opacity{std::uint8_t((255 - clamped_hover_time * 180 / UI_HIDING_TIME) * tint_factor / 255)};
 		tint = {tint_factor, tint_factor, tint_factor, opacity};
 		scale = (1.25f - 0.25f * factor);
 	}
@@ -344,7 +341,7 @@ void player::add_timer_to_renderer() const
 
 void player::set_screen_shake() const
 {
-	const int screen_shake_left{int(m_iframes_left - PLAYER_INVULN_TIME + SCREEN_SHAKE_TIME)};
+	const int screen_shake_left{int(m_iframes_left - INVULNERABILITY_TIME + SCREEN_SHAKE_TIME)};
 	if (screen_shake_left >= 0) {
 		const glm::vec2 tl{tr::magth(40.0f * screen_shake_left / SCREEN_SHAKE_TIME, engine::rng.generate_angle())};
 		const glm::mat4 mat{tr::ortho(tr::frect2{tl, glm::vec2{1000}})};

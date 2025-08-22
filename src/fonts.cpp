@@ -2,11 +2,8 @@
 #include "../include/graphics.hpp"
 
 namespace engine {
-	// Structure containing the standard fonts.
 	struct standard_fonts_t {
-		// The default font.
 		tr::system::ttfont default_font;
-		// The fallback font.
 		tr::system::ttfont fallback_font;
 	};
 
@@ -16,52 +13,39 @@ namespace engine {
 		USE_FALLBACK,
 		USE_LANGUAGE
 	};
-	// Custom font used by a specific language.
 	struct optional_font_base {
-		// The actual font.
 		tr::system::ttfont font;
-		// The name of the font.
 		std::string name;
 	};
-	// Janky optional-esque thing for fonts.
 	struct optional_font {
-		// Storage for the actual font.
 		alignas(optional_font_base) std::byte data[sizeof(optional_font_base)]{};
-		// The state of the font object.
 		optional_font_state state{optional_font_state::USE_DEFAULT};
 
 		optional_font_base& operator*();
 		optional_font_base* operator->();
 	};
 
-	// Standard fonts.
 	std::optional<standard_fonts_t> standard_fonts;
-	// Optional additional language-specific font.
 	optional_font language_font;
-	// Optional additional language name preview font.
 	optional_font language_preview_font;
 
-	/////////////////////////////////////////////////////////////// HELPERS ///////////////////////////////////////////////////////////////
-
-	// Loads a font.
 	tr::system::ttfont load_font(std::string_view name);
-	// Turns a font name into an actual font reference.
 	tr::system::ttfont& find_font(font font);
 } // namespace engine
 
-///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+//
 
 tr::system::ttfont engine::load_font(std::string_view name)
 {
 	try {
-		std::filesystem::path path{cli_settings.datadir / "fonts" / name};
+		std::filesystem::path path{cli_settings.data_directory / "fonts" / name};
 		if (std::filesystem::is_regular_file(path)) {
 			tr::system::ttfont font{tr::system::load_ttfont_file(path, 48)};
 			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
 			LOG_CONTINUE("From: '{}'", path.string());
 			return font;
 		}
-		path = cli_settings.userdir / "fonts" / name;
+		path = cli_settings.user_directory / "fonts" / name;
 		if (std::filesystem::is_regular_file(path)) {
 			tr::system::ttfont font{tr::system::load_ttfont_file(path, 48)};
 			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
@@ -154,7 +138,7 @@ std::vector<std::string> split_overlong_lines(std::vector<std::string>&& lines, 
 	return std::move(lines);
 }
 
-///////////////////////////////////////////////////////////////// LOADING /////////////////////////////////////////////////////////////////
+//
 
 void engine::load_fonts()
 {
@@ -240,7 +224,7 @@ void engine::unload_fonts()
 	LOG(tr::severity::INFO, "Unloaded all fonts.");
 }
 
-/////////////////////////////////////////////////////////////// OPERATIONS ////////////////////////////////////////////////////////////////
+//
 
 font engine::determine_font(std::string_view text, font preferred)
 {

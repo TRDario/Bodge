@@ -1,7 +1,4 @@
-#include "../../include/state/save_score_state.hpp"
-#include "../../include/state/game_over_state.hpp"
-#include "../../include/state/pause_state.hpp"
-#include "../../include/state/save_replay_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 // clang-format off
@@ -39,22 +36,20 @@ constexpr tweener<glm::vec2> CANCEL_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500
 
 // clang-format on
 
-save_score_state::save_score_state(std::unique_ptr<active_game>&& game, glm::vec2 mouse_pos, save_screen_flags flags)
-	: state{SELECTION_TREE, SHORTCUTS}
+save_score_state::save_score_state(std::unique_ptr<game>&& game, glm::vec2 mouse_pos, save_screen_flags flags)
+	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), false}
 	, m_substate{substate_base::SAVING_SCORE | flags}
 	, m_substate_data{.start_mouse_pos = mouse_pos}
-	, m_game{std::move(game)}
-	, m_score{{}, unix_now(), m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
+	, m_score{{}, current_timestamp(), m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
 	set_up_ui();
 }
 
-save_score_state::save_score_state(std::unique_ptr<active_game>&& game, ticks prev_pb, save_screen_flags flags)
-	: state{SELECTION_TREE, SHORTCUTS}
+save_score_state::save_score_state(std::unique_ptr<game>&& game, ticks prev_pb, save_screen_flags flags)
+	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), true}
 	, m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
 	, m_substate_data{.prev_pb = prev_pb}
-	, m_game{std::move(game)}
-	, m_score{{}, unix_now(), m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
+	, m_score{{}, current_timestamp(), m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
 	set_up_ui();
 }
@@ -63,12 +58,8 @@ save_score_state::save_score_state(std::unique_ptr<active_game>&& game, ticks pr
 
 std::unique_ptr<tr::state> save_score_state::update(tr::duration)
 {
-	state::update({});
-	if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
-		m_game->update();
-	}
+	game_menu_state::update({});
 	m_score.description = m_ui.as<multiline_input_widget<255>>(T_INPUT).buffer;
-
 	switch (to_base(m_substate)) {
 	case substate_base::SAVING_SCORE:
 		return nullptr;
@@ -87,17 +78,6 @@ std::unique_ptr<tr::state> save_score_state::update(tr::duration)
 	case substate_base::ENTERING_SAVE_REPLAY:
 		return m_timer >= 0.5_s ? std::make_unique<save_replay_state>(std::move(m_game), to_flags(m_substate)) : nullptr;
 	}
-}
-
-void save_score_state::draw()
-{
-	if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
-		m_game->add_to_renderer();
-		tr::gfx::renderer_2d::draw(engine::blur().input());
-	}
-	engine::blur().draw(0.35f, 10.0f);
-	m_ui.add_to_renderer();
-	tr::gfx::renderer_2d::draw(engine::screen());
 }
 
 //
@@ -133,8 +113,8 @@ void save_score_state::set_up_ui()
 			m_timer = 0;
 			set_up_exit_animation();
 			engine::scorefile.playtime += m_score.result;
-			add_score(engine::scorefile, m_game->gamemode(), m_score);
-			update_pb(engine::scorefile, m_game->gamemode(), m_game->final_time());
+			engine::scorefile.add_score(m_game->gamemode(), m_score);
+			engine::scorefile.update_personal_best(m_game->gamemode(), m_game->final_time());
 		},
 	};
 	const action_callback cancel_acb{
@@ -151,7 +131,7 @@ void save_score_state::set_up_ui()
 							   tr::system::ttf_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_PREVIEW, PREVIEW_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PREVIEW},
 							   tr::system::ttf_style::NORMAL, 48);
-	m_ui.emplace<score_widget>(T_SCORE, SCORE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, score_widget::DONT_SHOW_RANK, &m_score);
+	m_ui.emplace<score_widget>(T_SCORE, SCORE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, score_widget::DONT_SHOW_RANK, m_score);
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
 							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24, scb);
@@ -170,5 +150,5 @@ void save_score_state::set_up_exit_animation()
 	m_ui[T_INPUT].pos.change(tween::CUBIC, {400, 475}, 0.5_s);
 	m_ui[T_SAVE].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	m_ui[T_CANCEL].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 }

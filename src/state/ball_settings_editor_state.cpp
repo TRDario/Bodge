@@ -1,5 +1,5 @@
-#include "../../include/state/ball_settings_editor_state.hpp"
-#include "../../include/state/gamemode_designer_state.hpp"
+
+#include "../../include/state/state.hpp"
 #include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -137,7 +137,7 @@ std::string spawn_interval_formatter::to_string(std::string_view str)
 /////////////////////////////////////////////////////// BALL SETTINGS EDITOR STATE ////////////////////////////////////////////////////////
 
 ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
-	: menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_EDITOR}, m_pending{gamemode}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_EDITOR}, m_pending{gamemode}
 {
 	// STATUS CALLBACKS
 
@@ -324,7 +324,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 
 std::unique_ptr<tr::state> ball_settings_editor_state::update(tr::duration)
 {
-	menu_state::update({});
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::IN_EDITOR:
 		return nullptr;

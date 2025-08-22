@@ -1,12 +1,10 @@
 #include "../include/blur_renderer.hpp"
 #include "../include/graphics.hpp"
 
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+//
 
-// Minified version of src/shaders/pause_menu_background.vert.
 constexpr const char* VERTEX_SHADER_SRC{"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;out gl_PerVertex{vec4 "
 										"gl_Position;};L(0)out vec2 P;void main(){P=p;gl_Position=vec4(p,0,1);}"};
-// Minified version of src/shaders/pause_menu_background.frag.
 constexpr const char* FRAGMENT_SHADER_SRC{
 	"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;L(0)out vec4 C;L(0)uniform sampler2D t;L(1)uniform vec2 S;L(2)uniform "
 	"float s;L(3)uniform float r;L(4)uniform int a;vec3 H(vec3 c){vec4 "
@@ -18,12 +16,12 @@ constexpr const char* FRAGMENT_SHADER_SRC{
 	"k=vec4(0);W=0.5135/pow(r,0.96);if(a==0){for(d=1/S.x,x=-r,p.x+=x*d;x<=r;x++,p.x+=d){w=W*exp((-x*x)/"
 	"(2*R));k+=texture(t,p)*w;}C=k;}else{for(d=1/S.y,y=-r,p.y+=y*d;y<=r;y++,p.y+=d){w=W*exp((-y*y)/"
 	"(2*R));k+=texture(t,p)*w;}vec3 g=H(k.rgb);C=vec4(G(vec3(g.x,g.y*s,g.z)),1);}}"};
-// The renderer ID of the pause menu background renderer.
-const std::uint32_t RENDERER_ID{tr::gfx::alloc_renderer_id()};
-// The mesh used for drawing the pause menu background.
+
 constexpr std::array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 
-////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
+const std::uint32_t RENDERER_ID{tr::gfx::alloc_renderer_id()};
+
+//
 
 blur_renderer::blur_renderer(int texture_size)
 	: m_input_texture{glm::ivec2{texture_size}}
@@ -46,7 +44,7 @@ blur_renderer::blur_renderer(int texture_size)
 	}
 }
 
-///////////////////////////////////////////////////////////////// METHODS /////////////////////////////////////////////////////////////////
+//
 
 tr::gfx::render_target blur_renderer::input()
 {

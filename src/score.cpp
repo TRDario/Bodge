@@ -17,7 +17,7 @@ std::strong_ordering operator<=>(const score& l, const score& r)
 std::span<const std::byte> tr::binary_reader<score>::read_from_span(std::span<const std::byte> span, score& out)
 {
 	span = tr::binary_read(span, out.description);
-	span = tr::binary_read(span, out.timestamp);
+	span = tr::binary_read(span, out.unix_timestamp);
 	span = tr::binary_read(span, out.result);
 	return tr::binary_read(span, out.flags);
 }
@@ -25,7 +25,7 @@ std::span<const std::byte> tr::binary_reader<score>::read_from_span(std::span<co
 void tr::binary_writer<score>::write_to_stream(std::ostream& os, const score& in)
 {
 	tr::binary_write(os, in.description);
-	tr::binary_write(os, in.timestamp);
+	tr::binary_write(os, in.unix_timestamp);
 	tr::binary_write(os, in.result);
 	tr::binary_write(os, in.flags);
 }
@@ -35,41 +35,41 @@ void tr::binary_writer<score>::write_to_stream(std::ostream& os, const score& in
 std::span<const std::byte> tr::binary_reader<score_category>::read_from_span(std::span<const std::byte> span, score_category& out)
 {
 	span = tr::binary_read(span, out.gamemode);
-	span = tr::binary_read(span, out.pb);
+	span = tr::binary_read(span, out.personal_best);
 	return tr::binary_read(span, out.scores);
 }
 
 void tr::binary_writer<score_category>::write_to_stream(std::ostream& os, const score_category& in)
 {
 	tr::binary_write(os, in.gamemode);
-	tr::binary_write(os, in.pb);
+	tr::binary_write(os, in.personal_best);
 	tr::binary_write(os, in.scores);
 }
 
 //////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
 
-ticks pb(const scorefile& sf, const gamemode& gm)
+ticks scorefile::personal_best(const gamemode& gm)
 {
-	std::vector<score_category>::const_iterator it{std::ranges::find_if(sf.categories, [&](const auto& c) { return c.gamemode == gm; })};
-	return it != sf.categories.end() ? it->pb : 0;
+	std::vector<score_category>::const_iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
+	return it != categories.end() ? it->personal_best : 0;
 }
 
-void update_pb(scorefile& sf, const gamemode& gm, ticks pb)
+void scorefile::update_personal_best(const gamemode& gm, ticks pb)
 {
-	std::vector<score_category>::iterator it{std::ranges::find_if(sf.categories, [&](const auto& c) { return c.gamemode == gm; })};
-	if (it == sf.categories.end()) {
-		it = sf.categories.insert(it, {gm, pb, {}});
+	std::vector<score_category>::iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
+	if (it == categories.end()) {
+		it = categories.insert(it, {gm, pb, {}});
 	}
 	else {
-		it->pb = std::max(it->pb, pb);
+		it->personal_best = std::max(it->personal_best, pb);
 	}
 }
 
-void add_score(scorefile& sf, const gamemode& gm, const score& s)
+void scorefile::add_score(const gamemode& gm, const score& s)
 {
-	std::vector<score_category>::iterator it{std::ranges::find_if(sf.categories, [&](const auto& c) { return c.gamemode == gm; })};
-	if (it == sf.categories.end()) {
-		it = sf.categories.insert(it, {gm, 0, {}});
+	std::vector<score_category>::iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
+	if (it == categories.end()) {
+		it = categories.insert(it, {gm, 0, {}});
 	}
 	it->scores.insert(std::upper_bound(it->scores.begin(), it->scores.end(), s, std::greater<>{}), s);
 }
@@ -78,7 +78,7 @@ void add_score(scorefile& sf, const gamemode& gm, const score& s)
 
 void engine::load_scorefile()
 {
-	const std::filesystem::path path{cli_settings.userdir / "scorefile.dat"};
+	const std::filesystem::path path{cli_settings.user_directory / "scorefile.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const std::uint8_t version{tr::binary_read<std::uint8_t>(file)};
@@ -106,7 +106,7 @@ void engine::load_scorefile()
 
 void engine::save_scorefile()
 {
-	const std::filesystem::path path{cli_settings.userdir / "scorefile.dat"};
+	const std::filesystem::path path{cli_settings.user_directory / "scorefile.dat"};
 	try {
 		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
 		std::ostringstream buffer;

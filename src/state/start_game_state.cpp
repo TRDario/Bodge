@@ -1,6 +1,4 @@
-#include "../../include/state/start_game_state.hpp"
-#include "../../include/state/game_state.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 // clang-format off
@@ -9,7 +7,7 @@ constexpr tag T_TITLE{"start_game"};
 constexpr tag T_NAME{"name"};
 constexpr tag T_AUTHOR{"author"};
 constexpr tag T_DESCRIPTION{"description"};
-constexpr tag T_PB{"pb"};
+constexpr tag T_PB{"personal_best"};
 constexpr tag T_PREV{"prev"};
 constexpr tag T_NEXT{"next"};
 constexpr tag T_START{"start"};
@@ -45,9 +43,9 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 // clang-format on
 
 start_game_state::start_game_state(std::unique_ptr<game>&& game)
-	: menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::ENTERING_START_GAME}
-	, m_gamemodes{load_gamemodes()}
+	, m_gamemodes{engine::load_gamemodes()}
 	, m_selected{m_gamemodes.begin()}
 {
 	std::vector<gamemode>::iterator last_selected_it{std::ranges::find(m_gamemodes, engine::scorefile.last_selected)};
@@ -57,10 +55,11 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 
 	// TEXT CALLBACKS
 
-	text_callback name_tcb{string_text_callback{std::string{name(*m_selected)}}};
+	text_callback name_tcb{string_text_callback{std::string{m_selected->name_loc()}}};
 	text_callback author_tcb{string_text_callback{std::format("{}: {}", engine::loc["by"], m_selected->author)}};
-	text_callback description_tcb{string_text_callback{std::string{description(*m_selected)}}};
-	text_callback pb_tcb{string_text_callback{std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))}};
+	text_callback description_tcb{string_text_callback{std::string{m_selected->description_loc()}}};
+	text_callback pb_tcb{string_text_callback{
+		std::format("{}:\n{}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(*m_selected)))}};
 
 	// STATUS CALLBACKS
 
@@ -146,7 +145,7 @@ float start_game_state::fade_overlay_opacity()
 
 std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 {
-	menu_state::update({});
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::ENTERING_START_GAME:
 		if (m_timer >= 0.5_s) {
@@ -163,10 +162,11 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 		}
 		else if (m_timer == 0.25_s) {
 			std::array<text_callback, GAMEMODE_WIDGETS.size()> new_cbs{
-				string_text_callback{std::string{::name(*m_selected)}},
+				string_text_callback{std::string{m_selected->name_loc()}},
 				string_text_callback{std::format("{}: {}", engine::loc["by"], m_selected->author)},
-				string_text_callback{std::string{description(*m_selected)}},
-				string_text_callback{std::format("{}:\n{}", engine::loc["pb"], timer_text(pb(engine::scorefile, *m_selected)))},
+				string_text_callback{std::string{m_selected->description_loc()}},
+				string_text_callback{
+					std::format("{}:\n{}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(*m_selected)))},
 			};
 			for (std::size_t i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
 				text_widget& widget{m_ui.as<text_widget>(GAMEMODE_WIDGETS[i])};
@@ -202,5 +202,5 @@ void start_game_state::set_up_exit_animation()
 	m_ui[T_NEXT].pos.change(tween::CUBIC, {1100, 500}, 0.5_s);
 	m_ui[T_START].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	m_ui[T_EXIT].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 }

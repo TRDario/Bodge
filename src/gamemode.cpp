@@ -15,20 +15,58 @@ const std::array<gamemode, 3> BUILTIN_GAMEMODES{
 };
 // The gamemodes that can appear in the main menu background.
 constexpr std::array<gamemode, 4> MENU_GAMEMODES{
-	gamemode{.player{NO_PLAYER}, .ball{12, 12, 10_s, 25, 0, 350, 0}},
-	gamemode{.player{NO_PLAYER}, .ball{5, 5, 10_s, 25, 0, 1000, 0}},
-	gamemode{.player{NO_PLAYER}, .ball{5, 20, 19.59183674_s, 75, 0, 350, 25}},
-	gamemode{.player{NO_PLAYER}, .ball{15, 50, 3.42857143_s, 10, 0, 250, 10}},
+	gamemode{.player{AUTOPLAY}, .ball{12, 12, 10_s, 25, 0, 350, 0}},
+	gamemode{.player{AUTOPLAY}, .ball{5, 5, 10_s, 25, 0, 1000, 0}},
+	gamemode{.player{AUTOPLAY}, .ball{5, 20, 19.59183674_s, 75, 0, 350, 25}},
+	gamemode{.player{AUTOPLAY}, .ball{15, 50, 3.42857143_s, 10, 0, 250, 10}},
 };
 
 ///////////////////////////////////////////////////////////// PLAYER SETTINGS /////////////////////////////////////////////////////////////
 
-bool autoplay(const player_settings& ps)
+bool player_settings::is_autoplay() const
 {
-	return ps.starting_lives == std::numeric_limits<std::uint32_t>::max();
+	return starting_lives == std::numeric_limits<std::uint32_t>::max();
 }
 
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
+
+std::string_view gamemode::name_loc() const
+{
+	return builtin ? engine::loc[name] : std::string_view{name};
+}
+
+std::string_view gamemode::description_loc() const
+{
+	return builtin ? engine::loc[description] : std::string_view{description};
+}
+
+void gamemode::save_to_file() const
+{
+	std::filesystem::path path{engine::cli_settings.user_directory / "gamemodes" / std::format("{}.gmd", name)};
+	if (std::filesystem::exists(path)) {
+		int index{0};
+		do {
+			path = engine::cli_settings.user_directory / "gamemodes" / std::format("{}({}).gmd", name, index++);
+		} while (std::filesystem::exists(path));
+	}
+
+	try {
+		std::ofstream file = tr::open_file_w(path, std::ios::binary);
+		std::ostringstream bufstream{std::ios::binary};
+		tr::binary_write(bufstream, *this);
+		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), engine::rng.generate<std::uint8_t>())};
+		tr::binary_write(file, GAMEMODE_VERSION);
+		tr::binary_write(file, std::span{encrypted});
+
+		LOG(tr::severity::INFO, "Saved gamemode '{}'.", name);
+		LOG_CONTINUE("To: '{}'", path.string());
+	}
+	catch (std::exception& err) {
+		LOG(tr::severity::ERROR, "Failed to save gamemode '{}'.", name);
+		LOG_CONTINUE("To: '{}'", path.string());
+		LOG_CONTINUE(err);
+	}
+}
 
 std::span<const std::byte> tr::binary_reader<gamemode>::read_from_span(std::span<const std::byte> span, gamemode& out)
 {
@@ -52,17 +90,19 @@ void tr::binary_writer<gamemode>::write_to_stream(std::ostream& os, const gamemo
 	tr::binary_write(os, in.ball);
 }
 
-gamemode pick_menu_gamemode()
+//
+
+gamemode engine::pick_menu_gamemode()
 {
 	return MENU_GAMEMODES[engine::rng.generate(MENU_GAMEMODES.size())];
 }
 
-std::vector<gamemode> load_gamemodes()
+std::vector<gamemode> engine::load_gamemodes()
 {
 	std::vector<gamemode> gamemodes;
 	try {
 		gamemodes.insert(gamemodes.end(), BUILTIN_GAMEMODES.begin(), BUILTIN_GAMEMODES.end());
-		const std::filesystem::path gamemode_dir{engine::cli_settings.userdir / "gamemodes"};
+		const std::filesystem::path gamemode_dir{engine::cli_settings.user_directory / "gamemodes"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{gamemode_dir}) {
 			const std::filesystem::path path{file};
 			try {
@@ -89,42 +129,4 @@ std::vector<gamemode> load_gamemodes()
 		LOG_CONTINUE(err);
 	}
 	return gamemodes;
-}
-
-void save_gamemode(const gamemode& gm)
-{
-	std::filesystem::path path{engine::cli_settings.userdir / "gamemodes" / std::format("{}.gmd", gm.name)};
-	if (std::filesystem::exists(path)) {
-		int index{0};
-		do {
-			path = engine::cli_settings.userdir / "gamemodes" / std::format("{}({}).gmd", gm.name, index++);
-		} while (std::filesystem::exists(path));
-	}
-
-	try {
-		std::ofstream file = tr::open_file_w(path, std::ios::binary);
-		std::ostringstream bufstream{std::ios::binary};
-		tr::binary_write(bufstream, gm);
-		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), engine::rng.generate<std::uint8_t>())};
-		tr::binary_write(file, GAMEMODE_VERSION);
-		tr::binary_write(file, std::span{encrypted});
-
-		LOG(tr::severity::INFO, "Saved gamemode '{}'.", gm.name);
-		LOG_CONTINUE("To: '{}'", path.string());
-	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save gamemode '{}'.", gm.name);
-		LOG_CONTINUE("To: '{}'", path.string());
-		LOG_CONTINUE(err);
-	}
-}
-
-std::string_view name(const gamemode& gm)
-{
-	return gm.builtin ? engine::loc[gm.name] : std::string_view{gm.name};
-}
-
-std::string_view description(const gamemode& gm)
-{
-	return gm.builtin ? engine::loc[gm.description] : std::string_view{gm.description};
 }

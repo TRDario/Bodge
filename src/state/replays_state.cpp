@@ -1,6 +1,4 @@
-#include "../../include/state/replays_state.hpp"
-#include "../../include/state/game_state.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 // clang-format off
@@ -51,17 +49,17 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 // clang-format on
 
 replays_state::replays_state()
-	: menu_state{SELECTION_TREE, SHORTCUTS}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS}
 	, m_substate{substate::RETURNING_FROM_REPLAY}
 	, m_page{0}
 	, m_replays{engine::load_replay_headers()}
 {
 	set_up_ui();
-	engine::play_song("menu", SKIP_MENU_SONG_INTRO, 0.5s);
+	engine::play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
 }
 
 replays_state::replays_state(std::unique_ptr<game>&& game)
-	: menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_REPLAYS}
 	, m_page{0}
 	, m_replays{engine::load_replay_headers()}
@@ -73,7 +71,7 @@ replays_state::replays_state(std::unique_ptr<game>&& game)
 
 std::unique_ptr<tr::state> replays_state::update(tr::duration)
 {
-	menu_state::update({});
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::RETURNING_FROM_REPLAY:
 		if (m_timer >= 0.5_s) {
@@ -143,7 +141,7 @@ void replays_state::set_up_ui()
 
 	// ACTION CALLBACKS
 
-	const auto replay_acb{
+	const replay_widget_action_callback replay_acb{
 		[this](std::map<std::string, replay_header>::iterator it) {
 			m_substate = substate::STARTING_REPLAY;
 			m_timer = 0;
@@ -231,5 +229,5 @@ void replays_state::set_up_exit_animation()
 		m_ui[T_PAGE_D].pos.change(tween::CUBIC, {-50, 942.5}, 0.5_s);
 		m_ui[T_PAGE_I].pos.change(tween::CUBIC, {1050, 942.5}, 0.5_s);
 	}
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 }

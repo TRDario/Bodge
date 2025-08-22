@@ -13,26 +13,20 @@ using namespace tr::color_literals;
 
 ///////////////////////////////////////////////////////////////// TICKRATE ////////////////////////////////////////////////////////////////
 
-// Tick datatype.
 using ticks = std::uint32_t;
-// Game tickrate.
 inline constexpr ticks SECOND_TICKS{240};
-// Seconds -> Ticks literal.
 constexpr ticks operator""_s(unsigned long long seconds)
 {
 	return ticks(SECOND_TICKS * seconds);
 }
-// Seconds -> Ticks literal.
 constexpr ticks operator""_s(long double seconds)
 {
 	return ticks(SECOND_TICKS * seconds);
 }
-// Seconds -> Ticks literal (float).
 constexpr float operator""_sf(unsigned long long seconds)
 {
 	return float(SECOND_TICKS * seconds);
 }
-// Seconds -> Ticks literal (float).
 constexpr float operator""_sf(long double seconds)
 {
 	return float(SECOND_TICKS * seconds);
@@ -53,14 +47,9 @@ constexpr tr::rgba8 MENU_GAME_OVERLAY_TINT{0, 0, 0, 160};
 
 ////////////////////////////////////////////////////////////// GAME CONSTANTS /////////////////////////////////////////////////////////////
 
-// Game field border size.
-inline constexpr float FIELD_BORDER{4};
-// Game field minimum in-bounds position.
-inline constexpr float FIELD_MIN{FIELD_BORDER};
-// Game field maximum in-bounds position.
-inline constexpr float FIELD_MAX{1000 - FIELD_BORDER};
-// Invulnerability duration.
-inline constexpr ticks PLAYER_INVULN_TIME{2_s};
+inline constexpr float FIELD_BORDER_THICKNESS{4};
+inline constexpr float FIELD_MIN{FIELD_BORDER_THICKNESS};
+inline constexpr float FIELD_MAX{1000 - FIELD_BORDER_THICKNESS};
 
 /////////////////////////////////////////////////////////////// UI CONSTANTS //////////////////////////////////////////////////////////////
 
@@ -74,31 +63,23 @@ constexpr glm::vec2 TITLE_POS{500, 0};
 
 /////////////////////////////////////////////////////////////////// TIME //////////////////////////////////////////////////////////////////
 
-// Gets the current unix timestamp.
-std::int64_t unix_now();
+std::int64_t current_timestamp();
 
 ////////////////////////////////////////////////////////////////// LABEL //////////////////////////////////////////////////////////////////
 
-// Widget tag type.
 using tag = const char*;
-// Struct containing information about a label widget.
+
 struct label_info {
-	// The tag of the label.
 	tag tag;
-	// The tooltip of the label.
 	const char* tooltip;
 };
 
 ////////////////////////////////////////////////////////////////// ENGINE /////////////////////////////////////////////////////////////////
 
 namespace engine {
-	// Global RNG.
 	inline tr::xorshiftr_128p rng;
-	// Global logger.
 	inline tr::logger logger;
-// Logging macro.
-#define LOG(...) TR_LOG(::engine::logger, __VA_ARGS__)
-// Logging macro.
-#define LOG_CONTINUE(...) TR_LOG_CONTINUE(::engine::logger, __VA_ARGS__)
-
 } // namespace engine
+
+#define LOG(...) TR_LOG(::engine::logger, __VA_ARGS__)
+#define LOG_CONTINUE(...) TR_LOG_CONTINUE(::engine::logger, __VA_ARGS__)

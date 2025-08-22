@@ -1,6 +1,5 @@
-#include "../../include/state/settings_state.hpp"
 #include "../../include/audio.hpp"
-#include "../../include/state/title_state.hpp"
+#include "../../include/state/state.hpp"
 #include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -122,7 +121,7 @@ constexpr tweener<glm::vec2> LANGUAGE_C_MOVE_IN{tween::CUBIC, LANGUAGE_START_POS
 // clang-format on
 
 settings_state::settings_state(std::unique_ptr<game>&& game)
-	: menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SETTINGS}, m_pending{engine::settings}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SETTINGS}, m_pending{engine::settings}
 {
 	// STATUS CALLBACKS
 
@@ -163,7 +162,10 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.music_volume < 100; },
 	};
 	const status_callback language_c_scb{
-		[this] { return m_substate != substate::ENTERING_TITLE && engine::languages.size() > 1; },
+		[this] {
+			return m_substate != substate::ENTERING_TITLE &&
+				   (engine::languages.size() >= 2 - (!engine::languages.contains(m_pending.language)));
+		},
 	};
 	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_scbs{
 		[this] { return m_substate != substate::ENTERING_TITLE && m_pending != engine::settings; },
@@ -225,8 +227,8 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 	};
 	const action_callback language_c_acb{
 		[this] {
-			std::map<language_code, language>::iterator it{std::next(engine::languages.find(m_pending.language))};
-			if (it == engine::languages.end()) {
+			std::map<language_code, language_info>::iterator it{engine::languages.find(m_pending.language)};
+			if (it == engine::languages.end() || ++it == engine::languages.end()) {
 				it = engine::languages.begin();
 			}
 			m_pending.language = it->first;
@@ -249,7 +251,8 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 			if (old.language != engine::settings.language) {
 				engine::load_localization();
 			}
-			if (engine::languages[old.language].font != engine::languages[engine::settings.language].font) {
+			if (!engine::languages.contains(old.language) ||
+				engine::languages[old.language].font != engine::languages[engine::settings.language].font) {
 				m_ui.release_graphical_resources();
 				engine::set_language_font();
 			}
@@ -349,7 +352,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 std::unique_ptr<tr::state> settings_state::update(tr::duration)
 {
-	menu_state::update({});
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::IN_SETTINGS:
 		return nullptr;
@@ -374,5 +377,5 @@ void settings_state::set_up_exit_animation()
 		widget& widget{m_ui[tag]};
 		widget.pos.change(tween::CUBIC, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
 	}
-	m_ui.hide_all(0.5_s);
+	m_ui.hide_all_widgets(0.5_s);
 }

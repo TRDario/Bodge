@@ -1,12 +1,12 @@
 #include "../include/replay.hpp"
 #include "../include/settings.hpp"
 
-//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+//
 
 // Replay file version identifier.
 constexpr std::uint8_t REPLAY_VERSION{0};
 
-///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
+//
 
 std::string to_filename(std::string_view name)
 {
@@ -37,7 +37,6 @@ void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const r
 }
 
 ///////////////////////////////////////////////////////////////// REPLAY //////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////// CONSTRUCTORS ///////////////////////////////////////////////////////////////
 
 replay::replay(const gamemode& gamemode, std::uint64_t seed)
 	: m_header{}
@@ -49,7 +48,7 @@ replay::replay(const gamemode& gamemode, std::uint64_t seed)
 
 replay::replay(const std::string& filename)
 {
-	const std::filesystem::path path{engine::cli_settings.userdir / "replays" / filename};
+	const std::filesystem::path path{engine::cli_settings.user_directory / "replays" / filename};
 	std::vector<std::byte> encrypted;
 	std::vector<std::byte> decrypted;
 	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
@@ -73,7 +72,7 @@ replay::replay(const replay& r)
 {
 }
 
-//////////////////////////////////////////////////////////////// RECORDING ////////////////////////////////////////////////////////////////
+//
 
 void replay::append(glm::vec2 input)
 {
@@ -90,7 +89,7 @@ void replay::save_to_file() const
 {
 	try {
 		std::string filename{to_filename(m_header.name)};
-		std::filesystem::path path{engine::cli_settings.userdir / "replays" / std::format("{}.dat", filename)};
+		std::filesystem::path path{engine::cli_settings.user_directory / "replays" / std::format("{}.dat", filename)};
 		std::ofstream file;
 		if (!std::filesystem::exists(path)) {
 			file = tr::open_file_w(path, std::ios::binary);
@@ -98,7 +97,7 @@ void replay::save_to_file() const
 		else {
 			int index{0};
 			do {
-				path = engine::cli_settings.userdir / "replays" / std::format("{}({}).dat", filename, index++);
+				path = engine::cli_settings.user_directory / "replays" / std::format("{}({}).dat", filename, index++);
 			} while (std::filesystem::exists(path));
 			file = tr::open_file_w(path, std::ios::binary);
 		}
@@ -125,7 +124,7 @@ void replay::save_to_file() const
 	}
 }
 
-//////////////////////////////////////////////////////////////// PLAYBACK /////////////////////////////////////////////////////////////////
+//
 
 const replay_header& replay::header() const
 {
@@ -137,12 +136,12 @@ bool replay::done() const
 	return m_next_it == m_inputs.end();
 }
 
-glm::vec2 replay::next()
+glm::vec2 replay::next_input()
 {
 	return *m_next_it++;
 }
 
-glm::vec2 replay::current() const
+glm::vec2 replay::prev_input() const
 {
 	return done() ? *std::prev(m_next_it) : *m_next_it;
 }
@@ -151,7 +150,7 @@ std::map<std::string, replay_header> engine::load_replay_headers()
 {
 	std::map<std::string, replay_header> replays;
 	try {
-		const std::filesystem::path replay_dir{engine::cli_settings.userdir / "replays"};
+		const std::filesystem::path replay_dir{engine::cli_settings.user_directory / "replays"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{replay_dir}) {
 			if (!file.is_regular_file() || file.path().extension() != ".dat") {
 				continue;

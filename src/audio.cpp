@@ -2,28 +2,23 @@
 #include "../include/settings.hpp"
 
 namespace engine {
-	// The filenames of the sound effect audio files.
 	std::array<const char*, int(sound::COUNT)> SFX_FILENAMES{
 		"hover.ogg",   "hold.ogg", "confirm.ogg", "cancel.ogg", "type.ogg",      "pause.ogg",
 		"unpause.ogg", "tick.ogg", "bounce.ogg",  "hit.ogg",    "game_over.ogg",
 	};
 
-	// Sound effect audio buffers.
 	std::array<std::optional<tr::audio::buffer>, int(sound::COUNT)> sounds;
-	// The song audio source.
 	std::optional<tr::audio::source> current_song;
 
-	// Tries to find a path to an audio file for a song.
 	std::filesystem::path find_song_path(std::string_view name);
-	// Tries to load an audio file.
 	std::optional<tr::audio::buffer> load_audio_file(const char* filename);
 } // namespace engine
 
 std::filesystem::path engine::find_song_path(std::string_view name)
 {
-	std::filesystem::path path{cli_settings.datadir / "music" / std::format("{}.ogg", name)};
+	std::filesystem::path path{cli_settings.data_directory / "music" / std::format("{}.ogg", name)};
 	if (!std::filesystem::exists(path)) {
-		path = cli_settings.userdir / "music" / std::format("{}.ogg", name);
+		path = cli_settings.user_directory / "music" / std::format("{}.ogg", name);
 		if (!std::filesystem::exists(path)) {
 			return {};
 		}
@@ -34,7 +29,7 @@ std::filesystem::path engine::find_song_path(std::string_view name)
 std::optional<tr::audio::buffer> engine::load_audio_file(const char* filename)
 {
 	try {
-		const std::filesystem::path& path{cli_settings.datadir / "sounds" / filename};
+		const std::filesystem::path& path{cli_settings.data_directory / "sounds" / filename};
 		std::optional<tr::audio::buffer> buffer{tr::audio::load_file(path)};
 		LOG(tr::severity::INFO, "Loaded audio file '{}'.", filename);
 		LOG_CONTINUE("From: '{}'", path.string());
@@ -71,7 +66,7 @@ std::vector<std::string> engine::create_available_song_list()
 {
 	std::vector<std::string> songs{"classic", "chonk", "swarm"};
 	try {
-		const std::filesystem::path userdir{engine::cli_settings.userdir / "music"};
+		const std::filesystem::path userdir{engine::cli_settings.user_directory / "music"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{userdir}) {
 			if (file.is_regular_file() && file.path().extension() == ".ogg") {
 				songs.push_back(file.path().stem().string());
