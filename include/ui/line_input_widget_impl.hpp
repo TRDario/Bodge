@@ -55,7 +55,7 @@ template <std::size_t S> void line_input_widget<S>::update()
 		m_hovered = false;
 		m_held = false;
 		m_selected = false;
-		if (m_interp.done() && m_interp != "505050A0"_rgba8) {
+		if ((m_interp.done() && m_interp != "505050A0"_rgba8) || m_interp.cycling()) {
 			m_interp.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
 		}
 	}

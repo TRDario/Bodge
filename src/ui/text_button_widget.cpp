@@ -36,7 +36,7 @@ void text_button_widget::update()
 		m_hovered = false;
 		m_held = false;
 		m_selected = false;
-		if (m_interp.done() && m_action_left == 0 && m_interp != "505050A0"_rgba8) {
+		if ((m_interp.done() && m_action_left == 0 && m_interp != "505050A0"_rgba8) || m_interp.cycling()) {
 			m_interp.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
 		}
 	}

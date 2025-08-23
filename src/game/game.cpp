@@ -95,7 +95,7 @@ void game::add_new_ball()
 {
 	m_time_since_last_spawn = 0;
 	m_balls.emplace_back(m_rng, m_next_ball_size, m_next_ball_velocity);
-	m_next_ball_size = std::min(m_next_ball_size + m_gamemode.ball.size_step, 250.0f);
+	m_next_ball_size = std::min(m_next_ball_size + m_gamemode.ball.size_step, 100.0f);
 	m_next_ball_velocity = std::min(m_next_ball_velocity + m_gamemode.ball.velocity_step, 5000.0f);
 }
 

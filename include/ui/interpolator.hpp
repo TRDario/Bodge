@@ -14,6 +14,7 @@ template <class T> struct tweener {
 
 	void update();
 	bool done() const;
+	bool cycling() const;
 	operator T() const;
 
 	void change(tween mode, T end, ticks time);
@@ -58,6 +59,11 @@ template <class T> void tweener<T>::update()
 template <class T> bool tweener<T>::done() const
 {
 	return m_len == 0;
+}
+
+template <class T> bool tweener<T>::cycling() const
+{
+	return m_mode == tween::CYCLE;
 }
 
 template <class T> tweener<T>::operator T() const

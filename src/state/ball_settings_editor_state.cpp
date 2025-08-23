@@ -166,7 +166,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size > 10; },
 	};
 	const status_callback initial_size_i_scb{
-		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size < 250.0f; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size < 100.0f; },
 	};
 	const status_callback size_step_d_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.size_step > 0; },
@@ -199,7 +199,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 	};
 	const action_callback max_count_d_acb{
 		[&sc = m_pending.ball.starting_count, &mc = m_pending.ball.max_count] {
-			mc = std::uint8_t(std::max(mc - engine::keymods_choose(1, 5, 10), int(sc)));
+			mc = std::uint8_t(std::max(mc - engine::keymods_choose(1, 5, 10), std::max(int(sc), 1)));
 		},
 	};
 	const action_callback max_count_i_acb{
@@ -215,13 +215,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 		[&is = m_pending.ball.initial_size] { is = std::max(is - engine::keymods_choose(1, 10, 100), 10.0f); },
 	};
 	const action_callback initial_size_i_acb{
-		[&is = m_pending.ball.initial_size] { is = std::min(is + engine::keymods_choose(1, 10, 100), 250.0f); },
+		[&is = m_pending.ball.initial_size] { is = std::min(is + engine::keymods_choose(1, 10, 100), 100.0f); },
 	};
 	const action_callback size_step_d_acb{
 		[&ss = m_pending.ball.size_step] { ss = std::max(ss - engine::keymods_choose(0.1f, 1.0f, 10.0f), 0.0f); },
 	};
 	const action_callback size_step_i_acb{
-		[&ss = m_pending.ball.size_step] { ss = std::min(ss + engine::keymods_choose(0.1f, 1.0f, 10.0f), 50.0f); },
+		[&ss = m_pending.ball.size_step] { ss = std::min(ss + engine::keymods_choose(0.1f, 1.0f, 10.0f), 10.0f); },
 	};
 	const action_callback initial_velocity_d_acb{
 		[&iv = m_pending.ball.initial_velocity] { iv = std::max(iv - engine::keymods_choose(1, 10, 100), 100.0f); },
@@ -255,10 +255,10 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& g
 		[](ticks v) { return std::clamp(v, 1_s, 60_s); },
 	};
 	const validation_callback<float> initial_size_c_vcb{
-		[](float v) { return std::clamp(v, 10.0f, 250.0f); },
+		[](float v) { return std::clamp(v, 10.0f, 100.0f); },
 	};
 	const validation_callback<float> size_step_c_vcb{
-		[](float v) { return std::clamp(v, 0.0f, 50.0f); },
+		[](float v) { return std::clamp(v, 0.0f, 10.0f); },
 	};
 	const validation_callback<float> initial_velocity_c_vcb{
 		[](float v) { return std::clamp(v, 100.0f, 5000.0f); },
