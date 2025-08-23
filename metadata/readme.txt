@@ -53,8 +53,8 @@
 |                                                                                                                     |
 |-----------------------------------------------------HOW TO PLAY-----------------------------------------------------|
 |                                                                                                                     |
-| 1.) Move the hexagon with your mouse.                                                                               |
-| 2.) Don't die.                                                                                                      |
+| 1.) Move the player character with your mouse.                                                                      |
+| 2.) Avoid the balls as long as possible.                                                                            |
 |                                                                                                                     |
 |--------------------------------------------------KEYBOARD CONTROLS--------------------------------------------------|
 |                                                                                                                     |
@@ -68,8 +68,8 @@
 | Your saved data, as well as any custom gamemodes, languages, and music tracks are stored in the user directory.     |
 | By default, this is in %appdata% on Windows, or /home/.local/share/ on Linux.                                       |
 |                                                                                                                     |
-| If you wish to redirect it, you can do that by by running the game with '--userdir <path to directory>' passed to   |
-| the command line.                                                                                                   |
+| If you wish to redirect it, you can do that by running the game with '--userdir <path to directory>' passed to the  |
+| command line.                                                                                                       |
 |                                                                                                                     |
 |-------------------------------------------------CUSTOM LOCALIZATION-------------------------------------------------|
 |                                                                                                                     |
@@ -96,7 +96,7 @@
 |                                                                                                                     |
 | Custom music tracks may be used in custom gamemodes by placing them in the 'music' subdirectory of the user         |
 | directory.                                                                                                          |
-| Only files in the ogg Vorbis format (.ogg) are supported.                                                           |
+| Only files in the Ogg Vorbis format (.ogg) are supported.                                                           |
 |                                                                                                                     |
 | By default, tracks are not looped. Looping is enabled and controlled through comments in the music file:            |
 | * LOOPBEGIN=[offset in samples] sets the beginning loop point.                                                      |
@@ -104,7 +104,7 @@
 | * LOOPEND=[offset in samples] sets the end loop point.                                                              |
 |   * If not defined, it is assumed to be at the end of the track.                                                    |
 | * Setting either LOOPBEGIN or LOOPEND is enough to automatically enable looping, but in the case where both points  |
-|   should be defaulted, LOOP=true can be set to enable looping.                                                      |
+|   should be defaulted, LOOP=true can instead be set to enable looping.                                              |
 |                                                                                                                     |
 | These comments can be set when exporting in software like Audacity.                                                 |
 |                                                                                                                     |
