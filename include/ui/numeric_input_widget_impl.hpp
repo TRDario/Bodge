@@ -3,7 +3,7 @@
 #include "widget.hpp"
 
 template <class T, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
-void default_numeric_input_formatter<T, Fmt, BufferFmt>::from_string(T& out, std::string_view str)
+void default_numeric_input_formatter<T, Fmt, BufferFmt>::from_string(std::common_type_t<T, int>& out, std::string_view str)
 {
 	std::from_chars(str.data(), str.data() + str.size(), out);
 }
@@ -156,7 +156,8 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 
-		T temp{m_ref};
+		// Promote small integers to int so writing e.g. '435' clamps nicely to '255' instead of failing.
+		std::common_type_t<T, int> temp{m_ref};
 		Formatter::from_string(temp, m_buffer);
 		m_ref = m_vcb(temp);
 	}

@@ -56,7 +56,7 @@ class text_button_widget : public text_widget {
 /////////////////////////////////////////////////////////// NUMERIC INPUT WIDGET //////////////////////////////////////////////////////////
 
 template <class T, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt> struct default_numeric_input_formatter {
-	static void from_string(T& out, std::string_view str);
+	static void from_string(std::common_type_t<T, int>& out, std::string_view str);
 	static std::string to_string(T v);
 	static std::string to_string(std::string_view str);
 };

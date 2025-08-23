@@ -78,7 +78,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives < 255; },
 	};
 	const status_callback hitbox_radius_d_scb{
-		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius > 0.0f; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius > 1.0f; },
 	};
 	const status_callback hitbox_radius_i_scb{
 		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius < 100.0f; },
@@ -99,7 +99,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 		[&sl = m_pending.player.starting_lives] { sl = std::min(sl + engine::keymods_choose(1, 5, 10), std::uint32_t{255}); },
 	};
 	const action_callback hitbox_radius_d_acb{
-		[&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - engine::keymods_choose(1, 5, 10), 0.0f); },
+		[&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - engine::keymods_choose(1, 5, 10), 1.0f); },
 	};
 	const action_callback hitbox_radius_i_acb{
 		[&hr = m_pending.player.hitbox_radius] { hr = std::min(hr + engine::keymods_choose(1, 5, 10), 100.0f); },
@@ -121,10 +121,10 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 	// VALIDATION CALLBACKS
 
 	const validation_callback<std::uint32_t> starting_lives_c_vcb{
-		[](std::uint32_t v) { return std::min<std::uint32_t>(v, 255); },
+		[](std::uint32_t v) { return std::clamp<std::uint32_t>(v, 0, 255); },
 	};
 	const validation_callback<float> hitbox_radius_c_vcb{
-		[](float v) { return std::clamp(v, 0.0f, 100.0f); },
+		[](float v) { return std::clamp(v, 1.0f, 100.0f); },
 	};
 	const validation_callback<float> inertia_factor_c_vcb{
 		[](float v) { return std::clamp(v, 0.0f, 0.99f); },

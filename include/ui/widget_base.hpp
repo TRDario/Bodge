@@ -7,7 +7,7 @@
 using text_callback = std::function<std::string()>;
 using status_callback = std::function<bool()>;
 using action_callback = std::function<void()>;
-template <class T> using validation_callback = std::function<T(T)>;
+template <class T> using validation_callback = std::function<T(std::common_type_t<T, int>)>;
 
 inline const text_callback NO_TOOLTIP{};
 // Common callback for text widgets: getting a localization string using the widget name as the key.
