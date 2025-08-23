@@ -1,3 +1,7 @@
+#if defined _MSC_VER and not defined TR_ENABLE_ASSERTS
+#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
+#endif
+
 #include "../include/audio.hpp"
 #include "../include/fonts.hpp"
 #include "../include/global.hpp"

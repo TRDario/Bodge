@@ -35,6 +35,8 @@ namespace engine {
 		glm::vec2 mouse_pos{500, 500};
 		// The held mouse buttons.
 		tr::system::mouse_button held_buttons{};
+
+		int mouse_focus{};
 	};
 	std::optional<system_data> system;
 } // namespace engine
@@ -114,10 +116,8 @@ void engine::initialize_system()
 	}
 	set_icon();
 	tr::system::set_window_vsync(tr::system::vsync::DISABLED);
-	tr::system::show_cursor(false);
-	tr::system::set_mouse_relative_mode(true);
+	tr::system::raise_window();
 	system.emplace();
-	tr::system::flush_events();
 	LOG(tr::severity::INFO, "Initialized system.");
 }
 

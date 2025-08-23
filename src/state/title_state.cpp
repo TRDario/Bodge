@@ -7,7 +7,7 @@
 constexpr tag T_LOGO_TEXT{"logo_text"};
 constexpr tag T_LOGO_OVERLAY{"logo_overlay"};
 constexpr tag T_LOGO_BALL{"logo_ball"};
-constexpr tag T_COPYRIGHT{"©2025 TRDario"};
+constexpr tag T_COPYRIGHT{"© 2025 TRDario"};
 constexpr tag T_VERSION{VERSION_STRING};
 constexpr tag T_START_GAME{"start_game"};
 constexpr tag T_GAMEMODE_DESIGNER{"gamemode_designer"};

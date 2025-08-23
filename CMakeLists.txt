@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.30.0)
-project(Bodge VERSION 0.9.1 LANGUAGES C CXX)
+project(Bodge VERSION 1.0.0 LANGUAGES C CXX)
 
-include (FetchContent)
+include(FetchContent)
 
 FetchContent_Declare(
 	tr
@@ -24,18 +24,27 @@ add_executable(
     src/gamemode.cpp src/global.cpp src/localization.cpp src/replay.cpp src/score.cpp src/settings.cpp
 )
 target_compile_features(Bodge PUBLIC cxx_std_20)
-if (TR_ENABLE_ASSERTS)
+if(TR_ENABLE_ASSERTS)
 	target_compile_definitions(Bodge PRIVATE TR_ENABLE_ASSERTS)
-endif ()
-if ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")) OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+endif()
+if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")) OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options (Bodge PRIVATE -Wall -Wextra -Wpedantic -Wshadow)
 	target_compile_options (Bodge PRIVATE -fno-trapping-math -fno-math-errno -fno-signed-zeros -fassociative-math -ffp-contract=fast)
     target_link_options(Bodge PRIVATE -fuse-ld=lld)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
 	target_compile_options (Bodge PRIVATE /clang:-Wall /clang:-Wextra /clang:-Wpedantic /clang:-Wshadow)
 	target_compile_options (Bodge PRIVATE /clang:-fno-trapping-math /clang:-fno-math-errno /clang:-fno-signed-zeros /clang:-fassociative-math /clang:-ffp-contract=fast)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(Bodge PUBLIC /Zc:preprocessor /W3 /WX)
-endif ()
+endif()
 target_link_libraries(Bodge tr::tr)
 target_precompile_headers (Bodge PRIVATE <tr/utility.hpp>)
+
+file(COPY data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY metadata/readme.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+if(WIN32)
+    target_sources(Bodge PRIVATE metadata/icon.rc)
+else()
+    # to-do:
+endif()
