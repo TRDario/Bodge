@@ -49,7 +49,7 @@
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
 | v1.0.1 (24 Aug 2025)                                                                                                |
-| * Fixed a few gamemode designer limits and numeric input widget interactions.                                                                             |
+| * Fixed a few gamemode designer limits and numeric input widget interactions.                                       |
 | v1.0.0 (23 Aug 2025)                                                                                                |
 | * Initial release.                                                                                                  |
 |                                                                                                                     |
