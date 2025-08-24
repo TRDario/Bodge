@@ -4,7 +4,7 @@
 //
 
 // Replay file version identifier.
-constexpr std::uint8_t REPLAY_VERSION{0};
+constexpr u8 REPLAY_VERSION{0};
 
 //
 
@@ -38,7 +38,7 @@ void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const r
 
 ///////////////////////////////////////////////////////////////// REPLAY //////////////////////////////////////////////////////////////////
 
-replay::replay(const gamemode& gamemode, std::uint64_t seed)
+replay::replay(const gamemode& gamemode, u64 seed)
 	: m_header{}
 {
 	m_header.player = engine::scorefile.name;
@@ -53,7 +53,7 @@ replay::replay(const std::string& filename)
 	std::vector<std::byte> decrypted;
 	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 
-	std::ignore = tr::binary_read<std::uint8_t>(file);
+	std::ignore = tr::binary_read<u8>(file);
 
 	tr::binary_read(file, encrypted);
 	tr::decrypt_to(decrypted, encrypted);
@@ -89,7 +89,7 @@ void replay::save_to_file() const
 {
 	try {
 		std::string filename{to_filename(m_header.name)};
-		std::filesystem::path path{engine::cli_settings.user_directory / "replays" / std::format("{}.dat", filename)};
+		std::filesystem::path path{engine::cli_settings.user_directory / "replays" / TR_FMT::format("{}.dat", filename)};
 		std::ofstream file;
 		if (!std::filesystem::exists(path)) {
 			file = tr::open_file_w(path, std::ios::binary);
@@ -97,7 +97,7 @@ void replay::save_to_file() const
 		else {
 			int index{0};
 			do {
-				path = engine::cli_settings.user_directory / "replays" / std::format("{}({}).dat", filename, index++);
+				path = engine::cli_settings.user_directory / "replays" / TR_FMT::format("{}({}).dat", filename, index++);
 			} while (std::filesystem::exists(path));
 			file = tr::open_file_w(path, std::ios::binary);
 		}
@@ -108,12 +108,12 @@ void replay::save_to_file() const
 		std::vector<std::byte> buffer;
 
 		tr::binary_write(bufstream, m_header);
-		tr::encrypt_to(buffer, bufstream.view(), engine::rng.generate<std::uint8_t>());
+		tr::encrypt_to(buffer, bufstream.view(), engine::rng.generate<u8>());
 		tr::binary_write(file, buffer);
 
 		bufstream.str({});
 		tr::binary_write(bufstream, m_inputs);
-		tr::encrypt_to(buffer, bufstream.view(), engine::rng.generate<std::uint8_t>());
+		tr::encrypt_to(buffer, bufstream.view(), engine::rng.generate<u8>());
 		tr::binary_write(file, buffer);
 		LOG(tr::severity::INFO, "Saved replay '{}'.", m_header.name);
 		LOG_CONTINUE("To: '{}'", path.string());
@@ -158,7 +158,7 @@ std::map<std::string, replay_header> engine::load_replay_headers()
 
 			try {
 				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
-				const std::uint8_t version{tr::binary_read<std::uint8_t>(is)};
+				const u8 version{tr::binary_read<u8>(is)};
 				if (version != REPLAY_VERSION) {
 					LOG(tr::severity::ERROR, "Failed to load replay header.");
 					LOG_CONTINUE("From: '{}'", file.path().string());

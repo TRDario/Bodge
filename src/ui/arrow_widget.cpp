@@ -95,8 +95,8 @@ void arrow_widget::add_to_renderer()
 	tr::fill_poly_idx(arrow.indices.begin() + tr::poly_outline_idx(5), 5, arrow.base_index + 10);
 	std::ranges::copy(positions | std::views::transform([&](glm::vec2 p) { return p + tl; }), arrow.positions.begin());
 	std::ranges::copy(ARROW_COLORS | std::views::transform([&](tr::rgba8 c) -> tr::rgba8 {
-						  return {std::uint8_t(c.r * tr::norm_cast<float>(color.r)), std::uint8_t(c.g * tr::norm_cast<float>(color.g)),
-								  std::uint8_t(c.b * tr::norm_cast<float>(color.b)), std::uint8_t(c.a * tr::norm_cast<float>(color.a))};
+						  return {u8(c.r * tr::norm_cast<float>(color.r)), u8(c.g * tr::norm_cast<float>(color.g)),
+								  u8(c.b * tr::norm_cast<float>(color.b)), u8(c.a * tr::norm_cast<float>(color.a))};
 					  }),
 					  arrow.colors.begin());
 }

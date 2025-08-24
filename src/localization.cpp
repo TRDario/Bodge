@@ -44,7 +44,7 @@ void engine::load_localization()
 	const std::string_view name{settings.language.data(), 2};
 	tr::localization_map old{std::move(loc)};
 	try {
-		const std::string filename{std::format("localization/{}.txt", name)};
+		const std::string filename{TR_FMT::format("localization/{}.txt", name)};
 		std::filesystem::path path{cli_settings.data_directory / filename};
 		if (!std::filesystem::exists(path)) {
 			path = cli_settings.user_directory / filename;

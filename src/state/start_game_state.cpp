@@ -56,11 +56,11 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 	// TEXT CALLBACKS
 
 	text_callback name_tcb{string_text_callback{std::string{m_selected->name_loc()}}};
-	text_callback author_tcb{string_text_callback{std::format("{}: {}", engine::loc["by"], m_selected->author)}};
+	text_callback author_tcb{string_text_callback{TR_FMT::format("{}: {}", engine::loc["by"], m_selected->author)}};
 	text_callback description_tcb{string_text_callback{
 		std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : engine::loc["no_description"]}}};
 	text_callback pb_tcb{string_text_callback{
-		std::format("{}:\n{}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(*m_selected)))}};
+		TR_FMT::format("{}:\n{}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(*m_selected)))}};
 
 	// STATUS CALLBACKS
 
@@ -164,13 +164,13 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 		else if (m_timer == 0.25_s) {
 			std::array<text_callback, GAMEMODE_WIDGETS.size()> new_cbs{
 				string_text_callback{std::string{m_selected->name_loc()}},
-				string_text_callback{std::format("{}: {}", engine::loc["by"], m_selected->author)},
+				string_text_callback{TR_FMT::format("{}: {}", engine::loc["by"], m_selected->author)},
 				string_text_callback{
 					std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : engine::loc["no_description"]}},
 				string_text_callback{
-					std::format("{}:\n{}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(*m_selected)))},
+					TR_FMT::format("{}:\n{}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(*m_selected)))},
 			};
-			for (std::size_t i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
+			for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
 				text_widget& widget{m_ui.as<text_widget>(GAMEMODE_WIDGETS[i])};
 				const glm::vec2 old_pos{widget.pos};
 				widget.text_cb = std::move(new_cbs[i]);

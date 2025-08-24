@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings file version identifier.
-constexpr std::uint8_t SCOREFILE_VERSION{0};
+constexpr u8 SCOREFILE_VERSION{0};
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
 
@@ -81,7 +81,7 @@ void engine::load_scorefile()
 	const std::filesystem::path path{cli_settings.user_directory / "scorefile.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
-		const std::uint8_t version{tr::binary_read<std::uint8_t>(file)};
+		const u8 version{tr::binary_read<u8>(file)};
 		if (version != SCOREFILE_VERSION) {
 			LOG(tr::severity::ERROR, "Failed to load scorefile.");
 			LOG_CONTINUE("From: '{}'", path.string());
@@ -114,7 +114,7 @@ void engine::save_scorefile()
 		tr::binary_write(buffer, scorefile.categories);
 		tr::binary_write(buffer, scorefile.playtime);
 		tr::binary_write(buffer, scorefile.last_selected);
-		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rng.generate<std::uint8_t>())};
+		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rng.generate<u8>())};
 		tr::binary_write(file, SCOREFILE_VERSION);
 		tr::binary_write(file, std::span{encrypted});
 		LOG(tr::severity::INFO, "Saved scorefile.");

@@ -144,17 +144,17 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 
 	const text_callback player_info_tcb{
 		[] {
-			return std::format("{} {}: {}:{:02}:{:02}", engine::loc["total_playtime"], engine::scorefile.name,
-							   engine::scorefile.playtime / (SECOND_TICKS * 3600),
-							   (engine::scorefile.playtime % (SECOND_TICKS * 3600)) / (SECOND_TICKS * 60),
-							   (engine::scorefile.playtime % (SECOND_TICKS * 60) / SECOND_TICKS));
+			return TR_FMT::format("{} {}: {}:{:02}:{:02}", engine::loc["total_playtime"], engine::scorefile.name,
+								  engine::scorefile.playtime / (SECOND_TICKS * 3600),
+								  (engine::scorefile.playtime % (SECOND_TICKS * 3600)) / (SECOND_TICKS * 60),
+								  (engine::scorefile.playtime % (SECOND_TICKS * 60) / SECOND_TICKS));
 		},
 	};
 	const text_callback cur_gamemode_tcb{
 		[this] { return std::string{m_selected->gamemode.name_loc()}; },
 	};
 	const text_callback cur_page_tcb{
-		[this] { return std::format("{}/{}", m_page + 1, std::max(int(m_selected->scores.size()) - 1, 0) / SCORES_PER_PAGE + 1); },
+		[this] { return TR_FMT::format("{}/{}", m_page + 1, std::max(int(m_selected->scores.size()) - 1, 0) / SCORES_PER_PAGE + 1); },
 	};
 
 	//
@@ -170,9 +170,9 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 								   loc_text_callback{T_NO_SCORES_FOUND}, tr::system::ttf_style::NORMAL, 64, "80808080"_rgba8);
 		return;
 	}
-	for (std::size_t i = 0; i < SCORES_PER_PAGE; ++i) {
+	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
 		const tweener<glm::vec2> move_in{tween::CUBIC, {i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s};
-		const std::size_t rank{m_page * SCORES_PER_PAGE + i + 1};
+		const usize rank{m_page * SCORES_PER_PAGE + i + 1};
 		const tr::opt_ref<score> score{m_selected->scores.size() > i ? tr::opt_ref{m_selected->scores.begin()[i]} : std::nullopt};
 		m_ui.emplace<score_widget>(SCORE_TAGS[i], move_in, tr::align::CENTER, 0.5_s, rank, score);
 	}
@@ -200,7 +200,7 @@ std::unique_ptr<tr::state> scoreboards_state::update(tr::duration)
 			m_substate = substate::IN_SCOREBOARDS;
 		}
 		else if (m_timer == 0.25_s) {
-			for (std::size_t i = 0; i < SCORES_PER_PAGE; ++i) {
+			for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
 				const bool nonempty{m_selected->scores.size() > m_page * SCORES_PER_PAGE + i};
 				score_widget& widget{m_ui.as<score_widget>(SCORE_TAGS[i])};
 				widget.rank = m_page * SCORES_PER_PAGE + i + 1;
@@ -220,7 +220,7 @@ std::unique_ptr<tr::state> scoreboards_state::update(tr::duration)
 
 void scoreboards_state::set_up_page_switch_animation()
 {
-	for (std::size_t i = 0; i < SCORES_PER_PAGE; i++) {
+	for (usize i = 0; i < SCORES_PER_PAGE; i++) {
 		widget& widget{m_ui[SCORE_TAGS[i]]};
 		widget.pos.change(tween::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.25_s);
 		widget.hide(0.25_s);
@@ -236,7 +236,7 @@ void scoreboards_state::set_up_exit_animation()
 		m_ui[T_NO_SCORES_FOUND].pos.change(tween::CUBIC, {400, 483}, 0.5_s);
 	}
 	else {
-		for (std::size_t i = 0; i < SCORES_PER_PAGE; i++) {
+		for (usize i = 0; i < SCORES_PER_PAGE; i++) {
 			widget& widget{m_ui[SCORE_TAGS[i]]};
 			widget.pos.change(tween::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.5_s);
 		}

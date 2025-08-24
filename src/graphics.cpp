@@ -106,5 +106,5 @@ void engine::add_fade_overlay_to_renderer(float opacity)
 
 	const tr::gfx::simple_color_mesh_ref fade_overlay{tr::gfx::renderer_2d::new_color_fan(layer::FADE_OVERLAY, 4)};
 	tr::fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
-	std::ranges::fill(fade_overlay.colors, tr::rgba8{0, 0, 0, tr::norm_cast<std::uint8_t>(opacity)});
+	std::ranges::fill(fade_overlay.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
 }

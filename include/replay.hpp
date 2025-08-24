@@ -7,7 +7,7 @@ struct replay_header : score {
 	tr::static_string<20 * 4> name;
 	tr::static_string<20 * 4> player;
 	gamemode gamemode;
-	std::uint64_t seed;
+	u64 seed;
 };
 template <> struct tr::binary_reader<replay_header> {
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, replay_header& out);
@@ -20,8 +20,8 @@ template <> struct tr::binary_writer<replay_header> {
 
 class replay {
   public:
-	replay(const gamemode& gamemode, std::uint64_t seed); // Creates an empty replay.
-	replay(const std::string& filename);                  // Loads a replay from file.
+	replay(const gamemode& gamemode, u64 seed); // Creates an empty replay.
+	replay(const std::string& filename);        // Loads a replay from file.
 	replay(const replay& r);
 	replay(replay&&) noexcept = default;
 

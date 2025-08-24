@@ -205,7 +205,7 @@ void player::add_to_renderer() const
 	const tr::rgb8 tint{(m_iframes_left && m_timer > INITIAL_INVULNERABILITY_TIME)
 							? PLAYER_HIT_COLOR
 							: color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
-	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(std::abs(std::cos(m_iframes_left * PI * 8 / INVULNERABILITY_TIME)))};
+	const u8 opacity{tr::norm_cast<u8>(std::abs(std::cos(m_iframes_left * PI * 8 / INVULNERABILITY_TIME)))};
 	const tr::angle rotation{tr::degs(270.0f * m_timer / SECOND_TICKS)};
 	const float size_offset{3.0f * std::sin(PI * m_timer / SECOND_TICKS)};
 	const float size{m_hitbox.r + 6 + size_offset};
@@ -241,7 +241,7 @@ glm::vec2 player::timer_text_size(const std::string& text, float scale) const
 
 void player::set_up_death_fragments()
 {
-	for (std::size_t i = 0; i < m_fragments.size(); ++i) {
+	for (usize i = 0; i < m_fragments.size(); ++i) {
 		const tr::angle th{60_deg * i + 30_deg};
 		const glm::vec2 vel{tr::magth(engine::rng.generate(200.0f, 400.0f), engine::rng.generate(th - 30_deg, th + 30_deg))};
 		const tr::angle ang_vel{engine::rng.generate(360_deg, 720_deg) * (engine::rng.generate_bool() ? 1 : -1)};
@@ -249,14 +249,14 @@ void player::set_up_death_fragments()
 	}
 }
 
-void player::add_fill_to_renderer(std::uint8_t opacity, tr::angle rotation, float size) const
+void player::add_fill_to_renderer(u8 opacity, tr::angle rotation, float size) const
 {
 	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::PLAYER, 6)};
 	tr::fill_poly_vtx(fill.positions, 6, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, opacity});
 }
 
-void player::add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::angle rotation, float size) const
+void player::add_outline_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
 {
 	const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::PLAYER, 6)};
 	tr::fill_poly_outline_vtx(outline.positions, 6, {m_hitbox.c, size}, rotation, 4.0f);
@@ -264,30 +264,30 @@ void player::add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::an
 	std::ranges::fill(outline.colors | std::views::drop(6), tr::rgba8{0, 0, 0, opacity});
 }
 
-void player::add_trail_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::angle rotation, float size) const
+void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
 {
-	constexpr std::size_t VERTICES{6 * (trail::SIZE + 1)};
-	constexpr std::size_t INDICES{tr::poly_outline_idx(6) * trail::SIZE};
+	constexpr usize VERTICES{6 * (trail::SIZE + 1)};
+	constexpr usize INDICES{tr::poly_outline_idx(6) * trail::SIZE};
 
 	tr::gfx::color_mesh_ref trail_mesh{tr::gfx::renderer_2d::new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
 	tr::fill_poly_vtx(trail_mesh.positions | std::views::take(6), 6, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(trail_mesh.colors, tr::rgba8{tint, opacity});
 
-	std::vector<std::uint16_t>::iterator indices_it{trail_mesh.indices.begin()};
-	for (std::size_t i = 0; i < m_trail.SIZE; ++i) {
+	std::vector<u16>::iterator indices_it{trail_mesh.indices.begin()};
+	for (usize i = 0; i < m_trail.SIZE; ++i) {
 		const float trail_fade{float(m_trail.SIZE - i) / m_trail.SIZE};
 		const float trail_size{size * trail_fade};
-		const std::uint8_t trail_opacity{std::uint8_t(opacity / 3.0f * trail_fade)};
+		const u8 trail_opacity{u8(opacity / 3.0f * trail_fade)};
 
 		tr::fill_poly_vtx(trail_mesh.positions | std::views::drop(6 * (i + 1)), 6, {m_trail[i], trail_size}, rotation);
 		for (int j = 0; j < 6; ++j) {
 			trail_mesh.colors[6 * (i + 1) + j].a = trail_opacity;
-			*indices_it++ = std::uint16_t(trail_mesh.base_index + 6 * (i + 1) + j);
-			*indices_it++ = std::uint16_t(trail_mesh.base_index + 6 * (i + 1) + ((j + 1) % 6));
-			*indices_it++ = std::uint16_t(trail_mesh.base_index + 6 * i + ((j + 1) % 6));
-			*indices_it++ = std::uint16_t(trail_mesh.base_index + 6 * (i + 1) + j);
-			*indices_it++ = std::uint16_t(trail_mesh.base_index + 6 * i + ((j + 1) % 6));
-			*indices_it++ = std::uint16_t(trail_mesh.base_index + 6 * i + j);
+			*indices_it++ = u16(trail_mesh.base_index + 6 * (i + 1) + j);
+			*indices_it++ = u16(trail_mesh.base_index + 6 * (i + 1) + ((j + 1) % 6));
+			*indices_it++ = u16(trail_mesh.base_index + 6 * i + ((j + 1) % 6));
+			*indices_it++ = u16(trail_mesh.base_index + 6 * (i + 1) + j);
+			*indices_it++ = u16(trail_mesh.base_index + 6 * i + ((j + 1) % 6));
+			*indices_it++ = u16(trail_mesh.base_index + 6 * i + j);
 		}
 	}
 }
@@ -296,7 +296,7 @@ void player::add_lives_to_renderer() const
 {
 	const float life_size{m_lives_left > MAX_LARGE_LIVES ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
-	const std::uint8_t opacity{std::uint8_t(255 - 180 * std::min(m_lives_hover_time, UI_HIDING_TIME) / UI_HIDING_TIME)};
+	const u8 opacity{u8(255 - 180 * std::min(m_lives_hover_time, UI_HIDING_TIME) / UI_HIDING_TIME)};
 	const tr::angle rotation{tr::degs(120.0f * m_timer / SECOND_TICKS)};
 
 	for (int i = 0; i < m_lives_left; ++i) {
@@ -322,9 +322,9 @@ void player::add_timer_to_renderer() const
 	}
 	else {
 		const float factor{std::min(m_timer % 1_s, 0.2_s) / float(0.2_s)};
-		const std::uint8_t tint_factor{tr::norm_cast<std::uint8_t>(1 - 0.25f * factor)};
+		const u8 tint_factor{tr::norm_cast<u8>(1 - 0.25f * factor)};
 		const ticks clamped_hover_time{std::min(m_timer_hover_time, UI_HIDING_TIME)};
-		const std::uint8_t opacity{std::uint8_t((255 - clamped_hover_time * 180 / UI_HIDING_TIME) * tint_factor / 255)};
+		const u8 opacity{u8((255 - clamped_hover_time * 180 / UI_HIDING_TIME) * tint_factor / 255)};
 		tint = {tint_factor, tint_factor, tint_factor, opacity};
 		scale = (1.25f - 0.25f * factor);
 	}
@@ -354,9 +354,9 @@ void player::add_death_wave_to_renderer() const
 	const float t{(m_game_over_timer + 1) / float(0.5_s)};
 	const float scale{std::sqrt(t) * 200};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
-	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(0.5f * std::sqrt(1 - t))};
+	const u8 opacity{tr::norm_cast<u8>(0.5f * std::sqrt(1 - t))};
 
-	const std::size_t indices{tr::smooth_poly_vtx(scale, engine::render_scale()) + 2};
+	const usize indices{tr::smooth_poly_vtx(scale, engine::render_scale()) + 2};
 	const tr::gfx::simple_color_mesh_ref fan{tr::gfx::renderer_2d::new_color_fan(layer::PLAYER_TRAIL, indices)};
 	fan.positions[0] = m_hitbox.c;
 	fan.colors[0] = {color, 0};
@@ -369,7 +369,7 @@ void player::add_death_fragments_to_renderer() const
 {
 	const float t{(m_game_over_timer + 1) / float(0.5_s)};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
-	const std::uint8_t opacity{tr::norm_cast<std::uint8_t>(std::sqrt(1 - t))};
+	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t))};
 	const float length{2 * m_hitbox.r * tr::degs(30.0f).tan()};
 
 	for (const death_fragment& fragment : m_fragments) {

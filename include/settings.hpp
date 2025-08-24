@@ -19,24 +19,24 @@ struct cli_settings {
 
 //////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
 
-constexpr std::uint16_t MIN_WINDOW_SIZE{500};
-std::uint16_t max_window_size();
+constexpr u16 MIN_WINDOW_SIZE{500};
+u16 max_window_size();
 
 enum class display_mode : bool {
 	WINDOWED,
 	FULLSCREEN
 };
 
-constexpr std::uint8_t NO_MSAA{0};
+constexpr u8 NO_MSAA{0};
 
 struct settings {
-	std::uint16_t window_size{500};
+	u16 window_size{500};
 	display_mode display_mode{display_mode::WINDOWED};
-	std::uint8_t msaa{0};
-	std::uint16_t primary_hue{60};
-	std::uint16_t secondary_hue{0};
-	std::uint8_t sfx_volume{100};
-	std::uint8_t music_volume{100};
+	u8 msaa{0};
+	u16 primary_hue{60};
+	u16 secondary_hue{0};
+	u8 sfx_volume{100};
+	u8 music_volume{100};
 	language_code language{'e', 'n'};
 
 	bool operator==(const settings&) const = default;

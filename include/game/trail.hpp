@@ -4,16 +4,16 @@
 // Player/ball trail circular buffer.
 class trail {
   public:
-	inline static constexpr std::size_t SIZE{std::max<std::size_t>(SECOND_TICKS / 5, 1)};
+	inline static constexpr usize SIZE{std::max<usize>(SECOND_TICKS / 5, 1)};
 
 	trail(const glm::vec2& value);
 
-	const glm::vec2& operator[](std::size_t i) const;
+	const glm::vec2& operator[](usize i) const;
 
 	// Pushes a new control point to the front of the trail.
 	void push(const glm::vec2& value);
 
   private:
 	std::array<glm::vec2, SIZE> m_buffer;
-	std::uint32_t m_head; // The current position of the head of the circular buffer.
+	u32 m_head; // The current position of the head of the circular buffer.
 };

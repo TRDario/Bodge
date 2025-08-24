@@ -16,9 +16,9 @@ namespace engine {
 
 std::filesystem::path engine::find_song_path(std::string_view name)
 {
-	std::filesystem::path path{cli_settings.data_directory / "music" / std::format("{}.ogg", name)};
+	std::filesystem::path path{cli_settings.data_directory / "music" / TR_FMT::format("{}.ogg", name)};
 	if (!std::filesystem::exists(path)) {
-		path = cli_settings.user_directory / "music" / std::format("{}.ogg", name);
+		path = cli_settings.user_directory / "music" / TR_FMT::format("{}.ogg", name);
 		if (!std::filesystem::exists(path)) {
 			return {};
 		}

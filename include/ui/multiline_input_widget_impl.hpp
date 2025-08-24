@@ -2,9 +2,9 @@
 #include "../graphics.hpp"
 #include "widget.hpp"
 
-template <std::size_t S>
-multiline_input_widget<S>::multiline_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width,
-												  std::uint8_t max_lines, float font_size, status_callback status_cb)
+template <usize S>
+multiline_input_widget<S>::multiline_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width, u8 max_lines,
+												  float font_size, status_callback status_cb)
 	: text_widget{pos,
 				  alignment,
 				  unhide_time,
@@ -25,12 +25,12 @@ multiline_input_widget<S>::multiline_input_widget(tweener<glm::vec2> pos, tr::al
 {
 }
 
-template <std::size_t S> glm::vec2 multiline_input_widget<S>::size() const
+template <usize S> glm::vec2 multiline_input_widget<S>::size() const
 {
 	return m_size;
 }
 
-template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
+template <usize S> void multiline_input_widget<S>::add_to_renderer()
 {
 	tr::rgba8 color{m_interp};
 	if (buffer.empty()) {
@@ -49,10 +49,10 @@ template <std::size_t S> void multiline_input_widget<S>::add_to_renderer()
 	std::ranges::fill(outline.colors, color);
 	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(fill.positions, {tl() + 2.0f, size() - 4.0f});
-	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, std::uint8_t(160 * opacity())});
+	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, u8(160 * opacity())});
 }
 
-template <std::size_t S> void multiline_input_widget<S>::update()
+template <usize S> void multiline_input_widget<S>::update()
 {
 	text_widget::update();
 	m_interp.update();
@@ -75,17 +75,17 @@ template <std::size_t S> void multiline_input_widget<S>::update()
 	}
 }
 
-template <std::size_t S> bool multiline_input_widget<S>::interactible() const
+template <usize S> bool multiline_input_widget<S>::interactible() const
 {
 	return m_scb();
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_action()
+template <usize S> void multiline_input_widget<S>::on_action()
 {
 	m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_hover()
+template <usize S> void multiline_input_widget<S>::on_hover()
 {
 	if (interactible()) {
 		m_hovered = true;
@@ -96,7 +96,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_hover()
 	}
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_unhover()
+template <usize S> void multiline_input_widget<S>::on_unhover()
 {
 	if (interactible()) {
 		m_hovered = false;
@@ -106,7 +106,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_unhover()
 	}
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_held()
+template <usize S> void multiline_input_widget<S>::on_held()
 {
 	if (interactible()) {
 		m_held = true;
@@ -114,14 +114,14 @@ template <std::size_t S> void multiline_input_widget<S>::on_held()
 	}
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_unheld()
+template <usize S> void multiline_input_widget<S>::on_unheld()
 {
 	if (interactible()) {
 		m_held = false;
 	}
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_selected()
+template <usize S> void multiline_input_widget<S>::on_selected()
 {
 	if (interactible()) {
 		m_selected = true;
@@ -134,7 +134,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_selected()
 	}
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_unselected()
+template <usize S> void multiline_input_widget<S>::on_unselected()
 {
 	if (interactible()) {
 		m_selected = false;
@@ -144,7 +144,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_unselected()
 	}
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_write(std::string_view input)
+template <usize S> void multiline_input_widget<S>::on_write(std::string_view input)
 {
 	if (tr::utf8::length(buffer) + tr::utf8::length(input) <= S) {
 		buffer.append(input);
@@ -158,7 +158,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_write(std::string_vi
 	}
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_enter()
+template <usize S> void multiline_input_widget<S>::on_enter()
 {
 	if (tr::utf8::length(buffer) < S &&
 		engine::count_lines(buffer, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
@@ -167,7 +167,7 @@ template <std::size_t S> void multiline_input_widget<S>::on_enter()
 	}
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_erase()
+template <usize S> void multiline_input_widget<S>::on_erase()
 {
 	if (!buffer.empty()) {
 		tr::utf8::pop_back(buffer);
@@ -175,24 +175,24 @@ template <std::size_t S> void multiline_input_widget<S>::on_erase()
 	}
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_clear()
+template <usize S> void multiline_input_widget<S>::on_clear()
 {
 	buffer.clear();
 	engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_copy()
+template <usize S> void multiline_input_widget<S>::on_copy()
 {
 	tr::system::set_clipboard_text(std::string{buffer}.c_str());
 }
 
-template <std::size_t S> void multiline_input_widget<S>::on_paste()
+template <usize S> void multiline_input_widget<S>::on_paste()
 {
 	try {
 		if (!tr::system::clipboard_empty()) {
 			std::string pasted{tr::system::clipboard_text()};
 			tr::static_string<S * 4> copy{buffer};
-			const std::size_t buffer_length{tr::utf8::length(buffer)};
+			const usize buffer_length{tr::utf8::length(buffer)};
 			copy += (buffer_length + tr::utf8::length(pasted) > S)
 						? std::string_view{pasted.begin(), tr::utf8::next(pasted.begin(), S - buffer_length)}
 						: pasted;

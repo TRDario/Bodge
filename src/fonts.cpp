@@ -270,7 +270,7 @@ glm::vec2 engine::text_size(std::string_view text, font font, tr::system::ttf_st
 	return glm::vec2{text_size} / render_scale();
 }
 
-std::size_t engine::count_lines(std::string_view text, font font, tr::system::ttf_style style, float size, float outline, float max_w)
+usize engine::count_lines(std::string_view text, font font, tr::system::ttf_style style, float size, float outline, float max_w)
 {
 	const int scaled_outline{int(outline * render_scale())};
 	if (max_w != tr::system::UNLIMITED_WIDTH) {
@@ -305,7 +305,7 @@ tr::bitmap engine::render_text(std::string_view text, font font, tr::system::ttf
 	return render;
 }
 
-tr::bitmap engine::render_gradient_glyph(std::uint32_t glyph, font font, tr::system::ttf_style style, float size, float outline)
+tr::bitmap engine::render_gradient_glyph(u32 glyph, font font, tr::system::ttf_style style, float size, float outline)
 {
 	const int scaled_outline{int(outline * render_scale())};
 
@@ -318,7 +318,7 @@ tr::bitmap engine::render_gradient_glyph(std::uint32_t glyph, font font, tr::sys
 	tr::bitmap fill{font_ref.render(glyph, "FFFFFF"_rgba8)};
 	for (tr::bitmap::mut_it it = fill.begin(); it != fill.end(); ++it) {
 		const tr::rgba8 value{*it};
-		std::uint8_t shade{std::uint8_t(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};
+		u8 shade{u8(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};
 		*it = tr::rgba8{shade, shade, shade, value.a};
 	}
 	render.blit(glm::ivec2{scaled_outline}, fill.sub({{}, render.size() - 2 * scaled_outline}));

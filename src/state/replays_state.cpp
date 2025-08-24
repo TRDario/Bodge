@@ -3,7 +3,7 @@
 
 // clang-format off
 
-constexpr std::size_t REPLAYS_PER_PAGE{5};
+constexpr usize REPLAYS_PER_PAGE{5};
 
 constexpr tag T_TITLE{"replays"};
 constexpr tag T_NO_REPLAYS_FOUND{"no_replays_found"};
@@ -88,7 +88,7 @@ std::unique_ptr<tr::state> replays_state::update(tr::duration)
 		}
 		else if (m_timer == 0.25_s) {
 			std::map<std::string, replay_header>::iterator it{std::next(m_replays.begin(), REPLAYS_PER_PAGE * m_page)};
-			for (std::size_t i = 0; i < REPLAYS_PER_PAGE; ++i) {
+			for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
 				replay_widget& widget{m_ui.as<replay_widget>(REPLAY_TAGS[i])};
 				widget.it = it != m_replays.end() ? std::optional{it++} : std::nullopt;
 				widget.pos = {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y};
@@ -134,9 +134,7 @@ void replays_state::set_up_ui()
 		[this] { return m_substate == substate::IN_REPLAYS && m_page > 0; },
 	};
 	const status_callback page_i_scb{
-		[this] {
-			return m_substate == substate::IN_REPLAYS && m_page < (std::max(m_replays.size() - 1, std::size_t{0}) / REPLAYS_PER_PAGE);
-		},
+		[this] { return m_substate == substate::IN_REPLAYS && m_page < (std::max(m_replays.size() - 1, 0_uz) / REPLAYS_PER_PAGE); },
 	};
 
 	// ACTION CALLBACKS
@@ -177,7 +175,7 @@ void replays_state::set_up_ui()
 	// TEXT CALLBACKS
 
 	const text_callback page_c_tcb{
-		[this] { return std::format("{}/{}", m_page + 1, std::max(m_replays.size() - 1, std::size_t{0}) / REPLAYS_PER_PAGE + 1); },
+		[this] { return TR_FMT::format("{}/{}", m_page + 1, std::max(m_replays.size() - 1, 0_uz) / REPLAYS_PER_PAGE + 1); },
 	};
 
 	//
@@ -192,7 +190,7 @@ void replays_state::set_up_ui()
 		return;
 	}
 	std::map<std::string, replay_header>::iterator it{m_replays.begin()};
-	for (std::size_t i = 0; i < REPLAYS_PER_PAGE; ++i) {
+	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		const std::optional<std::map<std::string, replay_header>::iterator> opt_it{it != m_replays.end() ? std::optional{it++}
 																										 : std::nullopt};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {i % 2 == 0 ? 400 : 600, 183 + 150 * i}, {500, 183 + 150 * i}, 0.5_s};
@@ -206,7 +204,7 @@ void replays_state::set_up_ui()
 
 void replays_state::set_up_page_switch_animation()
 {
-	for (std::size_t i = 0; i < REPLAYS_PER_PAGE; i++) {
+	for (usize i = 0; i < REPLAYS_PER_PAGE; i++) {
 		widget& widget{m_ui[REPLAY_TAGS[i]]};
 		widget.pos.change(tween::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.25_s);
 		widget.hide(0.25_s);
@@ -221,7 +219,7 @@ void replays_state::set_up_exit_animation()
 		m_ui[T_NO_REPLAYS_FOUND].pos.change(tween::CUBIC, {400, 467}, 0.5_s);
 	}
 	else {
-		for (std::size_t i = 0; i < REPLAYS_PER_PAGE; i++) {
+		for (usize i = 0; i < REPLAYS_PER_PAGE; i++) {
 			widget& widget{m_ui[REPLAY_TAGS[i]]};
 			widget.pos.change(tween::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.5_s);
 		}

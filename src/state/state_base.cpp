@@ -24,8 +24,7 @@ std::unique_ptr<tr::state> state::update(tr::duration)
 ///////////////////////////////////////////////////////////// MAIN MENU STATE /////////////////////////////////////////////////////////////
 
 main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts)
-	: state{selection_tree, shortcuts}
-	, m_background_game{std::make_unique<game>(engine::pick_menu_gamemode(), engine::rng.generate<std::uint64_t>())}
+	: state{selection_tree, shortcuts}, m_background_game{std::make_unique<game>(engine::pick_menu_gamemode(), engine::rng.generate<u64>())}
 {
 }
 

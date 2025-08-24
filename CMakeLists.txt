@@ -6,9 +6,10 @@ include(FetchContent)
 FetchContent_Declare(
 	tr
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr.git
-    GIT_TAG v1.0.0
+    GIT_TAG v1.0.1
 ) 
 FetchContent_MakeAvailable(tr)
+include(${tr_SOURCE_DIR}/check_compiler.cmake)
 
 add_executable(
     Bodge
@@ -23,28 +24,27 @@ add_executable(
         src/ui/replay_score_widget.cpp src/ui/text_button_widget.cpp src/ui/ui_manager.cpp src/ui/widget_base.cpp
     src/gamemode.cpp src/global.cpp src/localization.cpp src/replay.cpp src/score.cpp src/settings.cpp
 )
-target_compile_features(Bodge PUBLIC cxx_std_20)
-if(TR_ENABLE_ASSERTS)
-	target_compile_definitions(Bodge PRIVATE TR_ENABLE_ASSERTS)
-endif()
-if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")) OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	target_compile_options (Bodge PRIVATE -Wall -Wextra -Wpedantic -Wshadow)
-	target_compile_options (Bodge PRIVATE -fno-trapping-math -fno-math-errno -fno-signed-zeros -fassociative-math -ffp-contract=fast)
-    target_link_options(Bodge PRIVATE -fuse-ld=lld)
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
-	target_compile_options (Bodge PRIVATE /clang:-Wall /clang:-Wextra /clang:-Wpedantic /clang:-Wshadow)
-	target_compile_options (Bodge PRIVATE /clang:-fno-trapping-math /clang:-fno-math-errno /clang:-fno-signed-zeros /clang:-fassociative-math /clang:-ffp-contract=fast)
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	target_compile_options(Bodge PUBLIC /Zc:preprocessor /W3 /WX)
-endif()
+tr_target_template(Bodge)
 target_link_libraries(Bodge tr::tr)
-target_precompile_headers (Bodge PRIVATE <tr/utility.hpp>)
+target_precompile_headers(Bodge PRIVATE <tr/utility.hpp>)
 
-file(COPY data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY metadata/readme.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+# Post-build steps.
 
 if(WIN32)
     target_sources(Bodge PRIVATE metadata/icon.rc)
 else()
-    # to-do:
+    if(TR_HAS_CLANG)
+        add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,llvm-strip,true> $<TARGET_FILE:Bodge>)
+    else()
+        add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,strip,true> $<TARGET_FILE:Bodge>)
+    endif()
 endif()
+
+# Copying to 'final' if Release.
+
+add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
+                   -E copy "$<TARGET_FILE:Bodge>" "${CMAKE_CURRENT_BINARY_DIR}/final/$<TARGET_FILE_NAME:Bodge>")
+add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
+                   -E copy_directory data "${CMAKE_CURRENT_BINARY_DIR}/final/data")
+add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
+                   -E copy "${CMAKE_CURRENT_SOURCE_DIR}/metadata/readme.txt" "${CMAKE_CURRENT_BINARY_DIR}/final/readme.txt")

@@ -190,40 +190,40 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		},
 	};
 	const action_callback window_size_d_acb{
-		[&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, std::uint16_t(ws - engine::keymods_choose(1, 10, 100))); },
+		[&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, u16(ws - engine::keymods_choose(1, 10, 100))); },
 	};
 	const action_callback window_size_i_acb{
-		[&ws = m_pending.window_size] { ws = std::min(max_window_size(), std::uint16_t(ws + engine::keymods_choose(1, 10, 100))); },
+		[&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + engine::keymods_choose(1, 10, 100))); },
 	};
 	const action_callback msaa_d_acb{
-		[&msaa = m_pending.msaa] { msaa = msaa == 2 ? NO_MSAA : std::uint8_t(msaa / 2); },
+		[&msaa = m_pending.msaa] { msaa = msaa == 2 ? NO_MSAA : u8(msaa / 2); },
 	};
 	const action_callback msaa_i_acb{
-		[&msaa = m_pending.msaa] { msaa = msaa == NO_MSAA ? 2 : std::uint8_t(msaa * 2); },
+		[&msaa = m_pending.msaa] { msaa = msaa == NO_MSAA ? 2 : u8(msaa * 2); },
 	};
 	const action_callback primary_hue_d_acb{
-		[&ph = m_pending.primary_hue] { ph = std::uint16_t((ph - engine::keymods_choose(1, 10, 100) + 360) % 360); },
+		[&ph = m_pending.primary_hue] { ph = u16((ph - engine::keymods_choose(1, 10, 100) + 360) % 360); },
 	};
 	const action_callback primary_hue_i_acb{
-		[&ph = m_pending.primary_hue] { ph = std::uint16_t((ph + engine::keymods_choose(1, 10, 100)) % 360); },
+		[&ph = m_pending.primary_hue] { ph = u16((ph + engine::keymods_choose(1, 10, 100)) % 360); },
 	};
 	const action_callback secondary_hue_d_acb{
-		[&sh = m_pending.secondary_hue] { sh = std::uint16_t((sh - engine::keymods_choose(1, 10, 100) + 360) % 360); },
+		[&sh = m_pending.secondary_hue] { sh = u16((sh - engine::keymods_choose(1, 10, 100) + 360) % 360); },
 	};
 	const action_callback secondary_hue_i_acb{
-		[&sh = m_pending.secondary_hue] { sh = std::uint16_t((sh + engine::keymods_choose(1, 10, 100)) % 360); },
+		[&sh = m_pending.secondary_hue] { sh = u16((sh + engine::keymods_choose(1, 10, 100)) % 360); },
 	};
 	const action_callback sfx_volume_d_acb{
-		[&sv = m_pending.sfx_volume] { sv = std::uint8_t(std::max(sv - engine::keymods_choose(1, 10, 25), 0)); },
+		[&sv = m_pending.sfx_volume] { sv = u8(std::max(sv - engine::keymods_choose(1, 10, 25), 0)); },
 	};
 	const action_callback sfx_volume_i_acb{
-		[&sv = m_pending.sfx_volume] { sv = std::uint8_t(std::min(sv + engine::keymods_choose(1, 10, 25), 100)); },
+		[&sv = m_pending.sfx_volume] { sv = u8(std::min(sv + engine::keymods_choose(1, 10, 25), 100)); },
 	};
 	const action_callback music_volume_d_acb{
-		[&mv = m_pending.music_volume] { mv = std::uint8_t(std::max(mv - engine::keymods_choose(1, 10, 25), 0)); },
+		[&mv = m_pending.music_volume] { mv = u8(std::max(mv - engine::keymods_choose(1, 10, 25), 0)); },
 	};
 	const action_callback music_volume_i_acb{
-		[&mv = m_pending.music_volume] { mv = std::uint8_t(std::min(mv + engine::keymods_choose(1, 10, 25), 100)); },
+		[&mv = m_pending.music_volume] { mv = u8(std::min(mv + engine::keymods_choose(1, 10, 25), 100)); },
 	};
 	const action_callback language_c_acb{
 		[this] {
@@ -267,14 +267,14 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	// VALIDATION CALLBACKS
 
-	const validation_callback<std::uint16_t> window_size_c_vcb{
-		[](std::uint16_t v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); },
+	const validation_callback<u16> window_size_c_vcb{
+		[](u16 v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); },
 	};
-	const validation_callback<std::uint16_t> hue_c_vcb{
-		[](std::uint16_t v) { return v % 360; },
+	const validation_callback<u16> hue_c_vcb{
+		[](int v) { return u16(v % 360); },
 	};
-	const validation_callback<std::uint8_t> volume_c_vcb{
-		[](std::uint8_t v) { return std::min(v, std::uint8_t(100)); },
+	const validation_callback<u8> volume_c_vcb{
+		[](int v) { return u8(std::min(v, 100)); },
 	};
 
 	// TEXT CALLBACKS
@@ -283,7 +283,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 		[&dm = m_pending.display_mode] { return std::string{engine::loc[dm == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
 	};
 	const text_callback msaa_c_tcb{
-		[this] { return m_pending.msaa == NO_MSAA ? "--" : std::format("x{}", m_pending.msaa); },
+		[this] { return m_pending.msaa == NO_MSAA ? "--" : TR_FMT::format("x{}", m_pending.msaa); },
 	};
 	const text_callback language_c_tcb{
 		[this] { return engine::languages.contains(m_pending.language) ? engine::languages[m_pending.language].name : "???"; },
@@ -293,7 +293,7 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::system::ttf_style::NORMAL, 64);
-	for (std::size_t i = 0; i < LABELS.size(); ++i) {
+	for (usize i = 0; i < LABELS.size(); ++i) {
 		const label_info& label{LABELS[i]};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 196 + i * 75}, {15, 196 + i * 75}, 0.5_s};
 		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? "505050A0"_rgba8
@@ -306,8 +306,8 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 									 display_mode_c_tcb, font::LANGUAGE, 48, scb, display_mode_c_acb, sound::CONFIRM);
 	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, WINDOW_SIZE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, window_size_d_scb,
 							   window_size_d_acb);
-	m_ui.emplace<numeric_input_widget<std::uint16_t, 4, "{}", "{}">>(T_WINDOW_SIZE_C, WINDOW_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
-																	 m_ui, m_pending.window_size, window_size_c_scb, window_size_c_vcb);
+	m_ui.emplace<numeric_input_widget<u16, 4, "{}", "{}">>(T_WINDOW_SIZE_C, WINDOW_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														   m_pending.window_size, window_size_c_scb, window_size_c_vcb);
 	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, WINDOW_SIZE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, window_size_i_scb,
 							   window_size_i_acb);
 	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, msaa_d_scb, msaa_d_acb);
@@ -315,32 +315,32 @@ settings_state::settings_state(std::unique_ptr<game>&& game)
 							   48);
 	m_ui.emplace<arrow_widget>(T_MSAA_I, MSAA_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, msaa_i_scb, msaa_i_acb);
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, scb, primary_hue_d_acb);
-	m_ui.emplace<numeric_input_widget<std::uint16_t, 3, "{}", "{}">>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
-																	 m_ui, m_pending.primary_hue, scb, hue_c_vcb);
+	m_ui.emplace<numeric_input_widget<u16, 3, "{}", "{}">>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														   m_pending.primary_hue, scb, hue_c_vcb);
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, PRIMARY_HUE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, scb, primary_hue_i_acb);
 	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, PRIMARY_HUE_PREVIEW_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s,
 									   m_pending.primary_hue);
 	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, SECONDARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, scb, secondary_hue_d_acb);
-	m_ui.emplace<numeric_input_widget<std::uint16_t, 3, "{}", "{}">>(T_SECONDARY_HUE_C, SECONDARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s,
-																	 48, m_ui, m_pending.secondary_hue, scb, hue_c_vcb);
+	m_ui.emplace<numeric_input_widget<u16, 3, "{}", "{}">>(T_SECONDARY_HUE_C, SECONDARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														   m_pending.secondary_hue, scb, hue_c_vcb);
 	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, SECONDARY_HUE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, scb, secondary_hue_i_acb);
 	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, SECONDARY_HUE_PREVIEW_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s,
 									   m_pending.secondary_hue);
 	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_D, SFX_VOLUME_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, sfx_volume_d_scb,
 							   sfx_volume_d_acb);
-	m_ui.emplace<numeric_input_widget<std::uint8_t, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, SFX_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
-																	  m_ui, m_pending.sfx_volume, scb, volume_c_vcb);
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, SFX_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+															m_pending.sfx_volume, scb, volume_c_vcb);
 	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_I, SFX_VOLUME_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, sfx_volume_i_scb,
 							   sfx_volume_i_acb);
 	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_D, MUSIC_VOLUME_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, music_volume_d_scb,
 							   music_volume_d_acb);
-	m_ui.emplace<numeric_input_widget<std::uint8_t, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, MUSIC_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s,
-																	  48, m_ui, m_pending.music_volume, scb, volume_c_vcb);
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, MUSIC_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+															m_pending.music_volume, scb, volume_c_vcb);
 	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_I, MUSIC_VOLUME_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, music_volume_i_scb,
 							   music_volume_i_acb);
 	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, LANGUAGE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, language_c_tcb,
 									 font::LANGUAGE_PREVIEW, 48, language_c_scb, language_c_acb, sound::CONFIRM);
-	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
+	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const tweener<glm::vec2> move_in{tween::CUBIC, BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s};
 		const sound sound{i == 1 ? sound::CONFIRM : sound::CANCEL};
 		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,

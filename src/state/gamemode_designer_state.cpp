@@ -194,7 +194,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	// TEXT CALLBACKS
 
 	text_callback author_tcb{
-		string_text_callback{std::format("{}: {}", engine::loc["by"], engine::scorefile.name)},
+		string_text_callback{TR_FMT::format("{}: {}", engine::loc["by"], engine::scorefile.name)},
 	};
 	text_callback song_c_tcb{
 		[&] { return std::string{m_pending.song}; },
@@ -224,7 +224,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 							   tr::system::ttf_style::NORMAL, 48);
 	m_ui.emplace<text_button_widget>(T_SONG_C, SONG_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, song_c_tcb, font::LANGUAGE, 64, scb,
 									 song_c_acb, sound::CONFIRM);
-	for (std::size_t i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
+	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
 		const tweener<glm::vec2> move_in{tween::CUBIC, BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s};
 		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,

@@ -5,7 +5,7 @@
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
 
-game::game(const ::gamemode& gamemode, std::uint64_t rng_seed)
+game::game(const ::gamemode& gamemode, u64 rng_seed)
 	: m_gamemode{gamemode}
 	, m_rng{rng_seed}
 	, m_next_ball_size{gamemode.ball.initial_size}
@@ -50,10 +50,10 @@ void game::update(const glm::vec2& input)
 		add_new_ball();
 	}
 
-	for (std::uint8_t i = 0; i < m_balls.size(); ++i) {
+	for (u8 i = 0; i < m_balls.size(); ++i) {
 		m_balls[i].update();
 		if (m_balls[i].tangible()) {
-			for (std::uint8_t j = i + 1; j < m_balls.size(); ++j) {
+			for (u8 j = i + 1; j < m_balls.size(); ++j) {
 				if (m_balls[j].tangible() && colliding(m_balls[i], m_balls[j])) {
 					handle_collision(m_balls[i], m_balls[j]);
 				}
@@ -115,7 +115,7 @@ void game::add_border_to_renderer() const
 
 /////////////////////////////////////////////////////////////// ACTIVE GAME ///////////////////////////////////////////////////////////////
 
-active_game::active_game(const ::gamemode& gamemode, std::uint64_t seed)
+active_game::active_game(const ::gamemode& gamemode, u64 seed)
 	: game{gamemode, seed}, m_replay{gamemode, seed}
 {
 }

@@ -4,12 +4,13 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Gamemode file version identifier.
-constexpr std::uint8_t GAMEMODE_VERSION{0};
+constexpr u8 GAMEMODE_VERSION{0};
 
 // The gamemodes that can appear in the main menu background.
 const std::array<gamemode, 3> BUILTIN_GAMEMODES{
 	gamemode{true, "gm_classic", "TRDario", "gm_classic_d", "classic", player_settings{}, ball_settings{3, 50, 8.334_s, 30, 0, 400, 10}},
-	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", "chonk", player_settings{2, 25, 0.1f}, ball_settings{5, 20, 19.59183674_s, 75, 0, 350, 25}},
+	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", "chonk", player_settings{2, 25, 0.1f},
+			 ball_settings{5, 20, 19.59183674_s, 75, 0, 350, 25}},
 	gamemode{true, "gm_swarm", "TRDario", "gm_swarm_d", "swarm", player_settings{2, 8, 0.05f},
 			 ball_settings{15, 50, 3.42857143_s, 10, 0, 250, 10}},
 };
@@ -25,7 +26,7 @@ constexpr std::array<gamemode, 4> MENU_GAMEMODES{
 
 bool player_settings::is_autoplay() const
 {
-	return starting_lives == std::numeric_limits<std::uint32_t>::max();
+	return starting_lives == std::numeric_limits<u32>::max();
 }
 
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
@@ -42,11 +43,11 @@ std::string_view gamemode::description_loc() const
 
 void gamemode::save_to_file() const
 {
-	std::filesystem::path path{engine::cli_settings.user_directory / "gamemodes" / std::format("{}.gmd", name)};
+	std::filesystem::path path{engine::cli_settings.user_directory / "gamemodes" / TR_FMT::format("{}.gmd", name)};
 	if (std::filesystem::exists(path)) {
 		int index{0};
 		do {
-			path = engine::cli_settings.user_directory / "gamemodes" / std::format("{}({}).gmd", name, index++);
+			path = engine::cli_settings.user_directory / "gamemodes" / TR_FMT::format("{}({}).gmd", name, index++);
 		} while (std::filesystem::exists(path));
 	}
 
@@ -54,7 +55,7 @@ void gamemode::save_to_file() const
 		std::ofstream file = tr::open_file_w(path, std::ios::binary);
 		std::ostringstream bufstream{std::ios::binary};
 		tr::binary_write(bufstream, *this);
-		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), engine::rng.generate<std::uint8_t>())};
+		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), engine::rng.generate<u8>())};
 		tr::binary_write(file, GAMEMODE_VERSION);
 		tr::binary_write(file, std::span{encrypted});
 
@@ -110,7 +111,7 @@ std::vector<gamemode> engine::load_gamemodes()
 					continue;
 				}
 				std::ifstream is{tr::open_file_r(path, std::ios::binary)};
-				if (tr::binary_read<std::uint8_t>(is) != GAMEMODE_VERSION) {
+				if (tr::binary_read<u8>(is) != GAMEMODE_VERSION) {
 					continue;
 				}
 				gamemodes.push_back(tr::binary_read<gamemode>(tr::decrypt(tr::flush_binary(is))));

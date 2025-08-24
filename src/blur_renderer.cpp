@@ -19,7 +19,7 @@ constexpr const char* FRAGMENT_SHADER_SRC{
 
 constexpr std::array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 
-const std::uint32_t RENDERER_ID{tr::gfx::alloc_renderer_id()};
+const u32 RENDERER_ID{tr::gfx::alloc_renderer_id()};
 
 //
 

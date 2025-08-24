@@ -230,7 +230,7 @@ void pause_state::set_up_full_ui()
 			set_up_exit_animation();
 		},
 	};
-	for (std::size_t i = 0; i < BUTTONS_REGULAR.size(); ++i) {
+	for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
@@ -269,7 +269,7 @@ void pause_state::set_up_limited_ui()
 			set_up_exit_animation();
 		},
 	};
-	for (std::size_t i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
+	for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
@@ -283,7 +283,7 @@ void pause_state::set_up_exit_animation()
 {
 	if (to_type(m_substate) == game_type::REGULAR) {
 		m_ui[T_PAUSED].pos.change(tween::CUBIC, {500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
-		for (std::size_t i = 0; i < BUTTONS_REGULAR.size(); ++i) {
+		for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 			widget& widget{m_ui[BUTTONS_REGULAR[i]]};
 			widget.pos.change(tween::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
@@ -292,7 +292,7 @@ void pause_state::set_up_exit_animation()
 	else {
 		widget& title{m_ui[to_type(m_substate) == game_type::GAMEMODE_DESIGNER_TEST ? T_TEST_PAUSED : T_REPLAY_PAUSED]};
 		title.pos.change(tween::CUBIC, {500, 400 - (BUTTONS_SPECIAL.size() + 1) * 30}, 0.5_s);
-		for (std::size_t i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
+		for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 			widget& widget{m_ui[BUTTONS_SPECIAL[i]]};
 			widget.pos.change(tween::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);

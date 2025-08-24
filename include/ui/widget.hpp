@@ -61,7 +61,7 @@ template <class T, tr::template_string_literal Fmt, tr::template_string_literal 
 	static std::string to_string(std::string_view str);
 };
 
-template <class T, std::size_t S, class Formatter> class basic_numeric_input_widget : public text_widget {
+template <class T, usize S, class Formatter> class basic_numeric_input_widget : public text_widget {
   public:
 	basic_numeric_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
 							   status_callback status_cb, validation_callback<T> validation_cb);
@@ -94,12 +94,12 @@ template <class T, std::size_t S, class Formatter> class basic_numeric_input_wid
 	bool m_selected;
 };
 
-template <class T, std::size_t S, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
+template <class T, usize S, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
 using numeric_input_widget = basic_numeric_input_widget<T, S, default_numeric_input_formatter<T, Fmt, BufferFmt>>;
 
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
-template <std::size_t S> class line_input_widget : public text_widget {
+template <usize S> class line_input_widget : public text_widget {
   public:
 	line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style, float font_size,
 					  status_callback status_cb, action_callback enter_cb, std::string_view initial_text);
@@ -135,10 +135,10 @@ template <std::size_t S> class line_input_widget : public text_widget {
 
 ////////////////////////////////////////////////////////// MULTILINE INPUT WIDGET /////////////////////////////////////////////////////////
 
-template <std::size_t S> class multiline_input_widget : public text_widget {
+template <usize S> class multiline_input_widget : public text_widget {
   public:
-	multiline_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width, std::uint8_t max_lines,
-						   float font_size, status_callback status_cb);
+	multiline_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width, u8 max_lines, float font_size,
+						   status_callback status_cb);
 
 	tr::static_string<S * 4> buffer;
 
@@ -164,7 +164,7 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
   private:
 	status_callback m_scb;
 	glm::vec2 m_size;
-	std::uint8_t m_max_lines;
+	u8 m_max_lines;
 	tweener<tr::rgba8> m_interp;
 	bool m_hovered;
 	bool m_held;
@@ -176,14 +176,14 @@ template <std::size_t S> class multiline_input_widget : public text_widget {
 class image_widget : public widget {
   public:
 	image_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
-				 tr::opt_ref<std::uint16_t> hue = std::nullopt);
+				 tr::opt_ref<u16> hue = std::nullopt);
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
 
   private:
 	tr::gfx::texture m_texture;
-	tr::opt_ref<std::uint16_t> m_hue;
+	tr::opt_ref<u16> m_hue;
 	int m_priority;
 };
 
@@ -191,13 +191,13 @@ class image_widget : public widget {
 
 class color_preview_widget : public widget {
   public:
-	color_preview_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::uint16_t& hue);
+	color_preview_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, u16& hue);
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
 
   private:
-	std::uint16_t& m_hue;
+	u16& m_hue;
 };
 
 /////////////////////////////////////////////////////////////// ARROW WIDGET //////////////////////////////////////////////////////////////
@@ -243,11 +243,11 @@ struct replay_playback_indicator_widget : public widget {
 /////////////////////////////////////////////////////////////// SCORE WIDGET //////////////////////////////////////////////////////////////
 
 struct score_widget : public text_widget {
-	static constexpr std::size_t DONT_SHOW_RANK{std::numeric_limits<std::size_t>::max()};
+	static constexpr usize DONT_SHOW_RANK{std::numeric_limits<usize>::max()};
 
-	score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::size_t rank, tr::opt_ref<score> score);
+	score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, usize rank, tr::opt_ref<score> score);
 
-	std::size_t rank;
+	usize rank;
 	tr::opt_ref<score> score;
 
 	glm::vec2 size() const override;

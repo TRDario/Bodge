@@ -15,7 +15,7 @@ enum class game_type {
 // Base game state.
 class game {
   public:
-	game(const gamemode& gamemode, std::uint64_t rng_seed);
+	game(const gamemode& gamemode, u64 rng_seed);
 	virtual ~game() = default;
 
 	const gamemode& gamemode() const;
@@ -47,7 +47,7 @@ class game {
 // Game that is actively being played.
 class active_game : public game {
   public:
-	active_game(const ::gamemode& gamemode, std::uint64_t seed = engine::rng.generate<std::uint64_t>());
+	active_game(const ::gamemode& gamemode, u64 seed = engine::rng.generate<u64>());
 
 	replay& replay();
 

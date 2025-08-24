@@ -52,7 +52,7 @@ constexpr std::array<tr::rgba8, 19> FAST_SPEED_COLORS{{
 	{144, 144, 144, 144}, {192, 192, 192, 192}, {168, 168, 168, 168}, {144, 144, 144, 144},
 }};
 
-constexpr std::array<std::uint16_t, 48> FAST_SPEED_INDICES{
+constexpr std::array<u16, 48> FAST_SPEED_INDICES{
 	0, 1,  7, 1, 7,  8, 1, 8,  9, 1, 9,  2, 2, 3,  9, 3, 10, 9, 3,  10, 4,  10, 11, 4,
 	4, 11, 5, 5, 11, 8, 8, 12, 5, 5, 12, 6, 6, 12, 0, 0, 12, 7, 13, 14, 15, 16, 17, 18,
 };
@@ -86,7 +86,7 @@ void replay_playback_indicator_widget::add_to_renderer()
 		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),
 						  mesh.positions.begin());
 		std::ranges::copy(FAST_SPEED_COLORS, mesh.colors.begin());
-		std::ranges::copy(FAST_SPEED_INDICES | std::views::transform([=](std::uint16_t i) -> std::uint16_t { return i + mesh.base_index; }),
+		std::ranges::copy(FAST_SPEED_INDICES | std::views::transform([=](u16 i) -> u16 { return i + mesh.base_index; }),
 						  mesh.indices.begin());
 	}
 	else {

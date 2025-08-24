@@ -11,16 +11,16 @@ void default_numeric_input_formatter<T, Fmt, BufferFmt>::from_string(std::common
 template <class T, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
 std::string default_numeric_input_formatter<T, Fmt, BufferFmt>::to_string(T v)
 {
-	return std::format(Fmt, v);
+	return TR_FMT::format(Fmt, v);
 }
 
 template <class T, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
 std::string default_numeric_input_formatter<T, Fmt, BufferFmt>::to_string(std::string_view str)
 {
-	return std::format(BufferFmt, str);
+	return TR_FMT::format(BufferFmt, str);
 }
 
-template <class T, std::size_t S, class Formatter>
+template <class T, usize S, class Formatter>
 basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size,
 												 ui_manager& ui, T& ref, status_callback status_cb,
 												 validation_callback<T> validation_cb)
@@ -59,12 +59,12 @@ basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(tweener<
 {
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::add_to_renderer()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::add_to_renderer()
 {
 	text_widget::add_to_renderer_raw(m_interp);
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::update()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::update()
 {
 	text_widget::update();
 	m_interp.update();
@@ -87,17 +87,17 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	}
 }
 
-template <class T, std::size_t S, class Formatter> bool basic_numeric_input_widget<T, S, Formatter>::interactible() const
+template <class T, usize S, class Formatter> bool basic_numeric_input_widget<T, S, Formatter>::interactible() const
 {
 	return m_scb();
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_action()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_action()
 {
 	m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_hover()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_hover()
 {
 	if (interactible()) {
 		m_hovered = true;
@@ -108,7 +108,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	}
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_unhover()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_unhover()
 {
 	if (interactible()) {
 		m_hovered = false;
@@ -118,7 +118,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	}
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_held()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_held()
 {
 	if (interactible()) {
 		m_held = true;
@@ -126,14 +126,14 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	}
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_unheld()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_unheld()
 {
 	if (interactible()) {
 		m_held = false;
 	}
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_selected()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_selected()
 {
 	if (interactible()) {
 		m_selected = true;
@@ -148,7 +148,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	}
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_unselected()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_unselected()
 {
 	if (interactible()) {
 		m_selected = false;
@@ -163,7 +163,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	}
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_write(std::string_view input)
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_write(std::string_view input)
 {
 	if (input.size() == 1 && (std::isdigit(input.front()) || input.front() == '.') && m_buffer.size() < S) {
 		m_buffer.append(input);
@@ -171,12 +171,12 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	}
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_enter()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_enter()
 {
 	m_ui.clear_selection();
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_erase()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_erase()
 {
 	if (!m_buffer.empty()) {
 		m_buffer.pop_back();
@@ -184,7 +184,7 @@ template <class T, std::size_t S, class Formatter> void basic_numeric_input_widg
 	}
 }
 
-template <class T, std::size_t S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_clear()
+template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_clear()
 {
 	m_buffer.clear();
 	engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));

@@ -187,7 +187,7 @@ class replays_state : public main_menu_state {
 	};
 
 	substate m_substate;
-	std::uint16_t m_page;
+	u16 m_page;
 	std::map<std::string, replay_header> m_replays;
 	std::map<std::string, replay_header>::iterator m_selected;
 
@@ -333,7 +333,7 @@ class game_over_state : public game_menu_state {
 
 //////////////////////////////////////////////////////////// SAVE SCORE STATE /////////////////////////////////////////////////////////////
 
-enum class save_screen_flags : std::uint8_t {
+enum class save_screen_flags : u8 {
 	NONE = 0x0,
 	GAME_OVER = 0x4,
 	RESTARTING = 0x8,

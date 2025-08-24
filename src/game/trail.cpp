@@ -8,7 +8,7 @@ trail::trail(const glm::vec2& value)
 
 //
 
-const glm::vec2& trail::operator[](std::size_t i) const
+const glm::vec2& trail::operator[](usize i) const
 {
 	assert(i < SIZE);
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "widget.hpp"
 
-template <std::size_t S>
+template <usize S>
 line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style,
 										float font_size, status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
 	: text_widget{pos,
@@ -24,7 +24,7 @@ line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignm
 {
 }
 
-template <std::size_t S> void line_input_widget<S>::add_to_renderer()
+template <usize S> void line_input_widget<S>::add_to_renderer()
 {
 	if (buffer.empty()) {
 		tr::rgba8 color{m_interp};
@@ -38,7 +38,7 @@ template <std::size_t S> void line_input_widget<S>::add_to_renderer()
 	}
 }
 
-template <std::size_t S> void line_input_widget<S>::update()
+template <usize S> void line_input_widget<S>::update()
 {
 	text_widget::update();
 	m_interp.update();
@@ -61,17 +61,17 @@ template <std::size_t S> void line_input_widget<S>::update()
 	}
 }
 
-template <std::size_t S> bool line_input_widget<S>::interactible() const
+template <usize S> bool line_input_widget<S>::interactible() const
 {
 	return m_scb();
 }
 
-template <std::size_t S> void line_input_widget<S>::on_action()
+template <usize S> void line_input_widget<S>::on_action()
 {
 	m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 }
 
-template <std::size_t S> void line_input_widget<S>::on_hover()
+template <usize S> void line_input_widget<S>::on_hover()
 {
 	if (interactible()) {
 		m_hovered = true;
@@ -82,7 +82,7 @@ template <std::size_t S> void line_input_widget<S>::on_hover()
 	}
 }
 
-template <std::size_t S> void line_input_widget<S>::on_unhover()
+template <usize S> void line_input_widget<S>::on_unhover()
 {
 	if (interactible()) {
 		m_hovered = false;
@@ -92,7 +92,7 @@ template <std::size_t S> void line_input_widget<S>::on_unhover()
 	}
 }
 
-template <std::size_t S> void line_input_widget<S>::on_held()
+template <usize S> void line_input_widget<S>::on_held()
 {
 	if (interactible()) {
 		m_held = true;
@@ -100,14 +100,14 @@ template <std::size_t S> void line_input_widget<S>::on_held()
 	}
 }
 
-template <std::size_t S> void line_input_widget<S>::on_unheld()
+template <usize S> void line_input_widget<S>::on_unheld()
 {
 	if (interactible()) {
 		m_held = false;
 	}
 }
 
-template <std::size_t S> void line_input_widget<S>::on_selected()
+template <usize S> void line_input_widget<S>::on_selected()
 {
 	if (interactible()) {
 		m_selected = true;
@@ -120,7 +120,7 @@ template <std::size_t S> void line_input_widget<S>::on_selected()
 	}
 }
 
-template <std::size_t S> void line_input_widget<S>::on_unselected()
+template <usize S> void line_input_widget<S>::on_unselected()
 {
 	if (interactible()) {
 		m_selected = false;
@@ -130,7 +130,7 @@ template <std::size_t S> void line_input_widget<S>::on_unselected()
 	}
 }
 
-template <std::size_t S> void line_input_widget<S>::on_write(std::string_view input)
+template <usize S> void line_input_widget<S>::on_write(std::string_view input)
 {
 	if (tr::utf8::length(buffer) + tr::utf8::length(input) <= S) {
 		buffer.append(input);
@@ -138,12 +138,12 @@ template <std::size_t S> void line_input_widget<S>::on_write(std::string_view in
 	}
 }
 
-template <std::size_t S> void line_input_widget<S>::on_enter()
+template <usize S> void line_input_widget<S>::on_enter()
 {
 	m_enter_cb();
 }
 
-template <std::size_t S> void line_input_widget<S>::on_erase()
+template <usize S> void line_input_widget<S>::on_erase()
 {
 	if (!buffer.empty()) {
 		tr::utf8::pop_back(buffer);
@@ -151,20 +151,20 @@ template <std::size_t S> void line_input_widget<S>::on_erase()
 	}
 }
 
-template <std::size_t S> void line_input_widget<S>::on_clear()
+template <usize S> void line_input_widget<S>::on_clear()
 {
 	buffer.clear();
 	engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 }
 
-template <std::size_t S> void line_input_widget<S>::on_copy()
+template <usize S> void line_input_widget<S>::on_copy()
 {
 	tr::system::set_clipboard_text(std::string{buffer});
 }
 
-template <std::size_t S> void line_input_widget<S>::on_paste()
+template <usize S> void line_input_widget<S>::on_paste()
 {
-	const std::size_t buffer_length{tr::utf8::length(buffer)};
+	const usize buffer_length{tr::utf8::length(buffer)};
 	if (!tr::system::clipboard_empty() && buffer_length < S) {
 		std::string pasted{tr::system::clipboard_text()};
 		std::erase(pasted, '\n');

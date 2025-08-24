@@ -4,8 +4,8 @@
 /////////////////////////////////////////////////////////////// SCORE FLAGS ///////////////////////////////////////////////////////////////
 
 struct score_flags {
-	std::uint32_t exited_prematurely : 1;
-	std::uint32_t modified_game_speed : 1;
+	u32 exited_prematurely : 1;
+	u32 modified_game_speed : 1;
 };
 template <> struct tr::binary_reader<score_flags> : tr::default_binary_reader<score_flags> {};
 template <> struct tr::binary_writer<score_flags> : tr::default_binary_writer<score_flags> {};
@@ -14,7 +14,7 @@ template <> struct tr::binary_writer<score_flags> : tr::default_binary_writer<sc
 
 struct score {
 	tr::static_string<255 * 4> description;
-	std::int64_t unix_timestamp;
+	i64 unix_timestamp;
 	ticks result;
 	score_flags flags;
 

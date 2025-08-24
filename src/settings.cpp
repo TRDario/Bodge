@@ -8,7 +8,7 @@ template <> struct tr::binary_writer<settings> : tr::default_binary_writer<setti
 //
 
 // Settings file version identifier.
-constexpr std::uint8_t SETTINGS_VERSION{0};
+constexpr u8 SETTINGS_VERSION{0};
 
 //
 
@@ -17,10 +17,10 @@ namespace engine {
 	void validate_settings();
 } // namespace engine
 
-std::uint16_t max_window_size()
+u16 max_window_size()
 {
 	const glm::ivec2 display_size{tr::system::display_size()};
-	return std::uint16_t(std::min(display_size.x, display_size.y));
+	return u16(std::min(display_size.x, display_size.y));
 }
 
 //
@@ -89,7 +89,7 @@ void engine::raw_load_settings()
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 		std::span<const std::byte> data{raw};
-		if (tr::binary_read<std::uint8_t>(data) != SETTINGS_VERSION) {
+		if (tr::binary_read<u8>(data) != SETTINGS_VERSION) {
 			LOG(tr::severity::ERROR, "Failed to load settings.", path.string());
 			LOG_CONTINUE("From: '{}'", path.string());
 			LOG_CONTINUE("Wrong settings file version.");
@@ -113,18 +113,18 @@ void engine::validate_settings()
 		LOG(tr::severity::WARN, "Clamped window size from {} to {}.", settings.window_size, clamped_window_size);
 		settings.window_size = clamped_window_size;
 	}
-	const std::uint8_t adjusted{std::clamp(settings.msaa, NO_MSAA, tr::system::max_msaa())};
+	const u8 adjusted{std::clamp(settings.msaa, NO_MSAA, tr::system::max_msaa())};
 	if (adjusted != settings.msaa) {
 		LOG(tr::severity::WARN, "Adjusted MSAA from x{:d} to x{:d}.", settings.msaa, adjusted);
 		settings.msaa = adjusted;
 	}
 	if (settings.primary_hue >= 360) {
-		const std::uint16_t clamped{std::uint16_t(settings.primary_hue % 360)};
+		const u16 clamped{u16(settings.primary_hue % 360)};
 		LOG(tr::severity::WARN, "Clamped primary hue from {} to {}.", settings.primary_hue, clamped);
 		settings.primary_hue = clamped;
 	}
 	if (settings.secondary_hue >= 360) {
-		const std::uint16_t clamped{std::uint16_t(settings.secondary_hue % 360)};
+		const u16 clamped{u16(settings.secondary_hue % 360)};
 		LOG(tr::severity::WARN, "Clamped secondary hue from {} to {}.", settings.secondary_hue, clamped);
 		settings.secondary_hue = clamped;
 	}
@@ -152,7 +152,7 @@ void engine::save_settings()
 		std::ostringstream buffer;
 		tr::binary_write(buffer, SETTINGS_VERSION);
 		tr::binary_write(buffer, settings);
-		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rng.generate<std::uint8_t>())};
+		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rng.generate<u8>())};
 		tr::binary_write(file, std::span{encrypted});
 		LOG(tr::severity::INFO, "Saved settings.");
 		LOG_CONTINUE("To: '{}'", path.string());

@@ -96,7 +96,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 		[&sl = m_pending.player.starting_lives] { sl = std::max(int(sl - engine::keymods_choose(1, 5, 10)), 0); },
 	};
 	const action_callback starting_lives_i_acb{
-		[&sl = m_pending.player.starting_lives] { sl = std::min(sl + engine::keymods_choose(1, 5, 10), std::uint32_t{255}); },
+		[&sl = m_pending.player.starting_lives] { sl = std::min(sl + engine::keymods_choose(1, 5, 10), 255_u32); },
 	};
 	const action_callback hitbox_radius_d_acb{
 		[&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - engine::keymods_choose(1, 5, 10), 1.0f); },
@@ -120,8 +120,8 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 
 	// VALIDATION CALLBACKS
 
-	const validation_callback<std::uint32_t> starting_lives_c_vcb{
-		[](std::uint32_t v) { return std::clamp<std::uint32_t>(v, 0, 255); },
+	const validation_callback<u32> starting_lives_c_vcb{
+		[](u32 v) { return std::clamp(v, 0_u32, 255_u32); },
 	};
 	const validation_callback<float> hitbox_radius_c_vcb{
 		[](float v) { return std::clamp(v, 1.0f, 100.0f); },
@@ -138,8 +138,8 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 							   tr::system::ttf_style::NORMAL, 32);
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, STARTING_LIVES_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_lives_d_scb,
 							   starting_lives_d_acb);
-	m_ui.emplace<numeric_input_widget<std::uint32_t, 3, "{}", "{}">>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s,
-																	 48, m_ui, m_pending.player.starting_lives, scb, starting_lives_c_vcb);
+	m_ui.emplace<numeric_input_widget<u32, 3, "{}", "{}">>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														   m_pending.player.starting_lives, scb, starting_lives_c_vcb);
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, STARTING_LIVES_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, starting_lives_i_scb,
 							   starting_lives_i_acb);
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, HITBOX_RADIUS_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, hitbox_radius_d_scb,
@@ -154,7 +154,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 																 m_ui, m_pending.player.inertia_factor, scb, inertia_factor_c_vcb);
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_I, INERTIA_FACTOR_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, inertia_factor_i_scb,
 							   inertia_factor_i_acb);
-	for (std::size_t i = 0; i < LABELS.size(); ++i) {
+	for (usize i = 0; i < LABELS.size(); ++i) {
 		const label_info& label{LABELS[i]};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 450 + i * 75}, {15, 450 + i * 75}, 0.5_s};
 		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},

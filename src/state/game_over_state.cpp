@@ -95,7 +95,7 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in, tic
 	}
 	else {
 		pb_tcb = string_text_callback{
-			std::format("{}: {}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(m_game->gamemode())))};
+			TR_FMT::format("{}: {}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(m_game->gamemode())))};
 	}
 
 	//
@@ -106,7 +106,7 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in, tic
 							   string_text_callback{timer_text(m_game->final_time())}, tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_PERSONAL_BEST, pb_move_in, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, std::move(pb_tcb),
 							   tr::system::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
-	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
+	for (usize i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		const tweener<glm::vec2> pos{tween::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
@@ -198,7 +198,7 @@ void game_over_state::set_up_exit_animation()
 	widget& pb{m_ui[T_PERSONAL_BEST]};
 	time.pos.change(tween::CUBIC, {400, glm::vec2{time.pos}.y}, 0.5_s);
 	pb.pos.change(tween::CUBIC, {600, glm::vec2{pb.pos}.y}, 0.5_s);
-	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
+	for (usize i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		widget& widget{m_ui[BUTTONS[i]]};
 		widget.pos.change(tween::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);

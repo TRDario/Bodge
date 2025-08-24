@@ -126,7 +126,7 @@ void text_widget::update_cache() const
 		if (!m_cache || m_cache->texture.size().x < render.size().x || m_cache->texture.size().y < render.size().y) {
 			m_cache.emplace(tr::gfx::texture{render}, render.size(), std::string{text});
 			if (tr::gfx::debug()) {
-				m_cache->texture.set_label(std::format("(Bodge) Widget texture"));
+				m_cache->texture.set_label(TR_FMT::format("(Bodge) Widget texture"));
 			}
 		}
 		else {

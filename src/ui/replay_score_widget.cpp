@@ -11,11 +11,11 @@ namespace engine {
 
 void engine::add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity)
 {
-	color = {color.r, color.g, color.b, std::uint8_t(color.a * opacity)};
+	color = {color.r, color.g, color.b, u8(color.a * opacity)};
 
 	tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
-	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<std::uint8_t>(opacity)});
+	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
 	mesh = tr::gfx::renderer_2d::new_color_outline(layer::UI, 4);
 	tr::fill_rect_outline_vtx(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2.0f);
 	std::ranges::fill(mesh.colors, color);
@@ -29,11 +29,11 @@ void engine::add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 co
 
 void engine::add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity)
 {
-	color = {color.r, color.g, color.b, std::uint8_t(color.a * opacity)};
+	color = {color.r, color.g, color.b, u8(color.a * opacity)};
 
 	tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
-	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<std::uint8_t>(opacity)});
+	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
 	mesh = tr::gfx::renderer_2d::new_color_outline(layer::UI, 4);
 	tr::fill_rect_outline_vtx(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2);
 	std::ranges::fill(mesh.colors, color);
@@ -47,7 +47,7 @@ void engine::add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 c
 
 ////////////////////////////////////////////////////////////// SCORE WIDGET ///////////////////////////////////////////////////////////////
 
-score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, std::size_t rank, tr::opt_ref<::score> score)
+score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, usize rank, tr::opt_ref<::score> score)
 	: text_widget{
 		  pos,
 		  alignment,
@@ -97,12 +97,12 @@ score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks un
 			  const auto hour{hhmmss.hours().count()};
 			  const auto minute{hhmmss.minutes().count()};
 			  if (this->rank == DONT_SHOW_RANK) {
-				  return std::format("{}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", result_m, result_s, result_ms, year, month, day, hour,
-									 minute);
+				  return TR_FMT::format("{}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", result_m, result_s, result_ms, year, month, day,
+										hour, minute);
 			  }
 			  else {
-				  return std::format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result_m, result_s, result_ms, year,
-									 month, day, hour, minute);
+				  return TR_FMT::format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result_m, result_s, result_ms, year,
+										month, day, hour, minute);
 			  }
 		  },
 		  font::LANGUAGE,
@@ -198,9 +198,9 @@ replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks 
 							 const unsigned int day{ymd.day()};
 							 const auto hour{hhmmss.hours().count()};
 							 const auto minute{hhmmss.minutes().count()};
-							 return std::format("{} ({}: {})\n{} | {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", rpy.name,
-												engine::loc["by"], rpy.player, rpy.gamemode.name_loc(), result_m, result_s, result_ms, year,
-												month, day, hour, minute);
+							 return TR_FMT::format("{} ({}: {})\n{} | {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", rpy.name,
+												   engine::loc["by"], rpy.player, rpy.gamemode.name_loc(), result_m, result_s, result_ms,
+												   year, month, day, hour, minute);
 						 },
 						 font::LANGUAGE,
 						 40,

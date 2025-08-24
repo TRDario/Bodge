@@ -46,9 +46,9 @@ class player {
 	glm::vec2 timer_text_size(const std::string& text, float scale) const;
 	void set_up_death_fragments();
 
-	void add_fill_to_renderer(std::uint8_t opacity, tr::angle rotation, float size) const;
-	void add_outline_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::angle rotation, float size) const;
-	void add_trail_to_renderer(tr::rgb8 tint, std::uint8_t opacity, tr::angle rotation, float size) const;
+	void add_fill_to_renderer(u8 opacity, tr::angle rotation, float size) const;
+	void add_outline_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const;
+	void add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const;
 	void add_lives_to_renderer() const;
 	void add_timer_to_renderer() const;
 	void set_screen_shake() const;

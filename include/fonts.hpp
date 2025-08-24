@@ -2,7 +2,7 @@
 #include "settings.hpp"
 
 // Font slots. Multiple may actually point to the same font.
-enum class font : std::uint8_t {
+enum class font : u8 {
 	DEFAULT,
 	FALLBACK,
 	LANGUAGE,
@@ -19,9 +19,9 @@ namespace engine {
 	float line_skip(font font, float size);
 	glm::vec2 text_size(std::string_view text, font font, tr::system::ttf_style style, float size, float outline,
 						float max_w = tr::system::UNLIMITED_WIDTH);
-	std::size_t count_lines(std::string_view text, font font, tr::system::ttf_style style, float size, float outline,
-							float max_w = tr::system::UNLIMITED_WIDTH);
+	usize count_lines(std::string_view text, font font, tr::system::ttf_style style, float size, float outline,
+					  float max_w = tr::system::UNLIMITED_WIDTH);
 	tr::bitmap render_text(std::string_view text, font font, tr::system::ttf_style style, float size, float outline,
 						   float max_w = tr::system::UNLIMITED_WIDTH, tr::halign align = tr::halign::LEFT);
-	tr::bitmap render_gradient_glyph(std::uint32_t glyph, font font, tr::system::ttf_style style, float size, float outline);
+	tr::bitmap render_gradient_glyph(u32 glyph, font font, tr::system::ttf_style style, float size, float outline);
 }; // namespace engine

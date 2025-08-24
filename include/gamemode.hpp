@@ -4,7 +4,7 @@
 ///////////////////////////////////////////////////////////// PLAYER SETTINGS /////////////////////////////////////////////////////////////
 
 struct player_settings {
-	std::uint32_t starting_lives{2};
+	u32 starting_lives{2};
 	float hitbox_radius{10};
 	float inertia_factor{0.1f};
 
@@ -15,13 +15,13 @@ struct player_settings {
 template <> struct tr::binary_reader<player_settings> : tr::default_binary_reader<player_settings> {};
 template <> struct tr::binary_writer<player_settings> : tr::default_binary_writer<player_settings> {};
 
-constexpr player_settings AUTOPLAY{std::numeric_limits<std::uint32_t>::max()};
+constexpr player_settings AUTOPLAY{UINT32_MAX};
 
 ////////////////////////////////////////////////////////////// BALL SETTINGS //////////////////////////////////////////////////////////////
 
 struct ball_settings {
-	std::uint8_t starting_count{10};
-	std::uint8_t max_count{20};
+	u8 starting_count{10};
+	u8 max_count{20};
 	ticks spawn_interval{10_s};
 	float initial_size{20};
 	float size_step{1};

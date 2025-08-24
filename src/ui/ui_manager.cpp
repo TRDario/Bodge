@@ -147,7 +147,7 @@ void ui_manager::select_widget_above()
 	}
 	else {
 		auto [row_it, tag_it]{find_in_selection_tree(m_selection->first)};
-		const std::size_t offset{std::size_t(tag_it - row_it->begin())};
+		const usize offset{usize(tag_it - row_it->begin())};
 		--row_it;
 		while (row_it >= m_selection_tree.begin()) {
 			auto it{m_widgets.find(row_it->begin()[std::min(offset, row_it->size() - 1)])};
@@ -176,7 +176,7 @@ void ui_manager::select_widget_below()
 	}
 	else {
 		auto [row_it, tag_it]{find_in_selection_tree(m_selection->first)};
-		const std::size_t offset{std::size_t(tag_it - row_it->begin())};
+		const usize offset{usize(tag_it - row_it->begin())};
 		++row_it;
 		while (row_it != m_selection_tree.end()) {
 			auto it{m_widgets.find(row_it->begin()[std::min(offset, row_it->size() - 1)])};

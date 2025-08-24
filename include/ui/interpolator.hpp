@@ -24,8 +24,8 @@ template <class T> struct tweener {
 	tween m_mode;
 	T m_start;
 	T m_end;
-	std::uint16_t m_len; // 0 to mark no ongoing tweening.
-	std::uint16_t m_pos;
+	u16 m_len; // 0 to mark no ongoing tweening.
+	u16 m_pos;
 };
 
 ///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ constexpr tweener<T>::tweener(T value)
 
 template <class T>
 constexpr tweener<T>::tweener(tween mode, T start, T end, ticks time)
-	: m_mode{mode}, m_start{start}, m_end{end}, m_len{std::uint16_t(time)}, m_pos{0}
+	: m_mode{mode}, m_start{start}, m_end{end}, m_len{u16(time)}, m_pos{0}
 {
 }
 
@@ -91,7 +91,7 @@ template <class T> tweener<T>::operator T() const
 
 template <class T> void tweener<T>::change(tween mode, T end, ticks time)
 {
-	*this = tweener{mode, *this, end, std::uint16_t(time)};
+	*this = tweener{mode, *this, end, u16(time)};
 }
 
 template <class T> tweener<T>& tweener<T>::operator=(T r)

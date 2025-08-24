@@ -172,7 +172,7 @@ void title_state::set_up_ui()
 	};
 
 	glm::vec2 end_pos{990, 965 - (BUTTONS.size() - 1) * 50};
-	for (std::size_t i = 0; i < BUTTONS.size(); ++i) {
+	for (usize i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(35.0f, 75.0f)};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {end_pos.x + offset, end_pos.y}, end_pos, 1_s};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], move_in, tr::align::CENTER_RIGHT, 1_s, NO_TOOLTIP, loc_text_callback{BUTTONS[i]},
