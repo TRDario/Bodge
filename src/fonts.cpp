@@ -68,12 +68,12 @@ tr::system::ttfont engine::load_font(std::string_view name)
 
 engine::optional_font_base& engine::optional_font::operator*()
 {
-	return *reinterpret_cast<optional_font_base*>(&data);
+	return (optional_font_base&)data;
 }
 
 engine::optional_font_base* engine::optional_font::operator->()
 {
-	return reinterpret_cast<optional_font_base*>(&data);
+	return (optional_font_base*)&data;
 }
 
 tr::system::ttfont& engine::find_font(font font)
