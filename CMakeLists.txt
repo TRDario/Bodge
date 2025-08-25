@@ -32,12 +32,8 @@ target_precompile_headers(Bodge PRIVATE <tr/utility.hpp>)
 
 if(WIN32)
     target_sources(Bodge PRIVATE metadata/icon.rc)
-else()
-    if(TR_HAS_CLANG)
-        add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,llvm-strip,true> $<TARGET_FILE:Bodge>)
-    else()
-        add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,strip,true> $<TARGET_FILE:Bodge>)
-    endif()
+elseif(TR_HAS_CLANG)
+    target_link_options(Bodge PRIVATE -s)
 endif()
 
 # Copying to 'final' if Release.
