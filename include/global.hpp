@@ -1,4 +1,5 @@
 #pragma once
+#include <charconv>
 #include <tr/audio.hpp>
 #include <tr/sysgfx.hpp>
 
