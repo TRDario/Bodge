@@ -87,22 +87,14 @@ score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks un
 			  const ticks result_m{result / 60_s};
 			  const ticks result_s{(result % 60_s) / 1_s};
 			  const ticks result_ms{(result % 1_s) * 100 / 1_s};
-			  const std::chrono::system_clock::time_point utc_tp{std::chrono::seconds{this->score->unix_timestamp}};
-			  const auto tp{std::chrono::current_zone()->std::chrono::time_zone::to_local(utc_tp)};
-			  const std::chrono::hh_mm_ss hhmmss{tp - std::chrono::floor<std::chrono::days>(tp)};
-			  const std::chrono::year_month_day ymd{std::chrono::floor<std::chrono::days>(tp)};
-			  const int year{ymd.year()};
-			  const unsigned int month{ymd.month()};
-			  const unsigned int day{ymd.day()};
-			  const auto hour{hhmmss.hours().count()};
-			  const auto minute{hhmmss.minutes().count()};
+			  const tm* tm{std::localtime(&this->score->unix_timestamp)};
 			  if (this->rank == DONT_SHOW_RANK) {
-				  return TR_FMT::format("{}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", result_m, result_s, result_ms, year, month, day,
-										hour, minute);
+				  return TR_FMT::format("{}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", result_m, result_s, result_ms, tm->tm_year + 1900,
+										tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
 			  }
 			  else {
-				  return TR_FMT::format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result_m, result_s, result_ms, year,
-										month, day, hour, minute);
+				  return TR_FMT::format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result_m, result_s, result_ms,
+										tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
 			  }
 		  },
 		  font::LANGUAGE,
@@ -189,18 +181,10 @@ replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks 
 							 const ticks result_m{result / 60_s};
 							 const ticks result_s{(result % 60_s) / 1_s};
 							 const ticks result_ms{(result % 1_s) * 100 / 1_s};
-							 const std::chrono::system_clock::time_point utc_tp{std::chrono::seconds{rpy.unix_timestamp}};
-							 const auto tp{std::chrono::current_zone()->std::chrono::time_zone::to_local(utc_tp)};
-							 const std::chrono::hh_mm_ss hhmmss{tp - std::chrono::floor<std::chrono::days>(tp)};
-							 const std::chrono::year_month_day ymd{std::chrono::floor<std::chrono::days>(tp)};
-							 const int year{ymd.year()};
-							 const unsigned int month{ymd.month()};
-							 const unsigned int day{ymd.day()};
-							 const auto hour{hhmmss.hours().count()};
-							 const auto minute{hhmmss.minutes().count()};
+							 const tm* tm{std::localtime(&rpy.unix_timestamp)};
 							 return TR_FMT::format("{} ({}: {})\n{} | {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", rpy.name,
 												   engine::loc["by"], rpy.player, rpy.gamemode.name_loc(), result_m, result_s, result_ms,
-												   year, month, day, hour, minute);
+												   tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
 						 },
 						 font::LANGUAGE,
 						 40,
