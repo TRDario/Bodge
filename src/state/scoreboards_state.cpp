@@ -61,7 +61,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 
 // clang-format on
 
-scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
+scoreboards_state::scoreboards_state(std::unique_ptr<playerless_game>&& game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_SCOREBOARDS}
 	, m_page{0}
@@ -173,7 +173,7 @@ scoreboards_state::scoreboards_state(std::unique_ptr<game>&& game)
 	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
 		const tweener<glm::vec2> move_in{tween::CUBIC, {i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s};
 		const usize rank{m_page * SCORES_PER_PAGE + i + 1};
-		const tr::opt_ref<score> score{m_selected->scores.size() > i ? tr::opt_ref{m_selected->scores.begin()[i]} : std::nullopt};
+		const tr::opt_ref<score_entry> score{m_selected->scores.size() > i ? tr::opt_ref{m_selected->scores.begin()[i]} : std::nullopt};
 		m_ui.emplace<score_widget>(SCORE_TAGS[i], move_in, tr::align::CENTER, 0.5_s, rank, score);
 	}
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_D, GAMEMODE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, gamemode_change_scb, gamemode_d_acb);

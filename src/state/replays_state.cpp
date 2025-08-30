@@ -58,7 +58,7 @@ replays_state::replays_state()
 	engine::play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
 }
 
-replays_state::replays_state(std::unique_ptr<game>&& game)
+replays_state::replays_state(std::unique_ptr<playerless_game>&& game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_REPLAYS}
 	, m_page{0}

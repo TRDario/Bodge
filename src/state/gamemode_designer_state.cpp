@@ -56,7 +56,8 @@ constexpr tweener<glm::vec2> SONG_C_MOVE_IN{tween::CUBIC, glm::vec2{400, 700}, g
 
 // clang-format on
 
-gamemode_designer_state::gamemode_designer_state(std::unique_ptr<game>&& game, const gamemode& gamemode, bool returning_from_subscreen)
+gamemode_designer_state::gamemode_designer_state(std::unique_ptr<playerless_game>&& game, const gamemode& gamemode,
+												 bool returning_from_subscreen)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_GAMEMODE_DESIGNER}
 	, m_pending{gamemode}

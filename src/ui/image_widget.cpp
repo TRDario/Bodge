@@ -40,7 +40,7 @@ glm::vec2 image_widget::size() const
 void image_widget::add_to_renderer()
 {
 	tr::rgba8 color{255, 255, 255, 255};
-	if (m_hue.has_value()) {
+	if (m_hue.has_ref()) {
 		color = tr::color_cast<tr::rgba8>(tr::hsv{float(*m_hue), 1, 1});
 	}
 	color.a = u8(color.a * opacity());

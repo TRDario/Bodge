@@ -3,7 +3,7 @@
 
 ////////////////////////////////////////////////////////////// REPLAY HEADER //////////////////////////////////////////////////////////////
 
-struct replay_header : score {
+struct replay_header : score_entry {
 	tr::static_string<20 * 4> name;
 	tr::static_string<20 * 4> player;
 	gamemode gamemode;
@@ -26,7 +26,7 @@ class replay {
 	replay(replay&&) noexcept = default;
 
 	void append(glm::vec2 input);
-	void set_header(const score& score, std::string_view name);
+	void set_header(const score_entry& score, std::string_view name);
 	void save_to_file() const;
 
 	const replay_header& header() const;

@@ -27,7 +27,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 
 //
 
-credits_state::credits_state(std::unique_ptr<game>&& game)
+credits_state::credits_state(std::unique_ptr<playerless_game>&& game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_CREDITS}
 {
 	// STATUS CALLBACKS

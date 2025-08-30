@@ -214,7 +214,7 @@ void pause_state::set_up_full_ui()
 			m_timer = 0;
 			m_substate = substate_base::RESTARTING | game_type::REGULAR;
 			engine::scorefile.playtime += m_game->final_time();
-			engine::scorefile.update_personal_best(m_game->gamemode(), m_game->final_time());
+			engine::scorefile.update_best_time(m_game->gamemode(), m_game->final_time());
 			set_up_exit_animation();
 		},
 		[this] {
@@ -226,7 +226,7 @@ void pause_state::set_up_full_ui()
 			m_timer = 0;
 			m_substate = substate_base::QUITTING | game_type::REGULAR;
 			engine::scorefile.playtime += m_game->final_time();
-			engine::scorefile.update_personal_best(m_game->gamemode(), m_game->final_time());
+			engine::scorefile.update_best_time(m_game->gamemode(), m_game->final_time());
 			set_up_exit_animation();
 		},
 	};

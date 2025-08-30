@@ -42,7 +42,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 
 // clang-format on
 
-start_game_state::start_game_state(std::unique_ptr<game>&& game)
+start_game_state::start_game_state(std::unique_ptr<playerless_game>&& game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::ENTERING_START_GAME}
 	, m_gamemodes{engine::load_gamemodes()}
@@ -60,7 +60,7 @@ start_game_state::start_game_state(std::unique_ptr<game>&& game)
 	text_callback description_tcb{string_text_callback{
 		std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : engine::loc["no_description"]}}};
 	text_callback pb_tcb{string_text_callback{
-		TR_FMT::format("{}:\n{}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(*m_selected)))}};
+		TR_FMT::format("{}:\n{}", engine::loc["personal_best"], timer_text(engine::scorefile.best_time(*m_selected)))}};
 
 	// STATUS CALLBACKS
 
@@ -168,7 +168,7 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 				string_text_callback{
 					std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : engine::loc["no_description"]}},
 				string_text_callback{
-					TR_FMT::format("{}:\n{}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(*m_selected)))},
+					TR_FMT::format("{}:\n{}", engine::loc["personal_best"], timer_text(engine::scorefile.best_time(*m_selected)))},
 			};
 			for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
 				text_widget& widget{m_ui.as<text_widget>(GAMEMODE_WIDGETS[i])};

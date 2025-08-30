@@ -4,30 +4,25 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Gamemode file version identifier.
-constexpr u8 GAMEMODE_VERSION{0};
+constexpr u8 GAMEMODE_VERSION{1};
 
 // The gamemodes that can appear in the main menu background.
 const std::array<gamemode, 3> BUILTIN_GAMEMODES{
-	gamemode{true, "gm_classic", "TRDario", "gm_classic_d", "classic", player_settings{}, ball_settings{3, 50, 8.334_s, 30, 0, 400, 10}},
-	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", "chonk", player_settings{2, 25, 0.1f},
-			 ball_settings{5, 20, 19.59183674_s, 75, 0, 350, 25}},
-	gamemode{true, "gm_swarm", "TRDario", "gm_swarm_d", "swarm", player_settings{2, 8, 0.05f},
-			 ball_settings{15, 50, 3.42857143_s, 10, 0, 250, 10}},
+	gamemode{true, "gm_classic", "TRDario", "gm_classic_d", "classic", player_settings{.life_fragment_spawn_interval = 41.67_s},
+			 ball_settings{4, 50, 8.334_s, 20, 0, 375, 10}},
+	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", "chonk", player_settings{.hitbox_radius = 30},
+			 ball_settings{3, 10, 19.59183674_s, 70, 0, 350, 25}},
+	gamemode{true, "gm_swarm", "TRDario", "gm_swarm_d", "swarm",
+			 player_settings{.life_fragment_spawn_interval = 27.42857144_s, .hitbox_radius = 8, .inertia_factor = 0.05f},
+			 ball_settings{10, 40, 3.42857143_s, 10, 0, 250, 10}},
 };
 // The gamemodes that can appear in the main menu background.
 constexpr std::array<gamemode, 4> MENU_GAMEMODES{
-	gamemode{.player{AUTOPLAY}, .ball{12, 12, 10_s, 25, 0, 350, 0}},
-	gamemode{.player{AUTOPLAY}, .ball{5, 5, 10_s, 25, 0, 1000, 0}},
-	gamemode{.player{AUTOPLAY}, .ball{5, 20, 19.59183674_s, 75, 0, 350, 25}},
-	gamemode{.player{AUTOPLAY}, .ball{15, 50, 3.42857143_s, 10, 0, 250, 10}},
+	gamemode{.ball{12, 12, 10_s, 25, 0, 350, 0}},
+	gamemode{.ball{5, 5, 10_s, 25, 0, 1000, 0}},
+	gamemode{.ball{5, 15, 19.59183674_s, 75, 0, 350, 25}},
+	gamemode{.ball{15, 30, 3.42857143_s, 10, 0, 250, 10}},
 };
-
-///////////////////////////////////////////////////////////// PLAYER SETTINGS /////////////////////////////////////////////////////////////
-
-bool player_settings::is_autoplay() const
-{
-	return starting_lives == std::numeric_limits<u32>::max();
-}
 
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
 
@@ -112,6 +107,8 @@ std::vector<gamemode> engine::load_gamemodes()
 				}
 				std::ifstream is{tr::open_file_r(path, std::ios::binary)};
 				if (tr::binary_read<u8>(is) != GAMEMODE_VERSION) {
+					LOG(tr::severity::WARN, "Ignored corrupt or legacy gamemode file.");
+					LOG_CONTINUE("From: '{}'", path.string());
 					continue;
 				}
 				gamemodes.push_back(tr::binary_read<gamemode>(tr::decrypt(tr::flush_binary(is))));

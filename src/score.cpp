@@ -1,32 +1,40 @@
 #include "../include/score.hpp"
 #include "../include/gamemode.hpp"
+#include "../include/legacy_formats.hpp"
 #include "../include/settings.hpp"
+
+namespace engine {
+	void load_scorefile_v0(const std::filesystem::path& path, std::ifstream& file);
+	void load_scorefile_v1(const std::filesystem::path& path, std::ifstream& file);
+} // namespace engine
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings file version identifier.
-constexpr u8 SCOREFILE_VERSION{0};
+constexpr u8 SCOREFILE_VERSION{1};
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
 
-std::strong_ordering operator<=>(const score& l, const score& r)
+std::strong_ordering operator<=>(const score_entry& l, const score_entry& r)
 {
-	return l.result <=> r.result;
+	return l.time <=> r.time;
 }
 
-std::span<const std::byte> tr::binary_reader<score>::read_from_span(std::span<const std::byte> span, score& out)
+std::span<const std::byte> tr::binary_reader<score_entry>::read_from_span(std::span<const std::byte> span, score_entry& out)
 {
 	span = tr::binary_read(span, out.description);
 	span = tr::binary_read(span, out.unix_timestamp);
-	span = tr::binary_read(span, out.result);
+	span = tr::binary_read(span, out.score);
+	span = tr::binary_read(span, out.time);
 	return tr::binary_read(span, out.flags);
 }
 
-void tr::binary_writer<score>::write_to_stream(std::ostream& os, const score& in)
+void tr::binary_writer<score_entry>::write_to_stream(std::ostream& os, const score_entry& in)
 {
 	tr::binary_write(os, in.description);
 	tr::binary_write(os, in.unix_timestamp);
-	tr::binary_write(os, in.result);
+	tr::binary_write(os, in.score);
+	tr::binary_write(os, in.time);
 	tr::binary_write(os, in.flags);
 }
 
@@ -35,41 +43,43 @@ void tr::binary_writer<score>::write_to_stream(std::ostream& os, const score& in
 std::span<const std::byte> tr::binary_reader<score_category>::read_from_span(std::span<const std::byte> span, score_category& out)
 {
 	span = tr::binary_read(span, out.gamemode);
-	span = tr::binary_read(span, out.personal_best);
+	span = tr::binary_read(span, out.best_score);
+	span = tr::binary_read(span, out.best_time);
 	return tr::binary_read(span, out.scores);
 }
 
 void tr::binary_writer<score_category>::write_to_stream(std::ostream& os, const score_category& in)
 {
 	tr::binary_write(os, in.gamemode);
-	tr::binary_write(os, in.personal_best);
+	tr::binary_write(os, in.best_score);
+	tr::binary_write(os, in.best_time);
 	tr::binary_write(os, in.scores);
 }
 
 //////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
 
-ticks scorefile::personal_best(const gamemode& gm)
+ticks scorefile::best_time(const gamemode& gm)
 {
 	std::vector<score_category>::const_iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
-	return it != categories.end() ? it->personal_best : 0;
+	return it != categories.end() ? it->best_time : 0;
 }
 
-void scorefile::update_personal_best(const gamemode& gm, ticks pb)
+void scorefile::update_best_time(const gamemode& gm, ticks pb)
 {
 	std::vector<score_category>::iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
 	if (it == categories.end()) {
-		it = categories.insert(it, {gm, pb, {}});
+		it = categories.insert(it, {gm, 0, pb, {}});
 	}
 	else {
-		it->personal_best = std::max(it->personal_best, pb);
+		it->best_time = std::max(it->best_time, pb);
 	}
 }
 
-void scorefile::add_score(const gamemode& gm, const score& s)
+void scorefile::add_score(const gamemode& gm, const score_entry& s)
 {
 	std::vector<score_category>::iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
 	if (it == categories.end()) {
-		it = categories.insert(it, {gm, 0, {}});
+		it = categories.insert(it, {gm, 0, 0, {}});
 	}
 	it->scores.insert(std::upper_bound(it->scores.begin(), it->scores.end(), s, std::greater<>{}), s);
 }
@@ -82,7 +92,14 @@ void engine::load_scorefile()
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const u8 version{tr::binary_read<u8>(file)};
-		if (version != SCOREFILE_VERSION) {
+		switch (version) {
+		case 0:
+			load_scorefile_v0(path, file);
+			return;
+		case 1:
+			load_scorefile_v1(path, file);
+			return;
+		default:
 			LOG(tr::severity::ERROR, "Failed to load scorefile.");
 			LOG_CONTINUE("From: '{}'", path.string());
 			LOG_CONTINUE("Unsupported scorefile version {:d}.", version);
@@ -102,6 +119,30 @@ void engine::load_scorefile()
 		LOG_CONTINUE("From: '{}'", path.string());
 		LOG_CONTINUE(err);
 	}
+}
+
+void engine::load_scorefile_v0(const std::filesystem::path& path, std::ifstream& file)
+{
+	const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
+	std::span<const std::byte> data{raw};
+	std::vector<score_category_v0> ignore;
+	data = tr::binary_read(data, scorefile.name);
+	data = tr::binary_read(data, ignore);
+	data = tr::binary_read(data, scorefile.playtime);
+	LOG(tr::severity::INFO, "Converted legacy scorefile (v0) to latest format.");
+	LOG_CONTINUE("From: '{}'", path.string());
+}
+
+void engine::load_scorefile_v1(const std::filesystem::path& path, std::ifstream& file)
+{
+	const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
+	std::span<const std::byte> data{raw};
+	data = tr::binary_read(data, scorefile.name);
+	data = tr::binary_read(data, scorefile.categories);
+	data = tr::binary_read(data, scorefile.playtime);
+	data = tr::binary_read(data, scorefile.last_selected);
+	LOG(tr::severity::INFO, "Loaded scorefile.");
+	LOG_CONTINUE("From: '{}'", path.string());
 }
 
 void engine::save_scorefile()

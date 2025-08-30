@@ -35,13 +35,13 @@ void ui_manager::select_widget(tag tag)
 void ui_manager::change_selection(tr::opt_ref<kv_pair> new_selection)
 {
 	if (new_selection != m_selection) {
-		if (m_selection.has_value()) {
+		if (m_selection.has_ref()) {
 			if (m_selection->second->writable()) {
 				tr::system::disable_text_input_events();
 			}
 			m_selection->second->on_unselected();
 		}
-		if (new_selection.has_value()) {
+		if (new_selection.has_ref()) {
 			if (new_selection->second->writable()) {
 				tr::system::enable_text_input_events();
 			}
@@ -94,7 +94,7 @@ void ui_manager::select_last_widget()
 
 void ui_manager::select_next_widget()
 {
-	if (!m_selection.has_value()) {
+	if (!m_selection.has_ref()) {
 		select_first_widget();
 	}
 	else {
@@ -118,7 +118,7 @@ void ui_manager::select_next_widget()
 
 void ui_manager::select_prev_widget()
 {
-	if (!m_selection.has_value()) {
+	if (!m_selection.has_ref()) {
 		select_last_widget();
 	}
 	else {
@@ -142,7 +142,7 @@ void ui_manager::select_prev_widget()
 
 void ui_manager::select_widget_above()
 {
-	if (!m_selection.has_value()) {
+	if (!m_selection.has_ref()) {
 		select_last_widget();
 	}
 	else {
@@ -171,7 +171,7 @@ void ui_manager::select_widget_above()
 
 void ui_manager::select_widget_below()
 {
-	if (!m_selection.has_value()) {
+	if (!m_selection.has_ref()) {
 		select_first_widget();
 	}
 	else {
@@ -200,7 +200,7 @@ void ui_manager::select_widget_below()
 
 void ui_manager::select_widget_to_the_left()
 {
-	if (m_selection.has_value()) {
+	if (m_selection.has_ref()) {
 		auto [row_it, tag_it]{find_in_selection_tree(m_selection->first)};
 		--tag_it;
 		while (tag_it >= row_it->begin()) {
@@ -217,7 +217,7 @@ void ui_manager::select_widget_to_the_left()
 
 void ui_manager::select_widget_to_the_right()
 {
-	if (m_selection.has_value()) {
+	if (m_selection.has_ref()) {
 		auto [row_it, tag_it]{find_in_selection_tree(m_selection->first)};
 		++tag_it;
 		while (tag_it != row_it->end()) {
@@ -263,13 +263,13 @@ void ui_manager::handle_event(const tr::system::event& event)
 		}
 
 		if (m_hovered != new_hovered) {
-			if (m_hovered.has_value()) {
+			if (m_hovered.has_ref()) {
 				if (engine::held_buttons() == tr::system::mouse_button::LEFT && m_hovered->second->interactible()) {
 					m_hovered->second->on_unheld();
 				}
 				m_hovered->second->on_unhover();
 			}
-			if (new_hovered.has_value()) {
+			if (new_hovered.has_ref()) {
 				new_hovered->second->on_hover();
 				if (engine::held_buttons() == tr::system::mouse_button::LEFT && new_hovered->second->interactible()) {
 					new_hovered->second->on_held();
@@ -280,7 +280,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 	} break;
 	case tr::system::mouse_down_event::ID: {
 		if (tr::system::mouse_down_event{event}.button == tr::system::mouse_button::LEFT) {
-			if (m_selection.has_value()) {
+			if (m_selection.has_ref()) {
 				tr::system::disable_text_input_events();
 				m_selection->second->on_unselected();
 				m_selection = std::nullopt;
@@ -295,16 +295,16 @@ void ui_manager::handle_event(const tr::system::event& event)
 			}
 
 			if (m_hovered != new_hovered) {
-				if (m_hovered.has_value()) {
+				if (m_hovered.has_ref()) {
 					m_hovered->second->on_unhover();
 				}
-				if (new_hovered.has_value()) {
+				if (new_hovered.has_ref()) {
 					new_hovered->second->on_hover();
 				}
 				m_hovered = new_hovered;
 			}
 
-			if (m_hovered.has_value() && m_hovered->second->interactible()) {
+			if (m_hovered.has_ref() && m_hovered->second->interactible()) {
 				m_hovered->second->on_held();
 			}
 		}
@@ -312,7 +312,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 	case tr::system::mouse_up_event::ID: {
 		const tr::system::mouse_up_event mouse_up{event};
 		if (mouse_up.button == tr::system::mouse_button::LEFT) {
-			if (m_hovered.has_value() && m_hovered->second->interactible()) {
+			if (m_hovered.has_ref() && m_hovered->second->interactible()) {
 				m_hovered->second->on_unheld();
 				m_hovered->second->on_action();
 				if (m_hovered->second->writable()) {
@@ -346,7 +346,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 		else if (key_down == tr::system::key_chord{tr::system::keycode::RIGHT} && !m_shortcuts.contains({tr::system::keycode::RIGHT})) {
 			select_widget_to_the_right();
 		}
-		else if (m_selection.has_value()) {
+		else if (m_selection.has_ref()) {
 			if (key_down == tr::system::key_chord{tr::system::keycode::ESCAPE}) {
 				clear_selection();
 			}
@@ -391,7 +391,7 @@ void ui_manager::handle_event(const tr::system::event& event)
 		}
 	} break;
 	case tr::system::text_input_event::ID:
-		if (m_selection.has_value() && m_selection->second->interactible() && m_selection->second->writable() &&
+		if (m_selection.has_ref() && m_selection->second->interactible() && m_selection->second->writable() &&
 			!(engine::held_keymods() & tr::system::keymod::CTRL)) {
 			m_selection->second->on_write(tr::system::text_input_event{event}.text);
 		}
@@ -405,7 +405,7 @@ void ui_manager::update()
 		widget.update();
 	}
 
-	if (m_selection.has_value() && !m_selection->second->interactible()) {
+	if (m_selection.has_ref() && !m_selection->second->interactible()) {
 		clear_selection();
 	}
 }
@@ -415,7 +415,7 @@ void ui_manager::add_to_renderer()
 	for (widget& widget : tr::deref(std::views::values(m_widgets))) {
 		widget.add_to_renderer();
 	}
-	if (m_hovered.has_value()) {
+	if (m_hovered.has_ref()) {
 		if (m_hovered->second->tooltip_cb) {
 			const std::string tooltip{m_hovered->second->tooltip_cb()};
 			if (!tooltip.empty()) {

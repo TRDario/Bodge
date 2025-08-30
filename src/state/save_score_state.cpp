@@ -40,7 +40,7 @@ save_score_state::save_score_state(std::unique_ptr<game>&& game, glm::vec2 mouse
 	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), false}
 	, m_substate{substate_base::SAVING_SCORE | flags}
 	, m_substate_data{.start_mouse_pos = mouse_pos}
-	, m_score{{}, current_timestamp(), m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
+	, m_score{{}, current_timestamp(), 0, m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
 	set_up_ui();
 }
@@ -49,7 +49,7 @@ save_score_state::save_score_state(std::unique_ptr<game>&& game, ticks prev_pb, 
 	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), true}
 	, m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
 	, m_substate_data{.prev_pb = prev_pb}
-	, m_score{{}, current_timestamp(), m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
+	, m_score{{}, current_timestamp(), 0, m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
 	set_up_ui();
 }
@@ -112,9 +112,9 @@ void save_score_state::set_up_ui()
 			m_substate = substate_base::ENTERING_SAVE_REPLAY | to_flags(m_substate);
 			m_timer = 0;
 			set_up_exit_animation();
-			engine::scorefile.playtime += m_score.result;
+			engine::scorefile.playtime += m_score.time;
 			engine::scorefile.add_score(m_game->gamemode(), m_score);
-			engine::scorefile.update_personal_best(m_game->gamemode(), m_game->final_time());
+			engine::scorefile.update_best_time(m_game->gamemode(), m_game->final_time());
 		},
 	};
 	const action_callback cancel_acb{

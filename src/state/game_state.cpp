@@ -98,8 +98,8 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 			tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
 			switch (to_type(m_substate)) {
 			case game_type::REGULAR: {
-				const ticks prev_pb{engine::scorefile.personal_best(m_game->gamemode())};
-				engine::scorefile.update_personal_best(m_game->gamemode(), m_game->final_time());
+				const ticks prev_pb{engine::scorefile.best_time(m_game->gamemode())};
+				engine::scorefile.update_best_time(m_game->gamemode(), m_game->final_time());
 				return std::make_unique<game_over_state>(std::unique_ptr<active_game>{(active_game*)m_game.release()}, true, prev_pb);
 			}
 			case game_type::GAMEMODE_DESIGNER_TEST:

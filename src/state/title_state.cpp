@@ -56,7 +56,7 @@ title_state::title_state()
 	engine::play_song("menu", 1.0s);
 }
 
-title_state::title_state(std::unique_ptr<game>&& game)
+title_state::title_state(std::unique_ptr<playerless_game>&& game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_TITLE}
 {
 	set_up_ui();

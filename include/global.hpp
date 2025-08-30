@@ -4,7 +4,7 @@
 #include <tr/sysgfx.hpp>
 
 // Bodge version string.
-constexpr const char* VERSION_STRING{"v1.0.1"};
+constexpr const char* VERSION_STRING{"v1.1.0"};
 
 ////////////////////////////////////////////////////////////////// USING //////////////////////////////////////////////////////////////////
 
@@ -34,6 +34,9 @@ constexpr float operator""_sf(long double seconds)
 {
 	return float(SECOND_TICKS * seconds);
 }
+
+// Sentinel for an inactive timer.
+inline constexpr ticks INACTIVE_TIMER{~0U};
 
 // Formats timer text.
 std::string timer_text(ticks time);
@@ -86,3 +89,15 @@ namespace engine {
 
 #define LOG(...) TR_LOG(::engine::logger, __VA_ARGS__)
 #define LOG_CONTINUE(...) TR_LOG_CONTINUE(::engine::logger, __VA_ARGS__)
+
+//
+
+// Fragment used in some animations.
+struct fragment {
+	glm::vec2 pos;
+	glm::vec2 vel;
+	tr::angle rot;
+	tr::angle rotvel;
+
+	void update();
+};

@@ -120,7 +120,7 @@ constexpr tweener<glm::vec2> LANGUAGE_C_MOVE_IN{tween::CUBIC, LANGUAGE_START_POS
 
 // clang-format on
 
-settings_state::settings_state(std::unique_ptr<game>&& game)
+settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SETTINGS}, m_pending{engine::settings}
 {
 	// STATUS CALLBACKS

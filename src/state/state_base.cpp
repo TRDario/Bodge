@@ -24,16 +24,17 @@ std::unique_ptr<tr::state> state::update(tr::duration)
 ///////////////////////////////////////////////////////////// MAIN MENU STATE /////////////////////////////////////////////////////////////
 
 main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts)
-	: state{selection_tree, shortcuts}, m_background_game{std::make_unique<game>(engine::pick_menu_gamemode(), engine::rng.generate<u64>())}
+	: state{selection_tree, shortcuts}
+	, m_background_game{std::make_unique<playerless_game>(engine::pick_menu_gamemode(), engine::rng.generate<u64>())}
 {
 }
 
-main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::unique_ptr<game>&& game)
+main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::unique_ptr<playerless_game>&& game)
 	: state{selection_tree, shortcuts}, m_background_game{std::move(game)}
 {
 }
 
-std::unique_ptr<game>&& main_menu_state::release_game()
+std::unique_ptr<playerless_game>&& main_menu_state::release_game()
 {
 	return std::move(m_background_game);
 }

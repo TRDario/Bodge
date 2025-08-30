@@ -16,7 +16,7 @@
 |        +###############++++++++++#########++++++###############++    ++###############+###################+         |
 |         ++++++++++++++++++++++++++++++++++++   +++++++++++++++         +++++++++++++++++++++++++++++++++++          |
 |            +++++++++++++++++++++++++++++++                                                                          |
-|            ++++++++++++++++++++++++++++++                                                           v1.0.1          |
+|            ++++++++++++++++++++++++++++++                                                           v1.1.0          |
 |            ++++++++++++++++++++++++++++                                                                             |
 |             ++++++++++++++++++++++++++                                                                              |
 |             ++++++++++++++++++++++++                                                                                |
@@ -48,6 +48,11 @@
 |                                                                                                           - TRDario |
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
+| v1.1.0 (???)                                                                                                        |
+| * Introduced new systems for gaining lives and scoring.                                                             |
+| * Updated most file formats (barring the settings), making v1.0 files unusable (besides the scorefile, partially)   |
+| * Fixed some tooltip boxes rendering too wide.                                                                      |
+| * Fixed localization files with a trailing newline failing to load.                                                 |
 | v1.0.1 (24 Aug 2025)                                                                                                |
 | * Fixed a few gamemode designer limits and numeric input widget interactions.                                       |
 | v1.0.0 (23 Aug 2025)                                                                                                |
@@ -57,6 +62,7 @@
 |                                                                                                                     |
 | 1.) Move the player character with your mouse.                                                                      |
 | 2.) Avoid the balls as long as possible.                                                                            |
+| 3.) Collect fragments to earn extra lives.                                                                          |
 |                                                                                                                     |
 |--------------------------------------------------KEYBOARD CONTROLS--------------------------------------------------|
 |                                                                                                                     |

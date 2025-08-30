@@ -47,13 +47,13 @@ void engine::add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 c
 
 ////////////////////////////////////////////////////////////// SCORE WIDGET ///////////////////////////////////////////////////////////////
 
-score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, usize rank, tr::opt_ref<::score> score)
+score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, usize rank, tr::opt_ref<::score_entry> score)
 	: text_widget{
 		  pos,
 		  alignment,
 		  unhide_time,
 		  [this] {
-			  if (!this->score.has_value()) {
+			  if (!this->score.has_ref()) {
 				  return std::string{};
 			  }
 			  else {
@@ -79,11 +79,11 @@ score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks un
 		  },
 		  false,
 		  [this] {
-			  if (!this->score.has_value()) {
+			  if (!this->score.has_ref()) {
 				  return std::string{"----------------------------------"};
 			  }
 
-			  const ticks result{this->score->result};
+			  const ticks result{this->score->time};
 			  const ticks result_m{result / 60_s};
 			  const ticks result_s{(result % 60_s) / 1_s};
 			  const ticks result_ms{(result % 1_s) * 100 / 1_s};
@@ -109,7 +109,7 @@ score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks un
 
 glm::vec2 score_widget::size() const
 {
-	if (score.has_value()) {
+	if (score.has_ref()) {
 		const auto icons{score->flags.exited_prematurely + score->flags.modified_game_speed};
 		if (icons != 0) {
 			return text_widget::size() + glm::vec2{0, 20};
@@ -120,9 +120,9 @@ glm::vec2 score_widget::size() const
 
 void score_widget::add_to_renderer()
 {
-	const tr::rgba8 color{score.has_value() ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8};
+	const tr::rgba8 color{score.has_ref() ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8};
 	text_widget::add_to_renderer_raw(color);
-	if (score.has_value()) {
+	if (score.has_ref()) {
 		const score_flags flags{score->flags};
 		const glm::vec2 text_size{text_widget::size()};
 		const auto icons{flags.exited_prematurely + flags.modified_game_speed};
@@ -177,7 +177,7 @@ replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks 
 							 }
 
 							 replay_header& rpy{(*this->it)->second};
-							 const ticks result{rpy.result};
+							 const ticks result{rpy.time};
 							 const ticks result_m{result / 60_s};
 							 const ticks result_s{(result % 60_s) / 1_s};
 							 const ticks result_ms{(result % 1_s) * 100 / 1_s};

@@ -4,18 +4,16 @@
 ///////////////////////////////////////////////////////////// PLAYER SETTINGS /////////////////////////////////////////////////////////////
 
 struct player_settings {
-	u32 starting_lives{2};
+	u8 starting_lives{2};
+	bool spawn_life_fragments{true};
+	ticks life_fragment_spawn_interval{45_s};
 	float hitbox_radius{10};
 	float inertia_factor{0.1f};
 
 	bool operator==(const player_settings&) const = default;
-
-	bool is_autoplay() const;
 };
 template <> struct tr::binary_reader<player_settings> : tr::default_binary_reader<player_settings> {};
 template <> struct tr::binary_writer<player_settings> : tr::default_binary_writer<player_settings> {};
-
-constexpr player_settings AUTOPLAY{UINT32_MAX};
 
 ////////////////////////////////////////////////////////////// BALL SETTINGS //////////////////////////////////////////////////////////////
 

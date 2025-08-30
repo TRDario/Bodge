@@ -107,37 +107,6 @@ tr::system::ttfont& engine::find_font(font font)
 	}
 }
 
-// Splits a string by lines.
-std::vector<std::string> split_into_lines(std::string_view text)
-{
-	std::vector<std::string> lines;
-	std::string_view::iterator start{text.begin()};
-	std::string_view::iterator end{std::find(start, text.end(), '\n')};
-	while (end != text.end()) {
-		lines.push_back({start, end});
-		start = end + 1;
-		end = std::find(start, text.end(), '\n');
-	}
-	lines.push_back({start, end});
-	return lines;
-}
-
-std::vector<std::string> split_overlong_lines(std::vector<std::string>&& lines, const tr::system::ttfont& font, float max_w)
-{
-	for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); ++it) {
-		if (it->empty()) {
-			continue;
-		}
-
-		const tr::system::ttf_measure_result measure{font.measure_text(*it, int(max_w))};
-		if (measure.text != std::string_view{*it}) {
-			it = std::prev(lines.emplace(std::next(it), it->begin() + measure.text.size(), it->end()));
-			it->erase(it->begin() + measure.text.size(), it->end());
-		}
-	}
-	return std::move(lines);
-}
-
 //
 
 void engine::load_fonts()
@@ -257,15 +226,8 @@ glm::vec2 engine::text_size(std::string_view text, font font, tr::system::ttf_st
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
 	glm::ivec2 text_size{0, font_ref.text_size(text, outline_max_w).y};
-	for (std::string_view line : split_into_lines(text)) {
-		tr::system::ttf_measure_result result{font_ref.measure_text(line, outline_max_w)};
-		if (result.text != line) {
-			text_size.x = outline_max_w;
-			break;
-		}
-		else {
-			text_size.x = std::max(text_size.x, result.size);
-		}
+	for (std::string_view line : split_into_lines(text, font_ref, outline_max_w)) {
+		text_size.x = std::max(text_size.x, font_ref.measure_text(line, outline_max_w).size);
 	}
 	return glm::vec2{text_size} / render_scale();
 }
@@ -282,7 +244,7 @@ usize engine::count_lines(std::string_view text, font font, tr::system::ttf_styl
 	font_ref.resize(size * render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
-	return split_overlong_lines(split_into_lines(text), font_ref, outline_max_w).size();
+	return tr::system::split_into_lines(text, font_ref, outline_max_w).size();
 }
 
 tr::bitmap engine::render_text(std::string_view text, font font, tr::system::ttf_style style, float size, float outline, float max_w,

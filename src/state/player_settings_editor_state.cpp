@@ -63,7 +63,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 
 // clang-format on
 
-player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
+player_settings_editor_state::player_settings_editor_state(std::unique_ptr<playerless_game>&& game, const gamemode& gamemode)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_EDITOR}, m_pending{gamemode}
 {
 	// STATUS CALLBACKS
@@ -96,7 +96,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 		[&sl = m_pending.player.starting_lives] { sl = std::max(int(sl - engine::keymods_choose(1, 5, 10)), 0); },
 	};
 	const action_callback starting_lives_i_acb{
-		[&sl = m_pending.player.starting_lives] { sl = std::min(sl + engine::keymods_choose(1, 5, 10), 255_u32); },
+		[&sl = m_pending.player.starting_lives] { sl = std::min(sl + engine::keymods_choose(1, 5, 10), 255); },
 	};
 	const action_callback hitbox_radius_d_acb{
 		[&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - engine::keymods_choose(1, 5, 10), 1.0f); },
@@ -138,8 +138,8 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<game>
 							   tr::system::ttf_style::NORMAL, 32);
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, STARTING_LIVES_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_lives_d_scb,
 							   starting_lives_d_acb);
-	m_ui.emplace<numeric_input_widget<u32, 3, "{}", "{}">>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-														   m_pending.player.starting_lives, scb, starting_lives_c_vcb);
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}", "{}">>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														  m_pending.player.starting_lives, scb, starting_lives_c_vcb);
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, STARTING_LIVES_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, starting_lives_i_scb,
 							   starting_lives_i_acb);
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, HITBOX_RADIUS_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, hitbox_radius_d_scb,

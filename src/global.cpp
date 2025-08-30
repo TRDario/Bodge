@@ -11,3 +11,9 @@ i64 current_timestamp()
 {
 	return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
+
+void fragment::update()
+{
+	pos += vel / 1_sf;
+	rot += rotvel / 1_sf;
+}

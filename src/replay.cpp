@@ -4,7 +4,7 @@
 //
 
 // Replay file version identifier.
-constexpr u8 REPLAY_VERSION{0};
+constexpr u8 REPLAY_VERSION{1};
 
 //
 
@@ -20,7 +20,7 @@ std::string to_filename(std::string_view name)
 
 std::span<const std::byte> tr::binary_reader<replay_header>::read_from_span(std::span<const std::byte> span, replay_header& out)
 {
-	span = tr::binary_read<score>(span, out);
+	span = tr::binary_read<score_entry>(span, out);
 	span = tr::binary_read(span, out.name);
 	span = tr::binary_read(span, out.player);
 	span = tr::binary_read(span, out.gamemode);
@@ -29,7 +29,7 @@ std::span<const std::byte> tr::binary_reader<replay_header>::read_from_span(std:
 
 void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const replay_header& in)
 {
-	tr::binary_write<score>(os, in);
+	tr::binary_write<score_entry>(os, in);
 	tr::binary_write(os, in.name);
 	tr::binary_write(os, in.player);
 	tr::binary_write(os, in.gamemode);
@@ -79,9 +79,9 @@ void replay::append(glm::vec2 input)
 	m_inputs.push_back(input);
 }
 
-void replay::set_header(const score& header, std::string_view name)
+void replay::set_header(const score_entry& header, std::string_view name)
 {
-	(score&)(m_header) = header;
+	(score_entry&)(m_header) = header;
 	m_header.name = name;
 }
 
@@ -160,9 +160,10 @@ std::map<std::string, replay_header> engine::load_replay_headers()
 				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
 				const u8 version{tr::binary_read<u8>(is)};
 				if (version != REPLAY_VERSION) {
-					LOG(tr::severity::ERROR, "Failed to load replay header.");
+					LOG(tr::severity::WARN, "Ignored replay header.");
 					LOG_CONTINUE("From: '{}'", file.path().string());
 					LOG_CONTINUE("Unsupported replay version {:d}.", version);
+					continue;
 				}
 				replays.emplace(file.path().filename().string(),
 								tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));

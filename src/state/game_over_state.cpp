@@ -95,7 +95,7 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in, tic
 	}
 	else {
 		pb_tcb = string_text_callback{
-			TR_FMT::format("{}: {}", engine::loc["personal_best"], timer_text(engine::scorefile.personal_best(m_game->gamemode())))};
+			TR_FMT::format("{}: {}", engine::loc["personal_best"], timer_text(engine::scorefile.best_time(m_game->gamemode())))};
 	}
 
 	//

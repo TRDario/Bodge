@@ -9,7 +9,11 @@ enum class sound {
 	PAUSE,
 	UNPAUSE,
 	TICK,
+	TICKALT,
 	BOUNCE,
+	FRAGMENT_SPAWN,
+	COLLECT,
+	EXTEND,
 	HIT,
 	GAME_OVER,
 

@@ -245,10 +245,10 @@ struct replay_playback_indicator_widget : public widget {
 struct score_widget : public text_widget {
 	static constexpr usize DONT_SHOW_RANK{std::numeric_limits<usize>::max()};
 
-	score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, usize rank, tr::opt_ref<score> score);
+	score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, usize rank, tr::opt_ref<score_entry> score);
 
 	usize rank;
-	tr::opt_ref<score> score;
+	tr::opt_ref<score_entry> score;
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;

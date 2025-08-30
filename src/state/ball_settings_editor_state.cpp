@@ -136,7 +136,7 @@ std::string spawn_interval_formatter::to_string(std::string_view str)
 
 /////////////////////////////////////////////////////// BALL SETTINGS EDITOR STATE ////////////////////////////////////////////////////////
 
-ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode)
+ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<playerless_game>&& game, const gamemode& gamemode)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_EDITOR}, m_pending{gamemode}
 {
 	// STATUS CALLBACKS

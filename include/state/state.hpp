@@ -26,7 +26,7 @@ class name_entry_state : public main_menu_state {
 class title_state : public main_menu_state {
   public:
 	title_state();
-	title_state(std::unique_ptr<game>&& game);
+	title_state(std::unique_ptr<playerless_game>&& game);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -54,7 +54,7 @@ class title_state : public main_menu_state {
 
 class start_game_state : public main_menu_state {
   public:
-	start_game_state(std::unique_ptr<game>&& game);
+	start_game_state(std::unique_ptr<playerless_game>&& game);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -79,7 +79,7 @@ class start_game_state : public main_menu_state {
 
 class gamemode_designer_state : public main_menu_state {
   public:
-	gamemode_designer_state(std::unique_ptr<game>&& game, const gamemode& gamemode, bool returning_from_subscreen);
+	gamemode_designer_state(std::unique_ptr<playerless_game>&& game, const gamemode& gamemode, bool returning_from_subscreen);
 	gamemode_designer_state(const gamemode& gamemode);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
@@ -108,7 +108,7 @@ class gamemode_designer_state : public main_menu_state {
 
 class ball_settings_editor_state : public main_menu_state {
   public:
-	ball_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode);
+	ball_settings_editor_state(std::unique_ptr<playerless_game>&& game, const gamemode& gamemode);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -128,7 +128,7 @@ class ball_settings_editor_state : public main_menu_state {
 
 class player_settings_editor_state : public main_menu_state {
   public:
-	player_settings_editor_state(std::unique_ptr<game>&& game, const gamemode& gamemode);
+	player_settings_editor_state(std::unique_ptr<playerless_game>&& game, const gamemode& gamemode);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -148,7 +148,7 @@ class player_settings_editor_state : public main_menu_state {
 
 class scoreboards_state : public main_menu_state {
   public:
-	scoreboards_state(std::unique_ptr<game>&& game);
+	scoreboards_state(std::unique_ptr<playerless_game>&& game);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -172,7 +172,7 @@ class scoreboards_state : public main_menu_state {
 class replays_state : public main_menu_state {
   public:
 	replays_state();
-	replays_state(std::unique_ptr<game>&& game);
+	replays_state(std::unique_ptr<playerless_game>&& game);
 
   public:
 	std::unique_ptr<tr::state> update(tr::duration) override;
@@ -201,7 +201,7 @@ class replays_state : public main_menu_state {
 
 class settings_state : public main_menu_state {
   public:
-	settings_state(std::unique_ptr<game>&& game);
+	settings_state(std::unique_ptr<playerless_game>&& game);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -221,7 +221,7 @@ class settings_state : public main_menu_state {
 
 class credits_state : public main_menu_state {
   public:
-	credits_state(std::unique_ptr<game>&& game);
+	credits_state(std::unique_ptr<playerless_game>&& game);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -365,7 +365,7 @@ class save_score_state : public game_menu_state {
 
 	substate m_substate;
 	substate_data m_substate_data;
-	score m_score;
+	score_entry m_score;
 
 	friend substate operator|(const substate_base& l, const save_screen_flags& r);
 	friend substate_base to_base(substate state);

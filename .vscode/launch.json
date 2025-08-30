@@ -8,7 +8,7 @@
 			"type": "lldb",
 			"request": "launch",
 			"name": "Debug",
-			"program": "${workspaceFolder}/build/Debug/Bodge",
+			"program": "${workspaceFolder}/build/Debug/Bodged",
 			"args": [
 				"--debug",
 				"--userdir",

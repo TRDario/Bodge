@@ -21,15 +21,15 @@ class state : public tr::state {
 class main_menu_state : public state {
   public:
 	main_menu_state(selection_tree selection_tree, shortcut_table shortcuts);
-	main_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::unique_ptr<game>&& game);
+	main_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::unique_ptr<playerless_game>&& game);
 
-	std::unique_ptr<game>&& release_game();
+	std::unique_ptr<playerless_game>&& release_game();
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 	void draw() override;
 
   private:
-	std::unique_ptr<game> m_background_game;
+	std::unique_ptr<playerless_game> m_background_game;
 
 	virtual float fade_overlay_opacity();
 };
