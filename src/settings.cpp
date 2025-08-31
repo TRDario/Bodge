@@ -45,8 +45,10 @@ void engine::parse_command_line(int argc, const char** argv)
 		else if (arg == "--gamespeed" && ++i < argc) {
 			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.game_speed);
 		}
-		else if (arg == "--debug") {
-			cli_settings.debug_mode = true;
+		else if (arg == "--debug" && ++i < argc) {
+			int temp;
+			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), temp);
+			cli_settings.debug_mode = bool(temp);
 		}
 		else if (arg == "--help") {
 			std::cout << "Bodge v0.1.0 by TRDario, 2025.\n"
@@ -55,7 +57,7 @@ void engine::parse_command_line(int argc, const char** argv)
 						 "--userdir <path>       - Overrides the user directory.\n"
 						 "--refreshrate <number> - Overrides the refresh rate.\n"
 						 "--gamespeed <factor>   - Overrides the speed multiplier.\n"
-						 "--debug                - Enables debug mode.\n";
+						 "--debug <0 or 1>       - Disables/enables debug mode.\n";
 			std::exit(EXIT_SUCCESS);
 		}
 	}

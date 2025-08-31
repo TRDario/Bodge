@@ -56,6 +56,7 @@ constexpr tr::rgba8 MENU_GAME_OVERLAY_TINT{0, 0, 0, 160};
 inline constexpr float FIELD_BORDER_THICKNESS{4};
 inline constexpr float FIELD_MIN{FIELD_BORDER_THICKNESS};
 inline constexpr float FIELD_MAX{1000 - FIELD_BORDER_THICKNESS};
+inline constexpr float FIELD_CENTER{FIELD_MIN + (FIELD_MAX - FIELD_MIN) / 2};
 
 /////////////////////////////////////////////////////////////// UI CONSTANTS //////////////////////////////////////////////////////////////
 

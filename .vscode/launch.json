@@ -10,11 +10,9 @@
 			"name": "Debug",
 			"program": "${workspaceFolder}/build/Debug/Bodged",
 			"args": [
-				"--debug",
-				"--userdir",
-				"${workspaceFolder}/userdir",
-				"--datadir",
-				"${workspaceFolder}/data"
+				"--debug", "0",
+				"--userdir", "${workspaceFolder}/userdir",
+				"--datadir", "${workspaceFolder}/data"
 			],
 			"cwd": "${workspaceFolder}",
 			"env": {
@@ -27,11 +25,9 @@
 			"name": "Release",
 			"program": "${workspaceFolder}/build/Release/Bodge",
 			"args": [
-				"--debug",
-				"--userdir",
-				"${workspaceFolder}/userdir",
-				"--datadir",
-				"${workspaceFolder}/data"
+				"--debug", "1",
+				"--userdir", "${workspaceFolder}/userdir",
+				"--datadir", "${workspaceFolder}/data"
 			],
 			"cwd": "${workspaceFolder}",
 			"env": {

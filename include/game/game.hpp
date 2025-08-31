@@ -49,6 +49,7 @@ class game : private playerless_game {
 	virtual ~game() = default;
 
 	bool game_over() const;
+	i64 final_score() const;
 	ticks final_time() const;
 	using playerless_game::gamemode;
 
@@ -60,36 +61,46 @@ class game : private playerless_game {
 	void update(const glm::vec2& input);
 
   private:
-	tr::gfx::dyn_atlas<char> m_timer_atlas;
+	tr::gfx::dyn_atlas<char> m_number_atlas;
 	player m_player;
 	tr::static_vector<life_fragment, 9> m_life_fragments;
 	std::array<fragment, 6> m_shattered_life_fragments;
 	int m_collected_fragments;
-	ticks m_time_since_last_life_fragments;
+	ticks m_time_since_life_fragments;
 	int m_lives_left;
 	ticks m_time_since_extend;
 	ticks m_time_since_hit;
 	ticks m_time_since_game_over;
+	i64 m_score;
+	ticks m_accumulated_center_time;
+	ticks m_accumulated_edge_time;
+	ticks m_accumulated_corner_time;
+	ticks m_time_since_score_update;
 	ticks m_accumulated_lives_hover_time;
 	ticks m_accumulated_timer_hover_time;
+	ticks m_accumulated_score_hover_time;
 	bool m_tock;
 
-	glm::vec2 timer_text_size(const std::string& text, float scale) const;
+	void add_to_score(int change, const char* category);
+	glm::vec2 text_size(const std::string& text, float scale) const;
 
 	void play_tick_sound_if_needed();
 	void update_timers();
 	void update_life_fragments();
 	void check_if_player_is_hovering_over_timer();
 	void check_if_player_is_hovering_over_lives();
+	void check_if_player_is_hovering_over_score();
 	void check_if_player_was_hit();
 	void set_up_shattered_life_fragments();
 	void check_if_player_collected_life_fragments();
+	void check_for_score_ticks();
 	void set_screen_shake() const;
 
 	void add_timer_to_renderer() const;
 	void add_lives_to_renderer() const;
 	void add_appearing_life_to_renderer(tr::rgb8 color, u8 base_opacity) const;
 	void add_shattering_life_to_renderer(tr::rgb8 color, u8 base_opacity) const;
+	void add_score_to_renderer() const;
 };
 
 /////////////////////////////////////////////////////////////// ACTIVE GAME ///////////////////////////////////////////////////////////////
