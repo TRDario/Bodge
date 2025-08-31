@@ -1,5 +1,5 @@
-#include "../../include/ui/widget_base.hpp"
 #include "../../include/graphics.hpp"
+#include "../../include/ui/widget.hpp"
 
 ///////////////////////////////////////////////////////////// TEXT CALLBACKS //////////////////////////////////////////////////////////////
 
@@ -136,4 +136,23 @@ void text_widget::update_cache() const
 			m_cache->text = std::move(text);
 		}
 	}
+}
+
+/////////////////////////////////////////////////////////// INTERVAL FORMATTER ////////////////////////////////////////////////////////////
+
+void interval_formatter::from_string(ticks& out, std::string_view str)
+{
+	float temp{out / 1.0_sf};
+	std::from_chars(str.data(), str.data() + str.size(), temp);
+	out = ticks(temp * SECOND_TICKS);
+}
+
+std::string interval_formatter::to_string(ticks v)
+{
+	return TR_FMT::format("{:.1f}s", v / 1.0_sf);
+}
+
+std::string interval_formatter::to_string(std::string_view str)
+{
+	return TR_FMT::format("{}s", str);
 }

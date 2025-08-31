@@ -97,6 +97,13 @@ template <class T, usize S, class Formatter> class basic_numeric_input_widget : 
 template <class T, usize S, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
 using numeric_input_widget = basic_numeric_input_widget<T, S, default_numeric_input_formatter<T, Fmt, BufferFmt>>;
 
+struct interval_formatter {
+	static void from_string(ticks& out, std::string_view str);
+	static std::string to_string(ticks v);
+	static std::string to_string(std::string_view str);
+};
+template <usize S> using interval_input_widget = basic_numeric_input_widget<ticks, S, interval_formatter>;
+
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
 template <usize S> class line_input_widget : public text_widget {

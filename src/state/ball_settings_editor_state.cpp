@@ -108,32 +108,6 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 
 // clang-format on
 
-//////////////////////////////////////////////////////// SPAWN INTERVAL FORMATTER /////////////////////////////////////////////////////////
-
-struct spawn_interval_formatter {
-	static void from_string(ticks& out, std::string_view str);
-	static std::string to_string(ticks v);
-	static std::string to_string(std::string_view str);
-};
-using tick_input_widget = basic_numeric_input_widget<ticks, 4, spawn_interval_formatter>;
-
-void spawn_interval_formatter::from_string(ticks& out, std::string_view str)
-{
-	float temp{out / 1.0_sf};
-	std::from_chars(str.data(), str.data() + str.size(), temp);
-	out = ticks(temp * SECOND_TICKS);
-}
-
-std::string spawn_interval_formatter::to_string(ticks v)
-{
-	return TR_FMT::format("{:.1f}s", v / 1.0_sf);
-}
-
-std::string spawn_interval_formatter::to_string(std::string_view str)
-{
-	return TR_FMT::format("{}s", str);
-}
-
 /////////////////////////////////////////////////////// BALL SETTINGS EDITOR STATE ////////////////////////////////////////////////////////
 
 ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<playerless_game>&& game, const gamemode& gamemode)
@@ -285,8 +259,8 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<playerles
 	m_ui.emplace<arrow_widget>(T_MAX_COUNT_I, MAX_COUNT_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, max_count_i_scb, max_count_i_acb);
 	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_D, SPAWN_INTERVAL_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, spawn_interval_d_scb,
 							   spawn_interval_d_acb);
-	m_ui.emplace<tick_input_widget>(T_SPAWN_INTERVAL_C, SPAWN_INTERVAL_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-									m_pending.ball.spawn_interval, scb, spawn_interval_c_vcb);
+	m_ui.emplace<interval_input_widget<4>>(T_SPAWN_INTERVAL_C, SPAWN_INTERVAL_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+										   m_pending.ball.spawn_interval, scb, spawn_interval_c_vcb);
 	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_I, SPAWN_INTERVAL_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, spawn_interval_i_scb,
 							   spawn_interval_i_acb);
 	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_D, INITIAL_SIZE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, initial_size_d_scb,
