@@ -1,6 +1,6 @@
+#include "../../include/game/game.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/fonts.hpp"
-#include "../../include/game/game.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/score.hpp"
 #include "../../include/system.hpp"
@@ -13,27 +13,27 @@ constexpr std::array<float, 8> COLLECT_PITCHES{
 
 inline constexpr float CENTER_SIZE{1000 / 3.0f};
 inline constexpr ticks HUGGING_THRESHOLD{100};
-inline constexpr ticks SCORE_TICK_TIME_THRESHOLD{4_s};
-inline constexpr ticks MAX_ACCUMULATED_SCORE_TICK_TIME{6_s};
-
-inline constexpr glm::vec2 TIMER_TEXT_POS{500, 50};
-inline constexpr glm::vec2 SCORE_TEXT_POS{990, -7};
+inline constexpr ticks SCORE_REGION_TIME_THRESHOLD{2_s};
+inline constexpr ticks MAX_ACCUMULATED_SCORE_REGION_TIME{3_s};
 
 inline constexpr float SMALL_LIFE_SIZE{10};
 inline constexpr float LARGE_LIFE_SIZE{20};
 inline constexpr int MAX_LARGE_LIVES{5};
 inline constexpr int LIVES_PER_LINE{10};
-
-inline constexpr ticks UI_HIDING_TIME{0.25_s};
-inline constexpr ticks SCREEN_SHAKE_TIME{2_s / 3};
 inline constexpr ticks LIFE_SHATTER_TIME{1_s / 5};
 inline constexpr ticks LIFE_APPEAR_TIME{1_s / 5};
+inline constexpr glm::vec2 TIMER_TEXT_POS{500, 50};
+inline constexpr glm::vec2 SCORE_TEXT_POS{990, -4};
+inline constexpr ticks UI_HIDING_TIME{0.25_s};
+
+inline constexpr ticks SCREEN_SHAKE_TIME{2_s / 3};
 
 //
 
 tr::gfx::dyn_atlas<char> create_number_atlas()
 {
 	tr::gfx::dyn_atlas<char> atlas;
+	atlas.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
 	for (char chr : std::string_view{"0123456789:-"}) {
 		atlas.add(chr, engine::render_gradient_glyph(chr, font::DEFAULT, tr::system::ttf_style::NORMAL, 64, 5));
 	}
@@ -251,7 +251,7 @@ void game::update_life_fragments()
 
 void game::check_if_player_is_hovering_over_timer()
 {
-	const glm::vec2 size{text_size(timer_text(m_time_since_start), 1 / engine::render_scale())};
+	const glm::vec2 size{text_size(timer_text(m_time_since_start), 1 / engine::render_scale()) * 0.95f};
 	const tr::frect2 timer_text_bounds{TIMER_TEXT_POS - size / 2.0f - 8.0f, size + 16.0f};
 	if (timer_text_bounds.contains(m_player.hitbox().c)) {
 		m_accumulated_timer_hover_time = std::min(m_accumulated_timer_hover_time + 1, UI_HIDING_TIME);
@@ -277,7 +277,7 @@ void game::check_if_player_is_hovering_over_lives()
 
 void game::check_if_player_is_hovering_over_score()
 {
-	const glm::vec2 size{text_size(std::to_string(m_score), 1 / engine::render_scale())};
+	const glm::vec2 size{text_size(std::to_string(m_score), 1 / engine::render_scale()) * 0.85f};
 	const tr::frect2 timer_text_bounds{tl(SCORE_TEXT_POS, size, tr::align::TOP_RIGHT), size};
 	if (timer_text_bounds.contains(m_player.hitbox().c)) {
 		m_accumulated_score_hover_time = std::min(m_accumulated_score_hover_time + 1, UI_HIDING_TIME);
@@ -343,7 +343,7 @@ void game::check_for_score_ticks()
 	const tr::circle& player_hitbox{m_player.hitbox()};
 	if (player_hitbox.c.x >= FIELD_CENTER - CENTER_SIZE / 2 && player_hitbox.c.x <= FIELD_CENTER + CENTER_SIZE / 2 &&
 		player_hitbox.c.y >= FIELD_CENTER - CENTER_SIZE / 2 && player_hitbox.c.y <= FIELD_CENTER + CENTER_SIZE / 2) {
-		m_accumulated_center_time = std::min(m_accumulated_center_time + 1, SCORE_TICK_TIME_THRESHOLD);
+		m_accumulated_center_time = std::min(m_accumulated_center_time + 1, MAX_ACCUMULATED_SCORE_REGION_TIME);
 	}
 	else {
 		if (m_accumulated_center_time > 0) {
@@ -352,10 +352,10 @@ void game::check_for_score_ticks()
 	}
 
 	if (player_hitbox.c.y < FIELD_MIN + HUGGING_THRESHOLD || player_hitbox.c.y > FIELD_MAX - HUGGING_THRESHOLD) {
-		m_accumulated_edge_time = std::min(m_accumulated_edge_time + 1, SCORE_TICK_TIME_THRESHOLD);
+		m_accumulated_edge_time = std::min(m_accumulated_edge_time + 1, MAX_ACCUMULATED_SCORE_REGION_TIME);
 
 		if (player_hitbox.c.x < FIELD_MIN + HUGGING_THRESHOLD || player_hitbox.c.x > FIELD_MAX - HUGGING_THRESHOLD) {
-			m_accumulated_corner_time = std::min(m_accumulated_corner_time + 1, SCORE_TICK_TIME_THRESHOLD);
+			m_accumulated_corner_time = std::min(m_accumulated_corner_time + 1, MAX_ACCUMULATED_SCORE_REGION_TIME);
 		}
 		else {
 			if (m_accumulated_corner_time > 0) {
@@ -364,9 +364,9 @@ void game::check_for_score_ticks()
 		}
 	}
 	else if (player_hitbox.c.x < FIELD_MIN + HUGGING_THRESHOLD || player_hitbox.c.x > FIELD_MAX - HUGGING_THRESHOLD) {
-		m_accumulated_edge_time = std::min(m_accumulated_edge_time + 1, SCORE_TICK_TIME_THRESHOLD);
+		m_accumulated_edge_time = std::min(m_accumulated_edge_time + 1, MAX_ACCUMULATED_SCORE_REGION_TIME);
 		if (player_hitbox.c.y < FIELD_MIN + HUGGING_THRESHOLD || player_hitbox.c.y > FIELD_MAX - HUGGING_THRESHOLD) {
-			m_accumulated_corner_time = std::min(m_accumulated_corner_time + 1, SCORE_TICK_TIME_THRESHOLD);
+			m_accumulated_corner_time = std::min(m_accumulated_corner_time + 1, MAX_ACCUMULATED_SCORE_REGION_TIME);
 		}
 		else {
 			if (m_accumulated_corner_time > 0) {
@@ -384,13 +384,13 @@ void game::check_for_score_ticks()
 	}
 
 	if (m_time_since_start % 1_s == 0) {
-		if (m_accumulated_center_time >= SCORE_TICK_TIME_THRESHOLD) {
+		if (m_accumulated_center_time >= SCORE_REGION_TIME_THRESHOLD) {
 			add_to_score(15, "survival_centered");
 		}
-		else if (m_accumulated_corner_time >= SCORE_TICK_TIME_THRESHOLD) {
-			add_to_score(-5, "survival_cornerhugging");
+		else if (m_accumulated_corner_time >= SCORE_REGION_TIME_THRESHOLD) {
+			add_to_score(-10, "survival_cornerhugging");
 		}
-		else if (m_accumulated_edge_time >= SCORE_TICK_TIME_THRESHOLD) {
+		else if (m_accumulated_edge_time >= SCORE_REGION_TIME_THRESHOLD) {
 			add_to_score(5, "survival_edgehugging");
 		}
 		else {
@@ -524,15 +524,24 @@ void game::add_score_to_renderer() const
 
 	if (game_over()) {
 		tint = (m_score >= 0) ? "00FF00"_rgba8 : "FF0000"_rgba8;
-		scale = 1;
+		scale = 0.85f;
 	}
 	else {
 		const float factor{std::min(m_time_since_score_update, 0.1_s) / 0.1_sf};
-		const u8 tint_factor{tr::norm_cast<u8>(1 - 0.25f * factor)};
+		const u8 tint_factor{tr::norm_cast<u8>(1 - 0.1f * factor)};
 		const ticks clamped_hover_time{std::min(m_accumulated_score_hover_time, UI_HIDING_TIME)};
 		const u8 opacity{u8((255 - clamped_hover_time * 180 / UI_HIDING_TIME) * tint_factor / 255)};
 		tint = {tint_factor, tint_factor, tint_factor, opacity};
-		scale = (1.1f - 0.1f * factor);
+		scale = (0.85f - 0.1f * factor);
+
+		constexpr float MAX{MAX_ACCUMULATED_SCORE_REGION_TIME - SCORE_REGION_TIME_THRESHOLD};
+		if (m_accumulated_center_time >= SCORE_REGION_TIME_THRESHOLD) {
+			tint.b -= 0.75f * tint.b * (m_accumulated_center_time - SCORE_REGION_TIME_THRESHOLD) / MAX;
+		}
+		else if (m_accumulated_edge_time >= SCORE_REGION_TIME_THRESHOLD) {
+			tint.g -= 0.5f * tint.g * (m_accumulated_edge_time - SCORE_REGION_TIME_THRESHOLD) / MAX;
+			tint.b -= 0.5f * tint.b * (m_accumulated_edge_time - SCORE_REGION_TIME_THRESHOLD) / MAX;
+		}
 	}
 
 	glm::vec2 tl{tr::tl(SCORE_TEXT_POS, text_size(text, scale), tr::align::TOP_RIGHT)};
