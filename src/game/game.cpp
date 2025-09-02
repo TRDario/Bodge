@@ -1,6 +1,6 @@
-#include "../../include/game/game.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/fonts.hpp"
+#include "../../include/game/game.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/score.hpp"
 #include "../../include/system.hpp"
@@ -130,6 +130,7 @@ game::game(const ::gamemode& gamemode, u64 rng_seed)
 	, m_accumulated_center_time{0}
 	, m_accumulated_edge_time{0}
 	, m_accumulated_corner_time{0}
+	, m_style_cooldown_left{0}
 	, m_time_since_score_update{INACTIVE_TIMER}
 	, m_accumulated_lives_hover_time{0}
 	, m_accumulated_timer_hover_time{0}
@@ -144,6 +145,11 @@ game::game(const ::gamemode& gamemode, u64 rng_seed)
 bool game::game_over() const
 {
 	return m_time_since_game_over != INACTIVE_TIMER;
+}
+
+i64 game::final_score() const
+{
+	return m_score;
 }
 
 ticks game::final_time() const
@@ -167,6 +173,7 @@ void game::update(const glm::vec2& input)
 		check_if_player_was_hit();
 		check_if_player_collected_life_fragments();
 		check_for_score_ticks();
+		check_for_style_points();
 	}
 	else {
 		m_player.update_fragments();
@@ -340,9 +347,8 @@ void game::check_if_player_collected_life_fragments()
 
 void game::check_for_score_ticks()
 {
-	const tr::circle& player_hitbox{m_player.hitbox()};
-	if (player_hitbox.c.x >= FIELD_CENTER - CENTER_SIZE / 2 && player_hitbox.c.x <= FIELD_CENTER + CENTER_SIZE / 2 &&
-		player_hitbox.c.y >= FIELD_CENTER - CENTER_SIZE / 2 && player_hitbox.c.y <= FIELD_CENTER + CENTER_SIZE / 2) {
+	if (m_player.hitbox().c.x >= FIELD_CENTER - CENTER_SIZE / 2 && m_player.hitbox().c.x <= FIELD_CENTER + CENTER_SIZE / 2 &&
+		m_player.hitbox().c.y >= FIELD_CENTER - CENTER_SIZE / 2 && m_player.hitbox().c.y <= FIELD_CENTER + CENTER_SIZE / 2) {
 		m_accumulated_center_time = std::min(m_accumulated_center_time + 1, MAX_ACCUMULATED_SCORE_REGION_TIME);
 	}
 	else {
@@ -351,10 +357,10 @@ void game::check_for_score_ticks()
 		}
 	}
 
-	if (player_hitbox.c.y < FIELD_MIN + HUGGING_THRESHOLD || player_hitbox.c.y > FIELD_MAX - HUGGING_THRESHOLD) {
+	if (m_player.hitbox().c.y < FIELD_MIN + HUGGING_THRESHOLD || m_player.hitbox().c.y > FIELD_MAX - HUGGING_THRESHOLD) {
 		m_accumulated_edge_time = std::min(m_accumulated_edge_time + 1, MAX_ACCUMULATED_SCORE_REGION_TIME);
 
-		if (player_hitbox.c.x < FIELD_MIN + HUGGING_THRESHOLD || player_hitbox.c.x > FIELD_MAX - HUGGING_THRESHOLD) {
+		if (m_player.hitbox().c.x < FIELD_MIN + HUGGING_THRESHOLD || m_player.hitbox().c.x > FIELD_MAX - HUGGING_THRESHOLD) {
 			m_accumulated_corner_time = std::min(m_accumulated_corner_time + 1, MAX_ACCUMULATED_SCORE_REGION_TIME);
 		}
 		else {
@@ -363,9 +369,9 @@ void game::check_for_score_ticks()
 			}
 		}
 	}
-	else if (player_hitbox.c.x < FIELD_MIN + HUGGING_THRESHOLD || player_hitbox.c.x > FIELD_MAX - HUGGING_THRESHOLD) {
+	else if (m_player.hitbox().c.x < FIELD_MIN + HUGGING_THRESHOLD || m_player.hitbox().c.x > FIELD_MAX - HUGGING_THRESHOLD) {
 		m_accumulated_edge_time = std::min(m_accumulated_edge_time + 1, MAX_ACCUMULATED_SCORE_REGION_TIME);
-		if (player_hitbox.c.y < FIELD_MIN + HUGGING_THRESHOLD || player_hitbox.c.y > FIELD_MAX - HUGGING_THRESHOLD) {
+		if (m_player.hitbox().c.y < FIELD_MIN + HUGGING_THRESHOLD || m_player.hitbox().c.y > FIELD_MAX - HUGGING_THRESHOLD) {
 			m_accumulated_corner_time = std::min(m_accumulated_corner_time + 1, MAX_ACCUMULATED_SCORE_REGION_TIME);
 		}
 		else {
@@ -385,7 +391,7 @@ void game::check_for_score_ticks()
 
 	if (m_time_since_start % 1_s == 0) {
 		if (m_accumulated_center_time >= SCORE_REGION_TIME_THRESHOLD) {
-			add_to_score(15, "survival_centered");
+			add_to_score(25, "survival_centered");
 		}
 		else if (m_accumulated_corner_time >= SCORE_REGION_TIME_THRESHOLD) {
 			add_to_score(-10, "survival_cornerhugging");
@@ -395,6 +401,31 @@ void game::check_for_score_ticks()
 		}
 		else {
 			add_to_score(10, "survival");
+		}
+	}
+}
+
+void game::check_for_style_points()
+{
+	if (m_style_cooldown_left > 0) {
+		--m_style_cooldown_left;
+	}
+	else {
+		i64 max_points{0};
+		for (const ball& ball : std::views::filter(m_balls, &ball::tangible)) {
+			const float velocity{glm::length(ball.velocity())};
+			const tr::angle rect_angle{tr::atan2(ball.velocity().y / velocity, ball.velocity().x / velocity)};
+			const glm::vec2 rect_size{ball.hitbox().r + velocity / 3, ball.hitbox().r * 2 + m_player.hitbox().r};
+			const glm::vec2 rect_center{ball.hitbox().c + ball.velocity() / 6.0f + tr::magth(ball.hitbox().r, rect_angle)};
+			const tr::frect2 unrotated_rect{tr::frect2{rect_center - rect_size / 2.0f, rect_size}};
+			const glm::mat4 inverse_rotation{tr::rotate_around(1.0f, rect_center, -rect_angle)};
+			if (unrotated_rect.contains(inverse_rotation * m_player.hitbox().c)) {
+				max_points = std::max({1_i64, tr::floor_cast<i64>(std::sqrt(ball.hitbox().r / 10) * velocity / 250), max_points});
+			}
+		}
+		if (max_points != 0) {
+			add_to_score(max_points, "style");
+			m_style_cooldown_left = STYLE_COOLDOWN;
 		}
 	}
 }
@@ -422,7 +453,7 @@ void game::add_to_renderer() const
 		m_player.add_to_renderer_dead(m_time_since_game_over);
 	}
 	else {
-		m_player.add_to_renderer_alive(m_time_since_start);
+		m_player.add_to_renderer_alive(m_time_since_start, m_style_cooldown_left);
 		add_lives_to_renderer();
 	}
 	add_score_to_renderer();
@@ -436,7 +467,7 @@ void game::add_timer_to_renderer() const
 	float scale;
 
 	if (game_over()) {
-		tint = (final_time >= engine::scorefile.best_time(gamemode())) ? "00FF00"_rgba8 : "FF0000"_rgba8;
+		tint = (final_time >= engine::scorefile.bests(gamemode()).time) ? "00FF00"_rgba8 : "FF0000"_rgba8;
 		scale = 1;
 	}
 	else {
@@ -523,7 +554,7 @@ void game::add_score_to_renderer() const
 	float scale;
 
 	if (game_over()) {
-		tint = (m_score >= 0) ? "00FF00"_rgba8 : "FF0000"_rgba8;
+		tint = (m_score >= engine::scorefile.bests(gamemode()).score) ? "00FF00"_rgba8 : "FF0000"_rgba8;
 		scale = 0.85f;
 	}
 	else {

@@ -45,10 +45,10 @@ save_score_state::save_score_state(std::unique_ptr<game>&& game, glm::vec2 mouse
 	set_up_ui();
 }
 
-save_score_state::save_score_state(std::unique_ptr<game>&& game, ticks prev_pb, save_screen_flags flags)
+save_score_state::save_score_state(std::unique_ptr<game>&& game, const bests& bests, save_screen_flags flags)
 	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), true}
 	, m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
-	, m_substate_data{.prev_pb = prev_pb}
+	, m_substate_data{.bests = bests}
 	, m_score{{}, current_timestamp(), 0, m_game->final_time(), {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f}}
 {
 	set_up_ui();
@@ -66,7 +66,7 @@ std::unique_ptr<tr::state> save_score_state::update(tr::duration)
 	case substate_base::RETURNING:
 		if (m_timer >= 0.5_s) {
 			if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
-				return std::make_unique<game_over_state>(std::move(m_game), false, m_substate_data.prev_pb);
+				return std::make_unique<game_over_state>(std::move(m_game), false, m_substate_data.bests);
 			}
 			else {
 				return std::make_unique<pause_state>(std::move(m_game), game_type::REGULAR, m_substate_data.start_mouse_pos, false);
@@ -114,7 +114,7 @@ void save_score_state::set_up_ui()
 			set_up_exit_animation();
 			engine::scorefile.playtime += m_score.time;
 			engine::scorefile.add_score(m_game->gamemode(), m_score);
-			engine::scorefile.update_best_time(m_game->gamemode(), m_game->final_time());
+			engine::scorefile.update_bests(m_game->gamemode(), m_game->final_score(), m_game->final_time());
 		},
 	};
 	const action_callback cancel_acb{

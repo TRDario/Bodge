@@ -21,6 +21,8 @@ language_name = "English"
 
 # Start game screen
     no_description = "(NO DESCRIPTION...)"
+    best_time      = "BEST TIME:"
+    best_score     = "BEST SCORE:"
     start          = "START"
 
 # Gamemode editor
@@ -90,6 +92,8 @@ language_name = "English"
     replay_paused    = "REPLAY PAUSED"
     unpause          = "UNPAUSE"
     game_over        = "GAME OVER"
+    time             = "TIME:"
+    score            = "SCORE:"
     new_pb           = "NEW PERSONAL BEST!"
     save_and_restart = "SAVE AND RESTART"
     restart          = "RESTART"

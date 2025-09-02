@@ -307,7 +307,7 @@ class pause_state : public game_menu_state {
 
 class game_over_state : public game_menu_state {
   public:
-	game_over_state(std::unique_ptr<game>&& game, bool blur_in, ticks prev_pb);
+	game_over_state(std::unique_ptr<game>&& game, bool blur_in, const bests& bests);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -322,7 +322,7 @@ class game_over_state : public game_menu_state {
 	};
 
 	substate m_substate;
-	ticks m_prev_pb;
+	bests m_bests;
 
 	float fade_overlay_opacity() override;
 	float saturation_factor() override;
@@ -346,7 +346,7 @@ class save_score_state : public game_menu_state {
 	// Used when coming from the pause screen.
 	save_score_state(std::unique_ptr<game>&& game, glm::vec2 mouse_pos, save_screen_flags flags);
 	// Used when coming from the game over screen.
-	save_score_state(std::unique_ptr<game>&& game, ticks prev_pb, save_screen_flags flags);
+	save_score_state(std::unique_ptr<game>&& game, const bests& bests, save_screen_flags flags);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -360,7 +360,7 @@ class save_score_state : public game_menu_state {
 	}; // substate_base + save_screen_flags
 	union substate_data {
 		glm::vec2 start_mouse_pos;
-		ticks prev_pb;
+		bests bests;
 	};
 
 	substate m_substate;

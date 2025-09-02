@@ -75,6 +75,7 @@ class game : private playerless_game {
 	ticks m_accumulated_center_time;
 	ticks m_accumulated_edge_time;
 	ticks m_accumulated_corner_time;
+	ticks m_style_cooldown_left;
 	ticks m_time_since_score_update;
 	ticks m_accumulated_lives_hover_time;
 	ticks m_accumulated_timer_hover_time;
@@ -94,6 +95,7 @@ class game : private playerless_game {
 	void set_up_shattered_life_fragments();
 	void check_if_player_collected_life_fragments();
 	void check_for_score_ticks();
+	void check_for_style_points();
 	void set_screen_shake() const;
 
 	void add_timer_to_renderer() const;

@@ -45,14 +45,19 @@ template <> struct tr::binary_writer<score_category> {
 
 //////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
 
+struct bests {
+	i64 score;
+	ticks time;
+};
+
 struct scorefile {
 	tr::static_string<20 * 4> name;
 	std::vector<score_category> categories;
 	ticks playtime{0};
 	gamemode last_selected;
 
-	ticks best_time(const gamemode& gm);
-	void update_best_time(const gamemode& gm, ticks pb);
+	bests bests(const gamemode& gm) const;
+	void update_bests(const gamemode& gm, i64 score, ticks time);
 	void add_score(const gamemode& gm, const score_entry& s);
 };
 

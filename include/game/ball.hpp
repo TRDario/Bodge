@@ -11,6 +11,7 @@ class ball {
 
 	bool tangible() const;
 	const tr::circle& hitbox() const;
+	const glm::vec2& velocity() const;
 	friend bool colliding(const ball& a, const ball& b);
 
 	friend void handle_collision(ball& a, ball& b);

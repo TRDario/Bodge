@@ -1,5 +1,5 @@
-#include "../../include/game/ball.hpp"
 #include "../../include/audio.hpp"
+#include "../../include/game/ball.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/settings.hpp"
 
@@ -44,6 +44,11 @@ bool ball::tangible() const
 const tr::circle& ball::hitbox() const
 {
 	return m_hitbox;
+}
+
+const glm::vec2& ball::velocity() const
+{
+	return m_velocity;
 }
 
 bool colliding(const ball& a, const ball& b)

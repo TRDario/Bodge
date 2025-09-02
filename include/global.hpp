@@ -13,6 +13,7 @@ using namespace tr::angle_literals;
 using namespace tr::color_literals;
 using namespace tr::integer_literals;
 using namespace tr::integer_aliases;
+using namespace tr::matrix_operators;
 
 ///////////////////////////////////////////////////////////////// TICKRATE ////////////////////////////////////////////////////////////////
 
@@ -57,6 +58,7 @@ inline constexpr float FIELD_BORDER_THICKNESS{4};
 inline constexpr float FIELD_MIN{FIELD_BORDER_THICKNESS};
 inline constexpr float FIELD_MAX{1000 - FIELD_BORDER_THICKNESS};
 inline constexpr float FIELD_CENTER{FIELD_MIN + (FIELD_MAX - FIELD_MIN) / 2};
+inline constexpr ticks STYLE_COOLDOWN{0.1_s};
 
 /////////////////////////////////////////////////////////////// UI CONSTANTS //////////////////////////////////////////////////////////////
 

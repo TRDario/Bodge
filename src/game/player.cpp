@@ -72,7 +72,7 @@ void player::update_fragments()
 
 //
 
-void player::add_to_renderer_alive(ticks time_since_start) const
+void player::add_to_renderer_alive(ticks time_since_start, ticks style_cooldown_left) const
 {
 	constexpr float PI{std::numbers::pi_v<float>};
 
@@ -86,6 +86,7 @@ void player::add_to_renderer_alive(ticks time_since_start) const
 		add_fill_to_renderer(opacity, rotation, size);
 		add_outline_to_renderer(tint, opacity, rotation, size);
 		add_trail_to_renderer(tint, opacity, rotation, size);
+		add_style_wave_to_renderer(tint, style_cooldown_left);
 	}
 }
 
@@ -140,6 +141,22 @@ void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation
 			*indices_it++ = u16(trail_mesh.base_index + 6 * i + j);
 		}
 	}
+}
+
+void player::add_style_wave_to_renderer(tr::rgb8 tint, ticks style_cooldown_left) const
+{
+	if (style_cooldown_left == 0) {
+		return;
+	}
+
+	const float t{1 - style_cooldown_left / float(STYLE_COOLDOWN)};
+	const float scale{m_hitbox.r + 10 + std::pow(t, 2.0f) * 40};
+	const usize vertices{tr::smooth_poly_vtx(scale, engine::render_scale())};
+	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t) * 0.75f)};
+
+	const tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_outline(layer::PLAYER, vertices)};
+	tr::fill_poly_outline_vtx(mesh.positions, vertices, {m_hitbox.c, scale}, 0_deg, 2);
+	std::ranges::fill(mesh.colors, tr::rgba8{tint, opacity});
 }
 
 void player::add_death_wave_to_renderer(ticks time_since_game_over) const

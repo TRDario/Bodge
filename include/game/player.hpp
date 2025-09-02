@@ -18,7 +18,7 @@ class player {
 	void update(glm::vec2 target);
 	void update_fragments();
 
-	void add_to_renderer_alive(ticks time_since_start) const;
+	void add_to_renderer_alive(ticks time_since_start, ticks style_cooldown_left) const;
 	void add_to_renderer_dead(ticks time_since_game_over) const;
 
   private:
@@ -31,6 +31,7 @@ class player {
 	void add_fill_to_renderer(u8 opacity, tr::angle rotation, float size) const;
 	void add_outline_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const;
 	void add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const;
+	void add_style_wave_to_renderer(tr::rgb8 tint, ticks style_cooldown_left) const;
 	void add_death_wave_to_renderer(ticks time_since_game_over) const;
 	void add_death_fragments_to_renderer(ticks time_since_game_over) const;
 };

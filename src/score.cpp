@@ -1,6 +1,6 @@
-#include "../include/score.hpp"
 #include "../include/gamemode.hpp"
 #include "../include/legacy_formats.hpp"
+#include "../include/score.hpp"
 #include "../include/settings.hpp"
 
 namespace engine {
@@ -58,20 +58,21 @@ void tr::binary_writer<score_category>::write_to_stream(std::ostream& os, const 
 
 //////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
 
-ticks scorefile::best_time(const gamemode& gm)
+bests scorefile::bests(const gamemode& gm) const
 {
 	std::vector<score_category>::const_iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
-	return it != categories.end() ? it->best_time : 0;
+	return it != categories.end() ? ::bests{it->best_score, it->best_time} : ::bests{0, 0};
 }
 
-void scorefile::update_best_time(const gamemode& gm, ticks pb)
+void scorefile::update_bests(const gamemode& gm, i64 score, ticks time)
 {
 	std::vector<score_category>::iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
 	if (it == categories.end()) {
-		it = categories.insert(it, {gm, 0, pb, {}});
+		it = categories.insert(it, {gm, score, time, {}});
 	}
 	else {
-		it->best_time = std::max(it->best_time, pb);
+		it->best_score = std::max(it->best_score, score);
+		it->best_time = std::max(it->best_time, time);
 	}
 }
 
