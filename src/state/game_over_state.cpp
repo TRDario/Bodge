@@ -44,10 +44,8 @@ constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, glm::vec2{500, TITLE_Y 
 
 //
 
-game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in, const bests& bests)
-	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), true}
-	, m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}
-	, m_bests{bests}
+game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in)
+	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), true}, m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}
 {
 	// HEIGHTS AND MOVE-INS
 
@@ -55,12 +53,12 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in, con
 	const float label_h{result_h - engine::line_skip(font::LANGUAGE, 48) + 14};
 	const float best_h{result_h + engine::line_skip(font::LANGUAGE, 48) - 14};
 
-	const tweener<glm::vec2> time_label_move_in{tween::CUBIC, {150, label_h}, {250, label_h}, 0.5_s};
-	const tweener<glm::vec2> time_move_in{tween::CUBIC, {150, result_h}, {250, result_h}, 0.5_s};
-	const tweener<glm::vec2> best_time_move_in{tween::CUBIC, {150, best_h}, {250, best_h}, 0.5_s};
-	const tweener<glm::vec2> score_label_move_in{tween::CUBIC, {850, label_h}, {750, label_h}, 0.5_s};
-	const tweener<glm::vec2> score_move_in{tween::CUBIC, {850, result_h}, {750, result_h}, 0.5_s};
-	const tweener<glm::vec2> best_score_move_in{tween::CUBIC, {850, best_h}, {750, best_h}, 0.5_s};
+	const tweener<glm::vec2> time_label_move_in{tween::CUBIC, {175, label_h}, {275, label_h}, 0.5_s};
+	const tweener<glm::vec2> time_move_in{tween::CUBIC, {175, result_h}, {275, result_h}, 0.5_s};
+	const tweener<glm::vec2> best_time_move_in{tween::CUBIC, {175, best_h}, {275, best_h}, 0.5_s};
+	const tweener<glm::vec2> score_label_move_in{tween::CUBIC, {825, label_h}, {725, label_h}, 0.5_s};
+	const tweener<glm::vec2> score_move_in{tween::CUBIC, {825, result_h}, {725, result_h}, 0.5_s};
+	const tweener<glm::vec2> best_score_move_in{tween::CUBIC, {825, best_h}, {725, best_h}, 0.5_s};
 
 	// STATUS CALLBACKS
 
@@ -77,9 +75,12 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in, con
 			set_up_exit_animation();
 		},
 		[this] {
+			const score_entry score{
+				{}, current_timestamp(), m_game->final_score(), m_game->final_time(), {false, engine::cli_settings.game_speed != 1}};
+
 			m_timer = 0;
 			m_substate = substate::RESTARTING;
-			engine::scorefile.playtime += m_game->final_time();
+			engine::scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
 		},
 		[this] {
@@ -90,16 +91,20 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in, con
 		[this] {
 			m_timer = 0;
 			m_substate = substate::QUITTING;
-			engine::scorefile.playtime += m_game->final_time();
+			engine::scorefile.add_score(
+				m_game->gamemode(),
+				{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), {false, engine::cli_settings.game_speed != 1}});
 			set_up_exit_animation();
 		},
 	};
 
 	// TEXT CALLBACKS
 
+	const bests& bests{engine::scorefile.bests(m_game->gamemode())};
+
 	text_callback best_time_tcb;
 	if (bests.time < m_game->final_time()) {
-		best_time_tcb = loc_text_callback{"new_pb"};
+		best_time_tcb = loc_text_callback{"new_personal_best"};
 	}
 	else {
 		best_time_tcb = string_text_callback{
@@ -108,7 +113,7 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in, con
 
 	text_callback best_score_tcb;
 	if (bests.score < m_game->final_score()) {
-		best_score_tcb = loc_text_callback{"new_pb"};
+		best_score_tcb = loc_text_callback{"new_personal_best"};
 	}
 	else {
 		best_score_tcb =
@@ -128,7 +133,7 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in, con
 	m_ui.emplace<label_widget>(T_SCORE_LABEL, score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SCORE_LABEL},
 							   tr::system::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_SCORE, score_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   string_text_callback{std::to_string(m_game->final_score())}, tr::system::ttf_style::NORMAL, 64,
+							   string_text_callback{TR_FMT::format("{:05}", m_game->final_score())}, tr::system::ttf_style::NORMAL, 64,
 							   "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_BEST_SCORE, best_score_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_score_tcb),
 							   tr::system::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
@@ -154,7 +159,7 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 		}
 		[[fallthrough]];
 	case substate::GAME_OVER:
-		if (m_bests.time < m_game->final_time()) {
+		if (engine::scorefile.bests(m_game->gamemode()).time < m_game->final_time()) {
 			if (m_timer % 0.5_s == 0) {
 				m_ui[T_BEST_TIME].hide();
 			}
@@ -162,7 +167,7 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 				m_ui[T_BEST_TIME].unhide();
 			}
 		}
-		if (m_bests.score < m_game->final_score()) {
+		if (engine::scorefile.bests(m_game->gamemode()).score < m_game->final_score()) {
 			if (m_timer % 0.5_s == 0) {
 				m_ui[T_BEST_SCORE].hide();
 			}
@@ -179,7 +184,7 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 		if (m_timer >= 0.5_s) {
 			const save_screen_flags state_flags{m_substate == substate::SAVING_AND_RESTARTING ? save_screen_flags::RESTARTING
 																							  : save_screen_flags::NONE};
-			return std::make_unique<save_score_state>(std::move(m_game), m_bests, state_flags);
+			return std::make_unique<save_score_state>(std::move(m_game), state_flags);
 		}
 		else {
 			return nullptr;

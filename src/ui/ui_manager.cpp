@@ -201,34 +201,37 @@ void ui_manager::select_widget_below()
 void ui_manager::select_widget_to_the_left()
 {
 	if (m_selection.has_ref()) {
-		auto [row_it, tag_it]{find_in_selection_tree(m_selection->first)};
-		--tag_it;
-		while (tag_it >= row_it->begin()) {
-			auto it{m_widgets.find(*tag_it)};
+		auto [row_it, cur_tag_it]{find_in_selection_tree(m_selection->first)};
+		for (auto tag_it = cur_tag_it; tag_it != std::next(cur_tag_it); --tag_it) {
+			if (tag_it == row_it->begin()) {
+				tag_it = row_it->end();
+			}
+
+			auto it{m_widgets.find(tag_it[-1])};
 			if (it->second->interactible()) {
 				select_widget(it->first);
 				return;
 			}
-			--tag_it;
 		}
-		select_widget(*std::prev(row_it->end()));
 	}
 }
 
 void ui_manager::select_widget_to_the_right()
 {
 	if (m_selection.has_ref()) {
-		auto [row_it, tag_it]{find_in_selection_tree(m_selection->first)};
-		++tag_it;
-		while (tag_it != row_it->end()) {
+		auto [row_it, cur_tag_it]{find_in_selection_tree(m_selection->first)};
+		auto tag_it{std::next(cur_tag_it)};
+		for (tag_it = std::next(cur_tag_it); tag_it != cur_tag_it; ++tag_it) {
+			if (tag_it == row_it->end()) {
+				tag_it = row_it->begin();
+			}
+
 			auto it{m_widgets.find(*tag_it)};
 			if (it->second->interactible()) {
 				select_widget(it->first);
 				return;
 			}
-			++tag_it;
 		}
-		select_widget(*row_it->begin());
 	}
 }
 

@@ -14,12 +14,10 @@ template <> struct tr::binary_writer<score_flags> : tr::default_binary_writer<sc
 
 struct score_entry {
 	tr::static_string<255 * 4> description;
-	i64 unix_timestamp;
+	i64 timestamp;
 	i64 score;
 	ticks time;
 	score_flags flags;
-
-	friend std::strong_ordering operator<=>(const score_entry& l, const score_entry& r);
 };
 template <> struct tr::binary_reader<score_entry> {
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, score_entry& out);
@@ -27,6 +25,9 @@ template <> struct tr::binary_reader<score_entry> {
 template <> struct tr::binary_writer<score_entry> {
 	static void write_to_stream(std::ostream& os, const score_entry& in);
 };
+
+bool compare_scores(const score_entry& l, const score_entry& r);
+bool compare_times(const score_entry& l, const score_entry& r);
 
 ///////////////////////////////////////////////////////////// SCORE CATEGORY //////////////////////////////////////////////////////////////
 
@@ -57,7 +58,6 @@ struct scorefile {
 	gamemode last_selected;
 
 	bests bests(const gamemode& gm) const;
-	void update_bests(const gamemode& gm, i64 score, ticks time);
 	void add_score(const gamemode& gm, const score_entry& s);
 };
 

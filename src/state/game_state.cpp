@@ -45,6 +45,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 			m_substate = substate_base::ONGOING | to_type(m_substate);
 			m_timer = 0;
 			engine::play_song(m_game->gamemode().song, 0.1s);
+			engine::play_sound(sound::BALL_SPAWN, 0.25f, 0);
 		}
 		return nullptr;
 	case substate_base::ONGOING:
@@ -98,9 +99,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 			tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
 			switch (to_type(m_substate)) {
 			case game_type::REGULAR: {
-				const bests prev_bests{engine::scorefile.bests(m_game->gamemode())};
-				engine::scorefile.update_bests(m_game->gamemode(), m_game->final_score(), m_game->final_time());
-				return std::make_unique<game_over_state>(std::unique_ptr<active_game>{(active_game*)m_game.release()}, true, prev_bests);
+				return std::make_unique<game_over_state>(std::unique_ptr<active_game>{(active_game*)m_game.release()}, true);
 			}
 			case game_type::GAMEMODE_DESIGNER_TEST:
 			case game_type::REPLAY:

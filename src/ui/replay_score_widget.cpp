@@ -47,7 +47,8 @@ void engine::add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 c
 
 ////////////////////////////////////////////////////////////// SCORE WIDGET ///////////////////////////////////////////////////////////////
 
-score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, usize rank, tr::opt_ref<::score_entry> score)
+score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, enum type type, usize rank,
+						   tr::opt_ref<::score_entry> score)
 	: text_widget{
 		  pos,
 		  alignment,
@@ -83,18 +84,18 @@ score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks un
 				  return std::string{"----------------------------------"};
 			  }
 
-			  const ticks result{this->score->time};
-			  const ticks result_m{result / 60_s};
-			  const ticks result_s{(result % 60_s) / 1_s};
-			  const ticks result_ms{(result % 1_s) * 100 / 1_s};
-			  const tm* tm{std::localtime(&this->score->unix_timestamp)};
-			  if (this->rank == DONT_SHOW_RANK) {
-				  return TR_FMT::format("{}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", result_m, result_s, result_ms, tm->tm_year + 1900,
-										tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
-			  }
-			  else {
+			  const tm* tm{std::localtime(&this->score->timestamp)};
+			  if (this->type == type::TIME) {
+				  const ticks result{this->score->time};
+				  const ticks result_m{result / 60_s};
+				  const ticks result_s{(result % 60_s) / 1_s};
+				  const ticks result_ms{(result % 1_s) * 100 / 1_s};
 				  return TR_FMT::format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result_m, result_s, result_ms,
 										tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
+			  }
+			  else {
+				  return TR_FMT::format("{}) {:05} | {}/{:02}/{:02} {:02}:{:02}", this->rank, this->score->score, tm->tm_year + 1900,
+										tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
 			  }
 		  },
 		  font::LANGUAGE,
@@ -102,7 +103,8 @@ score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks un
 		  48,
 		  tr::system::UNLIMITED_WIDTH,
 	  }
-	, rank{rank}
+	, type{type}
+	, rank{u32(rank)}
 	, score{score}
 {
 }
@@ -181,13 +183,13 @@ replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks 
 							 const ticks result_m{result / 60_s};
 							 const ticks result_s{(result % 60_s) / 1_s};
 							 const ticks result_ms{(result % 1_s) * 100 / 1_s};
-							 const tm* tm{std::localtime(&rpy.unix_timestamp)};
-							 return TR_FMT::format("{} ({}: {})\n{} | {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", rpy.name,
-												   engine::loc["by"], rpy.player, rpy.gamemode.name_loc(), result_m, result_s, result_ms,
-												   tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
+							 const tm* tm{std::localtime(&rpy.timestamp)};
+							 return TR_FMT::format("{} ({}: {})\n{} | {:05} | {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", rpy.name,
+												   engine::loc["by"], rpy.player, rpy.gamemode.name_loc(), rpy.score, result_m, result_s,
+												   result_ms, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
 						 },
 						 font::LANGUAGE,
-						 40,
+						 34,
 						 [=, this] { return scb() && this->it.has_value(); },
 						 [=, this] {
 							 if (this->it.has_value()) {

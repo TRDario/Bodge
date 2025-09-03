@@ -211,10 +211,12 @@ void pause_state::set_up_full_ui()
 			set_up_exit_animation();
 		},
 		[this] {
+			const score_entry score{
+				{}, current_timestamp(), m_game->final_score(), m_game->final_time(), {true, engine::cli_settings.game_speed != 1}};
+
 			m_timer = 0;
 			m_substate = substate_base::RESTARTING | game_type::REGULAR;
-			engine::scorefile.playtime += m_game->final_time();
-			engine::scorefile.update_bests(m_game->gamemode(), m_game->final_score(), m_game->final_time());
+			engine::scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
 		},
 		[this] {
@@ -223,10 +225,12 @@ void pause_state::set_up_full_ui()
 			set_up_exit_animation();
 		},
 		[this] {
+			const score_entry score{
+				{}, current_timestamp(), m_game->final_score(), m_game->final_time(), {true, engine::cli_settings.game_speed != 1}};
+
 			m_timer = 0;
 			m_substate = substate_base::QUITTING | game_type::REGULAR;
-			engine::scorefile.playtime += m_game->final_time();
-			engine::scorefile.update_bests(m_game->gamemode(), m_game->final_score(), m_game->final_time());
+			engine::scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
 		},
 	};

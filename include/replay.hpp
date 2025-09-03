@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////// REPLAY HEADER //////////////////////////////////////////////////////////////
 
 struct replay_header : score_entry {
-	tr::static_string<20 * 4> name;
+	tr::static_string<16 * 4> name;
 	tr::static_string<20 * 4> player;
 	gamemode gamemode;
 	u64 seed;

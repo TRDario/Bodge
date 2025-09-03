@@ -17,11 +17,10 @@ const std::array<gamemode, 3> BUILTIN_GAMEMODES{
 			 ball_settings{10, 40, 3.42857143_s, 10, 0, 250, 10}},
 };
 // The gamemodes that can appear in the main menu background.
-constexpr std::array<gamemode, 4> MENU_GAMEMODES{
-	gamemode{.ball{12, 12, 10_s, 25, 0, 350, 0}},
-	gamemode{.ball{5, 5, 10_s, 25, 0, 1000, 0}},
-	gamemode{.ball{5, 15, 19.59183674_s, 75, 0, 350, 25}},
-	gamemode{.ball{15, 30, 3.42857143_s, 10, 0, 250, 10}},
+constexpr std::array<gamemode, 6> MENU_GAMEMODES{
+	gamemode{.ball{15, 15, 10_s, 20, 0, 350, 0}}, gamemode{.ball{12, 12, 10_s, 25, 0, 400, 0}},
+	gamemode{.ball{5, 5, 10_s, 25, 0, 1000, 0}},  gamemode{.ball{8, 8, 10_s, 50, 0, 350, 25}},
+	gamemode{.ball{6, 6, 10_s, 75, 0, 350, 25}},  gamemode{.ball{25, 25, 10_s, 10, 0, 250, 10}},
 };
 
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////

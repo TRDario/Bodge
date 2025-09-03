@@ -68,7 +68,7 @@ class game : private playerless_game {
 	int m_collected_fragments;
 	ticks m_time_since_life_fragments;
 	int m_lives_left;
-	ticks m_time_since_extend;
+	ticks m_time_since_1up;
 	ticks m_time_since_hit;
 	ticks m_time_since_game_over;
 	i64 m_score;
@@ -82,7 +82,7 @@ class game : private playerless_game {
 	ticks m_accumulated_score_hover_time;
 	bool m_tock;
 
-	void add_to_score(int change, const char* category);
+	void add_to_score(i64 change);
 	glm::vec2 text_size(const std::string& text, float scale) const;
 
 	void play_tick_sound_if_needed();

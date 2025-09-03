@@ -3,7 +3,7 @@
 
 // clang-format off
 
-constexpr usize REPLAYS_PER_PAGE{5};
+constexpr usize REPLAYS_PER_PAGE{6};
 
 constexpr tag T_TITLE{"replays"};
 constexpr tag T_NO_REPLAYS_FOUND{"no_replays_found"};
@@ -193,7 +193,7 @@ void replays_state::set_up_ui()
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		const std::optional<std::map<std::string, replay_header>::iterator> opt_it{it != m_replays.end() ? std::optional{it++}
 																										 : std::nullopt};
-		const tweener<glm::vec2> move_in{tween::CUBIC, {i % 2 == 0 ? 400 : 600, 183 + 150 * i}, {500, 183 + 150 * i}, 0.5_s};
+		const tweener<glm::vec2> move_in{tween::CUBIC, {i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s};
 		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], move_in, tr::align::CENTER, 0.5_s, scb, replay_acb, opt_it);
 	}
 	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, page_d_scb, page_d_acb);

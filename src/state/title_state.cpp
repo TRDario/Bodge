@@ -83,7 +83,7 @@ std::unique_ptr<tr::state> title_state::update(tr::duration)
 									  release_game(), gamemode{.author = engine::scorefile.name, .song = "classic"}, false)
 								: nullptr;
 	case substate::ENTERING_SCOREBOARDS:
-		return m_timer >= 0.5_s ? std::make_unique<scoreboards_state>(release_game()) : nullptr;
+		return m_timer >= 0.5_s ? std::make_unique<scoreboard_selection_state>(release_game(), false) : nullptr;
 	case substate::ENTERING_REPLAYS:
 		return m_timer >= 0.5_s ? std::make_unique<replays_state>(release_game()) : nullptr;
 	case substate::ENTERING_SETTINGS:

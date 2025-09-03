@@ -1,14 +1,14 @@
+#include "../../include/game/game.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/fonts.hpp"
-#include "../../include/game/game.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/score.hpp"
 #include "../../include/system.hpp"
 
 //
 
-constexpr std::array<float, 8> COLLECT_PITCHES{
-	12 / 12.0f, 14.0f / 12, 16.0f / 12, 17.0f / 12, 19.0f / 12, 21 / 12.0f, 23 / 12.0f, 24 / 12.0f,
+constexpr std::array<float, 9> COLLECT_PITCHES{
+	12 / 12.0f, 14.0f / 12, 16.0f / 12, 17.0f / 12, 19.0f / 12, 21 / 12.0f, 23 / 12.0f, 24 / 12.0f, 24 / 12.0f,
 };
 
 inline constexpr float CENTER_SIZE{1000 / 3.0f};
@@ -70,6 +70,7 @@ void playerless_game::update()
 	++m_time_since_last_ball;
 	if (m_time_since_last_ball >= m_gamemode.ball.spawn_interval && m_balls.size() < m_gamemode.ball.max_count) {
 		add_new_ball();
+		engine::play_sound(sound::BALL_SPAWN, 0.25f, (m_balls.back().hitbox().c.x - 500) / 500);
 	}
 
 	for (u8 i = 0; i < m_balls.size(); ++i) {
@@ -123,7 +124,7 @@ game::game(const ::gamemode& gamemode, u64 rng_seed)
 	, m_collected_fragments{0}
 	, m_time_since_life_fragments{INACTIVE_TIMER}
 	, m_lives_left{int(gamemode.player.starting_lives)}
-	, m_time_since_extend{INACTIVE_TIMER}
+	, m_time_since_1up{INACTIVE_TIMER}
 	, m_time_since_hit{INACTIVE_TIMER}
 	, m_time_since_game_over{INACTIVE_TIMER}
 	, m_score{0}
@@ -197,7 +198,7 @@ void game::play_tick_sound_if_needed()
 			  (m_time_since_life_fragments < LIFE_FRAGMENT_FAST_FLASH_START &&
 			   m_time_since_life_fragments >= LIFE_FRAGMENT_SLOW_FLASH_START && m_time_since_life_fragments % 0.25_s == 0) ||
 			  (m_time_since_life_fragments < LIFE_FRAGMENT_SLOW_FLASH_START && m_time_since_life_fragments % 0.5_s == 0))) {
-		engine::play_sound(sound::TICKALT, 0.75f, 0.0f, 1.0f);
+		engine::play_sound(sound::TICK_ALT, 0.75f, 0.0f, 1.0f);
 	}
 }
 
@@ -206,8 +207,8 @@ void game::update_timers()
 	if (m_time_since_life_fragments != INACTIVE_TIMER) {
 		++m_time_since_life_fragments;
 	}
-	if (m_time_since_extend != INACTIVE_TIMER) {
-		++m_time_since_extend;
+	if (m_time_since_1up != INACTIVE_TIMER) {
+		++m_time_since_1up;
 	}
 	if (m_time_since_hit != INACTIVE_TIMER) {
 		++m_time_since_hit;
@@ -333,14 +334,14 @@ void game::check_if_player_collected_life_fragments()
 		if (!fragment.collected() && tr::intersecting(fragment.hitbox(), m_player.hitbox())) {
 			fragment.set_collected();
 			if (++m_collected_fragments < 9) {
-				add_to_score(25, "life_fragment");
-				engine::play_sound(sound::COLLECT, 0.65f, 0, COLLECT_PITCHES[m_collected_fragments - 1]);
+				add_to_score(25);
 			}
 			else {
 				++m_lives_left;
-				add_to_score(100, "life");
-				engine::play_sound(sound::EXTEND, 1.15f, 0);
+				add_to_score(100);
+				engine::play_sound(sound::ONE_UP, 1.25f, 0);
 			}
+			engine::play_sound(sound::COLLECT, 0.65f, 0, COLLECT_PITCHES[m_collected_fragments - 1]);
 		}
 	}
 }
@@ -391,16 +392,16 @@ void game::check_for_score_ticks()
 
 	if (m_time_since_start % 1_s == 0) {
 		if (m_accumulated_center_time >= SCORE_REGION_TIME_THRESHOLD) {
-			add_to_score(25, "survival_centered");
+			add_to_score(25);
 		}
 		else if (m_accumulated_corner_time >= SCORE_REGION_TIME_THRESHOLD) {
-			add_to_score(-10, "survival_cornerhugging");
+			add_to_score(-10);
 		}
 		else if (m_accumulated_edge_time >= SCORE_REGION_TIME_THRESHOLD) {
-			add_to_score(5, "survival_edgehugging");
+			add_to_score(5);
 		}
 		else {
-			add_to_score(10, "survival");
+			add_to_score(10);
 		}
 	}
 }
@@ -424,8 +425,10 @@ void game::check_for_style_points()
 			}
 		}
 		if (max_points != 0) {
-			add_to_score(max_points, "style");
+			add_to_score(max_points);
 			m_style_cooldown_left = STYLE_COOLDOWN;
+			const float pan{(m_player.hitbox().c.x - 500) / 500};
+			engine::play_sound(sound::STYLE, 0.25f, pan);
 		}
 	}
 }
@@ -498,7 +501,7 @@ void game::add_lives_to_renderer() const
 	const tr::angle rotation{tr::degs(120.0f * m_time_since_start / SECOND_TICKS)};
 
 	int normal_lives{m_lives_left};
-	if (m_time_since_extend != INACTIVE_TIMER && m_time_since_extend < LIFE_APPEAR_TIME &&
+	if (m_time_since_1up != INACTIVE_TIMER && m_time_since_1up < LIFE_APPEAR_TIME &&
 		(m_time_since_hit == INACTIVE_TIMER || m_time_since_hit >= LIFE_SHATTER_TIME)) {
 		--normal_lives;
 	}
@@ -514,14 +517,14 @@ void game::add_lives_to_renderer() const
 	if (m_time_since_hit != INACTIVE_TIMER && m_time_since_hit < LIFE_SHATTER_TIME) {
 		add_shattering_life_to_renderer(color, opacity);
 	}
-	else if (m_time_since_extend != INACTIVE_TIMER && m_time_since_extend < LIFE_APPEAR_TIME) {
+	else if (m_time_since_1up != INACTIVE_TIMER && m_time_since_1up < LIFE_APPEAR_TIME) {
 		add_appearing_life_to_renderer(color, opacity);
 	}
 }
 
 void game::add_appearing_life_to_renderer(tr::rgb8 color, u8 base_opacity) const
 {
-	const float raw_age_factor{float(m_time_since_extend) / LIFE_APPEAR_TIME};
+	const float raw_age_factor{float(m_time_since_1up) / LIFE_APPEAR_TIME};
 	const float eased_age_factor{raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor)};
 	const float size_factor{(5 - 4 * eased_age_factor)};
 	const float life_size{m_lives_left > MAX_LARGE_LIVES ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
@@ -549,7 +552,7 @@ void game::add_shattering_life_to_renderer(tr::rgb8 color, u8 base_opacity) cons
 
 void game::add_score_to_renderer() const
 {
-	const std::string text{std::to_string(m_score)};
+	const std::string text{TR_FMT::format("{:05}", m_score)};
 	tr::rgba8 tint;
 	float scale;
 
@@ -565,13 +568,13 @@ void game::add_score_to_renderer() const
 		tint = {tint_factor, tint_factor, tint_factor, opacity};
 		scale = (0.85f - 0.1f * factor);
 
-		constexpr float MAX{MAX_ACCUMULATED_SCORE_REGION_TIME - SCORE_REGION_TIME_THRESHOLD};
-		if (m_accumulated_center_time >= SCORE_REGION_TIME_THRESHOLD) {
-			tint.b -= 0.75f * tint.b * (m_accumulated_center_time - SCORE_REGION_TIME_THRESHOLD) / MAX;
+		constexpr float MAX{MAX_ACCUMULATED_SCORE_REGION_TIME - SCORE_REGION_TIME_THRESHOLD + 0.5_s};
+		if (m_accumulated_center_time >= SCORE_REGION_TIME_THRESHOLD - 0.5_s) {
+			tint.b -= 0.75f * tint.b * (m_accumulated_center_time - SCORE_REGION_TIME_THRESHOLD + 0.5_s) / MAX;
 		}
-		else if (m_accumulated_edge_time >= SCORE_REGION_TIME_THRESHOLD) {
-			tint.g -= 0.5f * tint.g * (m_accumulated_edge_time - SCORE_REGION_TIME_THRESHOLD) / MAX;
-			tint.b -= 0.5f * tint.b * (m_accumulated_edge_time - SCORE_REGION_TIME_THRESHOLD) / MAX;
+		else if (m_accumulated_edge_time >= SCORE_REGION_TIME_THRESHOLD - 0.5_s) {
+			tint.g -= 0.5f * tint.g * (m_accumulated_edge_time - SCORE_REGION_TIME_THRESHOLD + 0.5_s) / MAX;
+			tint.b -= 0.5f * tint.b * (m_accumulated_edge_time - SCORE_REGION_TIME_THRESHOLD + 0.5_s) / MAX;
 		}
 	}
 
@@ -587,7 +590,7 @@ void game::add_score_to_renderer() const
 
 //
 
-void game::add_to_score(int change, const char* category)
+void game::add_to_score(i64 change)
 {
 	m_score += change;
 	m_time_since_score_update = 0;

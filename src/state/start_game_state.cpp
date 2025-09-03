@@ -34,11 +34,11 @@ constexpr shortcut_table SHORTCUTS{
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr tweener<glm::vec2> NAME_MOVE_IN{tween::CUBIC, {500, 275}, {500, 375}, 0.5_s};
-constexpr tweener<glm::vec2> AUTHOR_MOVE_IN{tween::CUBIC, {400, 450}, {500, 450}, 0.5_s};
-constexpr tweener<glm::vec2> DESCRIPTION_MOVE_IN{tween::CUBIC, {600, 500}, {500, 500}, 0.5_s};
-constexpr tweener<glm::vec2> BEST_TIME_LABEL_MOVE_IN{tween::CUBIC, {250, 695}, {250, 595}, 0.5_s};
-constexpr tweener<glm::vec2> BEST_SCORE_LABEL_MOVE_IN{tween::CUBIC, {750, 695}, {750, 595}, 0.5_s};
+constexpr tweener<glm::vec2> NAME_MOVE_IN{tween::CUBIC, {500, 300}, {500, 400}, 0.5_s};
+constexpr tweener<glm::vec2> AUTHOR_MOVE_IN{tween::CUBIC, {400, 475}, {500, 475}, 0.5_s};
+constexpr tweener<glm::vec2> DESCRIPTION_MOVE_IN{tween::CUBIC, {600, 525}, {500, 525}, 0.5_s};
+constexpr tweener<glm::vec2> BEST_TIME_MOVE_IN{tween::CUBIC, {325, 725}, {325, 625}, 0.5_s};
+constexpr tweener<glm::vec2> BEST_SCORE_MOVE_IN{tween::CUBIC, {675, 725}, {675, 625}, 0.5_s};
 constexpr tweener<glm::vec2> PREV_MOVE_IN{tween::CUBIC, {-50, 500}, {10, 500}, 0.5_s};
 constexpr tweener<glm::vec2> NEXT_MOVE_IN{tween::CUBIC, {1050, 500}, {990, 500}, 0.5_s};
 constexpr tweener<glm::vec2> START_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 950}, 0.5_s};
@@ -57,6 +57,12 @@ start_game_state::start_game_state(std::unique_ptr<playerless_game>&& game)
 		m_selected = last_selected_it;
 	}
 
+	// MOVE-INS
+
+	const float label_h{621 - engine::line_skip(font::LANGUAGE, 32)};
+	const tweener<glm::vec2> best_time_label_move_in{tween::CUBIC, {325, label_h + 100}, {325, label_h}, 0.5_s};
+	const tweener<glm::vec2> best_score_label_move_in{tween::CUBIC, {675, label_h + 100}, {675, label_h}, 0.5_s};
+
 	// TEXT CALLBACKS
 
 	text_callback name_tcb{string_text_callback{std::string{m_selected->name_loc()}}};
@@ -64,7 +70,7 @@ start_game_state::start_game_state(std::unique_ptr<playerless_game>&& game)
 	text_callback description_tcb{string_text_callback{
 		std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : engine::loc["no_description"]}}};
 	text_callback best_time_tcb{string_text_callback{timer_text(engine::scorefile.bests(*m_selected).time)}};
-	text_callback best_score_tcb{string_text_callback{std::to_string(engine::scorefile.bests(*m_selected).score)}};
+	text_callback best_score_tcb{string_text_callback{TR_FMT::format("{:05}", engine::scorefile.bests(*m_selected).score)}};
 
 	// STATUS CALLBACKS
 
@@ -131,14 +137,14 @@ start_game_state::start_game_state(std::unique_ptr<playerless_game>&& game)
 							   tr::system::ttf_style::NORMAL, 32);
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(description_tcb),
 							   tr::system::ttf_style::ITALIC, 32, "80808080"_rgba8);
-	m_ui.emplace<label_widget>(T_BEST_TIME_LABEL, BEST_TIME_LABEL_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   loc_text_callback{T_BEST_TIME_LABEL}, tr::system::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
-	m_ui.emplace<label_widget>(T_BEST_TIME, BEST_TIME_LABEL_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_time_tcb),
-							   tr::system::ttf_style::NORMAL, 48, "FFFF00C0"_rgba8);
-	m_ui.emplace<label_widget>(T_BEST_SCORE_LABEL, BEST_SCORE_LABEL_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   loc_text_callback{T_BEST_SCORE_LABEL}, tr::system::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
-	m_ui.emplace<label_widget>(T_BEST_SCORE, BEST_SCORE_LABEL_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_score_tcb),
-							   tr::system::ttf_style::NORMAL, 48, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_BEST_TIME_LABEL, best_time_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+							   loc_text_callback{T_BEST_TIME_LABEL}, tr::system::ttf_style::NORMAL, 32, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_BEST_TIME, BEST_TIME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_time_tcb),
+							   tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_BEST_SCORE_LABEL, best_score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+							   loc_text_callback{T_BEST_SCORE_LABEL}, tr::system::ttf_style::NORMAL, 32, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_BEST_SCORE, BEST_SCORE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_score_tcb),
+							   tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
 	m_ui.emplace<arrow_widget>(T_PREV, PREV_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, arrow_scb, prev_acb);
 	m_ui.emplace<arrow_widget>(T_NEXT, NEXT_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, arrow_scb, next_acb);
 	m_ui.emplace<text_button_widget>(T_START, START_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_START},
@@ -178,10 +184,9 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 				string_text_callback{
 					std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : engine::loc["no_description"]}},
 				loc_text_callback{T_BEST_TIME_LABEL},
-				string_text_callback{
-					TR_FMT::format("{}:\n{}", engine::loc["best_time"], timer_text(engine::scorefile.bests(*m_selected).time))},
+				string_text_callback{timer_text(engine::scorefile.bests(*m_selected).time)},
 				loc_text_callback{T_BEST_SCORE_LABEL},
-				string_text_callback{TR_FMT::format("{}:\n{}", engine::loc["best_score"], engine::scorefile.bests(*m_selected).score)},
+				string_text_callback{TR_FMT::format("{:05}", engine::scorefile.bests(*m_selected).score)},
 			};
 			const bool moved_left{glm::vec2{m_ui[GAMEMODE_WIDGETS[0]].pos}.x < 500};
 			for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
@@ -215,9 +220,9 @@ void start_game_state::set_up_exit_animation()
 	name.pos.change(tween::CUBIC, glm::vec2{name.pos} - glm::vec2{0, 100}, 0.5_s);
 	author.pos.change(tween::CUBIC, glm::vec2{author.pos} + glm::vec2{100, 0}, 0.5_s);
 	description.pos.change(tween::CUBIC, glm::vec2{description.pos} - glm::vec2{100, 0}, 0.5_s);
-	best_time_label.pos.change(tween::CUBIC, glm::vec2{best_time.pos} + glm::vec2{0, 100}, 0.5_s);
+	best_time_label.pos.change(tween::CUBIC, glm::vec2{best_time_label.pos} + glm::vec2{0, 100}, 0.5_s);
 	best_time.pos.change(tween::CUBIC, glm::vec2{best_time.pos} + glm::vec2{0, 100}, 0.5_s);
-	best_score_label.pos.change(tween::CUBIC, glm::vec2{best_time.pos} + glm::vec2{0, 100}, 0.5_s);
+	best_score_label.pos.change(tween::CUBIC, glm::vec2{best_score_label.pos} + glm::vec2{0, 100}, 0.5_s);
 	best_score.pos.change(tween::CUBIC, glm::vec2{best_score.pos} + glm::vec2{0, 100}, 0.5_s);
 	m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 0.5_s);
 	m_ui[T_PREV].pos.change(tween::CUBIC, {-100, 500}, 0.5_s);

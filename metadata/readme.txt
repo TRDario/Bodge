@@ -51,6 +51,9 @@
 | v1.1.0 (???)                                                                                                        |
 | * Introduced new systems for gaining lives and scoring.                                                             |
 | * Updated most file formats (barring the settings), making v1.0 files unusable (besides the scorefile, partially)   |
+| * Scores now automatically save (using the save feature is still useful for adding a description).                  |
+| * Added an animation for losing a life.                                                                             |
+| * The player no longer flashes red after getting hit.                                                               |
 | * Fixed some tooltip boxes rendering too wide.                                                                      |
 | * Fixed localization files with a trailing newline failing to load.                                                 |
 | v1.0.1 (24 Aug 2025)                                                                                                |
@@ -60,9 +63,21 @@
 |                                                                                                                     |
 |-----------------------------------------------------HOW TO PLAY-----------------------------------------------------|
 |                                                                                                                     |
-| 1.) Move the player character with your mouse.                                                                      |
-| 2.) Avoid the balls as long as possible.                                                                            |
-| 3.) Collect fragments to earn extra lives.                                                                          |
+| Survival:                                                                                                           |
+| * Move the player character with your mouse.                                                                        |
+| * Avoid the balls as long as possible.                                                                              |
+| * Collect fragments to earn extra lives.                                                                            |
+|                                                                                                                     |
+| Scoring:                                                                                                            |
+| * Survival gives you tick points every second. The value of ticks can be affected by hovering over certain regions  |
+|   for a few seconds.                                                                                                |
+|   * Being centered multiplies the value of ticks by 2.5x.                                                           |
+|   * Hugging an edge multiplies the value of ticks by 0.5x.                                                          |
+|   * Hugging a corner is penalized by giving you negative ticks.                                                     |
+| * Standing in the path of oncoming balls gives you style points.                                                    |
+|   * The cooldown for style points is very short, so surfing right in front of a ball can give you a lot of score.   |
+|   * The value of style points depends on the size and velocity of a ball, but will always be at least 1.            |
+| * Collecting life fragments and getting lives gives you some points too.                                            |
 |                                                                                                                     |
 |--------------------------------------------------KEYBOARD CONTROLS--------------------------------------------------|
 |                                                                                                                     |

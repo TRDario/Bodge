@@ -144,24 +144,58 @@ class player_settings_editor_state : public main_menu_state {
 	void set_up_exit_animation();
 };
 
-//////////////////////////////////////////////////////////// SCOREBOARDS STATE ////////////////////////////////////////////////////////////
+//
 
-class scoreboards_state : public main_menu_state {
+class scoreboard_selection_state : public main_menu_state {
   public:
-	scoreboards_state(std::unique_ptr<playerless_game>&& game);
+	scoreboard_selection_state(std::unique_ptr<playerless_game>&& game, bool returning_from_subscreen);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
   private:
 	enum class substate {
-		IN_SCOREBOARDS,
-		SWITCHING_PAGE,
+		IN_SCOREBOARD_SELECTION,
+		ENTERING_TIME_SCOREBOARD,
+		ENTERING_SCORE_SCOREBOARD,
 		EXITING_TO_TITLE
 	};
 
 	substate m_substate;
+
+	void set_up_subscreen_animation();
+	void set_up_exit_animation();
+};
+
+//////////////////////////////////////////////////////////// SCOREBOARDS STATE ////////////////////////////////////////////////////////////
+
+enum class scoreboard {
+	TIME = 0,
+	SCORE = 4
+};
+
+class scoreboard_state : public main_menu_state {
+  public:
+	scoreboard_state(std::unique_ptr<playerless_game>&& game, scoreboard scoreboard);
+
+	std::unique_ptr<tr::state> update(tr::duration) override;
+
+  private:
+	enum class substate_base {
+		IN_SCOREBOARD,
+		SWITCHING_PAGE,
+		EXITING_TO_SCOREBOARD_SELECTION
+	};
+	enum class substate {
+	}; // substate_base + scoreboard.
+
+	substate m_substate;
 	int m_page;
 	std::vector<score_category>::iterator m_selected;
+	std::vector<score_entry> m_sorted_scores;
+
+	friend substate operator|(const substate_base& l, const scoreboard& r);
+	friend substate_base to_base(substate state);
+	friend scoreboard to_scoreboard(substate state);
 
 	void set_up_page_switch_animation();
 	void set_up_exit_animation();
@@ -307,7 +341,7 @@ class pause_state : public game_menu_state {
 
 class game_over_state : public game_menu_state {
   public:
-	game_over_state(std::unique_ptr<game>&& game, bool blur_in, const bests& bests);
+	game_over_state(std::unique_ptr<game>&& game, bool blur_in);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -322,7 +356,6 @@ class game_over_state : public game_menu_state {
 	};
 
 	substate m_substate;
-	bests m_bests;
 
 	float fade_overlay_opacity() override;
 	float saturation_factor() override;
@@ -346,7 +379,7 @@ class save_score_state : public game_menu_state {
 	// Used when coming from the pause screen.
 	save_score_state(std::unique_ptr<game>&& game, glm::vec2 mouse_pos, save_screen_flags flags);
 	// Used when coming from the game over screen.
-	save_score_state(std::unique_ptr<game>&& game, const bests& bests, save_screen_flags flags);
+	save_score_state(std::unique_ptr<game>&& game, save_screen_flags flags);
 
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
@@ -358,13 +391,9 @@ class save_score_state : public game_menu_state {
 	};
 	enum class substate {
 	}; // substate_base + save_screen_flags
-	union substate_data {
-		glm::vec2 start_mouse_pos;
-		bests bests;
-	};
 
 	substate m_substate;
-	substate_data m_substate_data;
+	glm::vec2 m_start_mouse_pos;
 	score_entry m_score;
 
 	friend substate operator|(const substate_base& l, const save_screen_flags& r);

@@ -1,6 +1,6 @@
+#include "../include/score.hpp"
 #include "../include/gamemode.hpp"
 #include "../include/legacy_formats.hpp"
-#include "../include/score.hpp"
 #include "../include/settings.hpp"
 
 namespace engine {
@@ -15,15 +15,10 @@ constexpr u8 SCOREFILE_VERSION{1};
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
 
-std::strong_ordering operator<=>(const score_entry& l, const score_entry& r)
-{
-	return l.time <=> r.time;
-}
-
 std::span<const std::byte> tr::binary_reader<score_entry>::read_from_span(std::span<const std::byte> span, score_entry& out)
 {
 	span = tr::binary_read(span, out.description);
-	span = tr::binary_read(span, out.unix_timestamp);
+	span = tr::binary_read(span, out.timestamp);
 	span = tr::binary_read(span, out.score);
 	span = tr::binary_read(span, out.time);
 	return tr::binary_read(span, out.flags);
@@ -32,10 +27,20 @@ std::span<const std::byte> tr::binary_reader<score_entry>::read_from_span(std::s
 void tr::binary_writer<score_entry>::write_to_stream(std::ostream& os, const score_entry& in)
 {
 	tr::binary_write(os, in.description);
-	tr::binary_write(os, in.unix_timestamp);
+	tr::binary_write(os, in.timestamp);
 	tr::binary_write(os, in.score);
 	tr::binary_write(os, in.time);
 	tr::binary_write(os, in.flags);
+}
+
+bool compare_scores(const score_entry& l, const score_entry& r)
+{
+	return l.score > r.score;
+}
+
+bool compare_times(const score_entry& l, const score_entry& r)
+{
+	return l.time > r.time;
 }
 
 ///////////////////////////////////////////////////////////// SCORE CATEGORY //////////////////////////////////////////////////////////////
@@ -64,25 +69,18 @@ bests scorefile::bests(const gamemode& gm) const
 	return it != categories.end() ? ::bests{it->best_score, it->best_time} : ::bests{0, 0};
 }
 
-void scorefile::update_bests(const gamemode& gm, i64 score, ticks time)
-{
-	std::vector<score_category>::iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
-	if (it == categories.end()) {
-		it = categories.insert(it, {gm, score, time, {}});
-	}
-	else {
-		it->best_score = std::max(it->best_score, score);
-		it->best_time = std::max(it->best_time, time);
-	}
-}
-
 void scorefile::add_score(const gamemode& gm, const score_entry& s)
 {
 	std::vector<score_category>::iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
 	if (it == categories.end()) {
-		it = categories.insert(it, {gm, 0, 0, {}});
+		it = categories.insert(it, {gm, s.score, s.time, {}});
 	}
-	it->scores.insert(std::upper_bound(it->scores.begin(), it->scores.end(), s, std::greater<>{}), s);
+	else {
+		it->best_score = std::max(it->best_score, s.score);
+		it->best_time = std::max(it->best_time, s.time);
+	}
+	it->scores.emplace_back(s);
+	playtime += s.time;
 }
 
 ///////////////////////////////////////////////////////////////// ENGINE //////////////////////////////////////////////////////////////////

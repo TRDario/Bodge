@@ -3,8 +3,9 @@
 
 namespace engine {
 	std::array<const char*, int(sound::COUNT)> SFX_FILENAMES{
-		"hover.ogg",   "hold.ogg",   "confirm.ogg",        "cancel.ogg",  "type.ogg",   "pause.ogg", "unpause.ogg",   "tick.ogg",
-		"tickalt.ogg", "bounce.ogg", "fragment_spawn.ogg", "collect.ogg", "extend.ogg", "hit.ogg",   "game_over.ogg",
+		"hover.ogg",          "hold.ogg",    "confirm.ogg",  "cancel.ogg",     "type.ogg",      "pause.ogg",
+		"unpause.ogg",        "tick.ogg",    "tick_alt.ogg", "ball_spawn.ogg", "bounce.ogg",    "style.ogg",
+		"fragment_spawn.ogg", "collect.ogg", "1up.ogg",      "hit.ogg",        "game_over.ogg",
 	};
 
 	std::array<std::optional<tr::audio::buffer>, int(sound::COUNT)> sounds;
