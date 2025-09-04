@@ -22,10 +22,10 @@ class playerless_game {
 	::gamemode m_gamemode;
 	tr::xorshiftr_128p m_rng;
 	tr::static_vector<ball, 255> m_balls;
-	ticks m_time_since_start;
+	ticks m_start_timer;
 
   private:
-	ticks m_time_since_last_ball;
+	ticks m_last_ball_timer;
 	float m_next_ball_size;
 	float m_next_ball_velocity;
 
@@ -65,21 +65,22 @@ class game : private playerless_game {
 	player m_player;
 	tr::static_vector<life_fragment, 9> m_life_fragments;
 	std::array<fragment, 6> m_shattered_life_fragments;
-	int m_collected_fragments;
-	ticks m_time_since_life_fragments;
 	int m_lives_left;
-	ticks m_time_since_1up;
-	ticks m_time_since_hit;
-	ticks m_time_since_game_over;
+	int m_collected_fragments;
 	i64 m_score;
-	ticks m_accumulated_center_time;
-	ticks m_accumulated_edge_time;
-	ticks m_accumulated_corner_time;
-	ticks m_style_cooldown_left;
-	ticks m_time_since_score_update;
-	ticks m_accumulated_lives_hover_time;
-	ticks m_accumulated_timer_hover_time;
-	ticks m_accumulated_score_hover_time;
+	startable_timer m_last_life_fragments_timer;
+	startable_timer m_game_over_timer;
+	decrementing_timer<0.2_s> m_1up_animation_timer;
+	decrementing_timer<0.2_s> m_hit_animation_timer;
+	decrementing_timer<0.67_s> m_screen_shake_timer;
+	decrementing_timer<0.1_s> m_style_cooldown_timer;
+	decrementing_timer<0.1_s> m_score_animation_timer;
+	accumulating_timer<3_s> m_center_timer;
+	accumulating_timer<3_s> m_edge_timer;
+	accumulating_timer<3_s> m_corner_timer;
+	accumulating_timer<0.25_s> m_lives_hover_timer;
+	accumulating_timer<0.25_s> m_timer_hover_timer;
+	accumulating_timer<0.25_s> m_score_hover_timer;
 	bool m_tock;
 
 	void add_to_score(i64 change);

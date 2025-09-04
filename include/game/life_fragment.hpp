@@ -1,5 +1,6 @@
 #pragma once
 #include "../global.hpp"
+#include "../time.hpp"
 
 //
 
@@ -27,7 +28,7 @@ class life_fragment {
 	glm::vec2 m_pos;
 	tr::angle m_rot;
 	tr::angle m_rotvel;
-	ticks m_time_since_collected;
+	startable_timer m_collected_timer;
 
 	void add_pulse_to_renderer(tr::rgb8 color, ticks time_since_spawned) const;
 	void add_spawn_wave_to_renderer(tr::rgb8 color, ticks time_since_spawned) const;

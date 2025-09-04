@@ -4,24 +4,17 @@
 
 //
 
-inline constexpr ticks INVULNERABILITY_TIME{2_s};
-inline constexpr ticks INITIAL_INVULNERABILITY_TIME{2.5_s};
-
-//
-
 player::player(const player_settings& settings)
-	: m_hitbox{{500, 500}, settings.hitbox_radius}
-	, m_trail{m_hitbox.c}
-	, m_inertia{settings.inertia_factor}
-	, m_iframes_left{INITIAL_INVULNERABILITY_TIME}
+	: m_hitbox{{500, 500}, settings.hitbox_radius}, m_trail{m_hitbox.c}, m_inertia{settings.inertia_factor}
 {
+	m_invincibility_timer.start();
 }
 
 //
 
 bool player::invincible() const
 {
-	return m_iframes_left > 0;
+	return m_invincibility_timer.active();
 }
 
 const tr::circle& player::hitbox() const
@@ -33,7 +26,7 @@ const tr::circle& player::hitbox() const
 
 void player::hit()
 {
-	m_iframes_left = INVULNERABILITY_TIME;
+	m_invincibility_timer.start();
 }
 
 void player::kill()
@@ -48,9 +41,7 @@ void player::kill()
 
 void player::update(glm::vec2 target)
 {
-	if (m_iframes_left > 0) {
-		--m_iframes_left;
-	}
+	m_invincibility_timer.update();
 
 	target = glm::clamp(target, glm::vec2{FIELD_MIN + m_hitbox.r}, glm::vec2{FIELD_MAX - m_hitbox.r});
 
@@ -72,21 +63,19 @@ void player::update_fragments()
 
 //
 
-void player::add_to_renderer_alive(ticks time_since_start, ticks style_cooldown_left) const
+void player::add_to_renderer_alive(ticks time_since_start, const decrementing_timer<0.1_s>& style_cooldown_timer) const
 {
-	constexpr float PI{std::numbers::pi_v<float>};
-
 	const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
-	const u8 opacity{tr::norm_cast<u8>(std::abs(std::cos(m_iframes_left * PI * 8 / INVULNERABILITY_TIME)))};
-	const tr::angle rotation{tr::degs(270.0f * time_since_start / SECOND_TICKS)};
-	const float size_offset{3.0f * std::sin(PI * time_since_start / SECOND_TICKS)};
+	const u8 opacity{tr::norm_cast<u8>(std::abs(tr::turns(4.0f * m_invincibility_timer.elapsed_ratio()).cos()))};
+	const tr::angle rotation{270_deg * time_since_start / 1_s};
+	const float size_offset{3.0f * tr::turns(time_since_start / 2_sf).sin()};
 	const float size{m_hitbox.r + 6 + size_offset};
 
 	if (opacity != 0) {
 		add_fill_to_renderer(opacity, rotation, size);
 		add_outline_to_renderer(tint, opacity, rotation, size);
 		add_trail_to_renderer(tint, opacity, rotation, size);
-		add_style_wave_to_renderer(tint, style_cooldown_left);
+		add_style_wave_to_renderer(tint, style_cooldown_timer);
 	}
 }
 
@@ -143,13 +132,13 @@ void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation
 	}
 }
 
-void player::add_style_wave_to_renderer(tr::rgb8 tint, ticks style_cooldown_left) const
+void player::add_style_wave_to_renderer(tr::rgb8 tint, const decrementing_timer<0.1_s>& timer) const
 {
-	if (style_cooldown_left == 0) {
+	if (!timer.active()) {
 		return;
 	}
 
-	const float t{1 - style_cooldown_left / float(STYLE_COOLDOWN)};
+	const float t{timer.elapsed_ratio()};
 	const float scale{m_hitbox.r + 10 + std::pow(t, 2.0f) * 40};
 	const usize vertices{tr::smooth_poly_vtx(scale, engine::render_scale())};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t) * 0.75f)};
@@ -161,7 +150,7 @@ void player::add_style_wave_to_renderer(tr::rgb8 tint, ticks style_cooldown_left
 
 void player::add_death_wave_to_renderer(ticks time_since_game_over) const
 {
-	const float t{(time_since_game_over + 1) / float(0.5_s)};
+	const float t{(time_since_game_over + 1) / 0.5_sf};
 	const float scale{std::sqrt(t) * 200};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(0.5f * std::sqrt(1 - t))};
@@ -177,10 +166,10 @@ void player::add_death_wave_to_renderer(ticks time_since_game_over) const
 
 void player::add_death_fragments_to_renderer(ticks time_since_game_over) const
 {
-	const float t{(time_since_game_over + 1) / float(0.5_s)};
+	const float t{(time_since_game_over + 1) / 0.5_sf};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t))};
-	const float length{2 * m_hitbox.r * tr::degs(30.0f).tan()};
+	const float length{2 * m_hitbox.r * (30_deg).tan()};
 
 	for (const fragment& fragment : m_fragments) {
 		const tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_fan(layer::PLAYER, 4)};

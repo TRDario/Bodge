@@ -16,18 +16,17 @@ life_fragment::life_fragment(tr::xorshiftr_128p& rng, const tr::frect2& region)
 			rng.generate(std::max(region.tl.y, LIFE_FRAGMENT_LENGTH), std::min(region.tl.y + region.size.y, 1000 - LIFE_FRAGMENT_LENGTH))}
 	, m_rot{rng.generate_angle()}
 	, m_rotvel{rng.generate(0.4_deg, 0.75_deg) * rng.generate_sign()}
-	, m_time_since_collected{INACTIVE_TIMER}
 {
 }
 
 bool life_fragment::collected() const
 {
-	return m_time_since_collected != INACTIVE_TIMER;
+	return m_collected_timer.active();
 }
 
 bool life_fragment::can_despawn() const
 {
-	return collected() && m_time_since_collected >= LIFE_FRAGMENT_POST_COLLECTION_TIME;
+	return collected() && m_collected_timer.value() >= LIFE_FRAGMENT_POST_COLLECTION_TIME;
 }
 
 const tr::circle life_fragment::hitbox() const
@@ -37,19 +36,17 @@ const tr::circle life_fragment::hitbox() const
 
 void life_fragment::set_collected()
 {
-	m_time_since_collected = 0;
+	m_collected_timer.start();
 }
 
 void life_fragment::update(ticks time_since_spawned)
 {
-	if (m_time_since_collected != INACTIVE_TIMER) {
-		m_rot += m_rotvel * std::clamp(1.0f / ((m_time_since_collected + 1.0f) / LIFE_FRAGMENT_SPAWN_TIME), 1.0f, 2.5f);
+	if (m_collected_timer.active()) {
+		m_collected_timer.update();
+		m_rot += m_rotvel * std::clamp(1.0f / m_collected_timer.value() * LIFE_FRAGMENT_SPAWN_TIME, 1.0f, 2.5f);
 	}
 	else {
 		m_rot += m_rotvel * std::clamp(1.0f / ((time_since_spawned + 1.0f) / LIFE_FRAGMENT_SPAWN_TIME), 1.0f, 5.0f);
-	}
-	if (m_time_since_collected != INACTIVE_TIMER) {
-		++m_time_since_collected;
 	}
 }
 
@@ -62,13 +59,13 @@ void life_fragment::add_to_renderer(ticks time_since_spawned) const
 	glm::vec2 size;
 	u8 opacity;
 	if (collected()) {
-		raw_age_factor = std::min(float(m_time_since_collected) / LIFE_FRAGMENT_POST_COLLECTION_TIME, 1.0f);
+		raw_age_factor = std::min(m_collected_timer.value() / float(LIFE_FRAGMENT_POST_COLLECTION_TIME), 1.0f);
 		eased_age_factor = raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor);
 		size = {4 * (1 + 4 * eased_age_factor), LIFE_FRAGMENT_LENGTH * (1 + 4 * eased_age_factor)};
 		opacity = tr::norm_cast<u8>(0.75f - 0.75f * raw_age_factor);
 	}
 	else {
-		raw_age_factor = std::min(float(time_since_spawned) / LIFE_FRAGMENT_SPAWN_TIME, 1.0f);
+		raw_age_factor = std::min(time_since_spawned / float(LIFE_FRAGMENT_SPAWN_TIME), 1.0f);
 		eased_age_factor = raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor);
 		size = {4 * (11 - 10 * eased_age_factor), LIFE_FRAGMENT_LENGTH * (11 - 10 * eased_age_factor)};
 		opacity = tr::norm_cast<u8>(std::pow(raw_age_factor, 1 / 1.5f));

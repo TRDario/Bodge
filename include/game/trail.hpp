@@ -4,7 +4,7 @@
 // Player/ball trail circular buffer.
 class trail {
   public:
-	inline static constexpr usize SIZE{std::max<usize>(SECOND_TICKS / 5, 1)};
+	inline static constexpr usize SIZE{0.2_s};
 
 	trail(const glm::vec2& value);
 

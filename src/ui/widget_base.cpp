@@ -144,7 +144,7 @@ void interval_formatter::from_string(ticks& out, std::string_view str)
 {
 	float temp{out / 1.0_sf};
 	std::from_chars(str.data(), str.data() + str.size(), temp);
-	out = ticks(temp * SECOND_TICKS);
+	out = ticks(temp * 1_s);
 }
 
 std::string interval_formatter::to_string(ticks v)

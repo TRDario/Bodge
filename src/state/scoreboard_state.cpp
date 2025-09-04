@@ -55,9 +55,11 @@ scoreboard_state::scoreboard_state(std::unique_ptr<playerless_game>&& game, scor
 	, m_substate{substate_base::IN_SCOREBOARD | scoreboard}
 	, m_page{0}
 	, m_selected{engine::scorefile.categories.begin()}
-	, m_sorted_scores{m_selected->scores}
 {
-	std::ranges::sort(m_sorted_scores, scoreboard == scoreboard::SCORE ? compare_scores : compare_times);
+	if (!engine::scorefile.categories.empty()) {
+		m_sorted_scores = m_selected->scores;
+		std::ranges::sort(m_sorted_scores, scoreboard == scoreboard::SCORE ? compare_scores : compare_times);
+	}
 
 	// TOOLTIP CALLBACKS
 
@@ -138,10 +140,10 @@ scoreboard_state::scoreboard_state(std::unique_ptr<playerless_game>&& game, scor
 
 	// TEXT CALLBACKS
 
-	const text_callback player_info_tcb{string_text_callback{TR_FMT::format(
-		"{} {}: {}:{:02}:{:02}", engine::loc["total_playtime"], engine::scorefile.name, engine::scorefile.playtime / (SECOND_TICKS * 3600),
-		(engine::scorefile.playtime % (SECOND_TICKS * 3600)) / (SECOND_TICKS * 60),
-		(engine::scorefile.playtime % (SECOND_TICKS * 60) / SECOND_TICKS))}};
+	const ticks playtime{engine::scorefile.playtime};
+	const text_callback player_info_tcb{
+		string_text_callback{TR_FMT::format("{} {}: {}:{:02}:{:02}", engine::loc["total_playtime"], engine::scorefile.name,
+											playtime / 3600_s, playtime % 3600_s / 60_s, playtime % 60_s / 1_s)}};
 	const text_callback cur_gamemode_tcb{
 		[this] { return std::string{m_selected->gamemode.name_loc()}; },
 	};
