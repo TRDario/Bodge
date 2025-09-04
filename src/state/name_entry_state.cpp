@@ -60,6 +60,8 @@ name_entry_state::name_entry_state()
 										input_scb, action_cb, std::string_view{});
 	m_ui.emplace<text_button_widget>(T_CONFIRM, CONFIRM_MOVE_IN, tr::align::BOTTOM_CENTER, 1.0_s, NO_TOOLTIP, loc_text_callback{T_CONFIRM},
 									 font::LANGUAGE, 48, confirm_scb, action_cb, sound::CONFIRM);
+
+	m_ui.select_widget(T_INPUT);
 }
 
 //

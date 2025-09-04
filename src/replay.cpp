@@ -11,9 +11,10 @@ constexpr u8 REPLAY_VERSION{1};
 std::string to_filename(std::string_view name)
 {
 	std::string filename{name};
-	std::erase_if(filename, [](char chr) { return chr >= 0x7F || (!std::isalnum(chr) && chr != '_' && chr != '-'); });
+	std::erase_if(filename, [](char chr) { return chr >= 0x7F || (!std::isalnum(chr) && chr != '_' && chr != '-' && chr != ' '); });
+	std::ranges::for_each(filename, [](char& chr) { chr = std::tolower(chr); });
 	std::ranges::replace(filename, ' ', '_');
-	return filename.empty() ? "Replay" : filename;
+	return filename.empty() ? "replay" : filename;
 }
 
 ////////////////////////////////////////////////////////////// REPLAY HEADER //////////////////////////////////////////////////////////////

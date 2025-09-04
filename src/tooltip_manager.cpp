@@ -3,6 +3,11 @@
 #include "../include/graphics.hpp"
 #include "../include/system.hpp"
 
+tooltip_manager::tooltip_manager()
+{
+	tr::gfx::renderer_2d::set_default_layer_texture(layer::TOOLTIP, m_texture);
+}
+
 void tooltip_manager::render(std::string_view text)
 {
 	const tr::bitmap render{engine::render_text(text, engine::determine_font(text), tr::system::ttf_style::NORMAL, 20, 0, 800)};
@@ -15,14 +20,10 @@ void tooltip_manager::render(std::string_view text)
 			int(std::bit_ceil(u32(scaled_last_size.x))),
 			int(std::bit_ceil(u32(scaled_last_size.y))),
 		};
-		std::exchange(m_texture, tr::gfx::texture{new_size});
-		m_texture.set_region({}, render.sub({{}, scaled_last_size}));
+		m_texture.reallocate(new_size);
 	}
-	else {
-		m_texture.clear({});
-		m_texture.set_region({}, render.sub({{}, scaled_last_size}));
-	}
-	tr::gfx::renderer_2d::set_default_layer_texture(layer::TOOLTIP, m_texture);
+	m_texture.clear({});
+	m_texture.set_region({}, render.sub({{}, scaled_last_size}));
 }
 
 void tooltip_manager::add_to_renderer(std::string_view text)

@@ -40,7 +40,7 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::RIGHT}, T_PAGE_I},
 };
 
-constexpr tweener<glm::vec2> NO_SCORES_FOUND_MOVE_IN{tween::CUBIC, {600, 483}, {500, 483}, 0.5_s};
+constexpr tweener<glm::vec2> NO_SCORES_FOUND_MOVE_IN{tween::CUBIC, {600, 500}, {500, 500}, 0.5_s};
 constexpr tweener<glm::vec2> GAMEMODE_D_MOVE_IN{tween::CUBIC, {-50, 892.5}, {10, 892.5}, 0.5_s};
 constexpr tweener<glm::vec2> GAMEMODE_C_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 900}, 0.5_s};
 constexpr tweener<glm::vec2> GAMEMODE_I_MOVE_IN{tween::CUBIC, {1050, 892.5}, {990, 892.5}, 0.5_s};
@@ -160,7 +160,7 @@ scoreboard_state::scoreboard_state(std::unique_ptr<playerless_game>&& game, scor
 	m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (engine::scorefile.categories.empty()) {
-		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, NO_SCORES_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
+		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, NO_SCORES_FOUND_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 								   loc_text_callback{T_NO_SCORES_FOUND}, tr::system::ttf_style::NORMAL, 64, "80808080"_rgba8);
 		return;
 	}
@@ -241,7 +241,7 @@ void scoreboard_state::set_up_exit_animation()
 {
 	if (engine::scorefile.categories.empty()) {
 		widget& no_scores_found{m_ui[T_NO_SCORES_FOUND]};
-		no_scores_found.pos.change(tween::CUBIC, {400, 483}, 0.5_s);
+		no_scores_found.pos.change(tween::CUBIC, {400, 500}, 0.5_s);
 		no_scores_found.hide(0.5_s);
 	}
 	else {

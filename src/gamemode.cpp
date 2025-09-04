@@ -9,7 +9,7 @@ constexpr u8 GAMEMODE_VERSION{1};
 // The gamemodes that can appear in the main menu background.
 const std::array<gamemode, 3> BUILTIN_GAMEMODES{
 	gamemode{true, "gm_classic", "TRDario", "gm_classic_d", "classic", player_settings{.life_fragment_spawn_interval = 41.67_s},
-			 ball_settings{4, 50, 8.334_s, 20, 0, 375, 10}},
+			 ball_settings{1, 50, 8.334_s, 20, 0, 300, 10}},
 	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", "chonk", player_settings{.hitbox_radius = 30},
 			 ball_settings{3, 10, 19.59183674_s, 70, 0, 350, 25}},
 	gamemode{true, "gm_swarm", "TRDario", "gm_swarm_d", "swarm",

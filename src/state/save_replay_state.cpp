@@ -67,7 +67,8 @@ save_replay_state::save_replay_state(std::unique_ptr<game>&& game, save_screen_f
 			m_substate = substate_base::EXITING | to_flags(m_substate);
 			m_timer = 0;
 			set_up_exit_animation();
-			((active_game&)*m_game).replay.set_header(score_entry{description, current_timestamp(), 0, m_game->final_time(), flags}, name);
+			((active_game&)*m_game)
+				.replay.set_header(score_entry{description, current_timestamp(), m_game->final_score(), m_game->final_time(), flags}, name);
 			((active_game&)*m_game).replay.save_to_file();
 		},
 	};

@@ -53,8 +53,8 @@ void engine::initialize_2d_renderer()
 
 void engine::initialize_graphics()
 {
-	graphics.emplace();
 	initialize_2d_renderer();
+	graphics.emplace();
 	if (cli_settings.debug_mode) {
 		tr::gfx::debug_renderer::initialize();
 	}

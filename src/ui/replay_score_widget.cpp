@@ -175,7 +175,7 @@ replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks 
 						 },
 						 [this] {
 							 if (!this->it.has_value()) {
-								 return std::string{"----------------------------------"};
+								 return std::string{"-------------------------------------------------"};
 							 }
 
 							 replay_header& rpy{(*this->it)->second};

@@ -82,6 +82,7 @@ constexpr selection_tree SELECTION_TREE{
 constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::Z, tr::system::keymod::CTRL}, T_REVERT},
 	{{tr::system::keycode::S, tr::system::keymod::CTRL}, T_APPLY},
+	{{tr::system::keycode::ENTER}, T_APPLY},
 	{{tr::system::keycode::ESCAPE}, T_EXIT},
 };
 

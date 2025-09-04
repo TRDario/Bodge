@@ -48,14 +48,13 @@
 |                                                                                                           - TRDario |
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
-| v1.1.0 (???)                                                                                                        |
+| v1.1.0 (04 Sep 2025)                                                                                                |
 | * Introduced new systems for gaining lives and scoring.                                                             |
 | * Updated most file formats (barring the settings), making v1.0 files unusable (besides the scorefile, partially)   |
 | * Scores now automatically save (using the save feature is still useful for adding a description).                  |
-| * Added an animation for losing a life.                                                                             |
-| * The player no longer flashes red after getting hit.                                                               |
-| * Fixed some tooltip boxes rendering too wide.                                                                      |
-| * Fixed localization files with a trailing newline failing to load.                                                 |
+| * Rebalanced the difficulties to be reasonable for a longer period of time.                                         |
+| * Tweaked and improved some visual elements.                                                                        |
+| * Miscellaneous bug fixes.                                                                                          |
 | v1.0.1 (24 Aug 2025)                                                                                                |
 | * Fixed a few gamemode designer limits and numeric input widget interactions.                                       |
 | v1.0.0 (23 Aug 2025)                                                                                                |
@@ -76,7 +75,8 @@
 |   * Hugging a corner is penalized by giving you negative ticks.                                                     |
 | * Standing in the path of oncoming balls gives you style points.                                                    |
 |   * The cooldown for style points is very short, so surfing right in front of a ball can give you a lot of score.   |
-|   * The value of style points depends on the size and velocity of a ball, but will always be at least 1.            |
+|   * The value of style points depends somewhat on the size and particularly on the velocity of a ball.              |
+|     * The exact formula is '√(size / 10) * (velocity / 250)^1.5'.                                                   |
 | * Collecting life fragments and getting lives gives you some points too.                                            |
 |                                                                                                                     |
 |--------------------------------------------------KEYBOARD CONTROLS--------------------------------------------------|

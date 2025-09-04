@@ -3,6 +3,8 @@
 
 class tooltip_manager {
   public:
+	tooltip_manager();
+
 	void add_to_renderer(std::string_view text);
 
   private:

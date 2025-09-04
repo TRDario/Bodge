@@ -1,6 +1,6 @@
+#include "../../include/game/game.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/fonts.hpp"
-#include "../../include/game/game.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/score.hpp"
 #include "../../include/system.hpp"
@@ -137,7 +137,12 @@ i64 game::final_score() const
 
 ticks game::final_time() const
 {
-	return m_start_timer - m_game_over_timer.value();
+	if (m_game_over_timer.active()) {
+		return m_start_timer - m_game_over_timer.value();
+	}
+	else {
+		return m_start_timer;
+	}
 }
 
 //
@@ -318,7 +323,7 @@ void game::check_if_player_collected_life_fragments()
 			else {
 				++m_lives_left;
 				m_1up_animation_timer.start();
-				add_to_score(100);
+				add_to_score(150);
 				engine::play_sound(sound::ONE_UP, 1.25f, 0);
 			}
 			engine::play_sound(sound::COLLECT, 0.65f, 0, COLLECT_PITCHES[m_collected_fragments - 1]);
@@ -383,12 +388,13 @@ void game::check_for_style_points()
 		for (const ball& ball : std::views::filter(m_balls, &ball::tangible)) {
 			const float velocity{glm::length(ball.velocity())};
 			const tr::angle rect_angle{tr::atan2(ball.velocity().y / velocity, ball.velocity().x / velocity)};
-			const glm::vec2 rect_size{ball.hitbox().r + velocity / 3, ball.hitbox().r * 2 + m_player.hitbox().r};
+			const glm::vec2 rect_size{ball.hitbox().r + velocity / 3, ball.hitbox().r * 2 + 2 * m_player.hitbox().r};
 			const glm::vec2 rect_center{ball.hitbox().c + ball.velocity() / 6.0f + tr::magth(ball.hitbox().r, rect_angle)};
 			const tr::frect2 unrotated_rect{tr::frect2{rect_center - rect_size / 2.0f, rect_size}};
 			const glm::mat4 inverse_rotation{tr::rotate_around(1.0f, rect_center, -rect_angle)};
 			if (unrotated_rect.contains(inverse_rotation * m_player.hitbox().c)) {
-				max_points = std::max({1_i64, tr::floor_cast<i64>(std::sqrt(ball.hitbox().r / 10) * velocity / 250), max_points});
+				max_points =
+					std::max({1_i64, tr::floor_cast<i64>(std::sqrt(ball.hitbox().r / 10) * std::pow(velocity / 250, 1.5f)), max_points});
 			}
 		}
 		if (max_points != 0) {
@@ -532,7 +538,7 @@ void game::add_score_to_renderer() const
 		tint = {tint_factor, tint_factor, tint_factor, opacity};
 		scale = (0.85f - 0.1f * factor);
 
-		constexpr float MAX{decltype(m_score_hover_timer)::max() - SCORE_REGION_TIME_THRESHOLD + 0.5_sf};
+		constexpr float MAX{decltype(m_center_timer)::max() - SCORE_REGION_TIME_THRESHOLD + 0.5_sf};
 		if (m_center_timer.value() >= SCORE_REGION_TIME_THRESHOLD - 0.5_s) {
 			tint.b -= 0.75f * tint.b * (m_center_timer.value() - SCORE_REGION_TIME_THRESHOLD + 0.5_s) / MAX;
 		}

@@ -6,7 +6,7 @@ include(FetchContent)
 FetchContent_Declare(
 	tr
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr.git
-    GIT_TAG origin/main
+    GIT_TAG v1.0.2
 ) 
 FetchContent_MakeAvailable(tr)
 include(${tr_SOURCE_DIR}/check_compiler.cmake)
@@ -38,9 +38,11 @@ endif()
 
 # Copying to 'final' if Release.
 
-add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
+if(LINUX)
+    add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
                    -E copy "$<TARGET_FILE:Bodge>" "${CMAKE_CURRENT_BINARY_DIR}/final/$<TARGET_FILE_NAME:Bodge>")
-add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
-                   -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/data" "${CMAKE_CURRENT_BINARY_DIR}/final/data")
-add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
-                   -E copy "${CMAKE_CURRENT_SOURCE_DIR}/metadata/readme.txt" "${CMAKE_CURRENT_BINARY_DIR}/final/readme.txt")
+    add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
+                    -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/data" "${CMAKE_CURRENT_BINARY_DIR}/final/data")
+    add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
+                    -E copy "${CMAKE_CURRENT_SOURCE_DIR}/metadata/readme.txt" "${CMAKE_CURRENT_BINARY_DIR}/final/readme.txt")
+endif()
