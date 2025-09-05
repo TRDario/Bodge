@@ -9,7 +9,6 @@ FetchContent_Declare(
     GIT_TAG v1.0.2
 ) 
 FetchContent_MakeAvailable(tr)
-include(${tr_SOURCE_DIR}/check_compiler.cmake)
 
 add_executable(
     Bodge
@@ -38,11 +37,9 @@ endif()
 
 # Copying to 'final' if Release.
 
-if(LINUX)
-    add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
+add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},${TR_DO_NOTHING}>
                    -E copy "$<TARGET_FILE:Bodge>" "${CMAKE_CURRENT_BINARY_DIR}/final/$<TARGET_FILE_NAME:Bodge>")
-    add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
-                    -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/data" "${CMAKE_CURRENT_BINARY_DIR}/final/data")
-    add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},true>
-                    -E copy "${CMAKE_CURRENT_SOURCE_DIR}/metadata/readme.txt" "${CMAKE_CURRENT_BINARY_DIR}/final/readme.txt")
-endif()
+add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},${TR_DO_NOTHING}>
+                -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/data" "${CMAKE_CURRENT_BINARY_DIR}/final/data")
+add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},${TR_DO_NOTHING}>
+                -E copy "${CMAKE_CURRENT_SOURCE_DIR}/metadata/readme.txt" "${CMAKE_CURRENT_BINARY_DIR}/final/readme.txt")
