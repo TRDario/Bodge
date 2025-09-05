@@ -44,7 +44,6 @@ name_entry_state::name_entry_state()
 				m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 1.0_s);
 				m_ui[T_CONFIRM].pos.change(tween::CUBIC, BOTTOM_START_POS, 1.0_s);
 				m_ui.hide_all_widgets(1.0_s);
-				engine::play_sound(sound::CONFIRM, 0.5f, 0.0f);
 				engine::scorefile.name = input.buffer;
 			}
 		},

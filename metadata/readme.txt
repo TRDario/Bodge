@@ -84,6 +84,9 @@
 | Arrow keys can be used in menus to select buttons, which can then be pressed with enter.                            |
 | You can also usually use the top row numbers and escape/enter as shortcuts, as well as other screen-specific ones.  |
 |                                                                                                                     |
+| Numeric settings can be directly inputted by pressing on them, or you can use shift/ctrl to change the rate that    |
+| the arrows modify them.                                                                                             |
+|                                                                                                                     |
 | Replays can be sped up with ctrl and slowed down with shift.                                                        |
 |                                                                                                                     |
 |---------------------------------------------------USER DIRECTORY----------------------------------------------------|
