@@ -4,7 +4,7 @@
 
 std::string format_score(i64 score)
 {
-	return std::format("{:05}", score);
+	return TR_FMT::format("{:05}", score);
 }
 
 std::string format_time(ticks time)
