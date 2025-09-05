@@ -5,7 +5,7 @@
 class startable_timer {
   public:
 	inline bool active() const;
-	inline ticks value() const;
+	inline ticks elapsed() const;
 
 	inline void start();
 	inline void update();
@@ -32,7 +32,7 @@ template <ticks MAX> class accumulating_timer {
   public:
 	static constexpr ticks max();
 
-	ticks value() const;
+	ticks accumulated() const;
 
 	void increment();
 	void decrement();
@@ -48,7 +48,7 @@ bool startable_timer::active() const
 	return m_time != std::numeric_limits<ticks>::max();
 }
 
-ticks startable_timer::value() const
+ticks startable_timer::elapsed() const
 {
 	TR_ASSERT(active(), "Tried to get value of inactive timer.");
 
@@ -98,7 +98,7 @@ template <ticks MAX> constexpr ticks accumulating_timer<MAX>::max()
 	return MAX;
 }
 
-template <ticks MAX> ticks accumulating_timer<MAX>::value() const
+template <ticks MAX> ticks accumulating_timer<MAX>::accumulated() const
 {
 	return m_accumulated;
 }

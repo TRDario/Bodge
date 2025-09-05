@@ -1,10 +1,8 @@
+#include "../include/system.hpp"
 #include "../include/audio.hpp"
 #include "../include/graphics.hpp"
 #include "../include/settings.hpp"
 #include "../include/state/state.hpp"
-#include "../include/system.hpp"
-
-using namespace std::chrono_literals;
 
 namespace engine {
 	// The upper limit for an acceptable update time.

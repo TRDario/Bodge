@@ -1,21 +1,10 @@
 #include "../include/replay.hpp"
 #include "../include/settings.hpp"
 
-//
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Replay file version identifier.
 constexpr u8 REPLAY_VERSION{1};
-
-//
-
-std::string to_filename(std::string_view name)
-{
-	std::string filename{name};
-	std::erase_if(filename, [](char chr) { return chr >= 0x7F || (!std::isalnum(chr) && chr != '_' && chr != '-' && chr != ' '); });
-	std::ranges::for_each(filename, [](char& chr) { chr = std::tolower(chr); });
-	std::ranges::replace(filename, ' ', '_');
-	return filename.empty() ? "replay" : filename;
-}
 
 ////////////////////////////////////////////////////////////// REPLAY HEADER //////////////////////////////////////////////////////////////
 
@@ -84,6 +73,15 @@ void replay::set_header(const score_entry& header, std::string_view name)
 {
 	(score_entry&)(m_header) = header;
 	m_header.name = name;
+}
+
+std::string to_filename(std::string_view name)
+{
+	std::string filename{name};
+	std::erase_if(filename, [](char chr) { return chr >= 0x7F || (!std::isalnum(chr) && chr != '_' && chr != '-' && chr != ' '); });
+	std::ranges::for_each(filename, [](char& chr) { chr = std::tolower(chr); });
+	std::ranges::replace(filename, ' ', '_');
+	return filename.empty() ? "replay" : filename;
 }
 
 void replay::save_to_file() const

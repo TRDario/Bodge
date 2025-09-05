@@ -1,7 +1,7 @@
 #include "../../include/game/trail.hpp"
 
 trail::trail(const glm::vec2& value)
-	: m_head{SIZE - 1}
+	: m_head{size() - 1}
 {
 	m_buffer.fill(value);
 }
@@ -10,15 +10,15 @@ trail::trail(const glm::vec2& value)
 
 const glm::vec2& trail::operator[](usize i) const
 {
-	assert(i < SIZE);
+	assert(i < size());
 
-	return m_buffer[((m_head - i) + SIZE) % SIZE];
+	return m_buffer[((m_head - i) + size()) % size()];
 }
 
 //
 
 void trail::push(const glm::vec2& value)
 {
-	m_head = (m_head + 1) % SIZE;
+	m_head = (m_head + 1) % size();
 	m_buffer[m_head] = value;
 }

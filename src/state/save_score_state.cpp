@@ -122,8 +122,8 @@ void save_score_state::set_up_ui()
 
 	// TEXT CALLBACKS
 
-	text_callback time_tcb{string_text_callback{timer_text(m_score.time)}};
-	text_callback score_tcb{string_text_callback{TR_FMT::format("{:05}", m_score.score)}};
+	text_callback time_tcb{string_text_callback{format_time(m_score.time)}};
+	text_callback score_tcb{string_text_callback{format_score(m_score.score)}};
 
 	// STATUS CALLBACKS
 

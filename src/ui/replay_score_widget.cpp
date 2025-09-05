@@ -79,23 +79,16 @@ score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks un
 			  }
 		  },
 		  false,
-		  [this] {
-			  if (!this->score.has_ref()) {
+		  [&rank = this->rank, &score = this->score, &type = this->type] {
+			  if (!score.has_ref()) {
 				  return std::string{"----------------------------------"};
 			  }
 
-			  const tm* tm{std::localtime(&this->score->timestamp)};
-			  if (this->type == type::TIME) {
-				  const ticks result{this->score->time};
-				  const ticks result_m{result / 60_s};
-				  const ticks result_s{(result % 60_s) / 1_s};
-				  const ticks result_ms{(result % 1_s) * 100 / 1_s};
-				  return TR_FMT::format("{}) {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", this->rank, result_m, result_s, result_ms,
-										tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
-			  }
-			  else {
-				  return TR_FMT::format("{}) {:05} | {}/{:02}/{:02} {:02}:{:02}", this->rank, this->score->score, tm->tm_year + 1900,
-										tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
+			  switch (type) {
+			  case type::TIME:
+				  return TR_FMT::format("{}) {} | {}", rank, format_time_long(score->time), format_timestamp(score->timestamp));
+			  case type::SCORE:
+				  return TR_FMT::format("{}) {} | {}", rank, format_score(score->score), format_timestamp(score->timestamp));
 			  }
 		  },
 		  font::LANGUAGE,
@@ -179,14 +172,9 @@ replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks 
 							 }
 
 							 replay_header& rpy{(*this->it)->second};
-							 const ticks result{rpy.time};
-							 const ticks result_m{result / 60_s};
-							 const ticks result_s{(result % 60_s) / 1_s};
-							 const ticks result_ms{(result % 1_s) * 100 / 1_s};
-							 const tm* tm{std::localtime(&rpy.timestamp)};
-							 return TR_FMT::format("{} ({}: {})\n{} | {:05} | {}:{:02}:{:02} | {}/{:02}/{:02} {:02}:{:02}", rpy.name,
-												   engine::loc["by"], rpy.player, rpy.gamemode.name_loc(), rpy.score, result_m, result_s,
-												   result_ms, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
+							 return TR_FMT::format("{} ({}: {})\n{} | {} | {} | {}", rpy.name, engine::loc["by"], rpy.player,
+												   rpy.gamemode.name_loc(), format_score(rpy.score), format_time_long(rpy.time),
+												   format_timestamp(rpy.timestamp));
 						 },
 						 font::LANGUAGE,
 						 34,

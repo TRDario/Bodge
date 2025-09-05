@@ -106,16 +106,16 @@ void player::add_outline_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotati
 
 void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
 {
-	constexpr usize VERTICES{6 * (trail::SIZE + 1)};
-	constexpr usize INDICES{tr::poly_outline_idx(6) * trail::SIZE};
+	constexpr usize VERTICES{6 * (trail::size() + 1)};
+	constexpr usize INDICES{tr::poly_outline_idx(6) * trail::size()};
 
 	tr::gfx::color_mesh_ref trail_mesh{tr::gfx::renderer_2d::new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
 	tr::fill_poly_vtx(trail_mesh.positions | std::views::take(6), 6, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(trail_mesh.colors, tr::rgba8{tint, opacity});
 
 	std::vector<u16>::iterator indices_it{trail_mesh.indices.begin()};
-	for (usize i = 0; i < m_trail.SIZE; ++i) {
-		const float trail_fade{float(m_trail.SIZE - i) / m_trail.SIZE};
+	for (usize i = 0; i < m_trail.size(); ++i) {
+		const float trail_fade{float(m_trail.size() - i) / m_trail.size()};
 		const float trail_size{size * trail_fade};
 		const u8 trail_opacity{u8(opacity / 3.0f * trail_fade)};
 

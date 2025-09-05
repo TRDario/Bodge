@@ -64,9 +64,10 @@ scoreboard_selection_state::scoreboard_selection_state(std::unique_ptr<playerles
 
 	// TEXT CALLBACKS
 
-	const text_callback player_info_tcb{string_text_callback{
-		TR_FMT::format("{} {}: {}:{:02}:{:02}", engine::loc["total_playtime"], engine::scorefile.name, engine::scorefile.playtime / 3600_s,
-					   engine::scorefile.playtime % 3600_s / 60_s, engine::scorefile.playtime % 60_s / 1_s)}};
+	const text_callback player_info_tcb{
+		string_text_callback{TR_FMT::format("{} {}: {}", engine::loc["total_playtime"], engine::scorefile.name,
+											format_playtime(engine::scorefile.playtime))},
+	};
 
 	//
 

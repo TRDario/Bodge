@@ -2,13 +2,16 @@
 #include "../global.hpp"
 #include "../time.hpp"
 
-//
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
+// Total duration of a life fragment event.
 constexpr ticks LIFE_FRAGMENT_DURATION{10_s};
+// The starting time during an event of fragment slow flashing.
 constexpr ticks LIFE_FRAGMENT_SLOW_FLASH_START{LIFE_FRAGMENT_DURATION - 3.0_s};
+// The starting time during an event of fragment fast flashing.
 constexpr ticks LIFE_FRAGMENT_FAST_FLASH_START{LIFE_FRAGMENT_DURATION - 1.0_s};
 
-//
+////////////////////////////////////////////////////////////// LIFE FRAGMENT //////////////////////////////////////////////////////////////
 
 class life_fragment {
   public:

@@ -1,18 +1,14 @@
-#include "../../include/audio.hpp"
 #include "../../include/game/ball.hpp"
+#include "../../include/audio.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/settings.hpp"
 
-//
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-// The amount of time it takes a ball to become tangible after spawning.
-inline constexpr ticks BALL_SPAWN_TIME{1.5_s};
-// The amount of time it takes a ball to become tangible after colliding with something.
-inline constexpr ticks BALL_COLLISION_TIME{0.1_s};
-// Ball fill color.
-inline constexpr tr::rgb8 BALL_FILL_COLOR{0, 0, 0};
+inline constexpr ticks BALL_SPAWN_ANIMATION_TIME{1.5_s};
+inline constexpr ticks BALL_COLLISION_ANIMATION_TIME{0.1_s};
 
-//
+////////////////////////////////////////////////////////////////// BALL ///////////////////////////////////////////////////////////////////
 
 void play_ball_sound(glm::vec2 pos, float velocity)
 {
@@ -38,7 +34,7 @@ ball::ball(tr::xorshiftr_128p& rng, float size, float velocity)
 
 bool ball::tangible() const
 {
-	return m_time_since_spawned >= BALL_SPAWN_TIME;
+	return m_time_since_spawned >= BALL_SPAWN_ANIMATION_TIME;
 }
 
 const tr::circle& ball::hitbox() const
@@ -81,7 +77,7 @@ void ball::update()
 	++m_time_since_spawned;
 	++m_time_since_last_collision;
 
-	if (m_time_since_spawned >= BALL_SPAWN_TIME) {
+	if (tangible()) {
 		m_trail.push(m_hitbox.c);
 
 		const glm::vec2 target{m_hitbox.c + m_velocity / 1_sf};
@@ -120,25 +116,27 @@ void ball::update()
 void ball::add_to_renderer() const
 {
 	const tr::rgb8 tint{tr::color_cast<tr::rgb8>(tr::hsv{float(engine::settings.secondary_hue), 1, 1})};
-	const float raw_age_factor{std::min(float(m_time_since_spawned) / BALL_SPAWN_TIME, 1.0f)};
+	const float raw_age_factor{std::min(float(m_time_since_spawned) / BALL_SPAWN_ANIMATION_TIME, 1.0f)};
 	const float eased_age_factor{raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor)};
 	const float size{m_hitbox.r * (5 - 4 * eased_age_factor)};
 	const usize vertices{tr::smooth_poly_vtx(size, engine::render_scale())};
 	const u8 base_opacity{tr::norm_cast<u8>(raw_age_factor)};
-	const float thickness{3 + 4 * std::max((float(BALL_COLLISION_TIME) - m_time_since_last_collision) / BALL_COLLISION_TIME, 0.0f)};
+	const float thickness{
+		3 + 4 * std::max((float(BALL_COLLISION_ANIMATION_TIME) - m_time_since_last_collision) / BALL_COLLISION_ANIMATION_TIME, 0.0f),
+	};
 
 	// Add the ball.
 	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::BALLS, vertices)};
 	tr::fill_poly_vtx(fill.positions, vertices, {m_hitbox.c - thickness / 2, size});
-	std::ranges::fill(fill.colors, tr::rgba8{BALL_FILL_COLOR, base_opacity});
+	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, base_opacity});
 	const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::BALLS, vertices)};
 	tr::fill_poly_outline_vtx(outline.positions, vertices, {m_hitbox.c, size}, 0_deg, thickness);
 	std::ranges::fill(outline.colors, tr::rgba8{tint, base_opacity});
 
 	// Add the trail.
-	if (m_time_since_spawned > BALL_SPAWN_TIME) {
+	if (m_time_since_spawned > BALL_SPAWN_ANIMATION_TIME) {
 		usize drawn_trails{2};
-		for (usize i = 0; i < m_trail.SIZE - 1; ++i) {
+		for (usize i = 0; i < m_trail.size() - 1; ++i) {
 			const glm::vec2 prev{i == 0 ? m_hitbox.c : m_trail[i - 1]};
 			if (!tr::collinear(prev, m_trail[i], m_trail[i + 1])) {
 				++drawn_trails;
@@ -152,16 +150,16 @@ void ball::add_to_renderer() const
 		std::ranges::fill(trail.colors | std::views::take(vertices), tr::rgba8{tint, tr::norm_cast<u8>(0.4f)});
 		usize trail_index{1};
 		std::vector<u16>::iterator indices_it{trail.indices.begin()};
-		for (usize i = 0; i < m_trail.SIZE; ++i) {
+		for (usize i = 0; i < m_trail.size(); ++i) {
 			// Cull unnecessary trail vertices.
-			if (i < m_trail.SIZE - 1) {
+			if (i < m_trail.size() - 1) {
 				const glm::vec2 prev{i == 0 ? m_hitbox.c : m_trail[i - 1]};
 				if (tr::collinear(prev, m_trail[i], m_trail[i + 1])) {
 					continue;
 				}
 			}
 
-			const u8 opacity{tr::norm_cast<u8>((m_trail.SIZE - i - 1) * 0.4f / m_trail.SIZE)};
+			const u8 opacity{tr::norm_cast<u8>((m_trail.size() - i - 1) * 0.4f / m_trail.size())};
 			const auto positions{trail.positions | std::views::drop(trail_index * vertices) | std::views::take(vertices)};
 			const auto colors{trail.colors | std::views::drop(trail_index * vertices) | std::views::take(vertices)};
 			tr::fill_poly_vtx(positions, vertices, {m_trail[i], m_hitbox.r});

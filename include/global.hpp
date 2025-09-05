@@ -36,11 +36,16 @@ constexpr float operator""_sf(long double seconds)
 	return float(SECOND_TICKS * seconds);
 }
 
-// Sentinel for an inactive timer.
-inline constexpr ticks INACTIVE_TIMER{~0U};
-
-// Formats timer text.
-std::string timer_text(ticks time);
+// Formats a score.
+std::string format_score(i64 score);
+// Formats a time in ticks to (MM):SS:mm.
+std::string format_time(ticks time);
+// Formats a time in ticks to MM:SS:mm.
+std::string format_time_long(ticks time);
+// Formats a playtime in ticks to HH:MM:SS.
+std::string format_playtime(ticks playtime);
+// Formats a timestamp to YY/MM/DD HH:MM.
+std::string format_timestamp(i64 timestamp);
 
 /////////////////////////////////////////////////////////// GRAPHICAL CONSTANTS ///////////////////////////////////////////////////////////
 

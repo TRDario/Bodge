@@ -2,27 +2,73 @@
 #include "../include/settings.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+// clang-format off
 
 // Gamemode file version identifier.
 constexpr u8 GAMEMODE_VERSION{1};
 
 // The gamemodes that can appear in the main menu background.
-const std::array<gamemode, 3> BUILTIN_GAMEMODES{
-	gamemode{true, "gm_classic", "TRDario", "gm_classic_d", "classic", player_settings{.life_fragment_spawn_interval = 41.67_s},
-			 ball_settings{1, 50, 8.334_s, 20, 0, 300, 10}},
-	gamemode{true, "gm_chonk", "TRDario", "gm_chonk_d", "chonk", player_settings{.hitbox_radius = 30},
-			 ball_settings{3, 10, 19.59183674_s, 70, 0, 350, 25}},
-	gamemode{true, "gm_swarm", "TRDario", "gm_swarm_d", "swarm",
-			 player_settings{.life_fragment_spawn_interval = 27.42857144_s, .hitbox_radius = 8, .inertia_factor = 0.05f},
-			 ball_settings{10, 40, 3.42857143_s, 10, 0, 250, 10}},
-};
-// The gamemodes that can appear in the main menu background.
-constexpr std::array<gamemode, 6> MENU_GAMEMODES{
-	gamemode{.ball{15, 15, 10_s, 20, 0, 350, 0}}, gamemode{.ball{12, 12, 10_s, 25, 0, 400, 0}},
-	gamemode{.ball{5, 5, 10_s, 25, 0, 1000, 0}},  gamemode{.ball{8, 8, 10_s, 50, 0, 350, 25}},
-	gamemode{.ball{6, 6, 10_s, 75, 0, 350, 25}},  gamemode{.ball{25, 25, 10_s, 10, 0, 250, 10}},
-};
+const std::array<gamemode, 3> BUILTIN_GAMEMODES{{
+	{
+		.builtin = true,
+		.name = "gm_classic",
+		.author = "TRDario",
+		.description = "gm_classic_d",
+		.song = "classic",
+		.player{.life_fragment_spawn_interval = 41.67_s},
+		.ball{.starting_count = 1,
+			  .max_count = 50,
+			  .spawn_interval = 8.334_s,
+			  .initial_size = 20,
+			  .size_step = 0,
+			  .initial_velocity = 300,
+			  .velocity_step = 10},
+	},
+	{
+		.builtin = true,
+		.name = "gm_chonk",
+		.author = "TRDario",
+		.description = "gm_chonk_d",
+		.song = "chonk",
+		.player{.hitbox_radius = 30},
+		.ball{.starting_count = 3,
+			  .max_count = 10,
+			  .spawn_interval = 19.59183674_s,
+			  .initial_size = 70,
+			  .size_step = 0,
+			  .initial_velocity = 350,
+			  .velocity_step = 25},
+	},
+	{
+		.builtin = true,
+		.name = "gm_swarm",
+		.author = "TRDario",
+		.description = "gm_swarm_d",
+		.song = "swarm",
+		.player{.life_fragment_spawn_interval = 27.42857144_s,
+				.hitbox_radius = 8,
+				.inertia_factor = 0.05f},
+		.ball{.starting_count = 10,
+			  .max_count = 40,
+			  .spawn_interval = 3.42857143_s,
+			  .initial_size = 10,
+			  .size_step = 0,
+			  .initial_velocity = 250,
+			  .velocity_step = 10},
+	},
+}};
 
+// clang-format on
+
+// The gamemodes that can appear in the main menu background.
+constexpr std::array<gamemode, 6> MENU_GAMEMODES{{
+	{.ball{.starting_count = 15, .max_count = 15, .initial_size = 20, .size_step = 0, .initial_velocity = 350, .velocity_step = 0}},
+	{.ball{.starting_count = 12, .max_count = 12, .initial_size = 25, .size_step = 0, .initial_velocity = 400, .velocity_step = 0}},
+	{.ball{.starting_count = 5, .max_count = 5, .initial_size = 25, .size_step = 0, .initial_velocity = 1000, .velocity_step = 0}},
+	{.ball{.starting_count = 8, .max_count = 8, .initial_size = 50, .size_step = 0, .initial_velocity = 350, .velocity_step = 25}},
+	{.ball{.starting_count = 6, .max_count = 6, .initial_size = 75, .size_step = 0, .initial_velocity = 350, .velocity_step = 25}},
+	{.ball{.starting_count = 25, .max_count = 25, .initial_size = 10, .size_step = 0, .initial_velocity = 250, .velocity_step = 10}},
+}};
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
 
 std::string_view gamemode::name_loc() const

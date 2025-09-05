@@ -1,7 +1,7 @@
 #include "../include/blur_renderer.hpp"
 #include "../include/graphics.hpp"
 
-//
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 constexpr const char* VERTEX_SHADER_SRC{"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;out gl_PerVertex{vec4 "
 										"gl_Position;};L(0)out vec2 P;void main(){P=p;gl_Position=vec4(p,0,1);}"};
@@ -21,7 +21,7 @@ constexpr std::array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 
 const u32 RENDERER_ID{tr::gfx::alloc_renderer_id()};
 
-//
+////////////////////////////////////////////////////////////// BLUR RENDERER //////////////////////////////////////////////////////////////
 
 blur_renderer::blur_renderer(int texture_size)
 	: m_input_texture{glm::ivec2{texture_size}}

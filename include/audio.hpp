@@ -23,6 +23,7 @@ enum class sound {
 	COUNT
 };
 
+// Timestamp to skip the initial portion of the menu song when returning from other states.
 constexpr tr::fsecs SKIP_MENU_SONG_INTRO_TIMESTAMP{103769 / 44100.0f};
 
 namespace engine {

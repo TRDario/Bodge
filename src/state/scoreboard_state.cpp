@@ -140,10 +140,10 @@ scoreboard_state::scoreboard_state(std::unique_ptr<playerless_game>&& game, scor
 
 	// TEXT CALLBACKS
 
-	const ticks playtime{engine::scorefile.playtime};
 	const text_callback player_info_tcb{
-		string_text_callback{TR_FMT::format("{} {}: {}:{:02}:{:02}", engine::loc["total_playtime"], engine::scorefile.name,
-											playtime / 3600_s, playtime % 3600_s / 60_s, playtime % 60_s / 1_s)}};
+		string_text_callback{TR_FMT::format("{} {}: {}", engine::loc["total_playtime"], engine::scorefile.name,
+											format_playtime(engine::scorefile.playtime))},
+	};
 	const text_callback cur_gamemode_tcb{
 		[this] { return std::string{m_selected->gamemode.name_loc()}; },
 	};

@@ -1,16 +1,14 @@
 #include "../include/settings.hpp"
 
-//
-
-template <> struct tr::binary_reader<settings> : tr::default_binary_reader<settings> {};
-template <> struct tr::binary_writer<settings> : tr::default_binary_writer<settings> {};
-
-//
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings file version identifier.
 constexpr u8 SETTINGS_VERSION{0};
 
-//
+//////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
+
+template <> struct tr::binary_reader<settings> : tr::default_binary_reader<settings> {};
+template <> struct tr::binary_writer<settings> : tr::default_binary_writer<settings> {};
 
 namespace engine {
 	void raw_load_settings();

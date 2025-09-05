@@ -48,9 +48,9 @@
 |                                                                                                           - TRDario |
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
-| v1.1.0 (04 Sep 2025)                                                                                                |
+| v1.1.0 (05 Sep 2025)                                                                                                |
 | * Introduced new systems for gaining lives and scoring.                                                             |
-| * Updated most file formats (barring the settings), making v1.0 files unusable (besides the scorefile, partially)   |
+| * Updated most file formats (barring the settings), making v1.0 files unusable (besides the scorefile, partially).  |
 | * Scores now automatically save (using the save feature is still useful for adding a description).                  |
 | * Rebalanced the difficulties to be reasonable for a longer period of time.                                         |
 | * Tweaked and improved some visual elements.                                                                        |

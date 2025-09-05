@@ -69,8 +69,8 @@ start_game_state::start_game_state(std::unique_ptr<playerless_game>&& game)
 	text_callback author_tcb{string_text_callback{TR_FMT::format("{}: {}", engine::loc["by"], m_selected->author)}};
 	text_callback description_tcb{string_text_callback{
 		std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : engine::loc["no_description"]}}};
-	text_callback best_time_tcb{string_text_callback{timer_text(engine::scorefile.bests(*m_selected).time)}};
-	text_callback best_score_tcb{string_text_callback{TR_FMT::format("{:05}", engine::scorefile.bests(*m_selected).score)}};
+	text_callback best_time_tcb{string_text_callback{format_time(engine::scorefile.bests(*m_selected).time)}};
+	text_callback best_score_tcb{string_text_callback{format_score(engine::scorefile.bests(*m_selected).score)}};
 
 	// STATUS CALLBACKS
 
@@ -184,9 +184,9 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 				string_text_callback{
 					std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : engine::loc["no_description"]}},
 				loc_text_callback{T_BEST_TIME_LABEL},
-				string_text_callback{timer_text(engine::scorefile.bests(*m_selected).time)},
+				string_text_callback{format_time(engine::scorefile.bests(*m_selected).time)},
 				loc_text_callback{T_BEST_SCORE_LABEL},
-				string_text_callback{TR_FMT::format("{:05}", engine::scorefile.bests(*m_selected).score)},
+				string_text_callback{format_score(engine::scorefile.bests(*m_selected).score)},
 			};
 			const bool moved_left{glm::vec2{m_ui[GAMEMODE_WIDGETS[0]].pos}.x < 500};
 			for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {

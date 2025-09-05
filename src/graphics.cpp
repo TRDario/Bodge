@@ -2,15 +2,6 @@
 #include "../include/settings.hpp"
 
 namespace engine {
-	inline constexpr tr::gfx::blend_mode MAX_ALPHA_BLENDING{
-		tr::gfx::blend_multiplier::ONE, tr::gfx::blend_fn::MAX, tr::gfx::blend_multiplier::ONE,
-		tr::gfx::blend_multiplier::ONE, tr::gfx::blend_fn::MAX, tr::gfx::blend_multiplier::ONE,
-	};
-	inline constexpr tr::gfx::blend_mode REVERSE_ALPHA_BLENDING{
-		tr::gfx::blend_multiplier::ONE_MINUS_DST_ALPHA, tr::gfx::blend_fn::ADD, tr::gfx::blend_multiplier::DST_ALPHA,
-		tr::gfx::blend_multiplier::ONE_MINUS_DST_ALPHA, tr::gfx::blend_fn::MAX, tr::gfx::blend_multiplier::DST_ALPHA,
-	};
-
 	tr::gfx::render_target setup_screen();
 
 	struct graphics_data {
@@ -43,8 +34,8 @@ void engine::initialize_2d_renderer()
 {
 	tr::gfx::renderer_2d::initialize();
 	tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
-	tr::gfx::renderer_2d::set_default_layer_blend_mode(layer::BALL_TRAILS, MAX_ALPHA_BLENDING);
-	tr::gfx::renderer_2d::set_default_layer_blend_mode(layer::BALL_TRAILS_OVERLAY, REVERSE_ALPHA_BLENDING);
+	tr::gfx::renderer_2d::set_default_layer_blend_mode(layer::BALL_TRAILS, tr::gfx::MAX_BLENDING);
+	tr::gfx::renderer_2d::set_default_layer_blend_mode(layer::BALL_TRAILS_OVERLAY, tr::gfx::REVERSE_ALPHA_BLENDING);
 	for (int layer = layer::GAME_OVERLAY; layer <= layer::CURSOR; ++layer) {
 		// Explicitly set default transform for these because the global default is modified by screenshake.
 		tr::gfx::renderer_2d::set_default_layer_transform(layer, TRANSFORM);
