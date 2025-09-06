@@ -32,7 +32,8 @@ constexpr u8 NO_MSAA{0};
 struct settings {
 	u16 window_size{500};
 	display_mode display_mode{display_mode::WINDOWED};
-	u8 msaa{0};
+	bool vsync{true};
+	u8 msaa{8};
 	u16 primary_hue{60};
 	u16 secondary_hue{0};
 	u8 sfx_volume{100};

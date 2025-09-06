@@ -12,6 +12,8 @@ constexpr tag T_WINDOW_SIZE{"window_size"};
 constexpr tag T_WINDOW_SIZE_D{"window_size_d"};
 constexpr tag T_WINDOW_SIZE_C{"window_size_c"};
 constexpr tag T_WINDOW_SIZE_I{"window_size_i"};
+constexpr tag T_VSYNC{"vsync"};
+constexpr tag T_VSYNC_C{"vsync_c"};
 constexpr tag T_MSAA{"msaa"};
 constexpr tag T_MSAA_D{"msaa_d"};
 constexpr tag T_MSAA_C{"msaa_c"};
@@ -40,9 +42,10 @@ constexpr tag T_REVERT{"revert"};
 constexpr tag T_APPLY{"apply"};
 constexpr tag T_EXIT{"exit"};
 
-constexpr std::array<tag, 22> RIGHT_WIDGETS{
+constexpr std::array<tag, 23> RIGHT_WIDGETS{
 	T_DISPLAY_MODE_C,
 	T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I,
+	T_VSYNC_C,
 	T_MSAA_D, T_MSAA_C, T_MSAA_I,
 	T_PRIMARY_HUE_D, T_PRIMARY_HUE_C, T_PRIMARY_HUE_I, T_PRIMARY_HUE_PREVIEW,
 	T_SECONDARY_HUE_D, T_SECONDARY_HUE_C, T_SECONDARY_HUE_I, T_SECONDARY_HUE_PREVIEW,
@@ -54,9 +57,10 @@ constexpr std::array<tag, 22> RIGHT_WIDGETS{
 constexpr std::array<tag, 3> BOTTOM_BUTTONS{T_REVERT, T_APPLY, T_EXIT};
 
 constexpr const char* NO_TOOLTIP_STR{nullptr};
-constexpr std::array<label_info, 8> LABELS{{
+constexpr std::array<label_info, 9> LABELS{{
 	{T_DISPLAY_MODE, "display_mode_tt"},
 	{T_WINDOW_SIZE, "window_size_tt"},
+	{T_VSYNC, "vsync_tt"},
 	{T_MSAA, "msaa_tt"},
 	{T_PRIMARY_HUE, "primary_hue_tt"},
 	{T_SECONDARY_HUE, "secondary_hue_tt"},
@@ -68,6 +72,7 @@ constexpr std::array<label_info, 8> LABELS{{
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_DISPLAY_MODE_C},
 	selection_tree_row{T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I},
+	selection_tree_row{T_VSYNC_C},
 	selection_tree_row{T_MSAA_D, T_MSAA_C, T_MSAA_I},
 	selection_tree_row{T_PRIMARY_HUE_D, T_PRIMARY_HUE_C, T_PRIMARY_HUE_I},
 	selection_tree_row{T_SECONDARY_HUE_D, T_SECONDARY_HUE_C, T_SECONDARY_HUE_I},
@@ -86,20 +91,22 @@ constexpr shortcut_table SHORTCUTS{
 	{{tr::system::keycode::ESCAPE}, T_EXIT},
 };
 
-constexpr glm::vec2 DISPLAY_MODE_START_POS{1050, 196};
-constexpr glm::vec2 WINDOW_SIZE_START_POS{1050, 271};
-constexpr glm::vec2 MSAA_START_POS{1050, 346};
-constexpr glm::vec2 PRIMARY_HUE_START_POS{1050, 421};
-constexpr glm::vec2 SECONDARY_HUE_START_POS{1050, 496};
-constexpr glm::vec2 SFX_VOLUME_START_POS{1050, 571};
-constexpr glm::vec2 MUSIC_VOLUME_START_POS{1050, 646};
-constexpr glm::vec2 LANGUAGE_START_POS{1050, 721};
+constexpr glm::vec2 DISPLAY_MODE_START_POS{1050, 158.5f};
+constexpr glm::vec2 WINDOW_SIZE_START_POS{1050, 233.5f};
+constexpr glm::vec2 VSYNC_START_POS{1050, 308.5f};
+constexpr glm::vec2 MSAA_START_POS{1050, 383.5f};
+constexpr glm::vec2 PRIMARY_HUE_START_POS{1050, 458.5f};
+constexpr glm::vec2 SECONDARY_HUE_START_POS{1050, 533.5f};
+constexpr glm::vec2 SFX_VOLUME_START_POS{1050, 608.5f};
+constexpr glm::vec2 MUSIC_VOLUME_START_POS{1050, 683.5f};
+constexpr glm::vec2 LANGUAGE_START_POS{1050, 758.5f};
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
 constexpr tweener<glm::vec2> DISPLAY_MODE_C_MOVE_IN{tween::CUBIC, DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s};
 constexpr tweener<glm::vec2> WINDOW_SIZE_D_MOVE_IN{tween::CUBIC, WINDOW_SIZE_START_POS, {765, WINDOW_SIZE_START_POS.y}, 0.5_s};
 constexpr tweener<glm::vec2> WINDOW_SIZE_C_MOVE_IN{tween::CUBIC, WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s};
 constexpr tweener<glm::vec2> WINDOW_SIZE_I_MOVE_IN{tween::CUBIC, WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s};
+constexpr tweener<glm::vec2> VSYNC_C_MOVE_IN{tween::CUBIC, VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s};
 constexpr tweener<glm::vec2> MSAA_D_MOVE_IN{tween::CUBIC, MSAA_START_POS, {830, MSAA_START_POS.y}, 0.5_s};
 constexpr tweener<glm::vec2> MSAA_C_MOVE_IN{tween::CUBIC, MSAA_START_POS, {907.5, MSAA_START_POS.y}, 0.5_s};
 constexpr tweener<glm::vec2> MSAA_I_MOVE_IN{tween::CUBIC, MSAA_START_POS, {985, MSAA_START_POS.y}, 0.5_s};
@@ -196,6 +203,9 @@ settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 	const action_callback window_size_i_acb{
 		[&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + engine::keymods_choose(1, 10, 100))); },
 	};
+	const action_callback vsync_c_acb{
+		[&vsync = m_pending.vsync] { vsync = !vsync; },
+	};
 	const action_callback msaa_d_acb{
 		[&msaa = m_pending.msaa] { msaa = msaa == 2 ? NO_MSAA : u8(msaa / 2); },
 	};
@@ -249,6 +259,10 @@ settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 			if (engine::restart_required(old)) {
 				m_ui.release_graphical_resources();
 			}
+			else if (m_pending.vsync != old.vsync) {
+				tr::system::set_window_vsync(m_pending.vsync ? tr::system::vsync::ADAPTIVE : tr::system::vsync::DISABLED);
+			}	
+
 			if (old.language != engine::settings.language) {
 				engine::load_localization();
 			}
@@ -283,6 +297,9 @@ settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 	const text_callback display_mode_c_tcb{
 		[&dm = m_pending.display_mode] { return std::string{engine::loc[dm == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
 	};
+	const text_callback vsync_c_tcb{
+		[&vsync = m_pending.vsync] { return std::string{engine::loc[vsync ? "on" : "off"]}; },
+	};
 	const text_callback msaa_c_tcb{
 		[this] { return m_pending.msaa == NO_MSAA ? "--" : TR_FMT::format("x{}", m_pending.msaa); },
 	};
@@ -296,7 +313,7 @@ settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 							   tr::system::ttf_style::NORMAL, 64);
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		const label_info& label{LABELS[i]};
-		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 196 + i * 75}, {15, 196 + i * 75}, 0.5_s};
+		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 158.5f + i * 75}, {15, 158.5f + i * 75}, 0.5_s};
 		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? "505050A0"_rgba8
 																											   : "A0A0A0A0"_rgba8};
 		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
@@ -311,6 +328,8 @@ settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 														   m_pending.window_size, window_size_c_scb, window_size_c_vcb);
 	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, WINDOW_SIZE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, window_size_i_scb,
 							   window_size_i_acb);
+	m_ui.emplace<text_button_widget>(T_VSYNC_C, VSYNC_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, vsync_c_tcb,
+									 font::LANGUAGE_PREVIEW, 48, scb, vsync_c_acb, sound::CONFIRM);
 	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, msaa_d_scb, msaa_d_acb);
 	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, msaa_c_tcb, tr::system::ttf_style::NORMAL,
 							   48);

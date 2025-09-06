@@ -1,4 +1,5 @@
 #include "score.hpp"
+#include "settings.hpp"
 
 struct player_settings_v0 {
 	u32 starting_lives;
@@ -51,3 +52,15 @@ struct score_category_v0 {
 template <> struct tr::binary_reader<score_category_v0> {
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, score_category_v0& out);
 };
+
+struct settings_v0 {
+	u16 window_size;
+	display_mode display_mode;
+	u8 msaa;
+	u16 primary_hue;
+	u16 secondary_hue;
+	u8 sfx_volume;
+	u8 music_volume;
+	language_code language;
+};
+template <> struct tr::binary_reader<settings_v0> : tr::default_binary_reader<settings_v0> {};

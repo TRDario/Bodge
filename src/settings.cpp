@@ -1,9 +1,10 @@
 #include "../include/settings.hpp"
+#include "../include/legacy_formats.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings file version identifier.
-constexpr u8 SETTINGS_VERSION{0};
+constexpr u8 SETTINGS_VERSION{1};
 
 //////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
 
@@ -12,6 +13,8 @@ template <> struct tr::binary_writer<settings> : tr::default_binary_writer<setti
 
 namespace engine {
 	void raw_load_settings();
+	void raw_load_settings_v0(const std::filesystem::path& path, std::span<const std::byte> data);
+	void raw_load_settings_v1(const std::filesystem::path& path, std::span<const std::byte> data);
 	void validate_settings();
 } // namespace engine
 
@@ -89,21 +92,48 @@ void engine::raw_load_settings()
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 		std::span<const std::byte> data{raw};
-		if (tr::binary_read<u8>(data) != SETTINGS_VERSION) {
-			LOG(tr::severity::ERROR, "Failed to load settings.", path.string());
+		const u8 version{tr::binary_read<u8>(data)};
+		switch (version) {
+		case 0:
+			raw_load_settings_v0(path, data);
+			return;
+		case 1:
+			raw_load_settings_v1(path, data);
+			return;
+		default:
+			LOG(tr::severity::ERROR, "Failed to load settings.");
 			LOG_CONTINUE("From: '{}'", path.string());
-			LOG_CONTINUE("Wrong settings file version.");
+			LOG_CONTINUE("Unsupported settings file version {:d}.", version);
 			return;
 		}
-		tr::binary_read(data, settings);
-		LOG(tr::severity::INFO, "Loaded settings.");
-		LOG_CONTINUE("From: '{}'", path.string());
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to load settings.", path.string());
 		LOG_CONTINUE("From: '{}'", path.string());
 		LOG_CONTINUE(err);
 	}
+}
+
+void engine::raw_load_settings_v0(const std::filesystem::path& path, std::span<const std::byte> data)
+{
+	const settings_v0 temp{tr::binary_read<settings_v0>(data)};
+	settings.window_size = temp.window_size;
+	settings.display_mode = temp.display_mode;
+	settings.msaa = temp.msaa;
+	settings.primary_hue = temp.primary_hue;
+	settings.secondary_hue = temp.secondary_hue;
+	settings.sfx_volume = temp.sfx_volume;
+	settings.music_volume = temp.music_volume;
+	settings.language = temp.language;
+	LOG(tr::severity::INFO, "Converted legacy settings file (v0) to latest format.");
+	LOG_CONTINUE("From: '{}'", path.string());
+}
+
+void engine::raw_load_settings_v1(const std::filesystem::path& path, std::span<const std::byte> data)
+{
+	settings = tr::binary_read<::settings>(data);
+	LOG(tr::severity::INFO, "Loaded settings.");
+	LOG_CONTINUE("From: '{}'", path.string());
 }
 
 void engine::validate_settings()

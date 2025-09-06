@@ -87,7 +87,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<playe
 	// TEXT CALLBACKS
 
 	const text_callback spawn_life_fragments_c_tcb{
-		[&slf = m_pending.player.spawn_life_fragments] { return std::string{engine::loc[slf ? "yes" : "no"]}; },
+		[&slf = m_pending.player.spawn_life_fragments] { return std::string{engine::loc[slf ? "on" : "off"]}; },
 	};
 
 	// STATUS CALLBACKS
@@ -134,7 +134,15 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<playe
 		[&sl = m_pending.player.starting_lives] { sl = std::min(sl + engine::keymods_choose(1, 5, 10), 255); },
 	};
 	const action_callback spawn_life_fragments_c_acb{
-		[&slf = m_pending.player.spawn_life_fragments] { slf = !slf; },
+		[&slf = m_pending.player.spawn_life_fragments, this] {
+			slf = !slf;
+			if (slf) {
+				m_ui.as<label_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL).color.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			}
+			else {
+				m_ui.as<label_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL).color.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
+			}
+		},
 	};
 	const action_callback life_fragment_spawn_interval_d_acb{
 		[&lfsi = m_pending.player.life_fragment_spawn_interval] { lfsi = std::max(lfsi - engine::keymods_choose(0.1_s, 1_s, 10_s), 15_s); },

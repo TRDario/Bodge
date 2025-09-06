@@ -113,7 +113,7 @@ void engine::initialize_system()
 		tr::system::open_window("Bodge", glm::ivec2{settings.window_size}, tr::system::window_flag::DEFAULT, gfx);
 	}
 	set_icon();
-	tr::system::set_window_vsync(tr::system::vsync::DISABLED);
+	tr::system::set_window_vsync(settings.vsync ? tr::system::vsync::ADAPTIVE : tr::system::vsync::DISABLED);
 	tr::system::raise_window();
 	system.emplace();
 	LOG(tr::severity::INFO, "Initialized system.");

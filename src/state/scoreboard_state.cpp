@@ -103,8 +103,6 @@ scoreboard_state::scoreboard_state(std::unique_ptr<playerless_game>&& game, scor
 				m_selected = engine::scorefile.categories.end();
 			}
 			--m_selected;
-			m_sorted_scores = m_selected->scores;
-			std::ranges::sort(m_sorted_scores, to_scoreboard(m_substate) == scoreboard::SCORE ? compare_scores : compare_times);
 			set_up_page_switch_animation();
 		},
 	};
@@ -116,8 +114,6 @@ scoreboard_state::scoreboard_state(std::unique_ptr<playerless_game>&& game, scor
 			if (++m_selected == engine::scorefile.categories.end()) {
 				m_selected = engine::scorefile.categories.begin();
 			}
-			m_sorted_scores = m_selected->scores;
-			std::ranges::sort(m_sorted_scores, to_scoreboard(m_substate) == scoreboard::SCORE ? compare_scores : compare_times);
 			set_up_page_switch_animation();
 		},
 	};
@@ -195,6 +191,8 @@ std::unique_ptr<tr::state> scoreboard_state::update(tr::duration)
 			m_substate = substate_base::IN_SCOREBOARD | to_scoreboard(m_substate);
 		}
 		else if (m_timer == 0.25_s) {
+			m_sorted_scores = m_selected->scores;
+			std::ranges::sort(m_sorted_scores, to_scoreboard(m_substate) == scoreboard::SCORE ? compare_scores : compare_times);
 			for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
 				const bool nonempty{m_selected->scores.size() > m_page * SCORES_PER_PAGE + i};
 				score_widget& widget{m_ui.as<score_widget>(SCORE_TAGS[i])};

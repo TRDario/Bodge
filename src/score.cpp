@@ -104,14 +104,6 @@ void engine::load_scorefile()
 			LOG_CONTINUE("Unsupported scorefile version {:d}.", version);
 			return;
 		}
-		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
-		std::span<const std::byte> data{raw};
-		data = tr::binary_read(data, scorefile.name);
-		data = tr::binary_read(data, scorefile.categories);
-		data = tr::binary_read(data, scorefile.playtime);
-		data = tr::binary_read(data, scorefile.last_selected);
-		LOG(tr::severity::INFO, "Loaded scorefile.");
-		LOG_CONTINUE("From: '{}'", path.string());
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to load scorefile.");

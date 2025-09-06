@@ -82,37 +82,37 @@ std::unique_ptr<tr::state> credits_state::update(tr::duration)
 		case 1: {
 			widget& bodge{m_ui[T_BODGE]};
 			widget& version{m_ui[T_VERSION]};
-			bodge.unhide(4_s);
-			bodge.pos.change(tween::CUBIC, {500, glm::vec2{bodge.pos}.y}, 4_s);
-			version.unhide(4_s);
-			version.pos.change(tween::CUBIC, {500, glm::vec2{version.pos}.y}, 4_s);
+			bodge.unhide(3_s);
+			bodge.pos.change(tween::CUBIC, {500, glm::vec2{bodge.pos}.y}, 3_s);
+			version.unhide(3_s);
+			version.pos.change(tween::CUBIC, {500, glm::vec2{version.pos}.y}, 3_s);
 		} break;
-		case 2_s: {
+		case 1_s: {
 			widget& developed_by{m_ui[T_DEVELOPED_BY]};
 			developed_by.unhide(4_s);
 			developed_by.pos.change(tween::CUBIC, {500, glm::vec2{developed_by.pos}.y}, 4_s);
 		} break;
-		case 3_s: {
+		case 2_s: {
 			widget& trdario{m_ui[T_TRDARIO]};
 			trdario.unhide(4_s);
 			trdario.pos.change(tween::CUBIC, {500, glm::vec2{trdario.pos}.y}, 4_s);
 		} break;
-		case 4_s: {
+		case 3_s: {
 			widget& art{m_ui[T_ART]};
 			art.unhide(4_s);
 			art.pos.change(tween::CUBIC, {500, glm::vec2{art.pos}.y - 50}, 4_s);
 		} break;
-		case 6_s: {
+		case 4_s: {
 			widget& playtesters{m_ui[T_PLAYTESTERS]};
 			playtesters.unhide(4_s);
 			playtesters.pos.change(tween::CUBIC, {500, glm::vec2{playtesters.pos}.y}, 4_s);
 		} break;
-		case 7_s: {
+		case 5_s: {
 			widget& starsurge{m_ui[T_STARSURGE]};
 			starsurge.unhide(4_s);
 			starsurge.pos.change(tween::CUBIC, {500, glm::vec2{starsurge.pos}.y}, 4_s);
 		} break;
-		case 8_s: {
+		case 6_s: {
 			widget& toweli{m_ui[T_TOWELI]};
 			toweli.unhide(4_s);
 			toweli.pos.change(tween::CUBIC, {500, glm::vec2{toweli.pos}.y}, 4_s);

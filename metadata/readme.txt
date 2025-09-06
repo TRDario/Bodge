@@ -48,6 +48,11 @@
 |                                                                                                           - TRDario |
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
+| v1.1.1 (06 Sep 2025)                                                                                                |
+| * Added vertical synchronization to settings.                                                                       |
+| * Made the credits appear a bit faster.                                                                             |
+| * Fixed scoreboards not switching pages correctly.                                                                  |
+| * Fixed a graphical bug in the gamemode designer.                                                                   |
 | v1.1.0 (05 Sep 2025)                                                                                                |
 | * Introduced new systems for gaining lives and scoring.                                                             |
 | * Updated most file formats (barring the settings), making v1.0 files unusable (besides the scorefile, partially).  |
