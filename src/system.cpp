@@ -1,8 +1,8 @@
-#include "../include/system.hpp"
 #include "../include/audio.hpp"
 #include "../include/graphics.hpp"
 #include "../include/settings.hpp"
 #include "../include/state/state.hpp"
+#include "../include/system.hpp"
 
 namespace engine {
 	// The upper limit for an acceptable update time.
@@ -20,7 +20,7 @@ namespace engine {
 	// System state.
 	struct system_data {
 		// Timer that emits ticking events.
-		tr::timer tick_timer{tr::system::create_tick_timer(240 * cli_settings.game_speed, 0)};
+		tr::timer tick_timer{tr::sys::create_tick_timer(240 * cli_settings.game_speed, 0)};
 		// Timer that emits drawing events.
 		tr::timer draw_timer{create_draw_timer()};
 		// State manager.
@@ -28,11 +28,11 @@ namespace engine {
 		// Whether the screen should be redrawn. If above 1, ticks will be paused to catch up.
 		int redraw{true};
 		// The held keyboard modifiers.
-		tr::system::keymod held_keymods{tr::system::keymod::NONE};
+		tr::sys::keymod held_keymods{tr::sys::keymod::NONE};
 		// The position of the mouse.
 		glm::vec2 mouse_pos{500, 500};
 		// The held mouse buttons.
-		tr::system::mouse_button held_buttons{};
+		tr::sys::mouse_button held_buttons{};
 
 		int mouse_focus{};
 	};
@@ -42,17 +42,17 @@ namespace engine {
 tr::timer engine::create_draw_timer()
 {
 	if (cli_settings.refresh_rate != NATIVE_REFRESH_RATE) {
-		return tr::system::create_draw_timer(cli_settings.refresh_rate);
+		return tr::sys::create_draw_timer(cli_settings.refresh_rate);
 	}
 	else {
-		return tr::system::create_draw_timer();
+		return tr::sys::create_draw_timer();
 	}
 }
 
 void engine::set_icon()
 {
 	try {
-		tr::system::set_window_icon(tr::load_bitmap_file(cli_settings.data_directory / "graphics" / "icon.qoi"));
+		tr::sys::set_window_icon(tr::load_bitmap_file(cli_settings.data_directory / "graphics" / "icon.qoi"));
 	}
 	catch (std::exception& err) {
 		LOG(tr::severity::ERROR, "Failed to set window icon.");
@@ -62,29 +62,30 @@ void engine::set_icon()
 
 void engine::draw_cursor()
 {
+	tr::gfx::renderer_2d& renderer{basic_renderer()};
 	const glm::vec2 mouse_pos{engine::mouse_pos()};
 	const tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(settings.primary_hue), 1, 1})};
 
-	tr::gfx::simple_color_mesh_ref quad{tr::gfx::renderer_2d::new_color_fan(layer::CURSOR, 4)};
+	tr::gfx::simple_color_mesh_ref quad{renderer.new_color_fan(layer::CURSOR, 4)};
 	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
 	std::ranges::fill(quad.colors, color);
-	quad = tr::gfx::renderer_2d::new_color_fan(layer::CURSOR, 4);
+	quad = renderer.new_color_fan(layer::CURSOR, 4);
 	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x + 4, mouse_pos.y - 1}, {8, 2}});
 	std::ranges::fill(quad.colors, color);
-	quad = tr::gfx::renderer_2d::new_color_fan(layer::CURSOR, 4);
+	quad = renderer.new_color_fan(layer::CURSOR, 4);
 	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x - 1, mouse_pos.y - 12}, {2, 8}});
 	std::ranges::fill(quad.colors, color);
-	quad = tr::gfx::renderer_2d::new_color_fan(layer::CURSOR, 4);
+	quad = renderer.new_color_fan(layer::CURSOR, 4);
 	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x - 1, mouse_pos.y + 4}, {2, 8}});
 	std::ranges::fill(quad.colors, color);
 
-	tr::gfx::renderer_2d::draw(engine::screen());
+	renderer.draw(engine::screen());
 }
 
 tr::dsecs engine::max_render_time()
 {
 	if (cli_settings.refresh_rate == NATIVE_REFRESH_RATE) {
-		return 1.0s / tr::system::refresh_rate();
+		return 1.0s / tr::sys::refresh_rate();
 	}
 	else {
 		return 1.0s / cli_settings.refresh_rate;
@@ -102,19 +103,17 @@ bool engine::restart_required(const ::settings& old)
 void engine::initialize_system()
 {
 	const tr::gfx::properties gfx{
-		.debug_context = cli_settings.debug_mode,
-		.double_buffer = true,
 		.multisamples = settings.msaa,
 	};
 	if (settings.display_mode == display_mode::FULLSCREEN) {
-		tr::system::open_fullscreen_window("Bodge", tr::system::window_flag::DEFAULT, gfx);
+		tr::sys::open_fullscreen_window("Bodge", tr::sys::NOT_RESIZABLE, gfx);
 	}
 	else {
-		tr::system::open_window("Bodge", glm::ivec2{settings.window_size}, tr::system::window_flag::DEFAULT, gfx);
+		tr::sys::open_window("Bodge", glm::ivec2{settings.window_size}, tr::sys::NOT_RESIZABLE, gfx);
 	}
 	set_icon();
-	tr::system::set_window_vsync(settings.vsync ? tr::system::vsync::ADAPTIVE : tr::system::vsync::DISABLED);
-	tr::system::raise_window();
+	tr::sys::set_window_vsync(settings.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
+	tr::sys::raise_window();
 	system.emplace();
 	LOG(tr::severity::INFO, "Initialized system.");
 }
@@ -145,7 +144,7 @@ void engine::apply_settings(const ::settings& old)
 void engine::shut_down_system()
 {
 	system.reset();
-	tr::system::close_window();
+	tr::sys::close_window();
 	LOG(tr::severity::INFO, "Shut down system.");
 }
 
@@ -158,51 +157,36 @@ bool engine::active()
 
 void engine::handle_events()
 {
-	tr::system::handle_events([&](const tr::system::event& event) {
-		switch (event.type()) {
-		case tr::system::tick_event::ID:
-			if (system->redraw < 2) {
-				system->state.update(0s);
-			}
-			return;
-		case tr::system::draw_event::ID:
-			++system->redraw;
-			return;
-		case tr::system::quit_event::ID:
-			system->state.state.reset();
-			return;
-		case tr::system::window_gain_focus_event::ID:
-			tr::system::show_cursor(false);
-			tr::system::set_mouse_relative_mode(true);
-			return;
-		case tr::system::window_lose_focus_event::ID:
-			tr::system::show_cursor(true);
-			tr::system::set_mouse_relative_mode(false);
-			return;
-		case tr::system::key_down_event::ID:
-			system->held_keymods = tr::system::key_down_event{event}.mods;
-			break;
-		case tr::system::key_up_event::ID:
-			system->held_keymods = tr::system::key_up_event{event}.mods;
-			break;
-		case tr::system::mouse_motion_event::ID: {
-			if (!tr::system::window_has_focus()) {
-				return;
-			}
-			const glm::vec2 delta{tr::system::mouse_motion_event{event}.delta / render_scale() * tr::system::window_pixel_density()};
-			system->mouse_pos = glm::clamp(system->mouse_pos + delta, 0.0f, 1000.0f);
-			break;
-		}
-		case tr::system::mouse_down_event::ID:
-			system->held_buttons |= tr::system::mouse_down_event{event}.button;
-			break;
-		case tr::system::mouse_up_event::ID:
-			system->held_buttons &= ~tr::system::mouse_up_event{event}.button;
-			break;
-		default:
-			break;
-		}
-
+	tr::sys::handle_events([](tr::sys::event event) {
+		event.visit(tr::overloaded{
+			[](tr::sys::tick_event) {
+				if (system->redraw < 2) {
+					system->state.update(0s);
+				}
+			},
+			[](tr::sys::draw_event) { ++system->redraw; },
+			[](tr::sys::quit_event) { system->state.state.reset(); },
+			[](tr::sys::window_gain_focus_event) {
+				tr::sys::show_cursor(false);
+				tr::sys::set_mouse_relative_mode(true);
+			},
+			[](tr::sys::window_lose_focus_event) {
+				tr::sys::show_cursor(true);
+				tr::sys::set_mouse_relative_mode(false);
+			},
+			[](tr::sys::key_down_event event) { system->held_keymods = event.mods; },
+			[](tr::sys::key_up_event event) { system->held_keymods = event.mods; },
+			[](tr::sys::mouse_motion_event event) {
+				if (!tr::sys::window_has_focus()) {
+					return;
+				}
+				const glm::vec2 delta{event.delta / render_scale() * tr::sys::window_pixel_density()};
+				system->mouse_pos = glm::clamp(system->mouse_pos + delta, 0.0f, 1000.0f);
+			},
+			[](tr::sys::mouse_down_event event) { system->held_buttons |= event.button; },
+			[](tr::sys::mouse_up_event event) { system->held_buttons &= event.button; },
+			[](auto) {},
+		});
 		system->state.handle_event(event);
 	});
 }
@@ -212,11 +196,14 @@ void engine::redraw_if_needed()
 	if (system->redraw) {
 		system->state.draw();
 		draw_cursor();
-		if (tr::gfx::debug_renderer::active()) {
-			tr::gfx::debug_renderer::write_right(system->state.update_benchmark(), "Update:", MAX_UPDATE_TIME);
-			tr::gfx::debug_renderer::newline_right();
-			tr::gfx::debug_renderer::write_right(system->state.draw_benchmark(), "Render:", max_render_time());
-			tr::gfx::debug_renderer::draw();
+		if (cli_settings.show_fps) {
+			tr::gfx::debug_renderer& renderer{debug_renderer()};
+			renderer.write_right(system->state.update_benchmark(), "Update:", MAX_UPDATE_TIME);
+			renderer.write_right(std::format("{:.02f}tps", system->state.update_benchmark().fps()));
+			renderer.newline_right();
+			renderer.write_right(system->state.draw_benchmark(), "Render:", max_render_time());
+			renderer.write_right(std::format("{:.02f}fps", system->state.draw_benchmark().fps()));
+			renderer.draw();
 		}
 		tr::gfx::flip_backbuffer();
 		tr::gfx::clear_backbuffer();
@@ -224,7 +211,7 @@ void engine::redraw_if_needed()
 	}
 }
 
-tr::system::keymod engine::held_keymods()
+tr::sys::keymod engine::held_keymods()
 {
 	return system->held_keymods;
 }
@@ -239,7 +226,7 @@ void engine::set_mouse_pos(glm::vec2 pos)
 	system->mouse_pos = pos;
 }
 
-tr::system::mouse_button engine::held_buttons()
+tr::sys::mouse_button engine::held_buttons()
 {
 	return system->held_buttons;
 }

@@ -1,5 +1,5 @@
-#include "../include/settings.hpp"
 #include "../include/legacy_formats.hpp"
+#include "../include/settings.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -20,7 +20,7 @@ namespace engine {
 
 u16 max_window_size()
 {
-	const glm::ivec2 display_size{tr::system::display_size()};
+	const glm::ivec2 display_size{tr::sys::display_size()};
 	return u16(std::min(display_size.x, display_size.y));
 }
 
@@ -40,7 +40,7 @@ void engine::parse_command_line(int argc, const char** argv)
 		else if (arg == "--refreshrate" && ++i < argc) {
 			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.refresh_rate);
 			if (cli_settings.refresh_rate != NATIVE_REFRESH_RATE) {
-				cli_settings.refresh_rate = std::clamp(cli_settings.refresh_rate, 1.0f, tr::system::refresh_rate());
+				cli_settings.refresh_rate = std::clamp(cli_settings.refresh_rate, 1.0f, tr::sys::refresh_rate());
 			}
 		}
 		else if (arg == "--gamespeed" && ++i < argc) {
@@ -49,7 +49,7 @@ void engine::parse_command_line(int argc, const char** argv)
 		else if (arg == "--debug" && ++i < argc) {
 			int temp;
 			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), temp);
-			cli_settings.debug_mode = bool(temp);
+			cli_settings.show_fps = bool(temp);
 		}
 		else if (arg == "--help") {
 			std::cout << "Bodge v0.1.0 by TRDario, 2025.\n"
@@ -64,10 +64,10 @@ void engine::parse_command_line(int argc, const char** argv)
 	}
 
 	if (cli_settings.data_directory.empty()) {
-		cli_settings.data_directory = tr::system::executable_dir() / "data";
+		cli_settings.data_directory = tr::sys::executable_dir() / "data";
 	}
 	if (cli_settings.user_directory.empty()) {
-		cli_settings.user_directory = tr::system::user_dir();
+		cli_settings.user_directory = tr::sys::user_dir();
 	}
 
 	constexpr std::array<const char*, 5> DIRECTORIES{"localization", "fonts", "music", "replays", "gamemodes"};
@@ -78,7 +78,7 @@ void engine::parse_command_line(int argc, const char** argv)
 		}
 	}
 
-	if (cli_settings.debug_mode) {
+	if (cli_settings.show_fps) {
 		tr::log = tr::logger{"tr", cli_settings.user_directory / "tr.log"};
 		tr::gfx::log = tr::logger{"gl", cli_settings.user_directory / "gl.log"};
 		logger = tr::logger{"Bodge", cli_settings.user_directory / "Bodge.log"};
@@ -143,7 +143,7 @@ void engine::validate_settings()
 		LOG(tr::severity::WARN, "Clamped window size from {} to {}.", settings.window_size, clamped_window_size);
 		settings.window_size = clamped_window_size;
 	}
-	const u8 adjusted{std::clamp(settings.msaa, NO_MSAA, tr::system::max_msaa())};
+	const u8 adjusted{std::clamp(settings.msaa, NO_MSAA, tr::sys::max_msaa())};
 	if (adjusted != settings.msaa) {
 		LOG(tr::severity::WARN, "Adjusted MSAA from x{:d} to x{:d}.", settings.msaa, adjusted);
 		settings.msaa = adjusted;

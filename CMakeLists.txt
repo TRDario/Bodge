@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.30.0)
-project(Bodge VERSION 1.1.1 LANGUAGES C CXX)
+project(Bodge VERSION 1.1.2 LANGUAGES C CXX)
 
 include(FetchContent)
 
 FetchContent_Declare(
 	tr
 	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr.git
-    GIT_TAG v1.0.2
+    GIT_TAG origin/main
 ) 
 FetchContent_MakeAvailable(tr)
 

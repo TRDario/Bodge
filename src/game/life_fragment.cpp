@@ -89,7 +89,7 @@ void life_fragment::add_to_renderer(ticks time_since_spawned) const
 		}
 	}
 
-	const tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_fan(layer::LIFE_FRAGMENTS, 4)};
+	const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_fan(layer::LIFE_FRAGMENTS, 4)};
 	tr::fill_rotated_rect_vtx(mesh.positions, m_pos, size / 2.0f, size, m_rot);
 	std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 }
@@ -103,7 +103,7 @@ void life_fragment::add_pulse_to_renderer(tr::rgb8 color, ticks time_since_spawn
 	if (opacity > 0) {
 		const usize vertices{tr::smooth_poly_vtx(scale, engine::render_scale())};
 
-		const tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_outline(layer::LIFE_FRAGMENTS, vertices)};
+		const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_outline(layer::LIFE_FRAGMENTS, vertices)};
 		tr::fill_poly_outline_vtx(mesh.positions, vertices, {m_pos, scale}, 0_deg, 2);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
@@ -118,7 +118,7 @@ void life_fragment::add_spawn_wave_to_renderer(tr::rgb8 color, ticks time_since_
 	if (opacity > 0) {
 		const usize vertices{tr::smooth_poly_vtx(scale, engine::render_scale())};
 
-		const tr::gfx::simple_color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_outline(layer::LIFE_FRAGMENTS, vertices)};
+		const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_outline(layer::LIFE_FRAGMENTS, vertices)};
 		tr::fill_poly_outline_vtx(mesh.positions, vertices, {m_pos, scale}, 0_deg, 2);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}

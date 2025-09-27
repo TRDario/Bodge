@@ -82,7 +82,7 @@ void widget::update()
 /////////////////////////////////////////////////////////////// TEXT WIDGET ///////////////////////////////////////////////////////////////
 
 text_widget::text_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
-						 text_callback text_cb, font font, tr::system::ttf_style style, float font_size, int max_width)
+						 text_callback text_cb, font font, tr::sys::ttf_style style, float font_size, int max_width)
 	: widget{pos, alignment, unhide_time, tooltip_cb, writable}
 	, text_cb{text_cb}
 	, m_font{font}
@@ -111,7 +111,7 @@ void text_widget::add_to_renderer_raw(tr::rgba8 tint)
 
 	tint.a *= opacity();
 
-	const tr::gfx::simple_textured_mesh_ref quad{tr::gfx::renderer_2d::new_textured_fan(layer::UI, 4, m_cache->texture)};
+	const tr::gfx::simple_textured_mesh_ref quad{engine::basic_renderer().new_textured_fan(layer::UI, 4, m_cache->texture)};
 	tr::fill_rect_vtx(quad.positions, {tl(), text_widget::size()});
 	tr::fill_rect_vtx(quad.uvs, {{}, m_cache->size / glm::vec2{m_cache->texture.size()}});
 	std::ranges::fill(quad.tints, tint);
@@ -125,9 +125,7 @@ void text_widget::update_cache() const
 											  m_max_width, tr::halign::CENTER)};
 		if (!m_cache || m_cache->texture.size().x < render.size().x || m_cache->texture.size().y < render.size().y) {
 			m_cache.emplace(tr::gfx::texture{render}, render.size(), std::string{text});
-			if (tr::gfx::debug()) {
-				m_cache->texture.set_label(TR_FMT::format("(Bodge) Widget texture"));
-			}
+			TR_SET_LABEL(m_cache->texture, TR_FMT::format("(Bodge) Widget texture"));
 		}
 		else {
 			m_cache->texture.clear({});

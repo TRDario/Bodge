@@ -11,7 +11,7 @@ struct cli_settings {
 	float refresh_rate{NATIVE_REFRESH_RATE};
 	float game_speed{1.0f};
 #ifdef TR_ENABLE_ASSERTS
-	bool debug_mode{true};
+	bool show_fps{true};
 #else
 	bool debug_mode{false};
 #endif

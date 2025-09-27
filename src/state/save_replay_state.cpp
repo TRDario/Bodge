@@ -19,12 +19,12 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ENTER}, T_SAVE},
-	{{tr::system::keycode::S}, T_SAVE},
-	{{tr::system::keycode::TOP_ROW_1}, T_SAVE},
-	{{tr::system::keycode::ESCAPE}, T_DISCARD},
-	{{tr::system::keycode::C}, T_DISCARD},
-	{{tr::system::keycode::TOP_ROW_2}, T_DISCARD},
+	{{tr::sys::keycode::ENTER}, T_SAVE},
+	{{tr::sys::keycode::S}, T_SAVE},
+	{{tr::sys::keycode::TOP_ROW_1}, T_SAVE},
+	{{tr::sys::keycode::ESCAPE}, T_DISCARD},
+	{{tr::sys::keycode::C}, T_DISCARD},
+	{{tr::sys::keycode::TOP_ROW_2}, T_DISCARD},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
@@ -83,13 +83,13 @@ save_replay_state::save_replay_state(std::unique_ptr<game>&& game, save_screen_f
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::system::ttf_style::NORMAL, 64);
+							   tr::sys::ttf_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_NAME},
-							   tr::system::ttf_style::NORMAL, 48);
-	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, NAME_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, tr::system::ttf_style::NORMAL, 64,
-										scb, name_acb, std::string_view{});
+							   tr::sys::ttf_style::NORMAL, 48);
+	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, NAME_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, tr::sys::ttf_style::NORMAL, 64, scb,
+										name_acb, std::string_view{});
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
-							   tr::system::ttf_style::NORMAL, 48);
+							   tr::sys::ttf_style::NORMAL, 48);
 	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24,
 											  scb);
 	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
@@ -104,7 +104,7 @@ std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
 {
 	game_menu_state::update({});
 	if (m_timer >= 0.5_s && to_base(m_substate) == substate_base::EXITING) {
-		tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
+		engine::basic_renderer().set_default_transform(TRANSFORM);
 		if (to_flags(m_substate) & save_screen_flags::RESTARTING) {
 			return std::make_unique<game_state>(std::make_unique<active_game>(m_game->gamemode()), game_type::REGULAR, true);
 		}

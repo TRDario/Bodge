@@ -25,17 +25,17 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, T_SAVE_AND_RESTART},
-	{{tr::system::keycode::TOP_ROW_1}, T_SAVE_AND_RESTART},
-	{{tr::system::keycode::R}, T_RESTART},
-	{{tr::system::keycode::TOP_ROW_2}, T_RESTART},
-	{{tr::system::keycode::ESCAPE, tr::system::keymod::SHIFT}, T_SAVE_AND_QUIT},
-	{{tr::system::keycode::Q, tr::system::keymod::SHIFT}, T_SAVE_AND_QUIT},
-	{{tr::system::keycode::E, tr::system::keymod::SHIFT}, T_SAVE_AND_QUIT},
-	{{tr::system::keycode::TOP_ROW_3}, T_SAVE_AND_QUIT},
-	{{tr::system::keycode::ESCAPE}, T_QUIT},
-	{{tr::system::keycode::Q}, T_QUIT},
-	{{tr::system::keycode::TOP_ROW_4}, T_QUIT},
+	{{tr::sys::keycode::R, tr::sys::keymod::SHIFT}, T_SAVE_AND_RESTART},
+	{{tr::sys::keycode::TOP_ROW_1}, T_SAVE_AND_RESTART},
+	{{tr::sys::keycode::R}, T_RESTART},
+	{{tr::sys::keycode::TOP_ROW_2}, T_RESTART},
+	{{tr::sys::keycode::ESCAPE, tr::sys::keymod::SHIFT}, T_SAVE_AND_QUIT},
+	{{tr::sys::keycode::Q, tr::sys::keymod::SHIFT}, T_SAVE_AND_QUIT},
+	{{tr::sys::keycode::E, tr::sys::keymod::SHIFT}, T_SAVE_AND_QUIT},
+	{{tr::sys::keycode::TOP_ROW_3}, T_SAVE_AND_QUIT},
+	{{tr::sys::keycode::ESCAPE}, T_QUIT},
+	{{tr::sys::keycode::Q}, T_QUIT},
+	{{tr::sys::keycode::TOP_ROW_4}, T_QUIT},
 };
 
 constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
@@ -125,19 +125,19 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in)
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::system::ttf_style::NORMAL, 64);
+							   tr::sys::ttf_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_TIME_LABEL, time_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TIME_LABEL},
-							   tr::system::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
-	m_ui.emplace<label_widget>(T_TIME, time_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(time_tcb),
-							   tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
+							   tr::sys::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_TIME, time_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(time_tcb), tr::sys::ttf_style::NORMAL,
+							   64, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_BEST_TIME, best_time_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_time_tcb),
-							   tr::system::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
+							   tr::sys::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_SCORE_LABEL, score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SCORE_LABEL},
-							   tr::system::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
+							   tr::sys::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_SCORE, score_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(score_tcb),
-							   tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
+							   tr::sys::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_BEST_SCORE, best_score_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_score_tcb),
-							   tr::system::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
+							   tr::sys::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
 	for (usize i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};

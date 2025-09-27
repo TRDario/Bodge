@@ -2,7 +2,7 @@
 #include "widget.hpp"
 
 template <usize S>
-line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style,
+line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
 										float font_size, status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
 	: text_widget{pos,
 				  alignment,
@@ -13,7 +13,7 @@ line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignm
 				  font::LANGUAGE,
 				  style,
 				  font_size,
-				  tr::system::UNLIMITED_WIDTH}
+				  tr::sys::UNLIMITED_WIDTH}
 	, buffer{initial_text}
 	, m_scb{std::move(status_cb)}
 	, m_enter_cb{std::move(enter_cb)}
@@ -159,14 +159,14 @@ template <usize S> void line_input_widget<S>::on_clear()
 
 template <usize S> void line_input_widget<S>::on_copy()
 {
-	tr::system::set_clipboard_text(std::string{buffer});
+	tr::sys::set_clipboard_text(std::string{buffer});
 }
 
 template <usize S> void line_input_widget<S>::on_paste()
 {
 	const usize buffer_length{tr::utf8::length(buffer)};
-	if (!tr::system::clipboard_empty() && buffer_length < S) {
-		std::string pasted{tr::system::clipboard_text()};
+	if (!tr::sys::clipboard_empty() && buffer_length < S) {
+		std::string pasted{tr::sys::clipboard_text()};
 		std::erase(pasted, '\n');
 		buffer += (buffer_length + tr::utf8::length(pasted) > S)
 					  ? std::string_view{pasted.begin(), tr::utf8::next(pasted.begin(), S - buffer_length)}

@@ -90,7 +90,7 @@ void arrow_widget::add_to_renderer()
 
 	const glm::vec2 tl{this->tl()};
 	const std::array<glm::vec2, 15>& positions{m_right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
-	const tr::gfx::color_mesh_ref arrow{tr::gfx::renderer_2d::new_color_mesh(layer::UI, 15, tr::poly_outline_idx(5) + tr::poly_idx(5))};
+	const tr::gfx::color_mesh_ref arrow{engine::basic_renderer().new_color_mesh(layer::UI, 15, tr::poly_outline_idx(5) + tr::poly_idx(5))};
 	tr::fill_poly_outline_idx(arrow.indices.begin(), 5, arrow.base_index);
 	tr::fill_poly_idx(arrow.indices.begin() + tr::poly_outline_idx(5), 5, arrow.base_index + 10);
 	std::ranges::copy(positions | std::views::transform([&](glm::vec2 p) { return p + tl; }), arrow.positions.begin());

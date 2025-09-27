@@ -13,7 +13,6 @@ struct blur_renderer {
   private:
 	tr::gfx::render_texture m_input_texture;
 	tr::gfx::render_texture m_auxiliary_texture;
-	tr::gfx::texture_unit m_texture_unit;
 	tr::gfx::owning_shader_pipeline m_pipeline;
 	tr::gfx::vertex_format m_vertex_format;
 	tr::gfx::static_vertex_buffer<glm::i8vec2> m_vertex_buffer;

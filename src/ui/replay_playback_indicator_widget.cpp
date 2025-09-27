@@ -73,16 +73,17 @@ void replay_playback_indicator_widget::add_to_renderer()
 {
 	const glm::vec2 tl{this->tl()};
 
-	if (engine::held_keymods() & tr::system::keymod::SHIFT) {
-		const tr::gfx::color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
+	if (engine::held_keymods() & tr::sys::keymod::SHIFT) {
+		const tr::gfx::color_mesh_ref mesh{
+			engine::basic_renderer().new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
 		tr::fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
 		tr::fill_poly_idx(mesh.indices.begin() + tr::poly_outline_idx(3), 3, mesh.base_index + 6);
 		std::ranges::copy(SLOW_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),
 						  mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 	}
-	else if (engine::held_keymods() & tr::system::keymod::CTRL) {
-		const tr::gfx::color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
+	else if (engine::held_keymods() & tr::sys::keymod::CTRL) {
+		const tr::gfx::color_mesh_ref mesh{engine::basic_renderer().new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
 		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),
 						  mesh.positions.begin());
 		std::ranges::copy(FAST_SPEED_COLORS, mesh.colors.begin());
@@ -90,7 +91,8 @@ void replay_playback_indicator_widget::add_to_renderer()
 						  mesh.indices.begin());
 	}
 	else {
-		const tr::gfx::color_mesh_ref mesh{tr::gfx::renderer_2d::new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
+		const tr::gfx::color_mesh_ref mesh{
+			engine::basic_renderer().new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
 		tr::fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
 		tr::fill_poly_idx(mesh.indices.begin() + tr::poly_outline_idx(3), 3, mesh.base_index + 6);
 		std::ranges::copy(NORMAL_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),

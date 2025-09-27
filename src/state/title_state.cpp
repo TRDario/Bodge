@@ -30,18 +30,18 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ENTER}, T_START_GAME},
-	{{tr::system::keycode::TOP_ROW_1}, T_START_GAME},
-	{{tr::system::keycode::G}, T_GAMEMODE_DESIGNER},
-	{{tr::system::keycode::TOP_ROW_2}, T_GAMEMODE_DESIGNER},
-	{{tr::system::keycode::B}, T_SCOREBOARDS},
-	 {{tr::system::keycode::TOP_ROW_3}, T_SCOREBOARDS},
-	{{tr::system::keycode::R}, T_REPLAYS},
-	{{tr::system::keycode::TOP_ROW_4}, T_REPLAYS},
-	{{tr::system::keycode::S}, T_SETTINGS},
-	{{tr::system::keycode::TOP_ROW_5}, T_SETTINGS},
-	{{tr::system::keycode::ESCAPE}, T_EXIT},
-	{{tr::system::keycode::TOP_ROW_6}, T_EXIT},
+	{{tr::sys::keycode::ENTER}, T_START_GAME},
+	{{tr::sys::keycode::TOP_ROW_1}, T_START_GAME},
+	{{tr::sys::keycode::G}, T_GAMEMODE_DESIGNER},
+	{{tr::sys::keycode::TOP_ROW_2}, T_GAMEMODE_DESIGNER},
+	{{tr::sys::keycode::B}, T_SCOREBOARDS},
+	 {{tr::sys::keycode::TOP_ROW_3}, T_SCOREBOARDS},
+	{{tr::sys::keycode::R}, T_REPLAYS},
+	{{tr::sys::keycode::TOP_ROW_4}, T_REPLAYS},
+	{{tr::sys::keycode::S}, T_SETTINGS},
+	{{tr::sys::keycode::TOP_ROW_5}, T_SETTINGS},
+	{{tr::sys::keycode::ESCAPE}, T_EXIT},
+	{{tr::sys::keycode::TOP_ROW_6}, T_EXIT},
 };
 
 constexpr tweener<glm::vec2> LOGO_TEXT_MOVE_IN{tween::CUBIC, {500, 100}, {500, 160}, 2.5_s};
@@ -123,10 +123,10 @@ void title_state::set_up_ui()
 	m_ui.emplace<image_widget>(T_LOGO_BALL, LOGO_BALL_MOVE_IN, tr::align::CENTER, 2.5_s, 2, "logo_ball", engine::settings.secondary_hue);
 
 	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, 1_s, NO_TOOLTIP,
-												 string_text_callback{T_COPYRIGHT}, tr::system::ttf_style::NORMAL, 24)};
+												 string_text_callback{T_COPYRIGHT}, tr::sys::ttf_style::NORMAL, 24)};
 	copyright.pos.change(tween::CUBIC, {4, 998 - copyright.size().y}, 1_s);
 	widget& version{m_ui.emplace<label_widget>(T_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, 1_s, NO_TOOLTIP,
-											   string_text_callback{T_VERSION}, tr::system::ttf_style::NORMAL, 24)};
+											   string_text_callback{T_VERSION}, tr::sys::ttf_style::NORMAL, 24)};
 	version.pos.change(tween::CUBIC, {996, 998 - version.size().y}, 1_s);
 
 	const status_callback scb{

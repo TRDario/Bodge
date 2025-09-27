@@ -6,8 +6,8 @@ text_button_widget::text_button_widget(tweener<glm::vec2> pos, tr::align alignme
 	: text_widget{pos,         alignment,
 				  unhide_time, std::move(tooltip_cb),
 				  false,       std::move(text_cb),
-				  font,        tr::system::ttf_style::NORMAL,
-				  font_size,   tr::system::UNLIMITED_WIDTH}
+				  font,        tr::sys::ttf_style::NORMAL,
+				  font_size,   tr::sys::UNLIMITED_WIDTH}
 	, m_scb{std::move(status_cb)}
 	, m_acb{std::move(action_cb)}
 	, m_action_sound{action_sound}

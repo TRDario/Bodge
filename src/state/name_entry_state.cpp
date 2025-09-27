@@ -13,7 +13,7 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ENTER}, T_CONFIRM},
+	{{tr::sys::keycode::ENTER}, T_CONFIRM},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 1.0_s};
@@ -54,9 +54,9 @@ name_entry_state::name_entry_state()
 	engine::play_song("menu", 1.0s);
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 1.0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::system::ttf_style::NORMAL, 64);
-	m_ui.emplace<line_input_widget<20>>(T_INPUT, glm::vec2{500, 500}, tr::align::CENTER, 1.0_s, tr::system::ttf_style::NORMAL, 64,
-										input_scb, action_cb, std::string_view{});
+							   tr::sys::ttf_style::NORMAL, 64);
+	m_ui.emplace<line_input_widget<20>>(T_INPUT, glm::vec2{500, 500}, tr::align::CENTER, 1.0_s, tr::sys::ttf_style::NORMAL, 64, input_scb,
+										action_cb, std::string_view{});
 	m_ui.emplace<text_button_widget>(T_CONFIRM, CONFIRM_MOVE_IN, tr::align::BOTTOM_CENTER, 1.0_s, NO_TOOLTIP, loc_text_callback{T_CONFIRM},
 									 font::LANGUAGE, 48, confirm_scb, action_cb, sound::CONFIRM);
 

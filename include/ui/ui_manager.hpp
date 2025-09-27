@@ -3,7 +3,7 @@
 
 using selection_tree_row = std::initializer_list<tag>;
 using selection_tree = std::initializer_list<selection_tree_row>;
-using shortcut_table = std::initializer_list<std::pair<const tr::system::key_chord, tag>>;
+using shortcut_table = std::initializer_list<std::pair<const tr::sys::key_chord, tag>>;
 
 class ui_manager {
   public:
@@ -23,7 +23,7 @@ class ui_manager {
 	void hide_all_widgets(ticks time);
 	void release_graphical_resources();
 
-	void handle_event(const tr::system::event& event);
+	void handle_event(const tr::sys::event& event);
 	void update();
 	void add_to_renderer();
 
@@ -36,7 +36,7 @@ class ui_manager {
 
 	selection_tree m_selection_tree;
 	std::unordered_map<tag, std::unique_ptr<widget>> m_widgets;
-	std::unordered_map<tr::system::key_chord, tag> m_shortcuts;
+	std::unordered_map<tr::sys::key_chord, tag> m_shortcuts;
 	tr::opt_ref<kv_pair> m_hovered;
 	tr::opt_ref<kv_pair> m_selection;
 

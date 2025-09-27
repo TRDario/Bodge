@@ -12,21 +12,21 @@ namespace engine {
 	void handle_events();
 	void redraw_if_needed();
 
-	tr::system::keymod held_keymods();
+	tr::sys::keymod held_keymods();
 	template <class T> T keymods_choose(T min, T mid, T max); // Chooses one out of 3 options based on the held keymods.
 	glm::vec2 mouse_pos();
 	void set_mouse_pos(glm::vec2 pos);
-	tr::system::mouse_button held_buttons();
+	tr::sys::mouse_button held_buttons();
 }; // namespace engine
 
 ///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
 
 template <class T> T engine::keymods_choose(T min, T mid, T max)
 {
-	if (held_keymods() & tr::system::keymod::CTRL) {
+	if (held_keymods() & tr::sys::keymod::CTRL) {
 		return max;
 	}
-	else if (held_keymods() & tr::system::keymod::SHIFT) {
+	else if (held_keymods() & tr::sys::keymod::SHIFT) {
 		return mid;
 	}
 	else {

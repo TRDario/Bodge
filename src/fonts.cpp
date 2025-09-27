@@ -3,8 +3,8 @@
 
 namespace engine {
 	struct standard_fonts_t {
-		tr::system::ttfont default_font;
-		tr::system::ttfont fallback_font;
+		tr::sys::ttfont default_font;
+		tr::sys::ttfont fallback_font;
 	};
 
 	enum class optional_font_state {
@@ -14,7 +14,7 @@ namespace engine {
 		USE_LANGUAGE
 	};
 	struct optional_font_base {
-		tr::system::ttfont font;
+		tr::sys::ttfont font;
 		std::string name;
 	};
 	struct optional_font {
@@ -29,25 +29,25 @@ namespace engine {
 	optional_font language_font;
 	optional_font language_preview_font;
 
-	tr::system::ttfont load_font(std::string_view name);
-	tr::system::ttfont& find_font(font font);
+	tr::sys::ttfont load_font(std::string_view name);
+	tr::sys::ttfont& find_font(font font);
 } // namespace engine
 
 //
 
-tr::system::ttfont engine::load_font(std::string_view name)
+tr::sys::ttfont engine::load_font(std::string_view name)
 {
 	try {
 		std::filesystem::path path{cli_settings.data_directory / "fonts" / name};
 		if (std::filesystem::is_regular_file(path)) {
-			tr::system::ttfont font{tr::system::load_ttfont_file(path, 48)};
+			tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
 			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
 			LOG_CONTINUE("From: '{}'", path.string());
 			return font;
 		}
 		path = cli_settings.user_directory / "fonts" / name;
 		if (std::filesystem::is_regular_file(path)) {
-			tr::system::ttfont font{tr::system::load_ttfont_file(path, 48)};
+			tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
 			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
 			LOG_CONTINUE("From: '{}'", path.string());
 			return font;
@@ -57,11 +57,11 @@ tr::system::ttfont engine::load_font(std::string_view name)
 		LOG_CONTINUE("File not found in neither data nor user directory.");
 		throw tr::file_not_found{path.string()};
 	}
-	catch (tr::system::ttfont_load_error& err) {
+	catch (tr::sys::ttfont_load_error& err) {
 		LOG(tr::severity::FATAL, "Failed to load font '{}'.", name);
 		LOG_CONTINUE("", err.description());
 		LOG_CONTINUE("", err.details());
-		tr::system::show_fatal_error_message_box(err);
+		tr::sys::show_fatal_error_message_box(err);
 		std::abort();
 	}
 }
@@ -76,7 +76,7 @@ engine::optional_font_base* engine::optional_font::operator->()
 	return (optional_font_base*)&data;
 }
 
-tr::system::ttfont& engine::find_font(font font)
+tr::sys::ttfont& engine::find_font(font font)
 {
 	switch (font) {
 	case font::DEFAULT:
@@ -197,7 +197,7 @@ void engine::unload_fonts()
 
 font engine::determine_font(std::string_view text, font preferred)
 {
-	tr::system::ttfont& font{find_font(preferred)};
+	tr::sys::ttfont& font{find_font(preferred)};
 	if (std::ranges::all_of(tr::utf8::range(text), [&](tr::codepoint chr) { return chr == '\n' || font.contains(chr); })) {
 		return preferred;
 	}
@@ -208,20 +208,20 @@ font engine::determine_font(std::string_view text, font preferred)
 
 float engine::line_skip(font font, float size)
 {
-	tr::system::ttfont& font_ref{find_font(font)};
+	tr::sys::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * render_scale());
 	return font_ref.line_skip() / render_scale();
 }
 
-glm::vec2 engine::text_size(std::string_view text, font font, tr::system::ttf_style style, float size, float outline, float max_w)
+glm::vec2 engine::text_size(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline, float max_w)
 {
 	const int scaled_outline{int(outline * render_scale())};
-	if (max_w != tr::system::UNLIMITED_WIDTH) {
+	if (max_w != tr::sys::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * render_scale();
 	}
-	const int outline_max_w{max_w != tr::system::UNLIMITED_WIDTH ? int(max_w + 2 * scaled_outline) : tr::system::UNLIMITED_WIDTH};
+	const int outline_max_w{max_w != tr::sys::UNLIMITED_WIDTH ? int(max_w + 2 * scaled_outline) : tr::sys::UNLIMITED_WIDTH};
 
-	tr::system::ttfont& font_ref{find_font(font)};
+	tr::sys::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
@@ -232,31 +232,31 @@ glm::vec2 engine::text_size(std::string_view text, font font, tr::system::ttf_st
 	return glm::vec2{text_size} / render_scale();
 }
 
-usize engine::count_lines(std::string_view text, font font, tr::system::ttf_style style, float size, float outline, float max_w)
+usize engine::count_lines(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline, float max_w)
 {
 	const int scaled_outline{int(outline * render_scale())};
-	if (max_w != tr::system::UNLIMITED_WIDTH) {
+	if (max_w != tr::sys::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * render_scale();
 	}
-	const float outline_max_w{max_w != tr::system::UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : tr::system::UNLIMITED_WIDTH};
+	const float outline_max_w{max_w != tr::sys::UNLIMITED_WIDTH ? max_w + 2 * scaled_outline : tr::sys::UNLIMITED_WIDTH};
 
-	tr::system::ttfont& font_ref{find_font(font)};
+	tr::sys::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
-	return tr::system::split_into_lines(text, font_ref, outline_max_w).size();
+	return tr::sys::split_into_lines(text, font_ref, outline_max_w).size();
 }
 
-tr::bitmap engine::render_text(std::string_view text, font font, tr::system::ttf_style style, float size, float outline, float max_w,
+tr::bitmap engine::render_text(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline, float max_w,
 							   tr::halign align)
 {
 	const int scaled_outline{int(outline * render_scale())};
-	if (max_w != tr::system::UNLIMITED_WIDTH) {
+	if (max_w != tr::sys::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * render_scale();
 	}
-	const int outline_max_w{max_w != tr::system::UNLIMITED_WIDTH ? int(max_w + 2 * scaled_outline) : tr::system::UNLIMITED_WIDTH};
+	const int outline_max_w{max_w != tr::sys::UNLIMITED_WIDTH ? int(max_w + 2 * scaled_outline) : tr::sys::UNLIMITED_WIDTH};
 
-	tr::system::ttfont& font_ref{find_font(font)};
+	tr::sys::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
@@ -267,11 +267,11 @@ tr::bitmap engine::render_text(std::string_view text, font font, tr::system::ttf
 	return render;
 }
 
-tr::bitmap engine::render_gradient_glyph(u32 glyph, font font, tr::system::ttf_style style, float size, float outline)
+tr::bitmap engine::render_gradient_glyph(u32 glyph, font font, tr::sys::ttf_style style, float size, float outline)
 {
 	const int scaled_outline{int(outline * render_scale())};
 
-	tr::system::ttfont& font_ref{find_font(font)};
+	tr::sys::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);

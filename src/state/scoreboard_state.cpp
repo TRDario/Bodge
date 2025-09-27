@@ -33,11 +33,11 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ESCAPE}, T_EXIT},
-	{{tr::system::keycode::LEFT, tr::system::keymod::SHIFT}, T_GAMEMODE_D},
-	{{tr::system::keycode::RIGHT, tr::system::keymod::SHIFT}, T_GAMEMODE_I},
-	{{tr::system::keycode::LEFT}, T_PAGE_D},
-	{{tr::system::keycode::RIGHT}, T_PAGE_I},
+	{{tr::sys::keycode::ESCAPE}, T_EXIT},
+	{{tr::sys::keycode::LEFT, tr::sys::keymod::SHIFT}, T_GAMEMODE_D},
+	{{tr::sys::keycode::RIGHT, tr::sys::keymod::SHIFT}, T_GAMEMODE_I},
+	{{tr::sys::keycode::LEFT}, T_PAGE_D},
+	{{tr::sys::keycode::RIGHT}, T_PAGE_I},
 };
 
 constexpr tweener<glm::vec2> NO_SCORES_FOUND_MOVE_IN{tween::CUBIC, {600, 500}, {500, 500}, 0.5_s};
@@ -150,14 +150,14 @@ scoreboard_state::scoreboard_state(std::unique_ptr<playerless_game>&& game, scor
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::system::ttf_style::NORMAL, 64);
+							   tr::sys::ttf_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_PLAYER_INFO, glm::vec2{500, 64}, tr::align::TOP_CENTER, 0, NO_TOOLTIP, player_info_tcb,
-							   tr::system::ttf_style::NORMAL, 32);
+							   tr::sys::ttf_style::NORMAL, 32);
 	m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (engine::scorefile.categories.empty()) {
 		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, NO_SCORES_FOUND_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-								   loc_text_callback{T_NO_SCORES_FOUND}, tr::system::ttf_style::NORMAL, 64, "80808080"_rgba8);
+								   loc_text_callback{T_NO_SCORES_FOUND}, tr::sys::ttf_style::NORMAL, 64, "80808080"_rgba8);
 		return;
 	}
 	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
@@ -169,11 +169,11 @@ scoreboard_state::scoreboard_state(std::unique_ptr<playerless_game>&& game, scor
 	}
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_D, GAMEMODE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, gamemode_change_scb, gamemode_d_acb);
 	m_ui.emplace<label_widget>(T_GAMEMODE_C, GAMEMODE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, cur_gamemode_ttcb, cur_gamemode_tcb,
-							   tr::system::ttf_style::NORMAL, 48);
+							   tr::sys::ttf_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_I, GAMEMODE_I_MOVE_IN, tr::align::BOTTOM_RIGHT, 0.5_s, true, gamemode_change_scb, gamemode_i_acb);
 	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, page_d_scb, page_d_acb);
 	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, cur_page_tcb,
-							   tr::system::ttf_style::NORMAL, 48);
+							   tr::sys::ttf_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_MOVE_IN, tr::align::BOTTOM_RIGHT, 0.5_s, true, page_i_scb, page_i_acb);
 }
 

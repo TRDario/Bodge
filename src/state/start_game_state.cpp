@@ -25,12 +25,12 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::LEFT}, T_PREV},
-	{{tr::system::keycode::RIGHT}, T_NEXT},
-	{{tr::system::keycode::ENTER}, T_START},
-	{{tr::system::keycode::TOP_ROW_1}, T_START},
-	{{tr::system::keycode::ESCAPE}, T_EXIT},
-	{{tr::system::keycode::TOP_ROW_2}, T_EXIT},
+	{{tr::sys::keycode::LEFT}, T_PREV},
+	{{tr::sys::keycode::RIGHT}, T_NEXT},
+	{{tr::sys::keycode::ENTER}, T_START},
+	{{tr::sys::keycode::TOP_ROW_1}, T_START},
+	{{tr::sys::keycode::ESCAPE}, T_EXIT},
+	{{tr::sys::keycode::TOP_ROW_2}, T_EXIT},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
@@ -130,21 +130,21 @@ start_game_state::start_game_state(std::unique_ptr<playerless_game>&& game)
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::system::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(name_tcb),
-							   tr::system::ttf_style::NORMAL, 120);
+							   tr::sys::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(name_tcb), tr::sys::ttf_style::NORMAL,
+							   120);
 	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(author_tcb),
-							   tr::system::ttf_style::NORMAL, 32);
+							   tr::sys::ttf_style::NORMAL, 32);
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(description_tcb),
-							   tr::system::ttf_style::ITALIC, 32, "80808080"_rgba8);
+							   tr::sys::ttf_style::ITALIC, 32, "80808080"_rgba8);
 	m_ui.emplace<label_widget>(T_BEST_TIME_LABEL, best_time_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   loc_text_callback{T_BEST_TIME_LABEL}, tr::system::ttf_style::NORMAL, 32, "FFFF00C0"_rgba8);
+							   loc_text_callback{T_BEST_TIME_LABEL}, tr::sys::ttf_style::NORMAL, 32, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_BEST_TIME, BEST_TIME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_time_tcb),
-							   tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
+							   tr::sys::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_BEST_SCORE_LABEL, best_score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   loc_text_callback{T_BEST_SCORE_LABEL}, tr::system::ttf_style::NORMAL, 32, "FFFF00C0"_rgba8);
+							   loc_text_callback{T_BEST_SCORE_LABEL}, tr::sys::ttf_style::NORMAL, 32, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_BEST_SCORE, BEST_SCORE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_score_tcb),
-							   tr::system::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
+							   tr::sys::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
 	m_ui.emplace<arrow_widget>(T_PREV, PREV_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, arrow_scb, prev_acb);
 	m_ui.emplace<arrow_widget>(T_NEXT, NEXT_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, arrow_scb, next_acb);
 	m_ui.emplace<text_button_widget>(T_START, START_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_START},

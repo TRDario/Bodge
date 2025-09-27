@@ -29,14 +29,14 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::TOP_ROW_1}, T_REPLAY_0},
-	{{tr::system::keycode::TOP_ROW_2}, T_REPLAY_1},
-	{{tr::system::keycode::TOP_ROW_3}, T_REPLAY_2},
-	{{tr::system::keycode::TOP_ROW_4}, T_REPLAY_3},
-	{{tr::system::keycode::TOP_ROW_5}, T_REPLAY_4},
-	{{tr::system::keycode::ESCAPE}, T_EXIT},
-	{{tr::system::keycode::LEFT}, T_PAGE_D},
-	{{tr::system::keycode::RIGHT}, T_PAGE_I},
+	{{tr::sys::keycode::TOP_ROW_1}, T_REPLAY_0},
+	{{tr::sys::keycode::TOP_ROW_2}, T_REPLAY_1},
+	{{tr::sys::keycode::TOP_ROW_3}, T_REPLAY_2},
+	{{tr::sys::keycode::TOP_ROW_4}, T_REPLAY_3},
+	{{tr::sys::keycode::TOP_ROW_5}, T_REPLAY_4},
+	{{tr::sys::keycode::ESCAPE}, T_EXIT},
+	{{tr::sys::keycode::LEFT}, T_PAGE_D},
+	{{tr::sys::keycode::RIGHT}, T_PAGE_I},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
@@ -181,12 +181,12 @@ void replays_state::set_up_ui()
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::system::ttf_style::NORMAL, 64);
+							   tr::sys::ttf_style::NORMAL, 64);
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (m_replays.empty()) {
 		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, NO_REPLAYS_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
-								   loc_text_callback{T_NO_REPLAYS_FOUND}, tr::system::ttf_style::NORMAL, 64, "80808080"_rgba8);
+								   loc_text_callback{T_NO_REPLAYS_FOUND}, tr::sys::ttf_style::NORMAL, 64, "80808080"_rgba8);
 		return;
 	}
 	std::map<std::string, replay_header>::iterator it{m_replays.begin()};
@@ -198,7 +198,7 @@ void replays_state::set_up_ui()
 	}
 	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, page_d_scb, page_d_acb);
 	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, page_c_tcb,
-							   tr::system::ttf_style::NORMAL, 48);
+							   tr::sys::ttf_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_MOVE_IN, tr::align::BOTTOM_RIGHT, 0.5_s, true, page_i_scb, page_i_acb);
 }
 

@@ -30,24 +30,24 @@ constexpr selection_tree SELECTION_TREE_SPECIAL{
 };
 
 constexpr shortcut_table SHORTCUTS_REGULAR{
-	{{tr::system::keycode::ESCAPE}, T_UNPAUSE},
-	{{tr::system::keycode::TOP_ROW_1}, T_UNPAUSE},
-	{{tr::system::keycode::R, tr::system::keymod::SHIFT}, T_SAVE_AND_RESTART},
-	{{tr::system::keycode::TOP_ROW_2}, T_SAVE_AND_RESTART},
-	{{tr::system::keycode::R}, T_RESTART},
-	{{tr::system::keycode::TOP_ROW_3}, T_RESTART},
-	{{tr::system::keycode::Q, tr::system::keymod::SHIFT}, T_SAVE_AND_QUIT},
-	{{tr::system::keycode::TOP_ROW_4}, T_SAVE_AND_QUIT},
-	{{tr::system::keycode::Q}, T_QUIT},
-	{{tr::system::keycode::TOP_ROW_5}, T_QUIT},
+	{{tr::sys::keycode::ESCAPE}, T_UNPAUSE},
+	{{tr::sys::keycode::TOP_ROW_1}, T_UNPAUSE},
+	{{tr::sys::keycode::R, tr::sys::keymod::SHIFT}, T_SAVE_AND_RESTART},
+	{{tr::sys::keycode::TOP_ROW_2}, T_SAVE_AND_RESTART},
+	{{tr::sys::keycode::R}, T_RESTART},
+	{{tr::sys::keycode::TOP_ROW_3}, T_RESTART},
+	{{tr::sys::keycode::Q, tr::sys::keymod::SHIFT}, T_SAVE_AND_QUIT},
+	{{tr::sys::keycode::TOP_ROW_4}, T_SAVE_AND_QUIT},
+	{{tr::sys::keycode::Q}, T_QUIT},
+	{{tr::sys::keycode::TOP_ROW_5}, T_QUIT},
 };
 constexpr shortcut_table SHORTCUTS_SPECIAL{
-	{{tr::system::keycode::ESCAPE}, T_UNPAUSE},
-	{{tr::system::keycode::TOP_ROW_1}, T_UNPAUSE},
-	{{tr::system::keycode::R}, T_RESTART},
-	{{tr::system::keycode::TOP_ROW_2}, T_RESTART},
-	{{tr::system::keycode::Q}, T_QUIT},
-	{{tr::system::keycode::TOP_ROW_3}, T_QUIT},
+	{{tr::sys::keycode::ESCAPE}, T_UNPAUSE},
+	{{tr::sys::keycode::TOP_ROW_1}, T_UNPAUSE},
+	{{tr::sys::keycode::R}, T_RESTART},
+	{{tr::sys::keycode::TOP_ROW_2}, T_RESTART},
+	{{tr::sys::keycode::Q}, T_QUIT},
+	{{tr::sys::keycode::TOP_ROW_3}, T_QUIT},
 };
 
 // clang-format on
@@ -60,7 +60,7 @@ pause_state::pause_state(std::unique_ptr<game>&& game, game_type type, glm::vec2
 {
 	if (blur_in) {
 		m_game->add_to_renderer();
-		tr::gfx::renderer_2d::draw(engine::blur().input());
+		engine::basic_renderer().draw(engine::blur_renderer().input());
 		engine::pause_song();
 	}
 
@@ -97,7 +97,7 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 		if (m_timer < 0.5_s) {
 			return nullptr;
 		}
-		tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
+		engine::basic_renderer().set_default_transform(TRANSFORM);
 		switch (to_type(m_substate)) {
 		case game_type::REGULAR:
 		case game_type::GAMEMODE_DESIGNER_TEST:
@@ -121,7 +121,7 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 		if (m_timer < 0.5_s) {
 			return nullptr;
 		}
-		tr::gfx::renderer_2d::set_default_transform(TRANSFORM);
+		engine::basic_renderer().set_default_transform(TRANSFORM);
 		switch (to_type(m_substate)) {
 		case game_type::REGULAR:
 			return std::make_unique<title_state>();
@@ -192,7 +192,7 @@ void pause_state::set_up_full_ui()
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
 	constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 	m_ui.emplace<label_widget>(T_PAUSED, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PAUSED},
-							   tr::system::ttf_style::NORMAL, 64);
+							   tr::sys::ttf_style::NORMAL, 64);
 
 	const status_callback scb{
 		[this] { return to_base(m_substate) == substate_base::PAUSED || to_base(m_substate) == substate_base::PAUSING; }};
@@ -250,7 +250,7 @@ void pause_state::set_up_limited_ui()
 	constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 	const tag title_tag{to_type(m_substate) == game_type::REPLAY ? T_REPLAY_PAUSED : T_TEST_PAUSED};
 	m_ui.emplace<label_widget>(title_tag, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PAUSED},
-							   tr::system::ttf_style::NORMAL, 64);
+							   tr::sys::ttf_style::NORMAL, 64);
 
 	const status_callback scb{
 		[this] { return to_base(m_substate) == substate_base::PAUSED || to_base(m_substate) == substate_base::PAUSING; }};

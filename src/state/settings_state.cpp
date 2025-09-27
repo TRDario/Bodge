@@ -85,10 +85,10 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::Z, tr::system::keymod::CTRL}, T_REVERT},
-	{{tr::system::keycode::S, tr::system::keymod::CTRL}, T_APPLY},
-	{{tr::system::keycode::ENTER}, T_APPLY},
-	{{tr::system::keycode::ESCAPE}, T_EXIT},
+	{{tr::sys::keycode::Z, tr::sys::keymod::CTRL}, T_REVERT},
+	{{tr::sys::keycode::S, tr::sys::keymod::CTRL}, T_APPLY},
+	{{tr::sys::keycode::ENTER}, T_APPLY},
+	{{tr::sys::keycode::ESCAPE}, T_EXIT},
 };
 
 constexpr glm::vec2 DISPLAY_MODE_START_POS{1050, 158.5f};
@@ -155,7 +155,7 @@ settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != NO_MSAA; },
 	};
 	const status_callback msaa_i_scb{
-		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != tr::system::max_msaa(); },
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != tr::sys::max_msaa(); },
 	};
 	const status_callback sfx_volume_d_scb{
 		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume > 0; },
@@ -260,8 +260,8 @@ settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 				m_ui.release_graphical_resources();
 			}
 			else if (m_pending.vsync != old.vsync) {
-				tr::system::set_window_vsync(m_pending.vsync ? tr::system::vsync::ADAPTIVE : tr::system::vsync::DISABLED);
-			}	
+				tr::sys::set_window_vsync(m_pending.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
+			}
 
 			if (old.language != engine::settings.language) {
 				engine::load_localization();
@@ -310,14 +310,14 @@ settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::system::ttf_style::NORMAL, 64);
+							   tr::sys::ttf_style::NORMAL, 64);
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		const label_info& label{LABELS[i]};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 158.5f + i * 75}, {15, 158.5f + i * 75}, 0.5_s};
 		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? "505050A0"_rgba8
 																											   : "A0A0A0A0"_rgba8};
 		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
-								   loc_text_callback{label.tag}, tr::system::ttf_style::NORMAL, 48, color);
+								   loc_text_callback{label.tag}, tr::sys::ttf_style::NORMAL, 48, color);
 	}
 
 	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, DISPLAY_MODE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP,
@@ -331,8 +331,7 @@ settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 	m_ui.emplace<text_button_widget>(T_VSYNC_C, VSYNC_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, vsync_c_tcb,
 									 font::LANGUAGE_PREVIEW, 48, scb, vsync_c_acb, sound::CONFIRM);
 	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, msaa_d_scb, msaa_d_acb);
-	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, msaa_c_tcb, tr::system::ttf_style::NORMAL,
-							   48);
+	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, msaa_c_tcb, tr::sys::ttf_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_MSAA_I, MSAA_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, msaa_i_scb, msaa_i_acb);
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, scb, primary_hue_d_acb);
 	m_ui.emplace<numeric_input_widget<u16, 3, "{}", "{}">>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,

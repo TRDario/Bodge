@@ -8,7 +8,7 @@ class state : public tr::state {
   public:
 	state(selection_tree selection_tree, shortcut_table shortcuts);
 
-	std::unique_ptr<tr::state> handle_event(const tr::system::event& event) override;
+	std::unique_ptr<tr::state> handle_event(const tr::sys::event& event) override;
 	std::unique_ptr<tr::state> update(tr::duration) override;
 
   protected:

@@ -29,20 +29,20 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::B}, T_BALL_SETTINGS},
-	{{tr::system::keycode::TOP_ROW_1}, T_BALL_SETTINGS},
-	{{tr::system::keycode::P}, T_PLAYER_SETTINGS},
-	{{tr::system::keycode::TOP_ROW_2}, T_PLAYER_SETTINGS},
-	{{tr::system::keycode::T}, T_TEST},
-	{{tr::system::keycode::TOP_ROW_3}, T_TEST},
-	{{tr::system::keycode::S}, T_SAVE},
-	{{tr::system::keycode::ENTER}, T_SAVE},
-	{{tr::system::keycode::TOP_ROW_4}, T_SAVE},
-	{{tr::system::keycode::C}, T_DISCARD},
-	{{tr::system::keycode::Q}, T_DISCARD},
-	{{tr::system::keycode::E}, T_DISCARD},
-	{{tr::system::keycode::ESCAPE}, T_DISCARD},
-	{{tr::system::keycode::TOP_ROW_5}, T_DISCARD},
+	{{tr::sys::keycode::B}, T_BALL_SETTINGS},
+	{{tr::sys::keycode::TOP_ROW_1}, T_BALL_SETTINGS},
+	{{tr::sys::keycode::P}, T_PLAYER_SETTINGS},
+	{{tr::sys::keycode::TOP_ROW_2}, T_PLAYER_SETTINGS},
+	{{tr::sys::keycode::T}, T_TEST},
+	{{tr::sys::keycode::TOP_ROW_3}, T_TEST},
+	{{tr::sys::keycode::S}, T_SAVE},
+	{{tr::sys::keycode::ENTER}, T_SAVE},
+	{{tr::sys::keycode::TOP_ROW_4}, T_SAVE},
+	{{tr::sys::keycode::C}, T_DISCARD},
+	{{tr::sys::keycode::Q}, T_DISCARD},
+	{{tr::sys::keycode::E}, T_DISCARD},
+	{{tr::sys::keycode::ESCAPE}, T_DISCARD},
+	{{tr::sys::keycode::TOP_ROW_5}, T_DISCARD},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
@@ -205,24 +205,24 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 
 	if (returning_from_subscreen) {
 		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::system::ttf_style::NORMAL, 64);
+								   tr::sys::ttf_style::NORMAL, 64);
 	}
 	else {
 		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::system::ttf_style::NORMAL, 64);
+								   tr::sys::ttf_style::NORMAL, 64);
 	}
-	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, tr::system::ttf_style::NORMAL, 120, scb,
-										name_enter_cb, m_pending.name);
+	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, tr::sys::ttf_style::NORMAL, 120, scb, name_enter_cb,
+										m_pending.name);
 	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(author_tcb),
-							   tr::system::ttf_style::NORMAL, 32);
-	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, tr::system::ttf_style::ITALIC, 32,
-										scb, description_enter_cb, m_pending.description);
+							   tr::sys::ttf_style::NORMAL, 32);
+	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, tr::sys::ttf_style::ITALIC, 32, scb,
+										description_enter_cb, m_pending.description);
 	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, BALL_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 									 loc_text_callback{T_BALL_SETTINGS}, font::LANGUAGE, 64, scb, ball_settings_acb, sound::CONFIRM);
 	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, PLAYER_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 									 loc_text_callback{T_PLAYER_SETTINGS}, font::LANGUAGE, 64, scb, player_settings_acb, sound::CONFIRM);
 	m_ui.emplace<label_widget>(T_SONG, SONG_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SONG},
-							   tr::system::ttf_style::NORMAL, 48);
+							   tr::sys::ttf_style::NORMAL, 48);
 	m_ui.emplace<text_button_widget>(T_SONG_C, SONG_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, song_c_tcb, font::LANGUAGE, 64, scb,
 									 song_c_acb, sound::CONFIRM);
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {

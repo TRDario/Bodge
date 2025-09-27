@@ -274,7 +274,7 @@ class game_state : public state {
   public:
 	game_state(std::unique_ptr<game>&& game, game_type type, bool fade_in);
 
-	std::unique_ptr<tr::state> handle_event(const tr::system::event& event) override;
+	std::unique_ptr<tr::state> handle_event(const tr::sys::event& event) override;
 	std::unique_ptr<tr::state> update(tr::duration) override;
 	void draw() override;
 

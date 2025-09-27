@@ -22,9 +22,9 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::TOP_ROW_1}, T_VIEW_TIMES},
-	{{tr::system::keycode::TOP_ROW_2}, T_VIEW_SCORES},
-	{{tr::system::keycode::ESCAPE}, T_EXIT},
+	{{tr::sys::keycode::TOP_ROW_1}, T_VIEW_TIMES},
+	{{tr::sys::keycode::TOP_ROW_2}, T_VIEW_SCORES},
+	{{tr::sys::keycode::ESCAPE}, T_EXIT},
 };
 
 //
@@ -73,17 +73,17 @@ scoreboard_selection_state::scoreboard_selection_state(std::unique_ptr<playerles
 
 	if (returning_from_subscreen) {
 		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::system::ttf_style::NORMAL, 64);
+								   tr::sys::ttf_style::NORMAL, 64);
 		m_ui.emplace<label_widget>(T_PLAYER_INFO, glm::vec2{500, 64}, tr::align::TOP_CENTER, 0, NO_TOOLTIP, player_info_tcb,
-								   tr::system::ttf_style::NORMAL, 32);
+								   tr::sys::ttf_style::NORMAL, 32);
 		m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
 										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	}
 	else {
 		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::system::ttf_style::NORMAL, 64);
+								   tr::sys::ttf_style::NORMAL, 64);
 		m_ui.emplace<label_widget>(T_PLAYER_INFO, PLAYER_INFO_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, player_info_tcb,
-								   tr::system::ttf_style::NORMAL, 32);
+								   tr::sys::ttf_style::NORMAL, 32);
 		m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	}

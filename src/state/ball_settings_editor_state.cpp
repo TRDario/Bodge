@@ -69,8 +69,8 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::system::keycode::ESCAPE}, T_EXIT},
-	{{tr::system::keycode::TOP_ROW_1}, T_EXIT},
+	{{tr::sys::keycode::ESCAPE}, T_EXIT},
+	{{tr::sys::keycode::TOP_ROW_1}, T_EXIT},
 };
 
 constexpr glm::vec2 STARTING_COUNT_START_POS{1050, 298};
@@ -244,9 +244,9 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<playerles
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::system::ttf_style::NORMAL, 64);
+							   tr::sys::ttf_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SUBTITLE},
-							   tr::system::ttf_style::NORMAL, 32);
+							   tr::sys::ttf_style::NORMAL, 32);
 	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_D, STARTING_COUNT_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_count_d_scb,
 							   starting_count_d_acb);
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}", "{}">>(T_STARTING_COUNT_C, STARTING_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
@@ -288,7 +288,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::unique_ptr<playerles
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 298 + i * 75}, {15, 298 + i * 75}, 0.5_s};
 		m_ui.emplace<label_widget>(LABELS[i].tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
-								   loc_text_callback{LABELS[i].tag}, tr::system::ttf_style::NORMAL, 48);
+								   loc_text_callback{LABELS[i].tag}, tr::sys::ttf_style::NORMAL, 48);
 	}
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);

@@ -44,9 +44,9 @@ basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(tweener<
 			  }
 		  },
 		  font::LANGUAGE,
-		  tr::system::ttf_style::NORMAL,
+		  tr::sys::ttf_style::NORMAL,
 		  font_size,
-		  tr::system::UNLIMITED_WIDTH,
+		  tr::sys::UNLIMITED_WIDTH,
 	  }
 	  , m_ui{ui}
 	  , m_ref{ref}

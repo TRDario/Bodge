@@ -27,21 +27,17 @@ blur_renderer::blur_renderer(int texture_size)
 	: m_input_texture{glm::ivec2{texture_size}}
 	, m_auxiliary_texture{glm::ivec2{texture_size}}
 	, m_pipeline{tr::gfx::vertex_shader{VERTEX_SHADER_SRC}, tr::gfx::fragment_shader{FRAGMENT_SHADER_SRC}}
-	, m_vertex_format{{tr::gfx::NOT_INSTANCED, {{tr::gfx::vertex_attribute::type::SI8, 2, false, 0}}}}
+	, m_vertex_format{{tr::gfx::NOT_INSTANCED, {tr::gfx::as_vertex_attribute<glm::i8vec2>}}}
 	, m_vertex_buffer{MESH}
 {
-	m_texture_unit.set_texture(m_input_texture);
-	m_pipeline.fragment_shader().set_uniform(0, m_texture_unit);
 	m_pipeline.fragment_shader().set_uniform(1, glm::vec2{m_input_texture.size()});
-	if (tr::gfx::debug()) {
-		m_input_texture.set_label("(Bodge) Blur Renderer Input Texture");
-		m_auxiliary_texture.set_label("(Bodge) Blur Renderer Auxilliary Texture");
-		m_pipeline.set_label("(Bodge) Blur Renderer Pipeline");
-		m_pipeline.vertex_shader().set_label("(Bodge) Blur Renderer Vertex Shader");
-		m_pipeline.fragment_shader().set_label("(Bodge) Blur Renderer Fragment Shader");
-		m_vertex_format.set_label("(Bodge) Blur Renderer Vertex Format");
-		m_vertex_buffer.set_label("(Bodge) Blur Renderer Vertex Buffer");
-	}
+	TR_SET_LABEL(m_input_texture, "(Bodge) Blur Renderer Input Texture");
+	TR_SET_LABEL(m_auxiliary_texture, "(Bodge) Blur Renderer Auxilliary Texture");
+	TR_SET_LABEL(m_pipeline, "(Bodge) Blur Renderer Pipeline");
+	TR_SET_LABEL(m_pipeline.vertex_shader(), "(Bodge) Blur Renderer Vertex Shader");
+	TR_SET_LABEL(m_pipeline.fragment_shader(), "(Bodge) Blur Renderer Fragment Shader");
+	TR_SET_LABEL(m_vertex_format, "(Bodge) Blur Renderer Vertex Format");
+	TR_SET_LABEL(m_vertex_buffer, "(Bodge) Blur Renderer Vertex Buffer");
 }
 
 //
@@ -56,19 +52,19 @@ void blur_renderer::draw(float saturation, float strength)
 {
 	strength = std::max(std::round(strength * engine::render_scale()), 2.0f);
 
-	tr::gfx::set_renderer(RENDERER_ID);
+	tr::gfx::active_renderer = RENDERER_ID;
 	tr::gfx::set_shader_pipeline(m_pipeline);
 	tr::gfx::set_vertex_format(m_vertex_format);
 	tr::gfx::set_vertex_buffer(m_vertex_buffer, 0, 0);
 	tr::gfx::set_blend_mode(tr::gfx::PREMUL_ALPHA_BLENDING);
-	m_texture_unit.set_texture(m_input_texture);
+	m_pipeline.fragment_shader().set_uniform(0, m_input_texture);
 	m_pipeline.fragment_shader().set_uniform(2, saturation);
 	m_pipeline.fragment_shader().set_uniform(3, strength);
 	m_pipeline.fragment_shader().set_uniform(4, 0);
 	m_auxiliary_texture.clear({});
 	tr::gfx::set_render_target(m_auxiliary_texture);
 	tr::gfx::draw(tr::gfx::primitive::TRI_FAN, 0, 4);
-	m_texture_unit.set_texture(m_auxiliary_texture);
+	m_pipeline.fragment_shader().set_uniform(0, m_auxiliary_texture);
 	m_pipeline.fragment_shader().set_uniform(4, 1);
 	tr::gfx::set_render_target(engine::screen());
 	tr::gfx::draw(tr::gfx::primitive::TRI_FAN, 0, 4);

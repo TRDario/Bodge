@@ -1,5 +1,5 @@
-#include "../../include/state/state_base.hpp"
 #include "../../include/graphics.hpp"
+#include "../../include/state/state_base.hpp"
 
 ////////////////////////////////////////////////////////////////// STATE //////////////////////////////////////////////////////////////////
 
@@ -8,7 +8,7 @@ state::state(selection_tree selection_tree, shortcut_table shortcuts)
 {
 }
 
-std::unique_ptr<tr::state> state::handle_event(const tr::system::event& event)
+std::unique_ptr<tr::state> state::handle_event(const tr::sys::event& event)
 {
 	m_ui.handle_event(event);
 	return nullptr;
@@ -57,7 +57,7 @@ void main_menu_state::draw()
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
-	tr::gfx::renderer_2d::draw(engine::screen());
+	engine::basic_renderer().draw(engine::screen());
 }
 
 ///////////////////////////////////////////////////////////// GAME MENU STATE /////////////////////////////////////////////////////////////
@@ -85,12 +85,12 @@ void game_menu_state::draw()
 {
 	if (m_update_game) {
 		m_game->add_to_renderer();
-		tr::gfx::renderer_2d::draw(engine::blur().input());
+		engine::basic_renderer().draw(engine::blur_renderer().input());
 	}
-	engine::blur().draw(saturation_factor(), blur_strength());
+	engine::blur_renderer().draw(saturation_factor(), blur_strength());
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
-	tr::gfx::renderer_2d::draw(engine::screen());
+	engine::basic_renderer().draw(engine::screen());
 }
 
 float game_menu_state::saturation_factor()

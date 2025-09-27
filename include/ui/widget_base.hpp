@@ -83,7 +83,7 @@ class widget {
 class text_widget : public widget {
   public:
 	text_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
-				text_callback text_cb, font font, tr::system::ttf_style style, float font_size, int max_width);
+				text_callback text_cb, font font, tr::sys::ttf_style style, float font_size, int max_width);
 
 	text_callback text_cb;
 
@@ -98,7 +98,7 @@ class text_widget : public widget {
 	};
 
 	font m_font;
-	tr::system::ttf_style m_style;
+	tr::sys::ttf_style m_style;
 	float m_font_size;
 	int m_max_width;
 	mutable std::optional<cache> m_cache;

@@ -11,7 +11,7 @@ class ui_manager;
 class label_widget : public text_widget {
   public:
 	label_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
-				 tr::system::ttf_style style, float font_size, tr::rgba8 color = "A0A0A0A0"_rgba8);
+				 tr::sys::ttf_style style, float font_size, tr::rgba8 color = "A0A0A0A0"_rgba8);
 
 	tweener<tr::rgba8> color;
 
@@ -108,7 +108,7 @@ template <usize S> using interval_input_widget = basic_numeric_input_widget<tick
 
 template <usize S> class line_input_widget : public text_widget {
   public:
-	line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::system::ttf_style style, float font_size,
+	line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size,
 					  status_callback status_cb, action_callback enter_cb, std::string_view initial_text);
 
 	tr::static_string<S * 4> buffer;

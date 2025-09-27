@@ -23,7 +23,9 @@ namespace engine {
 	void initialize_graphics();
 	void shut_down_graphics();
 
-	blur_renderer& blur();
+	tr::gfx::renderer_2d& basic_renderer();
+	tr::gfx::debug_renderer& debug_renderer();
+	blur_renderer& blur_renderer();
 	tooltip_manager& tooltip();
 
 	float render_scale();

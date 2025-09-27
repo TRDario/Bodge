@@ -12,7 +12,7 @@ multiline_input_widget<S>::multiline_input_widget(tweener<glm::vec2> pos, tr::al
 				  true,
 				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; },
 				  font::LANGUAGE,
-				  tr::system::ttf_style::NORMAL,
+				  tr::sys::ttf_style::NORMAL,
 				  font_size,
 				  int(width)}
 	, m_scb{std::move(status_cb)}
@@ -32,7 +32,7 @@ template <usize S> glm::vec2 multiline_input_widget<S>::size() const
 
 template <usize S> void multiline_input_widget<S>::add_to_renderer()
 {
-	const tr::gfx::simple_color_mesh_ref fill{tr::gfx::renderer_2d::new_color_fan(layer::UI, 4)};
+	const tr::gfx::simple_color_mesh_ref fill{engine::basic_renderer().new_color_fan(layer::UI, 4)};
 	tr::fill_rect_vtx(fill.positions, {tl() + 2.0f, size() - 4.0f});
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, u8(160 * opacity())});
 
@@ -49,7 +49,7 @@ template <usize S> void multiline_input_widget<S>::add_to_renderer()
 	}
 	color.a *= opacity();
 
-	const tr::gfx::simple_color_mesh_ref outline{tr::gfx::renderer_2d::new_color_outline(layer::UI, 4)};
+	const tr::gfx::simple_color_mesh_ref outline{engine::basic_renderer().new_color_outline(layer::UI, 4)};
 	tr::fill_rect_outline_vtx(outline.positions, {tl() + 1.0f, size() - 2.0f}, 2.0f);
 	std::ranges::fill(outline.colors, color);
 }
@@ -150,7 +150,7 @@ template <usize S> void multiline_input_widget<S>::on_write(std::string_view inp
 {
 	if (tr::utf8::length(buffer) + tr::utf8::length(input) <= S) {
 		buffer.append(input);
-		if (engine::count_lines(buffer, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) >
+		if (engine::count_lines(buffer, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) >
 			m_max_lines) {
 			buffer.resize(buffer.size() - input.size());
 		}
@@ -163,7 +163,7 @@ template <usize S> void multiline_input_widget<S>::on_write(std::string_view inp
 template <usize S> void multiline_input_widget<S>::on_enter()
 {
 	if (tr::utf8::length(buffer) < S &&
-		engine::count_lines(buffer, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
+		engine::count_lines(buffer, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
 		buffer.append('\n');
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
@@ -185,21 +185,21 @@ template <usize S> void multiline_input_widget<S>::on_clear()
 
 template <usize S> void multiline_input_widget<S>::on_copy()
 {
-	tr::system::set_clipboard_text(std::string{buffer}.c_str());
+	tr::sys::set_clipboard_text(std::string{buffer}.c_str());
 }
 
 template <usize S> void multiline_input_widget<S>::on_paste()
 {
 	try {
-		if (!tr::system::clipboard_empty()) {
-			std::string pasted{tr::system::clipboard_text()};
+		if (!tr::sys::clipboard_empty()) {
+			std::string pasted{tr::sys::clipboard_text()};
 			tr::static_string<S * 4> copy{buffer};
 			const usize buffer_length{tr::utf8::length(buffer)};
 			copy += (buffer_length + tr::utf8::length(pasted) > S)
 						? std::string_view{pasted.begin(), tr::utf8::next(pasted.begin(), S - buffer_length)}
 						: pasted;
 			// Replace this with a smarter solution eventually, maybe.
-			if (engine::count_lines(copy, font::LANGUAGE, tr::system::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) <=
+			if (engine::count_lines(copy, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) <=
 				m_max_lines) {
 				buffer = copy;
 			}
