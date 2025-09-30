@@ -52,6 +52,14 @@ constexpr std::array<tr::rgba8, 19> FAST_SPEED_COLORS{{
 	{144, 144, 144, 144}, {192, 192, 192, 192}, {168, 168, 168, 168}, {144, 144, 144, 144},
 }};
 
+constexpr std::array<u16, tr::polygon_outline_indices(3) + tr::polygon_indices(3)> SLOW_NORMAL_SPEED_INDICES{[] {
+	std::array<u16, tr::polygon_outline_indices(3) + tr::polygon_indices(3)> arr{};
+	auto it{arr.begin()};
+	it = tr::fill_polygon_outline_indices(it, 3, 0);
+	it = tr::fill_polygon_indices(it, 3, 6);
+	return arr;
+}()};
+
 constexpr std::array<u16, 48> FAST_SPEED_INDICES{
 	0, 1,  7, 1, 7,  8, 1, 8,  9, 1, 9,  2, 2, 3,  9, 3, 10, 9, 3,  10, 4,  10, 11, 4,
 	4, 11, 5, 5, 11, 8, 8, 12, 5, 5, 12, 6, 6, 12, 0, 0, 12, 7, 13, 14, 15, 16, 17, 18,
@@ -72,31 +80,26 @@ glm::vec2 replay_playback_indicator_widget::size() const
 void replay_playback_indicator_widget::add_to_renderer()
 {
 	const glm::vec2 tl{this->tl()};
+	const auto shift_positions{[=](glm::vec2 p) -> glm::vec2 { return p + tl; }};
+	tr::gfx::color_mesh_ref mesh{};
+	const auto shift_indices{[&](u16 i) -> u16 { return i + mesh.base_index; }};
 
 	if (engine::held_keymods() & tr::sys::keymod::SHIFT) {
-		const tr::gfx::color_mesh_ref mesh{
-			engine::basic_renderer().new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
-		tr::fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
-		tr::fill_poly_idx(mesh.indices.begin() + tr::poly_outline_idx(3), 3, mesh.base_index + 6);
-		std::ranges::copy(SLOW_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),
-						  mesh.positions.begin());
+		mesh = engine::basic_renderer().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
+		std::ranges::copy(SLOW_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
+		std::ranges::copy(SLOW_NORMAL_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
 	else if (engine::held_keymods() & tr::sys::keymod::CTRL) {
-		const tr::gfx::color_mesh_ref mesh{engine::basic_renderer().new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size())};
-		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),
-						  mesh.positions.begin());
+		mesh = engine::basic_renderer().new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size());
+		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(FAST_SPEED_COLORS, mesh.colors.begin());
-		std::ranges::copy(FAST_SPEED_INDICES | std::views::transform([=](u16 i) -> u16 { return i + mesh.base_index; }),
-						  mesh.indices.begin());
+		std::ranges::copy(FAST_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
 	else {
-		const tr::gfx::color_mesh_ref mesh{
-			engine::basic_renderer().new_color_mesh(layer::UI, 9, tr::poly_outline_idx(3) + tr::poly_idx(3))};
-		tr::fill_poly_outline_idx(mesh.indices.begin(), 3, mesh.base_index);
-		tr::fill_poly_idx(mesh.indices.begin() + tr::poly_outline_idx(3), 3, mesh.base_index + 6);
-		std::ranges::copy(NORMAL_SPEED_POSITIONS | std::views::transform([=](glm::vec2 p) -> glm::vec2 { return p + tl; }),
-						  mesh.positions.begin());
+		mesh = engine::basic_renderer().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
+		std::ranges::copy(NORMAL_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
+		std::ranges::copy(SLOW_NORMAL_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
 }

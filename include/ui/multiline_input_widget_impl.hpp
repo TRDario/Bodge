@@ -33,7 +33,7 @@ template <usize S> glm::vec2 multiline_input_widget<S>::size() const
 template <usize S> void multiline_input_widget<S>::add_to_renderer()
 {
 	const tr::gfx::simple_color_mesh_ref fill{engine::basic_renderer().new_color_fan(layer::UI, 4)};
-	tr::fill_rect_vtx(fill.positions, {tl() + 2.0f, size() - 4.0f});
+	tr::fill_rectangle_vertices(fill.positions, {tl() + 2.0f, size() - 4.0f});
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, u8(160 * opacity())});
 
 	tr::rgba8 color{m_interp};
@@ -50,7 +50,7 @@ template <usize S> void multiline_input_widget<S>::add_to_renderer()
 	color.a *= opacity();
 
 	const tr::gfx::simple_color_mesh_ref outline{engine::basic_renderer().new_color_outline(layer::UI, 4)};
-	tr::fill_rect_outline_vtx(outline.positions, {tl() + 1.0f, size() - 2.0f}, 2.0f);
+	tr::fill_rectangle_outline_vertices(outline.positions, {tl() + 1.0f, size() - 2.0f}, 2.0f);
 	std::ranges::fill(outline.colors, color);
 }
 

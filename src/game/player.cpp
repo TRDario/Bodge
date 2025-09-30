@@ -92,25 +92,25 @@ void player::add_to_renderer_dead(ticks time_since_game_over) const
 void player::add_fill_to_renderer(u8 opacity, tr::angle rotation, float size) const
 {
 	const tr::gfx::simple_color_mesh_ref fill{engine::basic_renderer().new_color_fan(layer::PLAYER, 6)};
-	tr::fill_poly_vtx(fill.positions, 6, {m_hitbox.c, size}, rotation);
+	tr::fill_polygon_vertices(fill.positions, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, opacity});
 }
 
 void player::add_outline_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
 {
 	const tr::gfx::simple_color_mesh_ref outline{engine::basic_renderer().new_color_outline(layer::PLAYER, 6)};
-	tr::fill_poly_outline_vtx(outline.positions, 6, {m_hitbox.c, size}, rotation, 4.0f);
-	std::ranges::fill(outline.colors | std::views::take(6), tr::rgba8{tint, opacity});
-	std::ranges::fill(outline.colors | std::views::drop(6), tr::rgba8{0, 0, 0, opacity});
+	tr::fill_polygon_outline_vertices(outline.positions, {m_hitbox.c, size}, rotation, 4.0f);
+	std::fill_n(outline.colors.begin(), 6, tr::rgba8{tint, opacity});
+	std::fill_n(outline.colors.begin() + 6, 6, tr::rgba8{0, 0, 0, opacity});
 }
 
 void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
 {
 	constexpr usize VERTICES{6 * (trail::size() + 1)};
-	constexpr usize INDICES{tr::poly_outline_idx(6) * trail::size()};
+	constexpr usize INDICES{tr::polygon_outline_indices(6) * trail::size()};
 
 	tr::gfx::color_mesh_ref trail_mesh{engine::basic_renderer().new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
-	tr::fill_poly_vtx(trail_mesh.positions | std::views::take(6), 6, {m_hitbox.c, size}, rotation);
+	tr::fill_polygon_vertices(trail_mesh.positions.begin(), 6, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(trail_mesh.colors, tr::rgba8{tint, opacity});
 
 	std::vector<u16>::iterator indices_it{trail_mesh.indices.begin()};
@@ -119,7 +119,7 @@ void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation
 		const float trail_size{size * trail_fade};
 		const u8 trail_opacity{u8(opacity / 3.0f * trail_fade)};
 
-		tr::fill_poly_vtx(trail_mesh.positions | std::views::drop(6 * (i + 1)), 6, {m_trail[i], trail_size}, rotation);
+		tr::fill_polygon_vertices(trail_mesh.positions.begin() + 6 * (i + 1), 6, {m_trail[i], trail_size}, rotation);
 		for (int j = 0; j < 6; ++j) {
 			trail_mesh.colors[6 * (i + 1) + j].a = trail_opacity;
 			*indices_it++ = u16(trail_mesh.base_index + 6 * (i + 1) + j);
@@ -140,11 +140,11 @@ void player::add_style_wave_to_renderer(tr::rgb8 tint, const decrementing_timer<
 
 	const float t{timer.elapsed_ratio()};
 	const float scale{m_hitbox.r + 10 + std::pow(t, 2.0f) * 40};
-	const usize vertices{tr::smooth_poly_vtx(scale, engine::render_scale())};
+	const usize vertices{tr::smooth_polygon_vertices(scale * engine::render_scale())};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t) * 0.75f)};
 
 	const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_outline(layer::PLAYER, vertices)};
-	tr::fill_poly_outline_vtx(mesh.positions, vertices, {m_hitbox.c, scale}, 0_deg, 2);
+	tr::fill_circle_outline_vertices(mesh.positions, {m_hitbox.c, scale}, 2);
 	std::ranges::fill(mesh.colors, tr::rgba8{tint, opacity});
 }
 
@@ -155,13 +155,15 @@ void player::add_death_wave_to_renderer(ticks time_since_game_over) const
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(0.5f * std::sqrt(1 - t))};
 
-	const usize indices{tr::smooth_poly_vtx(scale, engine::render_scale()) + 2};
+	const usize indices{tr::smooth_polygon_vertices(scale * engine::render_scale()) + 2};
 	const tr::gfx::simple_color_mesh_ref fan{engine::basic_renderer().new_color_fan(layer::PLAYER_TRAIL, indices)};
+
 	fan.positions[0] = m_hitbox.c;
-	fan.colors[0] = {color, 0};
-	tr::fill_poly_vtx(fan.positions | std::views::drop(1), fan.positions.size() - 2, {m_hitbox.c, scale});
+	tr::fill_circle_vertices(fan.positions.begin() + 1, fan.positions.size() - 2, {m_hitbox.c, scale});
 	fan.positions.back() = fan.positions[1];
-	std::ranges::fill(fan.colors | std::views::drop(1), tr::rgba8{color, opacity});
+
+	fan.colors[0] = {color, 0};
+	std::fill(fan.colors.begin() + 1, fan.colors.end(), tr::rgba8{color, opacity});
 }
 
 void player::add_death_fragments_to_renderer(ticks time_since_game_over) const
@@ -173,7 +175,7 @@ void player::add_death_fragments_to_renderer(ticks time_since_game_over) const
 
 	for (const fragment& fragment : m_fragments) {
 		const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_fan(layer::PLAYER, 4)};
-		tr::fill_rotated_rect_vtx(mesh.positions, fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
+		tr::fill_rectangle_vertices(mesh.positions, fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
 }

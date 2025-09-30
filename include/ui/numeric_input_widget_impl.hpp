@@ -21,7 +21,7 @@ std::string default_numeric_input_formatter<T, Fmt, BufferFmt>::to_string(std::s
 }
 
 template <class T, usize S, class Formatter>
-basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size,
+basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time,float font_size,
 												 ui_manager& ui, T& ref, status_callback status_cb,
 												 validation_callback<T> validation_cb)
 	: text_widget{

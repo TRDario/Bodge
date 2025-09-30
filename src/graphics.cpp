@@ -95,7 +95,7 @@ const tr::gfx::render_target& engine::screen()
 void engine::add_menu_game_overlay_to_renderer()
 {
 	const tr::gfx::simple_color_mesh_ref fade_overlay{basic_renderer().new_color_fan(layer::GAME_OVERLAY, 4)};
-	tr::fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
+	tr::fill_rectangle_vertices(fade_overlay.positions, {{}, {1000, 1000}});
 	std::ranges::fill(fade_overlay.colors, MENU_GAME_OVERLAY_TINT);
 }
 
@@ -106,6 +106,6 @@ void engine::add_fade_overlay_to_renderer(float opacity)
 	}
 
 	const tr::gfx::simple_color_mesh_ref fade_overlay{basic_renderer().new_color_fan(layer::FADE_OVERLAY, 4)};
-	tr::fill_rect_vtx(fade_overlay.positions, {{}, {1000, 1000}});
+	tr::fill_rectangle_vertices(fade_overlay.positions, {{}, {1000, 1000}});
 	std::ranges::fill(fade_overlay.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
 }

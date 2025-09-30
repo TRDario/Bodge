@@ -1,5 +1,5 @@
-#include "../../include/audio.hpp"
 #include "../../include/game/ball.hpp"
+#include "../../include/audio.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/settings.hpp"
 
@@ -119,7 +119,7 @@ void ball::add_to_renderer() const
 	const float raw_age_factor{std::min(float(m_time_since_spawned) / BALL_SPAWN_ANIMATION_TIME, 1.0f)};
 	const float eased_age_factor{raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor)};
 	const float size{m_hitbox.r * (5 - 4 * eased_age_factor)};
-	const usize vertices{tr::smooth_poly_vtx(size, engine::render_scale())};
+	const usize vertices{tr::smooth_polygon_vertices(size * engine::render_scale())};
 	const u8 base_opacity{tr::norm_cast<u8>(raw_age_factor)};
 	const float thickness{
 		3 + 4 * std::max((float(BALL_COLLISION_ANIMATION_TIME) - m_time_since_last_collision) / BALL_COLLISION_ANIMATION_TIME, 0.0f),
@@ -127,10 +127,10 @@ void ball::add_to_renderer() const
 
 	// Add the ball.
 	const tr::gfx::simple_color_mesh_ref fill{engine::basic_renderer().new_color_fan(layer::BALLS, vertices)};
-	tr::fill_poly_vtx(fill.positions, vertices, {m_hitbox.c - thickness / 2, size});
+	tr::fill_circle_vertices(fill.positions, {m_hitbox.c - thickness / 2, size});
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, base_opacity});
 	const tr::gfx::simple_color_mesh_ref outline{engine::basic_renderer().new_color_outline(layer::BALLS, vertices)};
-	tr::fill_poly_outline_vtx(outline.positions, vertices, {m_hitbox.c, size}, 0_deg, thickness);
+	tr::fill_circle_outline_vertices(outline.positions, {m_hitbox.c, size}, thickness);
 	std::ranges::fill(outline.colors, tr::rgba8{tint, base_opacity});
 
 	// Add the trail.
@@ -146,7 +146,7 @@ void ball::add_to_renderer() const
 		const usize trail_indices{(drawn_trails - 1) * vertices * 6};
 
 		tr::gfx::color_mesh_ref trail{engine::basic_renderer().new_color_mesh(layer::BALL_TRAILS, trail_vertices, trail_indices)};
-		tr::fill_poly_vtx(trail.positions | std::views::take(vertices), vertices, m_hitbox);
+		tr::fill_circle_vertices(trail.positions.begin(), vertices, m_hitbox);
 		std::ranges::fill(trail.colors | std::views::take(vertices), tr::rgba8{tint, tr::norm_cast<u8>(0.4f)});
 		usize trail_index{1};
 		std::vector<u16>::iterator indices_it{trail.indices.begin()};
@@ -162,7 +162,7 @@ void ball::add_to_renderer() const
 			const u8 opacity{tr::norm_cast<u8>((m_trail.size() - i - 1) * 0.4f / m_trail.size())};
 			const auto positions{trail.positions | std::views::drop(trail_index * vertices) | std::views::take(vertices)};
 			const auto colors{trail.colors | std::views::drop(trail_index * vertices) | std::views::take(vertices)};
-			tr::fill_poly_vtx(positions, vertices, {m_trail[i], m_hitbox.r});
+			tr::fill_circle_vertices(positions, {m_trail[i], m_hitbox.r});
 			std::ranges::fill(colors, tr::rgba8{tint, opacity});
 			for (usize j = 0; j < vertices; ++j) {
 				*indices_it++ = u16(trail.base_index + trail_index * vertices + j);

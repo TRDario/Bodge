@@ -1,7 +1,7 @@
+#include "../include/tooltip_manager.hpp"
 #include "../include/fonts.hpp"
 #include "../include/graphics.hpp"
 #include "../include/system.hpp"
-#include "../include/tooltip_manager.hpp"
 
 tooltip_manager::tooltip_manager(tr::gfx::renderer_2d& basic)
 {
@@ -37,13 +37,13 @@ void tooltip_manager::add_to_renderer(std::string_view text)
 	const glm::vec2 tl{glm::min(engine::mouse_pos(), 1000.0f - m_last_size - 2 * OUTLINE - 2 * PADDING)};
 
 	const tr::gfx::simple_color_mesh_ref outline{engine::basic_renderer().new_color_outline(layer::TOOLTIP, 4)};
-	tr::fill_rect_outline_vtx(outline.positions, {tl + OUTLINE / 2, m_last_size + OUTLINE + 2 * PADDING}, OUTLINE);
+	tr::fill_rectangle_outline_vertices(outline.positions, {tl + OUTLINE / 2, m_last_size + OUTLINE + 2 * PADDING}, OUTLINE);
 	std::ranges::fill(outline.colors, "808080"_rgba8);
 	const tr::gfx::simple_color_mesh_ref fill{engine::basic_renderer().new_color_fan(layer::TOOLTIP, 4)};
-	tr::fill_rect_vtx(fill.positions, {tl + OUTLINE, m_last_size + 2 * PADDING});
+	tr::fill_rectangle_vertices(fill.positions, {tl + OUTLINE, m_last_size + 2 * PADDING});
 	std::ranges::fill(fill.colors, "000000"_rgba8);
 	const tr::gfx::simple_textured_mesh_ref uv{engine::basic_renderer().new_textured_fan(layer::TOOLTIP, 4)};
-	tr::fill_rect_vtx(uv.positions, {tl + OUTLINE / 2 + PADDING, m_last_size});
-	tr::fill_rect_vtx(uv.uvs, {{}, m_last_size * engine::render_scale() / glm::vec2{m_texture.size()}});
+	tr::fill_rectangle_vertices(uv.positions, {tl + OUTLINE / 2 + PADDING, m_last_size});
+	tr::fill_rectangle_vertices(uv.uvs, {{}, m_last_size * engine::render_scale() / glm::vec2{m_texture.size()}});
 	std::ranges::fill(uv.tints, "FFFFFF"_rgba8);
 }

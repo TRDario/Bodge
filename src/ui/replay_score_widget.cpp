@@ -14,16 +14,16 @@ void engine::add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 co
 	color = {color.r, color.g, color.b, u8(color.a * opacity)};
 
 	tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_fan(layer::UI, 4)};
-	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
+	tr::fill_rectangle_vertices(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
 	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
 	mesh = engine::basic_renderer().new_color_outline(layer::UI, 4);
-	tr::fill_rect_outline_vtx(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2.0f);
+	tr::fill_rectangle_outline_vertices(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2.0f);
 	std::ranges::fill(mesh.colors, color);
 	mesh = engine::basic_renderer().new_color_fan(layer::UI, 4);
-	fill_rotated_rect_vtx(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, 45_deg);
+	tr::fill_rectangle_vertices(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, 45_deg);
 	std::ranges::fill(mesh.colors, color);
 	mesh = engine::basic_renderer().new_color_fan(layer::UI, 4);
-	fill_rotated_rect_vtx(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, -45_deg);
+	tr::fill_rectangle_vertices(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, -45_deg);
 	std::ranges::fill(mesh.colors, color);
 }
 
@@ -32,16 +32,16 @@ void engine::add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 c
 	color = {color.r, color.g, color.b, u8(color.a * opacity)};
 
 	tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_fan(layer::UI, 4)};
-	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
+	tr::fill_rectangle_vertices(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
 	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
 	mesh = engine::basic_renderer().new_color_outline(layer::UI, 4);
-	tr::fill_rect_outline_vtx(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2);
+	tr::fill_rectangle_outline_vertices(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2);
 	std::ranges::fill(mesh.colors, color);
 	mesh = engine::basic_renderer().new_color_outline(layer::UI, 8);
-	tr::fill_poly_outline_vtx(mesh.positions, 8, {pos + glm::vec2{10, 10}, 7}, 25_deg, 2);
+	tr::fill_polygon_outline_vertices(mesh.positions, {pos + glm::vec2{10, 10}, 7}, 25_deg, 2);
 	std::ranges::fill(mesh.colors, color);
 	mesh = engine::basic_renderer().new_color_fan(layer::UI, 4);
-	tr::fill_rect_vtx(mesh.positions, {pos + glm::vec2{9, 5}, {2, 5}});
+	tr::fill_rectangle_vertices(mesh.positions, {pos + glm::vec2{9, 5}, {2, 5}});
 	std::ranges::fill(mesh.colors, color);
 }
 

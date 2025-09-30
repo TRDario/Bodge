@@ -46,7 +46,7 @@ void image_widget::add_to_renderer()
 	color.a = u8(color.a * opacity());
 
 	const tr::gfx::simple_textured_mesh_ref quad{engine::basic_renderer().new_textured_fan(layer::UI + m_priority, 4, m_texture)};
-	tr::fill_rect_vtx(quad.positions, {tl(), size()});
-	tr::fill_rect_vtx(quad.uvs, {{0, 0}, {1, 1}});
+	tr::fill_rectangle_vertices(quad.positions, {tl(), size()});
+	tr::fill_rectangle_vertices(quad.uvs, {{0, 0}, {1, 1}});
 	std::ranges::fill(quad.tints, tr::rgba8{color});
 }

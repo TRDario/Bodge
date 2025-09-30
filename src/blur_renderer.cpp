@@ -16,7 +16,7 @@ constexpr const char* FRAGMENT_SHADER_SRC{
 	"k=vec4(0);W=0.5135/pow(r,0.96);if(a==0){for(d=1/S.x,x=-r,p.x+=x*d;x<=r;x++,p.x+=d){w=W*exp((-x*x)/"
 	"(2*R));k+=texture(t,p)*w;}C=k;}else{for(d=1/S.y,y=-r,p.y+=y*d;y<=r;y++,p.y+=d){w=W*exp((-y*y)/"
 	"(2*R));k+=texture(t,p)*w;}vec3 g=H(k.rgb);C=vec4(G(vec3(g.x,g.y*s,g.z)),1);}}"};
-
+constexpr std::array<tr::gfx::vertex_binding, 1> BLUR_ATTRIBUTES{{{tr::gfx::NOT_INSTANCED, tr::gfx::vertex_attributes<glm::i8vec2>::list}}};
 constexpr std::array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 
 const u32 RENDERER_ID{tr::gfx::alloc_renderer_id()};
@@ -27,7 +27,7 @@ blur_renderer::blur_renderer(int texture_size)
 	: m_input_texture{glm::ivec2{texture_size}}
 	, m_auxiliary_texture{glm::ivec2{texture_size}}
 	, m_pipeline{tr::gfx::vertex_shader{VERTEX_SHADER_SRC}, tr::gfx::fragment_shader{FRAGMENT_SHADER_SRC}}
-	, m_vertex_format{{tr::gfx::NOT_INSTANCED, {tr::gfx::as_vertex_attribute<glm::i8vec2>}}}
+	, m_vertex_format{BLUR_ATTRIBUTES}
 	, m_vertex_buffer{MESH}
 {
 	m_pipeline.fragment_shader().set_uniform(1, glm::vec2{m_input_texture.size()});

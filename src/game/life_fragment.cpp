@@ -90,7 +90,7 @@ void life_fragment::add_to_renderer(ticks time_since_spawned) const
 	}
 
 	const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_fan(layer::LIFE_FRAGMENTS, 4)};
-	tr::fill_rotated_rect_vtx(mesh.positions, m_pos, size / 2.0f, size, m_rot);
+	tr::fill_rectangle_vertices(mesh.positions, m_pos, size / 2.0f, size, m_rot);
 	std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 }
 
@@ -100,11 +100,11 @@ void life_fragment::add_pulse_to_renderer(tr::rgb8 color, ticks time_since_spawn
 	const float scale{std::pow(t, 1 / 2.5f) * 75};
 	const u8 opacity{tr::norm_cast<u8>(std::max(0.75f - std::sqrt(0.75f * t), 0.0f))};
 
-	if (opacity > 0) {
-		const usize vertices{tr::smooth_poly_vtx(scale, engine::render_scale())};
+	if (opacity > 0 && scale > 0) {
+		const usize vertices{tr::smooth_polygon_vertices(scale * engine::render_scale())};
 
 		const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_outline(layer::LIFE_FRAGMENTS, vertices)};
-		tr::fill_poly_outline_vtx(mesh.positions, vertices, {m_pos, scale}, 0_deg, 2);
+		tr::fill_polygon_outline_vertices(mesh.positions, {m_pos, scale}, 0_deg, 2);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
 }
@@ -115,11 +115,11 @@ void life_fragment::add_spawn_wave_to_renderer(tr::rgb8 color, ticks time_since_
 	const float scale{std::pow(t, 2.0f) * 200};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t))};
 
-	if (opacity > 0) {
-		const usize vertices{tr::smooth_poly_vtx(scale, engine::render_scale())};
+	if (opacity > 0 && scale > 0) {
+		const usize vertices{tr::smooth_polygon_vertices(scale * engine::render_scale())};
 
 		const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_outline(layer::LIFE_FRAGMENTS, vertices)};
-		tr::fill_poly_outline_vtx(mesh.positions, vertices, {m_pos, scale}, 0_deg, 2);
+		tr::fill_polygon_outline_vertices(mesh.positions, {m_pos, scale}, 0_deg, 2);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
 }

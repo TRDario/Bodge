@@ -1,8 +1,8 @@
+#include "../include/system.hpp"
 #include "../include/audio.hpp"
 #include "../include/graphics.hpp"
 #include "../include/settings.hpp"
 #include "../include/state/state.hpp"
-#include "../include/system.hpp"
 
 namespace engine {
 	// The upper limit for an acceptable update time.
@@ -67,16 +67,16 @@ void engine::draw_cursor()
 	const tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(settings.primary_hue), 1, 1})};
 
 	tr::gfx::simple_color_mesh_ref quad{renderer.new_color_fan(layer::CURSOR, 4)};
-	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
 	std::ranges::fill(quad.colors, color);
 	quad = renderer.new_color_fan(layer::CURSOR, 4);
-	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x + 4, mouse_pos.y - 1}, {8, 2}});
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x + 4, mouse_pos.y - 1}, {8, 2}});
 	std::ranges::fill(quad.colors, color);
 	quad = renderer.new_color_fan(layer::CURSOR, 4);
-	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x - 1, mouse_pos.y - 12}, {2, 8}});
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 1, mouse_pos.y - 12}, {2, 8}});
 	std::ranges::fill(quad.colors, color);
 	quad = renderer.new_color_fan(layer::CURSOR, 4);
-	tr::fill_rect_vtx(quad.positions, {{mouse_pos.x - 1, mouse_pos.y + 4}, {2, 8}});
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 1, mouse_pos.y + 4}, {2, 8}});
 	std::ranges::fill(quad.colors, color);
 
 	renderer.draw(engine::screen());
@@ -184,7 +184,7 @@ void engine::handle_events()
 				system->mouse_pos = glm::clamp(system->mouse_pos + delta, 0.0f, 1000.0f);
 			},
 			[](tr::sys::mouse_down_event event) { system->held_buttons |= event.button; },
-			[](tr::sys::mouse_up_event event) { system->held_buttons &= event.button; },
+			[](tr::sys::mouse_up_event event) { system->held_buttons &= ~event.button; },
 			[](auto) {},
 		});
 		system->state.handle_event(event);

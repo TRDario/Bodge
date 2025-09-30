@@ -1,5 +1,5 @@
-#include "../include/legacy_formats.hpp"
 #include "../include/settings.hpp"
+#include "../include/legacy_formats.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -80,7 +80,9 @@ void engine::parse_command_line(int argc, const char** argv)
 
 	if (cli_settings.show_fps) {
 		tr::log = tr::logger{"tr", cli_settings.user_directory / "tr.log"};
+#ifdef TR_ENABLE_ASSERTS
 		tr::gfx::log = tr::logger{"gl", cli_settings.user_directory / "gl.log"};
+#endif
 		logger = tr::logger{"Bodge", cli_settings.user_directory / "Bodge.log"};
 	}
 }

@@ -13,7 +13,7 @@ struct cli_settings {
 #ifdef TR_ENABLE_ASSERTS
 	bool show_fps{true};
 #else
-	bool debug_mode{false};
+	bool show_fps{false};
 #endif
 };
 

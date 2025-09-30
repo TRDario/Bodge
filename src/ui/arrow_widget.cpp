@@ -88,11 +88,15 @@ void arrow_widget::add_to_renderer()
 	}
 	color.a *= opacity();
 
+	constexpr usize INDICES{tr::polygon_outline_indices(5) + tr::polygon_indices(5)};
 	const glm::vec2 tl{this->tl()};
 	const std::array<glm::vec2, 15>& positions{m_right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
-	const tr::gfx::color_mesh_ref arrow{engine::basic_renderer().new_color_mesh(layer::UI, 15, tr::poly_outline_idx(5) + tr::poly_idx(5))};
-	tr::fill_poly_outline_idx(arrow.indices.begin(), 5, arrow.base_index);
-	tr::fill_poly_idx(arrow.indices.begin() + tr::poly_outline_idx(5), 5, arrow.base_index + 10);
+	const tr::gfx::color_mesh_ref arrow{engine::basic_renderer().new_color_mesh(layer::UI, 15, INDICES)};
+
+	auto indices_it{arrow.indices.begin()};
+	indices_it = tr::fill_polygon_outline_indices(indices_it, 5, arrow.base_index);
+	indices_it = tr::fill_polygon_indices(indices_it, 5, arrow.base_index + 10);
+
 	std::ranges::copy(positions | std::views::transform([&](glm::vec2 p) { return p + tl; }), arrow.positions.begin());
 	std::ranges::copy(ARROW_COLORS | std::views::transform([&](tr::rgba8 c) -> tr::rgba8 {
 						  return {u8(c.r * tr::norm_cast<float>(color.r)), u8(c.g * tr::norm_cast<float>(color.g)),

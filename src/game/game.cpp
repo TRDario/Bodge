@@ -1,6 +1,6 @@
+#include "../../include/game/game.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/fonts.hpp"
-#include "../../include/game/game.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/score.hpp"
 #include "../../include/system.hpp"
@@ -109,7 +109,7 @@ void playerless_game::add_overlay_to_renderer() const
 void playerless_game::add_border_to_renderer() const
 {
 	const tr::gfx::simple_color_mesh_ref border{engine::basic_renderer().new_color_outline(layer::BORDER, 4)};
-	tr::fill_rect_outline_vtx(border.positions, {{2, 2}, {996, 996}}, 4);
+	tr::fill_rectangle_outline_vertices(border.positions, {{2, 2}, {996, 996}}, 4);
 	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{float(engine::settings.secondary_hue), 1, 1}));
 }
 
@@ -471,11 +471,13 @@ void game::add_timer_to_renderer() const
 	const std::string text{format_time(time)};
 	glm::vec2 tl{TIMER_TEXT_POS - text_size(text, scale) / 2.0f};
 	for (char chr : text) {
+		const glm::vec2 char_size{glm::vec2{m_number_atlas.unnormalized(chr).size} / engine::render_scale() * scale};
+
 		tr::gfx::simple_textured_mesh_ref character{engine::basic_renderer().new_textured_fan(layer::GAME_OVERLAY, 4)};
-		tr::fill_rect_vtx(character.positions, {tl, glm::vec2{m_number_atlas.unnormalized(chr).size} / engine::render_scale() * scale});
-		tr::fill_rect_vtx(character.uvs, m_number_atlas[chr]);
+		tr::fill_rectangle_vertices(character.positions, {tl, char_size});
+		tr::fill_rectangle_vertices(character.uvs, m_number_atlas[chr]);
 		std::ranges::fill(character.tints, tint);
-		tl.x += m_number_atlas.unnormalized(chr).size.x / engine::render_scale() * scale - 5;
+		tl.x += char_size.x - 5;
 	}
 }
 
@@ -496,7 +498,7 @@ void game::add_lives_to_renderer() const
 		const glm::vec2 pos{(glm::vec2{grid_pos} + 0.5f) * 2.5f * life_size + 8.0f};
 
 		const tr::gfx::simple_color_mesh_ref outline{engine::basic_renderer().new_color_outline(layer::GAME_OVERLAY, 6)};
-		tr::fill_poly_outline_vtx(outline.positions, 6, {pos, life_size}, rotation, 2.0f);
+		tr::fill_polygon_outline_vertices(outline.positions, {pos, life_size}, rotation, 2.0f);
 		std::ranges::fill(outline.colors, tr::rgba8{color, opacity});
 	}
 
@@ -520,7 +522,7 @@ void game::add_appearing_life_to_renderer(tr::rgb8 color, u8 base_opacity) const
 	const u8 opacity{u8(base_opacity * std::pow(raw_age_factor, 1 / 3.0f))};
 
 	const tr::gfx::simple_color_mesh_ref outline{engine::basic_renderer().new_color_outline(layer::GAME_OVERLAY, 6)};
-	tr::fill_poly_outline_vtx(outline.positions, 6, {pos, life_size * size_factor}, rotation, 2.0f * size_factor);
+	tr::fill_polygon_outline_vertices(outline.positions, {pos, life_size * size_factor}, rotation, 2.0f * size_factor);
 	std::ranges::fill(outline.colors, tr::rgba8{color, opacity});
 }
 
@@ -531,7 +533,7 @@ void game::add_shattering_life_to_renderer(tr::rgb8 color, u8 base_opacity) cons
 	const u8 opacity{u8(base_opacity - base_opacity * m_hit_animation_timer.elapsed_ratio())};
 	for (const fragment& fragment : m_shattered_life_fragments) {
 		const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_fan(layer::GAME_OVERLAY, 4)};
-		tr::fill_rotated_rect_vtx(mesh.positions, fragment.pos, {length / 2, 1}, {length, 2}, fragment.rot);
+		tr::fill_rectangle_vertices(mesh.positions, fragment.pos, {length / 2, 1}, {length, 2}, fragment.rot);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
 }
@@ -565,11 +567,13 @@ void game::add_score_to_renderer() const
 
 	glm::vec2 tl{tr::tl(SCORE_TEXT_POS, text_size(text, scale), tr::align::TOP_RIGHT)};
 	for (char chr : text) {
+		const glm::vec2 char_size{glm::vec2{m_number_atlas.unnormalized(chr).size} / engine::render_scale() * scale};
+
 		tr::gfx::simple_textured_mesh_ref character{engine::basic_renderer().new_textured_fan(layer::GAME_OVERLAY, 4)};
-		tr::fill_rect_vtx(character.positions, {tl, glm::vec2{m_number_atlas.unnormalized(chr).size} / engine::render_scale() * scale});
-		tr::fill_rect_vtx(character.uvs, m_number_atlas[chr]);
+		tr::fill_rectangle_vertices(character.positions, {tl, char_size});
+		tr::fill_rectangle_vertices(character.uvs, m_number_atlas[chr]);
 		std::ranges::fill(character.tints, tint);
-		tl.x += m_number_atlas.unnormalized(chr).size.x / engine::render_scale() * scale - 5;
+		tl.x += char_size.x - 5;
 	}
 }
 

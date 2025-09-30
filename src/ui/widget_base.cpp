@@ -112,8 +112,8 @@ void text_widget::add_to_renderer_raw(tr::rgba8 tint)
 	tint.a *= opacity();
 
 	const tr::gfx::simple_textured_mesh_ref quad{engine::basic_renderer().new_textured_fan(layer::UI, 4, m_cache->texture)};
-	tr::fill_rect_vtx(quad.positions, {tl(), text_widget::size()});
-	tr::fill_rect_vtx(quad.uvs, {{}, m_cache->size / glm::vec2{m_cache->texture.size()}});
+	tr::fill_rectangle_vertices(quad.positions, {tl(), text_widget::size()});
+	tr::fill_rectangle_vertices(quad.uvs, {{}, m_cache->size / glm::vec2{m_cache->texture.size()}});
 	std::ranges::fill(quad.tints, tint);
 }
 
