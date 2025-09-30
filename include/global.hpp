@@ -92,11 +92,22 @@ struct label_info {
 
 namespace engine {
 	inline tr::xorshiftr_128p rng;
-	inline tr::logger logger;
 } // namespace engine
 
+#ifdef TR_ENABLE_ASSERTS
+namespace engine {
+	inline tr::logger logger;
+}
 #define LOG(...) TR_LOG(::engine::logger, __VA_ARGS__)
 #define LOG_CONTINUE(...) TR_LOG_CONTINUE(::engine::logger, __VA_ARGS__)
+#else
+#define LOG(...)                                                                                                                           \
+	do {                                                                                                                                   \
+	} while (0)
+#define LOG_CONTINUE(...)                                                                                                                  \
+	do {                                                                                                                                   \
+	} while (0)
+#endif
 
 //
 

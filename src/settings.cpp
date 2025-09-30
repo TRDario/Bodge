@@ -46,10 +46,8 @@ void engine::parse_command_line(int argc, const char** argv)
 		else if (arg == "--gamespeed" && ++i < argc) {
 			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.game_speed);
 		}
-		else if (arg == "--debug" && ++i < argc) {
-			int temp;
-			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), temp);
-			cli_settings.show_fps = bool(temp);
+		else if (arg == "--showperf") {
+			cli_settings.show_fps = true;
 		}
 		else if (arg == "--help") {
 			std::cout << "Bodge v0.1.0 by TRDario, 2025.\n"
@@ -58,7 +56,7 @@ void engine::parse_command_line(int argc, const char** argv)
 						 "--userdir <path>       - Overrides the user directory.\n"
 						 "--refreshrate <number> - Overrides the refresh rate.\n"
 						 "--gamespeed <factor>   - Overrides the speed multiplier.\n"
-						 "--debug <0 or 1>       - Disables/enables debug mode.\n";
+						 "--showperf             - Enables performance information.\n";
 			std::exit(EXIT_SUCCESS);
 		}
 	}
@@ -78,13 +76,11 @@ void engine::parse_command_line(int argc, const char** argv)
 		}
 	}
 
-	if (cli_settings.show_fps) {
-		tr::log = tr::logger{"tr", cli_settings.user_directory / "tr.log"};
 #ifdef TR_ENABLE_ASSERTS
-		tr::gfx::log = tr::logger{"gl", cli_settings.user_directory / "gl.log"};
+	tr::log = tr::logger{"tr", cli_settings.user_directory / "tr.log"};
+	tr::gfx::log = tr::logger{"gl", cli_settings.user_directory / "gl.log"};
+	logger = tr::logger{"Bodge", cli_settings.user_directory / "Bodge.log"};
 #endif
-		logger = tr::logger{"Bodge", cli_settings.user_directory / "Bodge.log"};
-	}
 }
 
 void engine::raw_load_settings()

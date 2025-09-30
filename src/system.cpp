@@ -199,10 +199,8 @@ void engine::redraw_if_needed()
 		if (cli_settings.show_fps) {
 			tr::gfx::debug_renderer& renderer{debug_renderer()};
 			renderer.write_right(system->state.update_benchmark(), "Update:", MAX_UPDATE_TIME);
-			renderer.write_right(std::format("{:.02f}tps", system->state.update_benchmark().fps()));
 			renderer.newline_right();
 			renderer.write_right(system->state.draw_benchmark(), "Render:", max_render_time());
-			renderer.write_right(std::format("{:.02f}fps", system->state.draw_benchmark().fps()));
 			renderer.draw();
 		}
 		tr::gfx::flip_backbuffer();
