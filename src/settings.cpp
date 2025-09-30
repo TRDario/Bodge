@@ -39,9 +39,7 @@ void engine::parse_command_line(int argc, const char** argv)
 		}
 		else if (arg == "--refreshrate" && ++i < argc) {
 			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.refresh_rate);
-			if (cli_settings.refresh_rate != NATIVE_REFRESH_RATE) {
-				cli_settings.refresh_rate = std::clamp(cli_settings.refresh_rate, 1.0f, tr::sys::refresh_rate());
-			}
+			cli_settings.refresh_rate = std::clamp(cli_settings.refresh_rate, 1.0f, tr::sys::refresh_rate());
 		}
 		else if (arg == "--gamespeed" && ++i < argc) {
 			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.game_speed);
@@ -66,6 +64,9 @@ void engine::parse_command_line(int argc, const char** argv)
 	}
 	if (cli_settings.user_directory.empty()) {
 		cli_settings.user_directory = tr::sys::user_dir();
+	}
+	if (cli_settings.refresh_rate == 0) {
+		cli_settings.refresh_rate = tr::sys::refresh_rate();
 	}
 
 	constexpr std::array<const char*, 5> DIRECTORIES{"localization", "fonts", "music", "replays", "gamemodes"};

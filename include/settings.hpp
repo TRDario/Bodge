@@ -3,12 +3,10 @@
 
 ////////////////////////////////////////////////////////////// CLI SETTINGS ///////////////////////////////////////////////////////////////
 
-constexpr float NATIVE_REFRESH_RATE{0};
-
 struct cli_settings {
 	std::filesystem::path data_directory;
 	std::filesystem::path user_directory;
-	float refresh_rate{NATIVE_REFRESH_RATE};
+	float refresh_rate{0};
 	float game_speed{1.0f};
 #ifdef TR_ENABLE_ASSERTS
 	bool show_fps{true};

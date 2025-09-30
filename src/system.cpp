@@ -5,24 +5,17 @@
 #include "../include/state/state.hpp"
 
 namespace engine {
-	// The upper limit for an acceptable update time.
-	constexpr tr::dsecs MAX_UPDATE_TIME{1.0s / 1_s};
-
-	// Creates a draw timer according to the active settings.
-	tr::timer create_draw_timer();
 	// Sets the program icon.
 	void set_icon();
 	// Adds the cursor crosshairs to the renderer.
 	void draw_cursor();
-	// Determines the upper limit for an acceptable render time.
-	tr::dsecs max_render_time();
 
 	// System state.
 	struct system_data {
 		// Timer that emits ticking events.
 		tr::timer tick_timer{tr::sys::create_tick_timer(240 * cli_settings.game_speed, 0)};
 		// Timer that emits drawing events.
-		tr::timer draw_timer{create_draw_timer()};
+		tr::timer draw_timer{tr::sys::create_draw_timer(cli_settings.refresh_rate)};
 		// State manager.
 		tr::state_manager state;
 		// Whether the screen should be redrawn. If above 1, ticks will be paused to catch up.
@@ -38,16 +31,6 @@ namespace engine {
 	};
 	std::optional<system_data> system;
 } // namespace engine
-
-tr::timer engine::create_draw_timer()
-{
-	if (cli_settings.refresh_rate != NATIVE_REFRESH_RATE) {
-		return tr::sys::create_draw_timer(cli_settings.refresh_rate);
-	}
-	else {
-		return tr::sys::create_draw_timer();
-	}
-}
 
 void engine::set_icon()
 {
@@ -80,16 +63,6 @@ void engine::draw_cursor()
 	std::ranges::fill(quad.colors, color);
 
 	renderer.draw(engine::screen());
-}
-
-tr::dsecs engine::max_render_time()
-{
-	if (cli_settings.refresh_rate == NATIVE_REFRESH_RATE) {
-		return 1.0s / tr::sys::refresh_rate();
-	}
-	else {
-		return 1.0s / cli_settings.refresh_rate;
-	}
 }
 
 bool engine::restart_required(const ::settings& old)
@@ -193,14 +166,14 @@ void engine::handle_events()
 
 void engine::redraw_if_needed()
 {
-	if (system->redraw) {
+	if (system->redraw || settings.vsync) {
 		system->state.draw();
 		draw_cursor();
 		if (cli_settings.show_fps) {
 			tr::gfx::debug_renderer& renderer{debug_renderer()};
-			renderer.write_right(system->state.update_benchmark(), "Update:", MAX_UPDATE_TIME);
+			renderer.write_right(system->state.update_benchmark(), "Update:", 1.0s / 1_s);
 			renderer.newline_right();
-			renderer.write_right(system->state.draw_benchmark(), "Render:", max_render_time());
+			renderer.write_right(system->state.draw_benchmark(), "Render:", 1.0s / cli_settings.refresh_rate);
 			renderer.draw();
 		}
 		tr::gfx::flip_backbuffer();
