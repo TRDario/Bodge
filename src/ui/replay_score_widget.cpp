@@ -49,7 +49,8 @@ void engine::add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 c
 
 score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, enum type type, usize rank,
 						   tr::opt_ref<::score_entry> score)
-	: text_widget{
+	: score_widget_data{type, u32(rank), score}
+	, text_widget{
 		  pos,
 		  alignment,
 		  unhide_time,
@@ -96,9 +97,6 @@ score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks un
 		  48,
 		  tr::sys::UNLIMITED_WIDTH,
 	  }
-	, type{type}
-	, rank{u32(rank)}
-	, score{score}
 {
 }
 
@@ -138,7 +136,8 @@ void score_widget::add_to_renderer()
 
 replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, status_callback scb,
 							 replay_widget_action_callback acb, std::optional<std::map<std::string, replay_header>::iterator> it)
-	: text_button_widget{pos,
+	: replay_widget_data{it}
+	, text_button_widget{pos,
 						 alignment,
 						 unhide_time,
 						 [this] {
@@ -185,7 +184,6 @@ replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks 
 							 }
 						 },
 						 sound::CONFIRM}
-	, it{it}
 {
 }
 

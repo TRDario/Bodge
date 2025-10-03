@@ -53,10 +53,9 @@ title_state::title_state()
 	: main_menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::ENTERING_GAME}
 {
 	set_up_ui();
-	engine::play_song("menu", 1.0s);
 }
 
-title_state::title_state(std::unique_ptr<playerless_game>&& game)
+title_state::title_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_TITLE}
 {
 	set_up_ui();
@@ -76,20 +75,8 @@ std::unique_ptr<tr::state> title_state::update(tr::duration)
 		return nullptr;
 	case substate::IN_TITLE:
 		return nullptr;
-	case substate::ENTERING_START_GAME:
-		return m_timer >= 0.5_s ? std::make_unique<start_game_state>(release_game()) : nullptr;
-	case substate::ENTERING_GAMEMODE_DESIGNER:
-		return m_timer >= 0.5_s ? std::make_unique<gamemode_designer_state>(
-									  release_game(), gamemode{.author = engine::scorefile.name, .song = "classic"}, false)
-								: nullptr;
-	case substate::ENTERING_SCOREBOARDS:
-		return m_timer >= 0.5_s ? std::make_unique<scoreboard_selection_state>(release_game(), false) : nullptr;
-	case substate::ENTERING_REPLAYS:
-		return m_timer >= 0.5_s ? std::make_unique<replays_state>(release_game()) : nullptr;
-	case substate::ENTERING_SETTINGS:
-		return m_timer >= 0.5_s ? std::make_unique<settings_state>(release_game()) : nullptr;
-	case substate::ENTERING_CREDITS:
-		return m_timer >= 0.5_s ? std::make_unique<credits_state>(release_game()) : nullptr;
+	case substate::ENTERING_SUBMENU:
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	case substate::EXITING_GAME:
 		return m_timer >= 0.5_s ? std::make_unique<tr::drop_state>() : nullptr;
 	}
@@ -103,12 +90,7 @@ float title_state::fade_overlay_opacity()
 	case substate::ENTERING_GAME:
 		return 1 - m_timer / 1_sf;
 	case substate::IN_TITLE:
-	case substate::ENTERING_START_GAME:
-	case substate::ENTERING_GAMEMODE_DESIGNER:
-	case substate::ENTERING_REPLAYS:
-	case substate::ENTERING_SCOREBOARDS:
-	case substate::ENTERING_SETTINGS:
-	case substate::ENTERING_CREDITS:
+	case substate::ENTERING_SUBMENU:
 		return 0;
 	case substate::EXITING_GAME:
 		return m_timer / 0.5_sf;
@@ -134,34 +116,41 @@ void title_state::set_up_ui()
 	};
 	const std::array<action_callback, BUTTONS.size()> action_cbs{
 		[this] {
-			m_substate = substate::ENTERING_START_GAME;
+			m_substate = substate::ENTERING_SUBMENU;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<start_game_state>(m_game);
 		},
 		[this] {
-			m_substate = substate::ENTERING_GAMEMODE_DESIGNER;
+			m_substate = substate::ENTERING_SUBMENU;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state =
+				make_async<gamemode_designer_state>(m_game, gamemode{.author = engine::scorefile.name, .song = "classic"}, false);
 		},
 		[this] {
-			m_substate = substate::ENTERING_SCOREBOARDS;
+			m_substate = substate::ENTERING_SUBMENU;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<scoreboard_selection_state>(m_game, false);
 		},
 		[this] {
-			m_substate = substate::ENTERING_REPLAYS;
+			m_substate = substate::ENTERING_SUBMENU;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<replays_state>(m_game);
 		},
 		[this] {
-			m_substate = substate::ENTERING_SETTINGS;
+			m_substate = substate::ENTERING_SUBMENU;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<settings_state>(m_game);
 		},
 		[this] {
-			m_substate = substate::ENTERING_CREDITS;
+			m_substate = substate::ENTERING_SUBMENU;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<credits_state>(m_game);
 		},
 		[this] {
 			m_substate = substate::EXITING_GAME;

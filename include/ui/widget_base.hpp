@@ -91,17 +91,13 @@ class text_widget : public widget {
 	void release_graphical_resources() override;
 
   protected:
-	struct cache {
-		tr::gfx::texture texture;
-		glm::vec2 size;
-		std::string text;
-	};
-
 	font m_font;
 	tr::sys::ttf_style m_style;
 	float m_font_size;
 	int m_max_width;
-	mutable std::optional<cache> m_cache;
+	mutable std::string m_last_text;
+	mutable std::variant<std::monostate, tr::bitmap, tr::gfx::texture> m_cache;
+	mutable glm::vec2 m_last_size;
 
 	void update_cache() const;
 	void add_to_renderer_raw(tr::rgba8 tint);

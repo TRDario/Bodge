@@ -89,20 +89,21 @@ text_widget::text_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhi
 	, m_style{style}
 	, m_font_size{font_size}
 	, m_max_width{max_width}
+	, m_last_text{text_cb()}
+	, m_cache{engine::render_text(m_last_text, engine::determine_font(m_last_text, m_font), m_style, m_font_size, m_font_size / 12,
+								  m_max_width, tr::halign::CENTER)}
+	, m_last_size{tr::unchecked_get<tr::bitmap>(m_cache).size()}
 {
 }
 
 glm::vec2 text_widget::size() const
 {
-	if (!m_cache.has_value()) {
-		update_cache();
-	}
-	return m_cache->size / engine::render_scale();
+	return m_last_size / engine::render_scale();
 }
 
 void text_widget::release_graphical_resources()
 {
-	m_cache.reset();
+	m_cache = std::monostate{};
 }
 
 void text_widget::add_to_renderer_raw(tr::rgba8 tint)
@@ -111,28 +112,39 @@ void text_widget::add_to_renderer_raw(tr::rgba8 tint)
 
 	tint.a *= opacity();
 
-	const tr::gfx::simple_textured_mesh_ref quad{engine::basic_renderer().new_textured_fan(layer::UI, 4, m_cache->texture)};
+	const tr::gfx::texture& texture{tr::unchecked_get<tr::gfx::texture>(m_cache)};
+	const tr::gfx::simple_textured_mesh_ref quad{engine::basic_renderer().new_textured_fan(layer::UI, 4, texture)};
 	tr::fill_rectangle_vertices(quad.positions, {tl(), text_widget::size()});
-	tr::fill_rectangle_vertices(quad.uvs, {{}, m_cache->size / glm::vec2{m_cache->texture.size()}});
+	tr::fill_rectangle_vertices(quad.uvs, {{}, m_last_size / glm::vec2{texture.size()}});
 	std::ranges::fill(quad.tints, tint);
 }
 
 void text_widget::update_cache() const
 {
+	const auto cache_too_small{
+		[](const tr::gfx::texture& t, const tr::bitmap& b) { return t.size().x < b.size().x || t.size().y < b.size().y; },
+	};
+
 	std::string text{text_cb()};
-	if (!m_cache.has_value() || m_cache->text != text) {
-		tr::bitmap render{engine::render_text(text, engine::determine_font(text, m_font), m_style, m_font_size, m_font_size / 12,
-											  m_max_width, tr::halign::CENTER)};
-		if (!m_cache || m_cache->texture.size().x < render.size().x || m_cache->texture.size().y < render.size().y) {
-			m_cache.emplace(tr::gfx::texture{render}, render.size(), std::string{text});
-			TR_SET_LABEL(m_cache->texture, TR_FMT::format("(Bodge) Widget texture"));
+	if (m_last_text != text) {
+		const tr::bitmap render{engine::render_text(text, engine::determine_font(text, m_font), m_style, m_font_size, m_font_size / 12,
+													m_max_width, tr::halign::CENTER)};
+		if (!std::holds_alternative<tr::gfx::texture>(m_cache) || cache_too_small(tr::unchecked_get<tr::gfx::texture>(m_cache), render)) {
+			m_cache = tr::gfx::texture{render};
+			TR_SET_LABEL(tr::unchecked_get<tr::gfx::texture>(m_cache), TR_FMT::format("(Bodge) Widget texture"));
 		}
 		else {
-			m_cache->texture.clear({});
-			m_cache->texture.set_region({}, render);
-			m_cache->size = render.size();
-			m_cache->text = std::move(text);
+			tr::gfx::texture& texture{tr::unchecked_get<tr::gfx::texture>(m_cache)};
+			texture.clear({});
+			texture.set_region({}, render);
 		}
+		m_last_size = render.size();
+		m_last_text = std::move(text);
+	}
+	else if (std::holds_alternative<tr::bitmap>(m_cache)) {
+		const tr::bitmap render{std::move(tr::unchecked_get<tr::bitmap>(m_cache))};
+		m_cache = tr::gfx::texture{render};
+		TR_SET_LABEL(tr::unchecked_get<tr::gfx::texture>(m_cache), TR_FMT::format("(Bodge) Widget texture"));
 	}
 }
 

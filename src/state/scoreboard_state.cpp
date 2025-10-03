@@ -50,7 +50,7 @@ constexpr tweener<glm::vec2> PAGE_I_MOVE_IN{tween::CUBIC, {1050, 942.5}, {990, 9
 
 // clang-format on
 
-scoreboard_state::scoreboard_state(std::unique_ptr<playerless_game>&& game, scoreboard scoreboard)
+scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreboard scoreboard)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate_base::IN_SCOREBOARD | scoreboard}
 	, m_page{0}
@@ -92,6 +92,7 @@ scoreboard_state::scoreboard_state(std::unique_ptr<playerless_game>&& game, scor
 			m_substate = substate_base::EXITING_TO_SCOREBOARD_SELECTION | to_scoreboard(m_substate);
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<scoreboard_selection_state>(m_game, true);
 		},
 	};
 	const action_callback gamemode_d_acb{
@@ -205,7 +206,7 @@ std::unique_ptr<tr::state> scoreboard_state::update(tr::duration)
 		}
 		return nullptr;
 	case substate_base::EXITING_TO_SCOREBOARD_SELECTION:
-		return m_timer >= 0.5_s ? std::make_unique<scoreboard_selection_state>(release_game(), true) : nullptr;
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
 }
 

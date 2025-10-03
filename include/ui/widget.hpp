@@ -61,7 +61,21 @@ template <class T, tr::template_string_literal Fmt, tr::template_string_literal 
 	static std::string to_string(std::string_view str);
 };
 
-template <class T, usize S, class Formatter> class basic_numeric_input_widget : public text_widget {
+// Must be initialized before text_widget, so is separated out into its own struct.
+template <class T, usize S> struct basic_numeric_input_widget_data {
+	ui_manager& m_ui;
+	T& m_ref;
+	tr::static_string<S> m_buffer;
+	status_callback m_scb;
+	validation_callback<T> m_vcb;
+	tweener<tr::rgba8> m_interp;
+	bool m_hovered;
+	bool m_held;
+	bool m_selected;
+};
+
+template <class T, usize S, class Formatter>
+class basic_numeric_input_widget : private basic_numeric_input_widget_data<T, S>, public text_widget {
   public:
 	basic_numeric_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
 							   status_callback status_cb, validation_callback<T> validation_cb);
@@ -81,17 +95,6 @@ template <class T, usize S, class Formatter> class basic_numeric_input_widget : 
 	void on_enter() override;
 	void on_erase() override;
 	void on_clear() override;
-
-  private:
-	ui_manager& m_ui;
-	T& m_ref;
-	tr::static_string<S> m_buffer;
-	status_callback m_scb;
-	validation_callback<T> m_vcb;
-	tweener<tr::rgba8> m_interp;
-	bool m_hovered;
-	bool m_held;
-	bool m_selected;
 };
 
 template <class T, usize S, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
@@ -106,12 +109,15 @@ template <usize S> using interval_input_widget = basic_numeric_input_widget<tick
 
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
-template <usize S> class line_input_widget : public text_widget {
+// Must be initialized before text_widget, so is separated out into its own struct.
+template <usize S> struct input_buffer {
+	tr::static_string<S * 4> buffer;
+};
+
+template <usize S> class line_input_widget : public input_buffer<S>, public text_widget {
   public:
 	line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size,
 					  status_callback status_cb, action_callback enter_cb, std::string_view initial_text);
-
-	tr::static_string<S * 4> buffer;
 
 	void add_to_renderer() override;
 	void update() override;
@@ -142,12 +148,10 @@ template <usize S> class line_input_widget : public text_widget {
 
 ////////////////////////////////////////////////////////// MULTILINE INPUT WIDGET /////////////////////////////////////////////////////////
 
-template <usize S> class multiline_input_widget : public text_widget {
+template <usize S> class multiline_input_widget : public input_buffer<S>, public text_widget {
   public:
 	multiline_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, float width, u8 max_lines, float font_size,
 						   status_callback status_cb);
-
-	tr::static_string<S * 4> buffer;
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
@@ -189,7 +193,8 @@ class image_widget : public widget {
 	void add_to_renderer() override;
 
   private:
-	tr::gfx::texture m_texture;
+	// Don't immediately load into a GPU texture to ensure it can be asynchronously loaded.
+	std::variant<tr::bitmap, tr::gfx::texture> m_texture;
 	tr::opt_ref<u16> m_hue;
 	int m_priority;
 };
@@ -249,17 +254,21 @@ struct replay_playback_indicator_widget : public widget {
 
 /////////////////////////////////////////////////////////////// SCORE WIDGET //////////////////////////////////////////////////////////////
 
-struct score_widget : public text_widget {
+// Must be initialized before text_widget, so is separated out into its own struct.
+struct score_widget_data {
 	enum class type {
 		TIME,
 		SCORE = 4
 	};
 
-	score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, type type, usize rank, tr::opt_ref<score_entry> score);
-
 	type type;
 	u32 rank;
 	tr::opt_ref<score_entry> score;
+};
+
+struct score_widget : public score_widget_data, public text_widget {
+	score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, enum type type, usize rank,
+				 tr::opt_ref<score_entry> score);
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
@@ -269,11 +278,14 @@ struct score_widget : public text_widget {
 
 using replay_widget_action_callback = std::function<void(std::map<std::string, replay_header>::iterator)>;
 
-struct replay_widget : public text_button_widget {
+// Must be initialized before text_widget, so is separated out into its own struct.
+struct replay_widget_data {
+	std::optional<std::map<std::string, replay_header>::iterator> it;
+};
+
+struct replay_widget : public replay_widget_data, public text_button_widget {
 	replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, status_callback scb, replay_widget_action_callback acb,
 				  std::optional<std::map<std::string, replay_header>::iterator> it);
-
-	std::optional<std::map<std::string, replay_header>::iterator> it;
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;

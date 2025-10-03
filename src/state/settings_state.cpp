@@ -128,7 +128,7 @@ constexpr tweener<glm::vec2> LANGUAGE_C_MOVE_IN{tween::CUBIC, LANGUAGE_START_POS
 
 // clang-format on
 
-settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
+settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SETTINGS}, m_pending{engine::settings}
 {
 	// STATUS CALLBACKS
@@ -277,6 +277,7 @@ settings_state::settings_state(std::unique_ptr<playerless_game>&& game)
 			m_substate = substate::ENTERING_TITLE;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<title_state>(m_game);
 		},
 	};
 
@@ -376,7 +377,7 @@ std::unique_ptr<tr::state> settings_state::update(tr::duration)
 	case substate::IN_SETTINGS:
 		return nullptr;
 	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? std::make_unique<title_state>(release_game()) : nullptr;
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
 }
 

@@ -99,6 +99,7 @@ void engine::set_main_menu_state()
 	else {
 		system->state.state = std::make_unique<title_state>();
 	}
+	engine::play_song("menu", 1.0s);
 }
 
 void engine::apply_settings(const ::settings& old)

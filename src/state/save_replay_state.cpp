@@ -37,7 +37,7 @@ constexpr tweener<glm::vec2> DISCARD_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {50
 
 // clang-format on
 
-save_replay_state::save_replay_state(std::unique_ptr<game>&& game, save_screen_flags flags)
+save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_flags flags)
 	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), bool(flags & save_screen_flags::GAME_OVER)}
 	, m_substate{substate_base::SAVING_REPLAY | flags}
 	, m_replay{((active_game&)*m_game).replay.header()}
@@ -63,13 +63,16 @@ save_replay_state::save_replay_state(std::unique_ptr<game>&& game, save_screen_f
 			const score_flags flags{!m_game->game_over(), engine::cli_settings.game_speed != 1.0f};
 			const auto& description{m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).buffer};
 			const auto& name{m_ui.as<line_input_widget<20>>("name_input").buffer};
+			active_game& game{(active_game&)*m_game};
 
 			m_substate = substate_base::EXITING | to_flags(m_substate);
 			m_timer = 0;
 			set_up_exit_animation();
-			((active_game&)*m_game)
-				.replay.set_header(score_entry{description, current_timestamp(), m_game->final_score(), m_game->final_time(), flags}, name);
-			((active_game&)*m_game).replay.save_to_file();
+			game.replay.set_header(score_entry{description, current_timestamp(), game.final_score(), game.final_time(), flags}, name);
+			game.replay.save_to_file();
+			if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
+				m_next_state = make_async<title_state>();
+			}
 		},
 	};
 	const action_callback discard_acb{
@@ -77,6 +80,9 @@ save_replay_state::save_replay_state(std::unique_ptr<game>&& game, save_screen_f
 			m_substate = substate_base::EXITING | to_flags(m_substate);
 			m_timer = 0;
 			set_up_exit_animation();
+			if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
+				m_next_state = make_async<title_state>();
+			}
 		},
 	};
 
@@ -109,7 +115,7 @@ std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
 			return std::make_unique<game_state>(std::make_unique<active_game>(m_game->gamemode()), game_type::REGULAR, true);
 		}
 		else {
-			return std::make_unique<title_state>();
+			return m_next_state.get();
 		}
 	}
 	else {

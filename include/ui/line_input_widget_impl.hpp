@@ -4,17 +4,17 @@
 template <usize S>
 line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
 										float font_size, status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
-	: text_widget{pos,
+	: input_buffer<S>{initial_text}
+	, text_widget{pos,
 				  alignment,
 				  unhide_time,
 				  NO_TOOLTIP,
 				  true,
-				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; },
+				  [this] { return this->buffer.empty() ? std::string{engine::loc["empty"]} : std::string{this->buffer}; },
 				  font::LANGUAGE,
 				  style,
 				  font_size,
 				  tr::sys::UNLIMITED_WIDTH}
-	, buffer{initial_text}
 	, m_scb{std::move(status_cb)}
 	, m_enter_cb{std::move(enter_cb)}
 	, m_interp{m_scb() ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8}
@@ -26,7 +26,7 @@ line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignm
 
 template <usize S> void line_input_widget<S>::add_to_renderer()
 {
-	if (buffer.empty()) {
+	if (this->buffer.empty()) {
 		tr::rgba8 color{m_interp};
 		color.r /= 2;
 		color.g /= 2;
@@ -132,8 +132,8 @@ template <usize S> void line_input_widget<S>::on_unselected()
 
 template <usize S> void line_input_widget<S>::on_write(std::string_view input)
 {
-	if (tr::utf8::length(buffer) + tr::utf8::length(input) <= S) {
-		buffer.append(input);
+	if (tr::utf8::length(this->buffer) + tr::utf8::length(input) <= S) {
+		this->buffer.append(input);
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
@@ -145,32 +145,32 @@ template <usize S> void line_input_widget<S>::on_enter()
 
 template <usize S> void line_input_widget<S>::on_erase()
 {
-	if (!buffer.empty()) {
-		tr::utf8::pop_back(buffer);
+	if (!this->buffer.empty()) {
+		tr::utf8::pop_back(this->buffer);
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <usize S> void line_input_widget<S>::on_clear()
 {
-	buffer.clear();
+	this->buffer.clear();
 	engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 }
 
 template <usize S> void line_input_widget<S>::on_copy()
 {
-	tr::sys::set_clipboard_text(std::string{buffer});
+	tr::sys::set_clipboard_text(std::string{this->buffer});
 }
 
 template <usize S> void line_input_widget<S>::on_paste()
 {
-	const usize buffer_length{tr::utf8::length(buffer)};
+	const usize buffer_length{tr::utf8::length(this->buffer)};
 	if (!tr::sys::clipboard_empty() && buffer_length < S) {
 		std::string pasted{tr::sys::clipboard_text()};
 		std::erase(pasted, '\n');
-		buffer += (buffer_length + tr::utf8::length(pasted) > S)
-					  ? std::string_view{pasted.begin(), tr::utf8::next(pasted.begin(), S - buffer_length)}
-					  : pasted;
+		this->buffer += (buffer_length + tr::utf8::length(pasted) > S)
+							? std::string_view{pasted.begin(), tr::utf8::next(pasted.begin(), S - buffer_length)}
+							: pasted;
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }

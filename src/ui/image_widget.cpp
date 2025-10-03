@@ -27,25 +27,32 @@ tr::bitmap engine::load_image(std::string_view texture)
 
 image_widget::image_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
 						   tr::opt_ref<u16> hue)
-	: widget{pos, alignment, unhide_time, NO_TOOLTIP, false}, m_texture{engine::load_image(file), true}, m_hue{hue}, m_priority{priority}
+	: widget{pos, alignment, unhide_time, NO_TOOLTIP, false}, m_texture{engine::load_image(file)}, m_hue{hue}, m_priority{priority}
 {
-	m_texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
 }
 
 glm::vec2 image_widget::size() const
 {
-	return glm::vec2{m_texture.size()} / 2.0f;
+	return glm::vec2{std::visit([](const auto& texture) { return texture.size(); }, m_texture)} / 2.0f;
 }
 
 void image_widget::add_to_renderer()
 {
+	if (std::holds_alternative<tr::bitmap>(m_texture)) {
+		const tr::bitmap source{tr::unchecked_get<tr::bitmap>(m_texture)};
+		tr::gfx::texture texture{source, true};
+		texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
+		m_texture = std::move(texture);
+	}
+
 	tr::rgba8 color{255, 255, 255, 255};
 	if (m_hue.has_ref()) {
 		color = tr::color_cast<tr::rgba8>(tr::hsv{float(*m_hue), 1, 1});
 	}
 	color.a = u8(color.a * opacity());
 
-	const tr::gfx::simple_textured_mesh_ref quad{engine::basic_renderer().new_textured_fan(layer::UI + m_priority, 4, m_texture)};
+	const tr::gfx::texture& texture{tr::unchecked_get<tr::gfx::texture>(m_texture)};
+	const tr::gfx::simple_textured_mesh_ref quad{engine::basic_renderer().new_textured_fan(layer::UI + m_priority, 4, texture)};
 	tr::fill_rectangle_vertices(quad.positions, {tl(), size()});
 	tr::fill_rectangle_vertices(quad.uvs, {{0, 0}, {1, 1}});
 	std::ranges::fill(quad.tints, tr::rgba8{color});

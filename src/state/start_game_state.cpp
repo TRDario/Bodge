@@ -46,7 +46,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 
 // clang-format on
 
-start_game_state::start_game_state(std::unique_ptr<playerless_game>&& game)
+start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::ENTERING_START_GAME}
 	, m_gamemodes{engine::load_gamemodes()}
@@ -124,6 +124,7 @@ start_game_state::start_game_state(std::unique_ptr<playerless_game>&& game)
 			m_timer = 0;
 			set_up_exit_animation();
 			engine::scorefile.last_selected = *m_selected;
+			m_next_state = make_async<title_state>(m_game);
 		},
 	};
 
@@ -199,7 +200,7 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 			}
 		}
 	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? std::make_unique<title_state>(release_game()) : nullptr;
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	case substate::ENTERING_GAME:
 		return m_timer >= 0.5_s ? std::make_unique<game_state>(std::make_unique<active_game>(*m_selected), game_type::REGULAR, true)
 								: nullptr;

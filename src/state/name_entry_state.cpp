@@ -45,13 +45,12 @@ name_entry_state::name_entry_state()
 				m_ui[T_CONFIRM].pos.change(tween::CUBIC, BOTTOM_START_POS, 1.0_s);
 				m_ui.hide_all_widgets(1.0_s);
 				engine::scorefile.name = input.buffer;
+				m_next_state = make_async<title_state>(m_game);
 			}
 		},
 	};
 
 	//
-
-	engine::play_song("menu", 1.0s);
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 1.0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::sys::ttf_style::NORMAL, 64);
@@ -78,7 +77,7 @@ std::unique_ptr<tr::state> name_entry_state::update(tr::duration)
 	case substate::IN_NAME_ENTRY:
 		return nullptr;
 	case substate::ENTERING_TITLE:
-		return m_timer >= 1.0_s ? std::make_unique<title_state>(release_game()) : nullptr;
+		return m_timer >= 1.0_s ? m_next_state.get() : nullptr;
 	}
 }
 

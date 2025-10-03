@@ -27,7 +27,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 
 //
 
-credits_state::credits_state(std::unique_ptr<playerless_game>&& game)
+credits_state::credits_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_CREDITS}
 {
 	// STATUS CALLBACKS
@@ -45,6 +45,7 @@ credits_state::credits_state(std::unique_ptr<playerless_game>&& game)
 			m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 0.5_s);
 			m_ui[T_EXIT].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 			m_ui.hide_all_widgets(0.5_s);
+			m_next_state = make_async<title_state>(m_game);
 		},
 	};
 
@@ -122,6 +123,6 @@ std::unique_ptr<tr::state> credits_state::update(tr::duration)
 		}
 		return nullptr;
 	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? std::make_unique<title_state>(release_game()) : nullptr;
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	};
 }

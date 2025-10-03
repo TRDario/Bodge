@@ -44,7 +44,7 @@ constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, glm::vec2{500, TITLE_Y 
 
 //
 
-game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in)
+game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), true}, m_substate{blur_in ? substate::BLURRING_IN : substate::GAME_OVER}
 {
 	// HEIGHTS AND MOVE-INS
@@ -71,12 +71,13 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in)
 	std::array<action_callback, BUTTONS.size()> action_cbs{
 		[this] {
 			m_timer = 0;
-			m_substate = substate::SAVING_AND_RESTARTING;
+			m_substate = substate::SAVING;
 			set_up_exit_animation();
+			m_next_state = make_async<save_score_state>(m_game, save_screen_flags::RESTARTING);
 		},
 		[this] {
-			const score_entry score{
-				{}, current_timestamp(), m_game->final_score(), m_game->final_time(), {false, engine::cli_settings.game_speed != 1}};
+			const score_flags score_flags{false, engine::cli_settings.game_speed != 1};
+			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 
 			m_timer = 0;
 			m_substate = substate::RESTARTING;
@@ -85,16 +86,19 @@ game_over_state::game_over_state(std::unique_ptr<game>&& game, bool blur_in)
 		},
 		[this] {
 			m_timer = 0;
-			m_substate = substate::SAVING_AND_QUITTING;
+			m_substate = substate::SAVING;
 			set_up_exit_animation();
+			m_next_state = make_async<save_score_state>(m_game, save_screen_flags::NONE);
 		},
 		[this] {
+			const score_flags score_flags{false, engine::cli_settings.game_speed != 1};
+			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
+
 			m_timer = 0;
 			m_substate = substate::QUITTING;
-			engine::scorefile.add_score(
-				m_game->gamemode(),
-				{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), {false, engine::cli_settings.game_speed != 1}});
+			engine::scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
+			m_next_state = make_async<title_state>();
 		},
 	};
 
@@ -177,22 +181,19 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 			}
 		}
 		return nullptr;
+	case substate::SAVING:
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	case substate::RESTARTING:
 		return m_timer >= 0.5_s ? std::make_unique<game_state>(std::make_unique<active_game>(m_game->gamemode()), game_type::REGULAR, true)
 								: nullptr;
-	case substate::SAVING_AND_RESTARTING:
-	case substate::SAVING_AND_QUITTING: {
+	case substate::QUITTING:
 		if (m_timer >= 0.5_s) {
-			const save_screen_flags state_flags{m_substate == substate::SAVING_AND_RESTARTING ? save_screen_flags::RESTARTING
-																							  : save_screen_flags::NONE};
-			return std::make_unique<save_score_state>(std::move(m_game), state_flags);
+			engine::play_song("menu", 1.0s);
+			return m_next_state.get();
 		}
 		else {
 			return nullptr;
 		}
-	}
-	case substate::QUITTING:
-		return m_timer >= 0.5_s ? std::make_unique<title_state>() : nullptr;
 	}
 }
 
@@ -207,9 +208,8 @@ float game_over_state::saturation_factor()
 {
 	switch (m_substate) {
 	case substate::GAME_OVER:
-	case substate::SAVING_AND_RESTARTING:
+	case substate::SAVING:
 	case substate::RESTARTING:
-	case substate::SAVING_AND_QUITTING:
 	case substate::QUITTING:
 		return 0.35f;
 	case substate::BLURRING_IN:
@@ -221,9 +221,8 @@ float game_over_state::blur_strength()
 {
 	switch (m_substate) {
 	case substate::GAME_OVER:
-	case substate::SAVING_AND_RESTARTING:
+	case substate::SAVING:
 	case substate::RESTARTING:
-	case substate::SAVING_AND_QUITTING:
 	case substate::QUITTING:
 		return 10;
 	case substate::BLURRING_IN:

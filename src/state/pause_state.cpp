@@ -52,18 +52,12 @@ constexpr shortcut_table SHORTCUTS_SPECIAL{
 
 // clang-format on
 
-pause_state::pause_state(std::unique_ptr<game>&& game, game_type type, glm::vec2 mouse_pos, bool blur_in)
+pause_state::pause_state(std::shared_ptr<game> game, game_type type, glm::vec2 mouse_pos, bool blur_in)
 	: game_menu_state{type == game_type::REGULAR ? SELECTION_TREE_REGULAR : SELECTION_TREE_SPECIAL,
 					  type == game_type::REGULAR ? SHORTCUTS_REGULAR : SHORTCUTS_SPECIAL, std::move(game), false}
 	, m_substate{(blur_in ? substate_base::PAUSING : substate_base::PAUSED) | type}
 	, m_start_mouse_pos{mouse_pos}
 {
-	if (blur_in) {
-		m_game->add_to_renderer();
-		engine::basic_renderer().draw(engine::blur_renderer().input());
-		engine::pause_song();
-	}
-
 	if (type == game_type::REGULAR) {
 		set_up_full_ui();
 	}
@@ -92,7 +86,14 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 			ratio = ratio < 0.5 ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
 			engine::set_mouse_pos(m_end_mouse_pos + (m_start_mouse_pos - m_end_mouse_pos) * ratio);
 		}
-		return m_timer >= 0.5_s ? std::make_unique<game_state>(std::move(m_game), to_type(m_substate), false) : nullptr;
+
+		if (m_timer >= 0.5_s) {
+			engine::unpause_song();
+			return std::make_unique<game_state>(m_game, to_type(m_substate), false);
+		}
+		else {
+			return nullptr;
+		}
 	case substate_base::RESTARTING:
 		if (m_timer < 0.5_s) {
 			return nullptr;
@@ -101,22 +102,12 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 		switch (to_type(m_substate)) {
 		case game_type::REGULAR:
 		case game_type::GAMEMODE_DESIGNER_TEST:
-			return std::make_unique<game_state>(std::make_unique<active_game>(m_game->gamemode()), to_type(m_substate), true);
+			return std::make_unique<game_state>(std::make_shared<active_game>(m_game->gamemode()), to_type(m_substate), true);
 		case game_type::REPLAY:
-			return std::make_unique<game_state>(std::make_unique<replay_game>((replay_game&)*m_game), game_type::REPLAY, true);
+			return std::make_unique<game_state>(std::make_shared<replay_game>((replay_game&)*m_game), game_type::REPLAY, true);
 		}
-	case substate_base::SAVING_AND_RESTARTING:
-	case substate_base::SAVING_AND_QUITTING: {
-		if (m_timer >= 0.5_s) {
-			const save_screen_flags state_flags{to_base(m_substate) == substate_base::SAVING_AND_RESTARTING ? save_screen_flags::RESTARTING
-																											: save_screen_flags::NONE};
-			return std::make_unique<save_score_state>(std::unique_ptr<active_game>{(active_game*)m_game.release()}, m_start_mouse_pos,
-													  state_flags);
-		}
-		else {
-			return nullptr;
-		}
-	}
+	case substate_base::SAVING:
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	case substate_base::QUITTING:
 		if (m_timer < 0.5_s) {
 			return nullptr;
@@ -124,12 +115,14 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 		engine::basic_renderer().set_default_transform(TRANSFORM);
 		switch (to_type(m_substate)) {
 		case game_type::REGULAR:
-			return std::make_unique<title_state>();
+			engine::play_song("menu", 1.0s);
+			break;
 		case game_type::GAMEMODE_DESIGNER_TEST:
-			return std::make_unique<gamemode_designer_state>(m_game->gamemode());
 		case game_type::REPLAY:
-			return std::make_unique<replays_state>();
+			engine::play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
+			break;
 		}
+		return m_next_state.get();
 	}
 }
 
@@ -159,9 +152,8 @@ float pause_state::saturation_factor()
 {
 	switch (to_base(m_substate)) {
 	case substate_base::PAUSED:
-	case substate_base::SAVING_AND_RESTARTING:
+	case substate_base::SAVING:
 	case substate_base::RESTARTING:
-	case substate_base::SAVING_AND_QUITTING:
 	case substate_base::QUITTING:
 		return 0.35f;
 	case substate_base::PAUSING:
@@ -175,9 +167,8 @@ float pause_state::blur_strength()
 {
 	switch (to_base(m_substate)) {
 	case substate_base::PAUSED:
-	case substate_base::SAVING_AND_RESTARTING:
+	case substate_base::SAVING:
 	case substate_base::RESTARTING:
-	case substate_base::SAVING_AND_QUITTING:
 	case substate_base::QUITTING:
 		return 10;
 	case substate_base::PAUSING:
@@ -207,12 +198,13 @@ void pause_state::set_up_full_ui()
 		},
 		[this] {
 			m_timer = 0;
-			m_substate = substate_base::SAVING_AND_RESTARTING | game_type::REGULAR;
+			m_substate = substate_base::SAVING | game_type::REGULAR;
 			set_up_exit_animation();
+			m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::RESTARTING);
 		},
 		[this] {
-			const score_entry score{
-				{}, current_timestamp(), m_game->final_score(), m_game->final_time(), {true, engine::cli_settings.game_speed != 1}};
+			const score_flags score_flags{true, engine::cli_settings.game_speed != 1};
+			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 
 			m_timer = 0;
 			m_substate = substate_base::RESTARTING | game_type::REGULAR;
@@ -221,17 +213,29 @@ void pause_state::set_up_full_ui()
 		},
 		[this] {
 			m_timer = 0;
-			m_substate = substate_base::SAVING_AND_QUITTING | game_type::REGULAR;
+			m_substate = substate_base::SAVING | game_type::REGULAR;
 			set_up_exit_animation();
+			m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::NONE);
 		},
 		[this] {
-			const score_entry score{
-				{}, current_timestamp(), m_game->final_score(), m_game->final_time(), {true, engine::cli_settings.game_speed != 1}};
+			const score_flags score_flags{true, engine::cli_settings.game_speed != 1};
+			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 
 			m_timer = 0;
 			m_substate = substate_base::QUITTING | game_type::REGULAR;
 			engine::scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
+			switch (to_type(m_substate)) {
+			case game_type::REGULAR:
+				m_next_state = make_async<title_state>();
+				break;
+			case game_type::GAMEMODE_DESIGNER_TEST:
+				m_next_state = make_async<gamemode_designer_state>(m_game->gamemode());
+				break;
+			case game_type::REPLAY:
+				m_next_state = make_async<replays_state>();
+				break;
+			}
 		},
 	};
 	for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
@@ -271,6 +275,17 @@ void pause_state::set_up_limited_ui()
 			m_timer = 0;
 			m_substate = substate_base::QUITTING | to_type(m_substate);
 			set_up_exit_animation();
+			switch (to_type(m_substate)) {
+			case game_type::REGULAR:
+				m_next_state = make_async<title_state>();
+				break;
+			case game_type::GAMEMODE_DESIGNER_TEST:
+				m_next_state = make_async<gamemode_designer_state>(m_game->gamemode());
+				break;
+			case game_type::REPLAY:
+				m_next_state = make_async<replays_state>();
+				break;
+			}
 		},
 	};
 	for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {

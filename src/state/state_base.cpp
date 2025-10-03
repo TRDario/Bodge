@@ -1,5 +1,5 @@
-#include "../../include/graphics.hpp"
 #include "../../include/state/state_base.hpp"
+#include "../../include/graphics.hpp"
 
 ////////////////////////////////////////////////////////////////// STATE //////////////////////////////////////////////////////////////////
 
@@ -24,19 +24,13 @@ std::unique_ptr<tr::state> state::update(tr::duration)
 ///////////////////////////////////////////////////////////// MAIN MENU STATE /////////////////////////////////////////////////////////////
 
 main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts)
-	: state{selection_tree, shortcuts}
-	, m_background_game{std::make_unique<playerless_game>(engine::pick_menu_gamemode(), engine::rng.generate<u64>())}
+	: state{selection_tree, shortcuts}, m_game{std::make_shared<playerless_game>(engine::pick_menu_gamemode(), engine::rng.generate<u64>())}
 {
 }
 
-main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::unique_ptr<playerless_game>&& game)
-	: state{selection_tree, shortcuts}, m_background_game{std::move(game)}
+main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<playerless_game> game)
+	: state{selection_tree, shortcuts}, m_game{std::move(game)}
 {
-}
-
-std::unique_ptr<playerless_game>&& main_menu_state::release_game()
-{
-	return std::move(m_background_game);
 }
 
 float main_menu_state::fade_overlay_opacity()
@@ -47,13 +41,13 @@ float main_menu_state::fade_overlay_opacity()
 std::unique_ptr<tr::state> main_menu_state::update(tr::duration)
 {
 	state::update({});
-	m_background_game->update();
+	m_game->update();
 	return nullptr;
 }
 
 void main_menu_state::draw()
 {
-	m_background_game->add_to_renderer();
+	m_game->add_to_renderer();
 	engine::add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
 	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
@@ -62,14 +56,9 @@ void main_menu_state::draw()
 
 ///////////////////////////////////////////////////////////// GAME MENU STATE /////////////////////////////////////////////////////////////
 
-game_menu_state::game_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::unique_ptr<game>&& game, bool update_game)
+game_menu_state::game_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<game> game, bool update_game)
 	: state{selection_tree, shortcuts}, m_game{std::move(game)}, m_update_game{update_game}
 {
-}
-
-std::unique_ptr<game>&& game_menu_state::release_game()
-{
-	return std::move(m_game);
 }
 
 std::unique_ptr<tr::state> game_menu_state::update(tr::duration)

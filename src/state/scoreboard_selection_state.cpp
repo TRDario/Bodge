@@ -29,7 +29,7 @@ constexpr shortcut_table SHORTCUTS{
 
 //
 
-scoreboard_selection_state::scoreboard_selection_state(std::unique_ptr<playerless_game>&& game, bool returning_from_subscreen)
+scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerless_game> game, bool returning_from_subscreen)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SCOREBOARD_SELECTION}
 {
 	// STATUS CALLBACKS
@@ -42,23 +42,26 @@ scoreboard_selection_state::scoreboard_selection_state(std::unique_ptr<playerles
 
 	const action_callback view_times_acb{
 		[this] {
-			m_substate = substate::ENTERING_TIME_SCOREBOARD;
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
 			m_timer = 0;
 			set_up_subscreen_animation();
+			m_next_state = make_async<scoreboard_state>(m_game, scoreboard::TIME);
 		},
 	};
 	const action_callback view_scores_acb{
 		[this] {
-			m_substate = substate::ENTERING_SCORE_SCOREBOARD;
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
 			m_timer = 0;
 			set_up_subscreen_animation();
+			m_next_state = make_async<scoreboard_state>(m_game, scoreboard::SCORE);
 		},
 	};
 	const action_callback exit_acb{
 		[this] {
-			m_substate = substate::EXITING_TO_TITLE;
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<title_state>(m_game);
 		},
 	};
 
@@ -99,21 +102,8 @@ std::unique_ptr<tr::state> scoreboard_selection_state::update(tr::duration)
 	switch (m_substate) {
 	case substate::IN_SCOREBOARD_SELECTION:
 		return nullptr;
-	case substate::ENTERING_TIME_SCOREBOARD:
-		if (m_timer >= 0.5_s) {
-			return std::make_unique<scoreboard_state>(release_game(), scoreboard::TIME);
-		}
-		return nullptr;
-	case substate::ENTERING_SCORE_SCOREBOARD:
-		if (m_timer >= 0.5_s) {
-			return std::make_unique<scoreboard_state>(release_game(), scoreboard::SCORE);
-		}
-		return nullptr;
-	case substate::EXITING_TO_TITLE:
-		if (m_timer >= 0.5_s) {
-			return std::make_unique<title_state>(release_game());
-		}
-		return nullptr;
+	case substate::ENTERING_SUBMENU_OR_TITLE:
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
 }
 

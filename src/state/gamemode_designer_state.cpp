@@ -56,7 +56,7 @@ constexpr tweener<glm::vec2> SONG_C_MOVE_IN{tween::CUBIC, glm::vec2{400, 700}, g
 
 // clang-format on
 
-gamemode_designer_state::gamemode_designer_state(std::unique_ptr<playerless_game>&& game, const gamemode& gamemode,
+gamemode_designer_state::gamemode_designer_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode,
 												 bool returning_from_subscreen)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_GAMEMODE_DESIGNER}
@@ -73,7 +73,6 @@ gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 	, m_available_songs{engine::create_available_song_list()}
 {
 	set_up_ui(false);
-	engine::play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
 }
 
 //
@@ -94,12 +93,8 @@ std::unique_ptr<tr::state> gamemode_designer_state::update(tr::duration)
 		return m_timer >= 0.5_s
 				   ? std::make_unique<game_state>(std::make_unique<active_game>(m_pending), game_type::GAMEMODE_DESIGNER_TEST, true)
 				   : nullptr;
-	case substate::ENTERING_BALL_SETTINGS_EDITOR:
-		return m_timer >= 0.5_s ? std::make_unique<ball_settings_editor_state>(release_game(), m_pending) : nullptr;
-	case substate::ENTERING_PLAYER_SETTINGS_EDITOR:
-		return m_timer >= 0.5_s ? std::make_unique<player_settings_editor_state>(release_game(), m_pending) : nullptr;
-	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? std::make_unique<title_state>(release_game()) : nullptr;
+	case substate::ENTERING_SUBMENU_OR_TITLE:
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
 }
 
@@ -111,9 +106,7 @@ float gamemode_designer_state::fade_overlay_opacity()
 	case substate::RETURNING_FROM_TEST_GAME:
 		return 1 - m_timer / 0.5_sf;
 	case substate::IN_GAMEMODE_DESIGNER:
-	case substate::ENTERING_BALL_SETTINGS_EDITOR:
-	case substate::ENTERING_PLAYER_SETTINGS_EDITOR:
-	case substate::ENTERING_TITLE:
+	case substate::ENTERING_SUBMENU_OR_TITLE:
 		return 0;
 	case substate::ENTERING_TEST_GAME:
 		return m_timer / 0.5_sf;
@@ -143,20 +136,22 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	};
 	const action_callback ball_settings_acb{
 		[this] {
-			m_substate = substate::ENTERING_BALL_SETTINGS_EDITOR;
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
 			m_timer = 0;
 			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
 			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 			set_up_subscreen_animation();
+			m_next_state = make_async<ball_settings_editor_state>(m_game, m_pending);
 		},
 	};
 	const action_callback player_settings_acb{
 		[this] {
-			m_substate = substate::ENTERING_PLAYER_SETTINGS_EDITOR;
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
 			m_timer = 0;
 			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
 			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 			set_up_subscreen_animation();
+			m_next_state = make_async<player_settings_editor_state>(m_game, m_pending);
 		},
 	};
 	const action_callback song_c_acb{
@@ -178,17 +173,19 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 			engine::fade_song_out(0.5s);
 		},
 		[this] {
-			m_substate = substate::ENTERING_TITLE;
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
 			m_timer = 0;
 			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
 			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 			m_pending.save_to_file();
 			set_up_exit_animation();
+			m_next_state = make_async<title_state>(m_game);
 		},
 		[this] {
-			m_substate = substate::ENTERING_TITLE;
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<title_state>(m_game);
 		},
 	};
 

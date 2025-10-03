@@ -81,7 +81,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 
 // clang-format on
 
-player_settings_editor_state::player_settings_editor_state(std::unique_ptr<playerless_game>&& game, const gamemode& gamemode)
+player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_EDITOR}, m_pending{gamemode}
 {
 	// TEXT CALLBACKS
@@ -167,6 +167,7 @@ player_settings_editor_state::player_settings_editor_state(std::unique_ptr<playe
 			m_substate = substate::EXITING;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<gamemode_designer_state>(m_game, m_pending, true);
 		},
 	};
 
@@ -237,7 +238,7 @@ std::unique_ptr<tr::state> player_settings_editor_state::update(tr::duration)
 	case substate::IN_EDITOR:
 		return nullptr;
 	case substate::EXITING:
-		return m_timer >= 0.5_s ? std::make_unique<gamemode_designer_state>(release_game(), m_pending, true) : nullptr;
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
 }
 

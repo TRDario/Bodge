@@ -55,10 +55,9 @@ replays_state::replays_state()
 	, m_replays{engine::load_replay_headers()}
 {
 	set_up_ui();
-	engine::play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
 }
 
-replays_state::replays_state(std::unique_ptr<playerless_game>&& game)
+replays_state::replays_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_REPLAYS}
 	, m_page{0}
@@ -103,7 +102,7 @@ std::unique_ptr<tr::state> replays_state::update(tr::duration)
 												  game_type::REPLAY, true)
 				   : nullptr;
 	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? std::make_unique<title_state>(release_game()) : nullptr;
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
 }
 
@@ -153,6 +152,7 @@ void replays_state::set_up_ui()
 			m_substate = substate::ENTERING_TITLE;
 			m_timer = 0;
 			set_up_exit_animation();
+			m_next_state = make_async<title_state>(m_game);
 		},
 	};
 	const action_callback page_d_acb{

@@ -10,7 +10,7 @@ multiline_input_widget<S>::multiline_input_widget(tweener<glm::vec2> pos, tr::al
 				  unhide_time,
 				  NO_TOOLTIP,
 				  true,
-				  [this] { return buffer.empty() ? std::string{engine::loc["empty"]} : std::string{buffer}; },
+				  [this] { return this->buffer.empty() ? std::string{engine::loc["empty"]} : std::string{this->buffer}; },
 				  font::LANGUAGE,
 				  tr::sys::ttf_style::NORMAL,
 				  font_size,
@@ -37,7 +37,7 @@ template <usize S> void multiline_input_widget<S>::add_to_renderer()
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, u8(160 * opacity())});
 
 	tr::rgba8 color{m_interp};
-	if (buffer.empty()) {
+	if (this->buffer.empty()) {
 		tr::rgba8 text_color{color};
 		text_color.r /= 2;
 		text_color.g /= 2;
@@ -148,11 +148,11 @@ template <usize S> void multiline_input_widget<S>::on_unselected()
 
 template <usize S> void multiline_input_widget<S>::on_write(std::string_view input)
 {
-	if (tr::utf8::length(buffer) + tr::utf8::length(input) <= S) {
-		buffer.append(input);
-		if (engine::count_lines(buffer, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) >
+	if (tr::utf8::length(this->buffer) + tr::utf8::length(input) <= S) {
+		this->buffer.append(input);
+		if (engine::count_lines(this->buffer, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) >
 			m_max_lines) {
-			buffer.resize(buffer.size() - input.size());
+			this->buffer.resize(this->buffer.size() - input.size());
 		}
 		else {
 			engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
@@ -162,30 +162,30 @@ template <usize S> void multiline_input_widget<S>::on_write(std::string_view inp
 
 template <usize S> void multiline_input_widget<S>::on_enter()
 {
-	if (tr::utf8::length(buffer) < S &&
-		engine::count_lines(buffer, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
-		buffer.append('\n');
+	if (tr::utf8::length(this->buffer) < S && engine::count_lines(this->buffer, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size,
+																  m_font_size / 12, m_size.x) < m_max_lines) {
+		this->buffer.append('\n');
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <usize S> void multiline_input_widget<S>::on_erase()
 {
-	if (!buffer.empty()) {
-		tr::utf8::pop_back(buffer);
+	if (!this->buffer.empty()) {
+		tr::utf8::pop_back(this->buffer);
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <usize S> void multiline_input_widget<S>::on_clear()
 {
-	buffer.clear();
+	this->buffer.clear();
 	engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 }
 
 template <usize S> void multiline_input_widget<S>::on_copy()
 {
-	tr::sys::set_clipboard_text(std::string{buffer}.c_str());
+	tr::sys::set_clipboard_text(std::string{this->buffer}.c_str());
 }
 
 template <usize S> void multiline_input_widget<S>::on_paste()
@@ -193,15 +193,15 @@ template <usize S> void multiline_input_widget<S>::on_paste()
 	try {
 		if (!tr::sys::clipboard_empty()) {
 			std::string pasted{tr::sys::clipboard_text()};
-			tr::static_string<S * 4> copy{buffer};
-			const usize buffer_length{tr::utf8::length(buffer)};
+			tr::static_string<S * 4> copy{this->buffer};
+			const usize buffer_length{tr::utf8::length(this->buffer)};
 			copy += (buffer_length + tr::utf8::length(pasted) > S)
 						? std::string_view{pasted.begin(), tr::utf8::next(pasted.begin(), S - buffer_length)}
 						: pasted;
 			// Replace this with a smarter solution eventually, maybe.
 			if (engine::count_lines(copy, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) <=
 				m_max_lines) {
-				buffer = copy;
+				this->buffer = copy;
 			}
 			engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 		}

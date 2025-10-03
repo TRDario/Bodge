@@ -40,7 +40,7 @@ constexpr tweener<glm::vec2> CANCEL_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500
 
 // clang-format on
 
-save_score_state::save_score_state(std::unique_ptr<game>&& game, glm::vec2 mouse_pos, save_screen_flags flags)
+save_score_state::save_score_state(std::shared_ptr<game> game, glm::vec2 mouse_pos, save_screen_flags flags)
 	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), false}
 	, m_substate{substate_base::SAVING_SCORE | flags}
 	, m_start_mouse_pos{mouse_pos}
@@ -55,7 +55,7 @@ save_score_state::save_score_state(std::unique_ptr<game>&& game, glm::vec2 mouse
 	set_up_ui();
 }
 
-save_score_state::save_score_state(std::unique_ptr<game>&& game, save_screen_flags flags)
+save_score_state::save_score_state(std::shared_ptr<game> game, save_screen_flags flags)
 	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), true}
 	, m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
 	, m_score{
@@ -78,20 +78,8 @@ std::unique_ptr<tr::state> save_score_state::update(tr::duration)
 	switch (to_base(m_substate)) {
 	case substate_base::SAVING_SCORE:
 		return nullptr;
-	case substate_base::RETURNING:
-		if (m_timer >= 0.5_s) {
-			if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
-				return std::make_unique<game_over_state>(std::move(m_game), false);
-			}
-			else {
-				return std::make_unique<pause_state>(std::move(m_game), game_type::REGULAR, m_start_mouse_pos, false);
-			}
-		}
-		else {
-			return nullptr;
-		}
-	case substate_base::ENTERING_SAVE_REPLAY:
-		return m_timer >= 0.5_s ? std::make_unique<save_replay_state>(std::move(m_game), to_flags(m_substate)) : nullptr;
+	case substate_base::RETURNING_OR_ENTERING_SAVE_REPLAY:
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
 }
 
@@ -135,17 +123,24 @@ void save_score_state::set_up_ui()
 
 	const action_callback save_acb{
 		[this] {
-			m_substate = substate_base::ENTERING_SAVE_REPLAY | to_flags(m_substate);
+			m_substate = substate_base::RETURNING_OR_ENTERING_SAVE_REPLAY | to_flags(m_substate);
 			m_timer = 0;
 			set_up_exit_animation();
 			engine::scorefile.add_score(m_game->gamemode(), m_score);
+			m_next_state = make_async<save_replay_state>(m_game, to_flags(m_substate));
 		},
 	};
 	const action_callback cancel_acb{
 		[this] {
-			m_substate = substate_base::RETURNING | to_flags(m_substate);
+			m_substate = substate_base::RETURNING_OR_ENTERING_SAVE_REPLAY | to_flags(m_substate);
 			m_timer = 0;
 			set_up_exit_animation();
+			if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
+				m_next_state = make_async<game_over_state>(m_game, false);
+			}
+			else {
+				m_next_state = make_async<pause_state>(m_game, game_type::REGULAR, m_start_mouse_pos, false);
+			}
 		},
 	};
 
