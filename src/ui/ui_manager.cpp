@@ -1,7 +1,7 @@
+#include "../../include/ui/ui_manager.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/graphics.hpp"
 #include "../../include/system.hpp"
-#include "../../include/ui/ui_manager.hpp"
 
 ui_manager::ui_manager(selection_tree selection_tree, shortcut_table shortcuts)
 	: m_selection_tree(selection_tree), m_shortcuts{shortcuts}

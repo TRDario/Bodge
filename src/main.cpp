@@ -36,7 +36,6 @@ int main(int argc, const char** argv)
 		engine::save_settings();
 	}
 	catch (std::exception& err) {
-		LOG(tr::severity::FATAL, err);
 		tr::sys::show_fatal_error_message_box(err);
 		std::exit(EXIT_FAILURE);
 	}

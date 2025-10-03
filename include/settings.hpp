@@ -9,9 +9,9 @@ struct cli_settings {
 	float refresh_rate{0};
 	float game_speed{1.0f};
 #ifdef TR_ENABLE_ASSERTS
-	bool show_fps{true};
+	bool show_perf{true};
 #else
-	bool show_fps{false};
+	bool show_perf{false};
 #endif
 };
 

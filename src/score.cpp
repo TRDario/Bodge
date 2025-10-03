@@ -4,8 +4,8 @@
 #include "../include/settings.hpp"
 
 namespace engine {
-	void load_scorefile_v0(const std::filesystem::path& path, std::ifstream& file);
-	void load_scorefile_v1(const std::filesystem::path& path, std::ifstream& file);
+	void load_scorefile_v0(std::ifstream& file);
+	void load_scorefile_v1(std::ifstream& file);
 } // namespace engine
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -93,26 +93,21 @@ void engine::load_scorefile()
 		const u8 version{tr::binary_read<u8>(file)};
 		switch (version) {
 		case 0:
-			load_scorefile_v0(path, file);
+			load_scorefile_v0(file);
 			return;
 		case 1:
-			load_scorefile_v1(path, file);
+			load_scorefile_v1(file);
 			return;
 		default:
-			LOG(tr::severity::ERROR, "Failed to load scorefile.");
-			LOG_CONTINUE("From: '{}'", path.string());
-			LOG_CONTINUE("Unsupported scorefile version {:d}.", version);
 			return;
 		}
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load scorefile.");
-		LOG_CONTINUE("From: '{}'", path.string());
-		LOG_CONTINUE(err);
+	catch (std::exception&) {
+		return;
 	}
 }
 
-void engine::load_scorefile_v0(const std::filesystem::path& path, std::ifstream& file)
+void engine::load_scorefile_v0(std::ifstream& file)
 {
 	const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 	std::span<const std::byte> data{raw};
@@ -120,11 +115,9 @@ void engine::load_scorefile_v0(const std::filesystem::path& path, std::ifstream&
 	data = tr::binary_read(data, scorefile.name);
 	data = tr::binary_read(data, ignore);
 	data = tr::binary_read(data, scorefile.playtime);
-	LOG(tr::severity::INFO, "Converted legacy scorefile (v0) to latest format.");
-	LOG_CONTINUE("From: '{}'", path.string());
 }
 
-void engine::load_scorefile_v1(const std::filesystem::path& path, std::ifstream& file)
+void engine::load_scorefile_v1(std::ifstream& file)
 {
 	const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 	std::span<const std::byte> data{raw};
@@ -132,8 +125,6 @@ void engine::load_scorefile_v1(const std::filesystem::path& path, std::ifstream&
 	data = tr::binary_read(data, scorefile.categories);
 	data = tr::binary_read(data, scorefile.playtime);
 	data = tr::binary_read(data, scorefile.last_selected);
-	LOG(tr::severity::INFO, "Loaded scorefile.");
-	LOG_CONTINUE("From: '{}'", path.string());
 }
 
 void engine::save_scorefile()
@@ -149,12 +140,8 @@ void engine::save_scorefile()
 		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rng.generate<u8>())};
 		tr::binary_write(file, SCOREFILE_VERSION);
 		tr::binary_write(file, std::span{encrypted});
-		LOG(tr::severity::INFO, "Saved scorefile.");
-		LOG_CONTINUE("To: '{}'", path.string());
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save scorefile.");
-		LOG_CONTINUE("To: '{}'", path.string());
-		LOG_CONTINUE(err);
+	catch (std::exception&) {
+		return;
 	}
 }

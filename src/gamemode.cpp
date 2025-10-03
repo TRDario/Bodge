@@ -98,14 +98,9 @@ void gamemode::save_to_file() const
 		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), engine::rng.generate<u8>())};
 		tr::binary_write(file, GAMEMODE_VERSION);
 		tr::binary_write(file, std::span{encrypted});
-
-		LOG(tr::severity::INFO, "Saved gamemode '{}'.", name);
-		LOG_CONTINUE("To: '{}'", path.string());
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save gamemode '{}'.", name);
-		LOG_CONTINUE("To: '{}'", path.string());
-		LOG_CONTINUE(err);
+	catch (std::exception&) {
+		return;
 	}
 }
 
@@ -152,24 +147,17 @@ std::vector<gamemode> engine::load_gamemodes()
 				}
 				std::ifstream is{tr::open_file_r(path, std::ios::binary)};
 				if (tr::binary_read<u8>(is) != GAMEMODE_VERSION) {
-					LOG(tr::severity::WARN, "Ignored corrupt or legacy gamemode file.");
-					LOG_CONTINUE("From: '{}'", path.string());
 					continue;
 				}
 				gamemodes.push_back(tr::binary_read<gamemode>(tr::decrypt(tr::flush_binary(is))));
-				LOG(tr::severity::INFO, "Loaded gamemode '{}'.", gamemodes.back().name);
-				LOG_CONTINUE("From: '{}'", path.string());
 			}
-			catch (std::exception& err) {
-				LOG(tr::severity::ERROR, "Failed to load gamemode.");
-				LOG_CONTINUE("From: '{}'", path.string());
-				LOG_CONTINUE(err);
+			catch (std::exception&) {
+				continue;
 			}
 		}
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::INFO, "Failed to load gamemodes.");
-		LOG_CONTINUE(err);
+	catch (std::exception&) {
+		return gamemodes;
 	}
 	return gamemodes;
 }

@@ -30,15 +30,9 @@ std::filesystem::path engine::find_song_path(std::string_view name)
 std::optional<tr::audio::buffer> engine::load_audio_file(const char* filename)
 {
 	try {
-		const std::filesystem::path& path{cli_settings.data_directory / "sounds" / filename};
-		std::optional<tr::audio::buffer> buffer{tr::audio::load_file(path)};
-		LOG(tr::severity::INFO, "Loaded audio file '{}'.", filename);
-		LOG_CONTINUE("From: '{}'", path.string());
-		return buffer;
+		return std::optional<tr::audio::buffer>{tr::audio::load_file(cli_settings.data_directory / "sounds" / filename)};
 	}
-	catch (tr::audio::file_open_error& err) {
-		LOG(tr::severity::ERROR, "Failed to load audio file '{}'.", filename);
-		LOG_CONTINUE("{}", err.description());
+	catch (tr::audio::file_open_error&) {
 		return std::nullopt;
 	}
 }
@@ -47,7 +41,6 @@ void engine::initialize_audio()
 {
 	try {
 		tr::audio::initialize();
-		LOG(tr::severity::INFO, "Initialized the audio system.");
 		tr::audio::set_master_gain(2);
 		tr::audio::set_class_gain(0, settings.sfx_volume / 100.0f);
 		tr::audio::set_class_gain(1, settings.music_volume / 100.0f);
@@ -57,9 +50,8 @@ void engine::initialize_audio()
 		current_song.emplace(1000);
 		current_song->set_classes(2);
 	}
-	catch (tr::audio::init_error& err) {
-		LOG(tr::severity::ERROR, "Failed to initialize the audio system.");
-		LOG_CONTINUE("{}", err.description());
+	catch (tr::audio::init_error&) {
+		return;
 	}
 }
 
@@ -73,11 +65,9 @@ std::vector<std::string> engine::create_available_song_list()
 				songs.push_back(file.path().stem().string());
 			}
 		}
-		LOG(tr::severity::INFO, "Created a list of {} available song(s).", songs.size());
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "An error occurred while creating a list of available songs.");
-		LOG_CONTINUE(err);
+	catch (std::exception&) {
+		return songs;
 	}
 	return songs;
 }
@@ -108,8 +98,6 @@ void engine::play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_i
 	if (current_song.has_value()) {
 		const std::filesystem::path& path{find_song_path(name)};
 		if (path.empty()) {
-			LOG(tr::severity::ERROR, "Failed to play song '{}'.", name);
-			LOG_CONTINUE("File not found in neither data nor user directory.");
 			return;
 		}
 		try {
@@ -119,13 +107,9 @@ void engine::play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_i
 			current_song->set_gain(0.25f);
 			current_song->set_gain(0.6f, fade_in);
 			current_song->play();
-			LOG(tr::severity::INFO, "Playing song '{}'.", name);
-			LOG_CONTINUE("From: '{}'", path.string());
 		}
 		catch (tr::exception& err) {
-			LOG(tr::severity::ERROR, "Failed to play song '{}'.", name);
-			LOG_CONTINUE("From: '{}'", path.string());
-			LOG_CONTINUE(err);
+			return;
 		}
 	}
 }
@@ -169,6 +153,5 @@ void engine::shut_down_audio()
 			sound.reset();
 		}
 		tr::audio::shut_down();
-		LOG(tr::severity::INFO, "Shut down the audio system.");
 	}
 }

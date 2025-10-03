@@ -24,20 +24,15 @@ void engine::load_languages()
 	try {
 		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.data_directory / "localization"}, load_language);
 		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.user_directory / "localization"}, load_language);
-		LOG(tr::severity::INFO, "Found {} language(s).", languages.size());
 	}
-	catch (std::exception& err) {
+	catch (std::exception&) {
 		languages.clear();
-		LOG(tr::severity::ERROR, "Failed to load language list.");
-		LOG_CONTINUE(err);
 	}
 }
 
 void engine::load_localization()
 {
 	if (!languages.contains(settings.language)) {
-		LOG(tr::severity::ERROR, "Settings language with code '{}' was not found in the language list.",
-			std::string_view{settings.language.data(), 2});
 		return;
 	}
 
@@ -49,23 +44,9 @@ void engine::load_localization()
 		if (!std::filesystem::exists(path)) {
 			path = cli_settings.user_directory / filename;
 		}
-
-		std::vector<std::string> errors{loc.load(path)};
-		if (errors.empty()) {
-			LOG(tr::severity::INFO, "Loaded {} localization.", languages[settings.language].name);
-			LOG_CONTINUE("From: '{}'", path.string());
-		}
-		else {
-			LOG(tr::severity::WARN, "Loaded {} localization with {} errors: ", languages[settings.language].name, errors.size());
-			LOG_CONTINUE("From: '{}'", path.string());
-			for (const std::string& error : errors) {
-				LOG_CONTINUE("{}", error);
-			}
-		}
+		loc.load(path);
 	}
-	catch (std::exception& err) {
+	catch (std::exception&) {
 		loc = std::move(old);
-		LOG(tr::severity::ERROR, "Failed to load '{}' localization.", name);
-		LOG_CONTINUE(err);
 	}
 }

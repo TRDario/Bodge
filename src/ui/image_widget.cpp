@@ -11,14 +11,9 @@ tr::bitmap engine::load_image(std::string_view texture)
 	try {
 		const std::filesystem::path path{engine::cli_settings.data_directory / "graphics" / TR_FMT::format("{}.qoi", texture)};
 		tr::bitmap image{tr::load_bitmap_file(path)};
-		LOG(tr::severity::INFO, "Loaded texture '{}'.", texture);
-		LOG_CONTINUE("From: '{}'", path.string());
 		return image;
 	}
-	catch (tr::bitmap_load_error& err) {
-		LOG(tr::severity::ERROR, "Failed to load texture '{}'.", texture);
-		LOG_CONTINUE("{}", err.description());
-		LOG_CONTINUE("{}", err.details());
+	catch (tr::bitmap_load_error&) {
 		return tr::create_checkerboard({64, 64});
 	}
 }

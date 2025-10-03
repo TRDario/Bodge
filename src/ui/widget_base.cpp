@@ -126,7 +126,7 @@ void text_widget::update_cache() const
 	};
 
 	std::string text{text_cb()};
-	if (m_last_text != text) {
+	if (std::holds_alternative<std::monostate>(m_cache) || m_last_text != text) {
 		const tr::bitmap render{engine::render_text(text, engine::determine_font(text, m_font), m_style, m_font_size, m_font_size / 12,
 													m_max_width, tr::halign::CENTER)};
 		if (!std::holds_alternative<tr::gfx::texture>(m_cache) || cache_too_small(tr::unchecked_get<tr::gfx::texture>(m_cache), render)) {

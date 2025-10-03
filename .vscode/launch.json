@@ -10,9 +10,26 @@
 			"name": "Debug",
 			"program": "${workspaceFolder}/build/Debug/Bodged",
 			"args": [
-				"--debug", "0",
-				"--userdir", "${workspaceFolder}/userdir",
-				"--datadir", "${workspaceFolder}/data"
+				"--userdir",
+				"${workspaceFolder}/userdir",
+				"--datadir",
+				"${workspaceFolder}/data"
+			],
+			"cwd": "${workspaceFolder}",
+			"env": {
+				"SDL_VIDEODRIVER": "wayland"
+			}
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "RelWithDebInfo",
+			"program": "${workspaceFolder}/build/RelWithDebInfo/Bodge",
+			"args": [
+				"--userdir",
+				"${workspaceFolder}/userdir",
+				"--datadir",
+				"${workspaceFolder}/data"
 			],
 			"cwd": "${workspaceFolder}",
 			"env": {
@@ -25,9 +42,10 @@
 			"name": "Release",
 			"program": "${workspaceFolder}/build/Release/Bodge",
 			"args": [
-				"--debug", "1",
-				"--userdir", "${workspaceFolder}/userdir",
-				"--datadir", "${workspaceFolder}/data"
+				"--userdir",
+				"${workspaceFolder}/userdir",
+				"--datadir",
+				"${workspaceFolder}/data"
 			],
 			"cwd": "${workspaceFolder}",
 			"env": {

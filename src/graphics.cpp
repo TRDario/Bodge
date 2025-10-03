@@ -48,18 +48,16 @@ engine::graphics_data::graphics_data()
 void engine::initialize_graphics()
 {
 	graphics.emplace();
-	if (cli_settings.show_fps) {
+	if (cli_settings.show_perf) {
 		graphics->debug.emplace();
 	}
 	tr::sys::show_window();
-	LOG(tr::severity::INFO, "Initialized graphics.");
 }
 
 void engine::shut_down_graphics()
 {
 	tr::sys::hide_window();
 	graphics.reset();
-	LOG(tr::severity::INFO, "Shut down graphics.");
 }
 
 tr::gfx::renderer_2d& engine::basic_renderer()

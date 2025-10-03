@@ -41,26 +41,16 @@ tr::sys::ttfont engine::load_font(std::string_view name)
 		std::filesystem::path path{cli_settings.data_directory / "fonts" / name};
 		if (std::filesystem::is_regular_file(path)) {
 			tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
-			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
-			LOG_CONTINUE("From: '{}'", path.string());
 			return font;
 		}
 		path = cli_settings.user_directory / "fonts" / name;
 		if (std::filesystem::is_regular_file(path)) {
 			tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
-			LOG(tr::severity::INFO, "Loaded font '{}'.", name);
-			LOG_CONTINUE("From: '{}'", path.string());
 			return font;
 		}
-
-		LOG(tr::severity::FATAL, "Failed to load font '{}'.", name);
-		LOG_CONTINUE("File not found in neither data nor user directory.");
 		throw tr::file_not_found{path.string()};
 	}
 	catch (tr::sys::ttfont_load_error& err) {
-		LOG(tr::severity::FATAL, "Failed to load font '{}'.", name);
-		LOG_CONTINUE("", err.description());
-		LOG_CONTINUE("", err.details());
 		tr::sys::show_fatal_error_message_box(err);
 		std::abort();
 	}
@@ -126,9 +116,7 @@ void engine::load_fonts()
 		}
 		language_preview_font.state = optional_font_state::USE_LANGUAGE;
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Falling back to linux_biolinum_rb.ttf.");
-		LOG_CONTINUE(err);
+	catch (std::exception&) {
 		language_font.state = optional_font_state::USE_FALLBACK;
 	}
 }
@@ -190,7 +178,6 @@ void engine::unload_fonts()
 	if (language_preview_font.state == optional_font_state::USE_STORED) {
 		language_preview_font->~optional_font_base();
 	}
-	LOG(tr::severity::INFO, "Unloaded all fonts.");
 }
 
 //

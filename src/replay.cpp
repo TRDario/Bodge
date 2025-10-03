@@ -53,8 +53,6 @@ replay::replay(const std::string& filename)
 	tr::decrypt_to(decrypted, encrypted);
 	tr::binary_read(decrypted, m_inputs);
 	m_next_it = m_inputs.begin();
-	LOG(tr::severity::INFO, "Loaded replay '{}'.", m_header.name);
-	LOG_CONTINUE("From: '{}'", path.string());
 }
 
 replay::replay(const replay& r)
@@ -114,12 +112,9 @@ void replay::save_to_file() const
 		tr::binary_write(bufstream, m_inputs);
 		tr::encrypt_to(buffer, bufstream.view(), engine::rng.generate<u8>());
 		tr::binary_write(file, buffer);
-		LOG(tr::severity::INFO, "Saved replay '{}'.", m_header.name);
-		LOG_CONTINUE("To: '{}'", path.string());
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to save replay:");
-		LOG_CONTINUE(err);
+	catch (std::exception&) {
+		return;
 	}
 }
 
@@ -159,27 +154,18 @@ std::map<std::string, replay_header> engine::load_replay_headers()
 				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
 				const u8 version{tr::binary_read<u8>(is)};
 				if (version != REPLAY_VERSION) {
-					LOG(tr::severity::WARN, "Ignored replay header.");
-					LOG_CONTINUE("From: '{}'", file.path().string());
-					LOG_CONTINUE("Unsupported replay version {:d}.", version);
 					continue;
 				}
 				replays.emplace(file.path().filename().string(),
 								tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
-				LOG(tr::severity::INFO, "Loaded replay header.");
-				LOG_CONTINUE("From: '{}'", file.path().string());
 			}
-			catch (std::exception& err) {
-				LOG(tr::severity::ERROR, "Failed to load replay header.");
-				LOG_CONTINUE("From: '{}'", file.path().string());
-				LOG_CONTINUE(err);
+			catch (std::exception&) {
+				continue;
 			}
 		}
-		LOG(tr::severity::INFO, "Loaded replay headers.");
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to load replay headers.");
-		LOG_CONTINUE(err);
+	catch (std::exception&) {
+		return replays;
 	}
 	return replays;
 }

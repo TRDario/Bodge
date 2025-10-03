@@ -37,9 +37,8 @@ void engine::set_icon()
 	try {
 		tr::sys::set_window_icon(tr::load_bitmap_file(cli_settings.data_directory / "graphics" / "icon.qoi"));
 	}
-	catch (std::exception& err) {
-		LOG(tr::severity::ERROR, "Failed to set window icon.");
-		LOG_CONTINUE(err);
+	catch (std::exception&) {
+		return;
 	}
 }
 
@@ -88,7 +87,6 @@ void engine::initialize_system()
 	tr::sys::set_window_vsync(settings.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
 	tr::sys::raise_window();
 	system.emplace();
-	LOG(tr::severity::INFO, "Initialized system.");
 }
 
 void engine::set_main_menu_state()
@@ -119,7 +117,6 @@ void engine::shut_down_system()
 {
 	system.reset();
 	tr::sys::close_window();
-	LOG(tr::severity::INFO, "Shut down system.");
 }
 
 ////////////////////////////////////////////////////////////////// INPUT //////////////////////////////////////////////////////////////////
@@ -170,7 +167,7 @@ void engine::redraw_if_needed()
 	if (system->redraw || settings.vsync) {
 		system->state.draw();
 		draw_cursor();
-		if (cli_settings.show_fps) {
+		if (cli_settings.show_perf) {
 			tr::gfx::debug_renderer& renderer{debug_renderer()};
 			renderer.write_right(system->state.update_benchmark(), "Update:", 1.0s / 1_s);
 			renderer.newline_right();
