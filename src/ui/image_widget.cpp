@@ -9,9 +9,7 @@ namespace engine {
 tr::bitmap engine::load_image(std::string_view texture)
 {
 	try {
-		const std::filesystem::path path{engine::cli_settings.data_directory / "graphics" / TR_FMT::format("{}.qoi", texture)};
-		tr::bitmap image{tr::load_bitmap_file(path)};
-		return image;
+		return tr::load_bitmap_file(engine::cli_settings.data_directory / "graphics" / TR_FMT::format("{}.qoi", texture));
 	}
 	catch (tr::bitmap_load_error&) {
 		return tr::create_checkerboard({64, 64});

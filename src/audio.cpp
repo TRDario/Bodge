@@ -30,7 +30,7 @@ std::filesystem::path engine::find_song_path(std::string_view name)
 std::optional<tr::audio::buffer> engine::load_audio_file(const char* filename)
 {
 	try {
-		return std::optional<tr::audio::buffer>{tr::audio::load_file(cli_settings.data_directory / "sounds" / filename)};
+		return tr::audio::load_file(cli_settings.data_directory / "sounds" / filename);
 	}
 	catch (tr::audio::file_open_error&) {
 		return std::nullopt;

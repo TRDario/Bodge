@@ -38,10 +38,9 @@ replay::replay(const gamemode& gamemode, u64 seed)
 
 replay::replay(const std::string& filename)
 {
-	const std::filesystem::path path{engine::cli_settings.user_directory / "replays" / filename};
 	std::vector<std::byte> encrypted;
 	std::vector<std::byte> decrypted;
-	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
+	std::ifstream file{tr::open_file_r(engine::cli_settings.user_directory / "replays" / filename, std::ios::binary)};
 
 	std::ignore = tr::binary_read<u8>(file);
 
