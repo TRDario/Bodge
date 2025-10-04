@@ -27,6 +27,7 @@ namespace engine {
 	tr::gfx::debug_renderer& debug_renderer();
 	blur_renderer& blur_renderer();
 	tooltip_manager& tooltip();
+	tr::gfx::gpu_benchmark& gpu_benchmark();
 
 	float render_scale();
 	const tr::gfx::render_target& screen();

@@ -165,17 +165,28 @@ void engine::handle_events()
 void engine::redraw_if_needed()
 {
 	if (system->redraw || settings.vsync) {
+		if (cli_settings.show_perf) {
+			gpu_benchmark().start();
+		}
 		system->state.draw();
 		draw_cursor();
 		if (cli_settings.show_perf) {
 			tr::gfx::debug_renderer& renderer{debug_renderer()};
 			renderer.write_right(system->state.update_benchmark(), "Update:", 1.0s / 1_s);
 			renderer.newline_right();
-			renderer.write_right(system->state.draw_benchmark(), "Render:", 1.0s / cli_settings.refresh_rate);
+			renderer.write_right(system->state.draw_benchmark(), "Render (CPU):", 1.0s / cli_settings.refresh_rate);
+			renderer.newline_right();
+			renderer.write_right(gpu_benchmark(), "Render (GPU):", 1.0s / cli_settings.refresh_rate);
 			renderer.draw();
+		}
+		if (cli_settings.show_perf) {
+			gpu_benchmark().stop();
 		}
 		tr::gfx::flip_backbuffer();
 		tr::gfx::clear_backbuffer();
+		if (cli_settings.show_perf) {
+			gpu_benchmark().fetch();
+		}
 		system->redraw = false;
 	}
 }

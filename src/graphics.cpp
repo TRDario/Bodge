@@ -4,12 +4,17 @@
 namespace engine {
 	tr::gfx::render_target setup_screen();
 
+	struct extra_graphics_data {
+		tr::gfx::debug_renderer debug;
+		tr::gfx::gpu_benchmark benchmark;
+	};
+
 	struct graphics_data {
 		graphics_data();
 
 		tr::gfx::render_target screen{setup_screen()};
 		tr::gfx::renderer_2d basic;
-		std::optional<tr::gfx::debug_renderer> debug;
+		std::optional<extra_graphics_data> extra;
 		::blur_renderer blur{screen.size().x};
 		tooltip_manager tooltip{basic};
 	};
@@ -49,7 +54,7 @@ void engine::initialize_graphics()
 {
 	graphics.emplace();
 	if (cli_settings.show_perf) {
-		graphics->debug.emplace();
+		graphics->extra.emplace();
 	}
 	tr::sys::show_window();
 }
@@ -67,7 +72,7 @@ tr::gfx::renderer_2d& engine::basic_renderer()
 
 tr::gfx::debug_renderer& engine::debug_renderer()
 {
-	return *graphics->debug;
+	return graphics->extra->debug;
 }
 
 blur_renderer& engine::blur_renderer()
@@ -78,6 +83,11 @@ blur_renderer& engine::blur_renderer()
 tooltip_manager& engine::tooltip()
 {
 	return graphics->tooltip;
+}
+
+tr::gfx::gpu_benchmark& engine::gpu_benchmark()
+{
+	return graphics->extra->benchmark;
 }
 
 float engine::render_scale()

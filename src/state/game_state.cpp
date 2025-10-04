@@ -13,10 +13,6 @@ constexpr tag T_INDICATOR{"indicator"};
 game_state::game_state(std::shared_ptr<game> game, game_type type, bool fade_in)
 	: state{{}, {}}, m_substate{(fade_in ? substate_base::FADING_IN : substate_base::ONGOING) | type}, m_game{std::move(game)}
 {
-	if (!fade_in) {
-		engine::unpause_song();
-	}
-
 	if (type == game_type::REPLAY) {
 		m_ui.emplace<label_widget>(T_REPLAY, glm::vec2{4, 1000}, tr::align::BOTTOM_LEFT, 0, NO_TOOLTIP, loc_text_callback{T_REPLAY},
 								   text_style::NORMAL, 48);

@@ -47,7 +47,7 @@ void engine::parse_command_line(int argc, const char** argv)
 			cli_settings.show_perf = true;
 		}
 		else if (arg == "--help") {
-			std::cout << "Bodge v1.1.2 by TRDario, 2025.\n"
+			std::cout << "Bodge v1.2.0 by TRDario, 2025.\n"
 						 "Supported arguments:\n"
 						 "--datadir <path>       - Overrides the data directory.\n"
 						 "--userdir <path>       - Overrides the user directory.\n"
