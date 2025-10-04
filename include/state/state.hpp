@@ -65,6 +65,7 @@ class start_game_state : public main_menu_state {
 	substate m_substate;
 	std::vector<gamemode> m_gamemodes;
 	std::vector<gamemode>::iterator m_selected;
+	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
 
 	float fade_overlay_opacity() override;
 	void set_up_exit_animation();
@@ -183,6 +184,7 @@ class scoreboard_state : public main_menu_state {
 	int m_page;
 	std::vector<score_category>::iterator m_selected;
 	std::vector<score_entry> m_sorted_scores;
+	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
 
 	friend substate operator|(const substate_base& l, const scoreboard& r);
 	friend substate_base to_base(substate state);
@@ -214,9 +216,11 @@ class replays_state : public main_menu_state {
 	substate m_substate;
 	u16 m_page;
 	std::map<std::string, replay_header> m_replays;
-	std::map<std::string, replay_header>::iterator m_selected;
+	std::map<std::string, replay_header>::const_iterator m_selected;
+	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
 
 	float fade_overlay_opacity() override;
+	std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets();
 	void set_up_ui();
 	void set_up_page_switch_animation();
 	void set_up_exit_animation();
@@ -289,6 +293,18 @@ class game_state : public state {
 	float fade_overlay_opacity() const;
 	void add_replay_cursor_to_renderer(glm::vec2 pos) const;
 };
+
+template <class T, class... Ts>
+std::future<std::unique_ptr<tr::state>> make_async_game_state(game_type type, bool fade_in, Ts&&... gargs)
+	requires(std::constructible_from<T, Ts...>)
+{
+	return std::async(
+		std::launch::async,
+		[]<class... Us>(game_type type, bool fade_in, Us&&... gargs) {
+			return (std::unique_ptr<tr::state>)std::make_unique<game_state>(std::make_shared<T>(std::forward<Us>(gargs)...), type, fade_in);
+		},
+		type, fade_in, std::forward<Ts>(gargs)...);
+}
 
 /////////////////////////////////////////////////////////////// PAUSE STATE ///////////////////////////////////////////////////////////////
 

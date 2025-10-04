@@ -115,15 +115,13 @@ void playerless_game::add_border_to_renderer() const
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
 
-tr::gfx::dyn_atlas<char> create_number_atlas()
+tr::gfx::bitmap_atlas<char> create_number_atlas()
 {
-	tr::gfx::dyn_atlas<char> atlas;
-	atlas.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
+	std::unordered_map<char, tr::bitmap> glyphs;
 	for (char chr : std::string_view{"0123456789:-"}) {
-		atlas.add(chr, engine::render_gradient_glyph(chr, font::DEFAULT, tr::sys::ttf_style::NORMAL, 64, 5));
+		glyphs.emplace(chr, engine::render_gradient_glyph(chr, font::DEFAULT, text_style::NORMAL, 64, 5));
 	}
-	TR_SET_LABEL(atlas, "(Bodge) Timer Atlas");
-	return atlas;
+	return tr::gfx::build_bitmap_atlas(glyphs);
 }
 
 game::game(const ::gamemode& gamemode, u64 rng_seed)
@@ -135,7 +133,6 @@ game::game(const ::gamemode& gamemode, u64 rng_seed)
 	, m_score{0}
 	, m_tock{false}
 {
-	engine::basic_renderer().set_default_layer_texture(layer::GAME_OVERLAY, m_number_atlas);
 }
 
 //
@@ -282,7 +279,7 @@ void game::check_if_player_is_hovering_over_lives()
 
 void game::check_if_player_is_hovering_over_score()
 {
-	const glm::vec2 size{text_size(std::to_string(m_score), 1 / engine::render_scale()) * 0.85f};
+	const glm::vec2 size{text_size(format_score(m_score), 1 / engine::render_scale()) * 0.85f};
 	const tr::frect2 timer_text_bounds{tl(SCORE_TEXT_POS, size, tr::align::TOP_RIGHT), size};
 	if (timer_text_bounds.contains(m_player.hitbox().c)) {
 		m_score_hover_timer.increment();
@@ -434,6 +431,13 @@ void game::set_screen_shake() const
 
 void game::add_to_renderer() const
 {
+	if (std::holds_alternative<tr::gfx::bitmap_atlas<char>>(m_number_atlas)) {
+		tr::gfx::bitmap_atlas<char> source{tr::unchecked_get<tr::gfx::bitmap_atlas<char>>(m_number_atlas)};
+		tr::gfx::dyn_atlas<char>& atlas{m_number_atlas.emplace<tr::gfx::dyn_atlas<char>>(std::move(source))};
+		atlas.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
+		engine::basic_renderer().set_default_layer_texture(layer::GAME_OVERLAY, atlas);
+	}
+
 	playerless_game::add_to_renderer();
 	for (const life_fragment& frag : m_life_fragments) {
 		frag.add_to_renderer(m_last_life_fragments_timer.elapsed());
@@ -471,11 +475,12 @@ void game::add_timer_to_renderer() const
 	const std::string text{format_time(time)};
 	glm::vec2 tl{TIMER_TEXT_POS - text_size(text, scale) / 2.0f};
 	for (char chr : text) {
-		const glm::vec2 char_size{glm::vec2{m_number_atlas.unnormalized(chr).size} / engine::render_scale() * scale};
+		const glm::vec2 char_size{glm::vec2{tr::unchecked_get<tr::gfx::dyn_atlas<char>>(m_number_atlas).unnormalized(chr).size} /
+								  engine::render_scale() * scale};
 
 		tr::gfx::simple_textured_mesh_ref character{engine::basic_renderer().new_textured_fan(layer::GAME_OVERLAY, 4)};
 		tr::fill_rectangle_vertices(character.positions, {tl, char_size});
-		tr::fill_rectangle_vertices(character.uvs, m_number_atlas[chr]);
+		tr::fill_rectangle_vertices(character.uvs, tr::unchecked_get<tr::gfx::dyn_atlas<char>>(m_number_atlas)[chr]);
 		std::ranges::fill(character.tints, tint);
 		tl.x += char_size.x - 5;
 	}
@@ -567,11 +572,12 @@ void game::add_score_to_renderer() const
 
 	glm::vec2 tl{tr::tl(SCORE_TEXT_POS, text_size(text, scale), tr::align::TOP_RIGHT)};
 	for (char chr : text) {
-		const glm::vec2 char_size{glm::vec2{m_number_atlas.unnormalized(chr).size} / engine::render_scale() * scale};
+		const glm::vec2 char_size{glm::vec2{tr::unchecked_get<tr::gfx::dyn_atlas<char>>(m_number_atlas).unnormalized(chr).size} /
+								  engine::render_scale() * scale};
 
 		tr::gfx::simple_textured_mesh_ref character{engine::basic_renderer().new_textured_fan(layer::GAME_OVERLAY, 4)};
 		tr::fill_rectangle_vertices(character.positions, {tl, char_size});
-		tr::fill_rectangle_vertices(character.uvs, m_number_atlas[chr]);
+		tr::fill_rectangle_vertices(character.uvs, tr::unchecked_get<tr::gfx::dyn_atlas<char>>(m_number_atlas)[chr]);
 		std::ranges::fill(character.tints, tint);
 		tl.x += char_size.x - 5;
 	}
@@ -589,7 +595,8 @@ glm::vec2 game::text_size(const std::string& text, float scale) const
 {
 	glm::vec2 size{};
 	for (char chr : text) {
-		const glm::vec2 char_size{glm::vec2{m_number_atlas.unnormalized(chr).size} / engine::render_scale() * scale};
+		const glm::vec2 char_size{glm::vec2{tr::unchecked_get<tr::gfx::dyn_atlas<char>>(m_number_atlas).unnormalized(chr).size} /
+								  engine::render_scale() * scale};
 		size = {size.x + char_size.x - 5, std::max<float>(size.y, char_size.y)};
 	}
 	return size;

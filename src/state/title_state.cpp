@@ -105,10 +105,10 @@ void title_state::set_up_ui()
 	m_ui.emplace<image_widget>(T_LOGO_BALL, LOGO_BALL_MOVE_IN, tr::align::CENTER, 2.5_s, 2, "logo_ball", engine::settings.secondary_hue);
 
 	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, 1_s, NO_TOOLTIP,
-												 string_text_callback{T_COPYRIGHT}, tr::sys::ttf_style::NORMAL, 24)};
+												 string_text_callback{T_COPYRIGHT}, text_style::NORMAL, 24)};
 	copyright.pos.change(tween::CUBIC, {4, 998 - copyright.size().y}, 1_s);
 	widget& version{m_ui.emplace<label_widget>(T_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, 1_s, NO_TOOLTIP,
-											   string_text_callback{T_VERSION}, tr::sys::ttf_style::NORMAL, 24)};
+											   string_text_callback{T_VERSION}, text_style::NORMAL, 24)};
 	version.pos.change(tween::CUBIC, {996, 998 - version.size().y}, 1_s);
 
 	const status_callback scb{

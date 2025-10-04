@@ -19,7 +19,7 @@ game_state::game_state(std::shared_ptr<game> game, game_type type, bool fade_in)
 
 	if (type == game_type::REPLAY) {
 		m_ui.emplace<label_widget>(T_REPLAY, glm::vec2{4, 1000}, tr::align::BOTTOM_LEFT, 0, NO_TOOLTIP, loc_text_callback{T_REPLAY},
-								   tr::sys::ttf_style::NORMAL, 48);
+								   text_style::NORMAL, 48);
 		m_ui.emplace<replay_playback_indicator_widget>(T_INDICATOR, glm::vec2{992, 994}, tr::align::BOTTOM_RIGHT, 0);
 	}
 }
@@ -31,8 +31,6 @@ std::unique_ptr<tr::state> game_state::handle_event(const tr::sys::event& event)
 	return event.visit(tr::overloaded{
 		[this](tr::sys::key_down_event event) -> std::unique_ptr<tr::state> {
 			if (to_base(m_substate) != substate_base::FADING_IN && event.key == tr::sys::keycode::ESCAPE) {
-				m_game->add_to_renderer();
-				engine::basic_renderer().draw(engine::blur_renderer().input());
 				engine::play_sound(sound::PAUSE, 0.8f, 0.0f);
 				engine::pause_song();
 				return std::make_unique<pause_state>(m_game, to_type(m_substate), engine::mouse_pos(), true);

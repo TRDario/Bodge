@@ -50,6 +50,23 @@ constexpr tweener<glm::vec2> PAGE_I_MOVE_IN{tween::CUBIC, {1050, 942.5}, {990, 9
 
 // clang-format on
 
+std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(enum score_widget::type type, const std::vector<score_entry>& scores,
+																	  int page)
+{
+	std::unordered_map<tag, std::unique_ptr<widget>> map;
+	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
+		const tweener<glm::vec2> move_in{tween::CUBIC, {i % 2 == 0 ? 600 : 400, 173 + 86 * i}, {500, 173 + 86 * i}, 0.25_s};
+		const usize rank{page * SCORES_PER_PAGE + i + 1};
+		const tr::opt_ref<const score_entry> score{
+			scores.size() > page * SCORES_PER_PAGE + i ? tr::opt_ref{scores.begin()[page * SCORES_PER_PAGE + i]} : std::nullopt,
+		};
+		map.emplace(SCORE_TAGS[i], std::make_unique<score_widget>(move_in, tr::align::CENTER, 0.25_s, type, rank, score));
+	}
+	return map;
+}
+
+//
+
 scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreboard scoreboard)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate_base::IN_SCOREBOARD | scoreboard}
@@ -150,15 +167,15 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 
 	//
 
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_PLAYER_INFO, glm::vec2{500, 64}, tr::align::TOP_CENTER, 0, NO_TOOLTIP, player_info_tcb,
-							   tr::sys::ttf_style::NORMAL, 32);
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE}, text_style::NORMAL,
+							   64);
+	m_ui.emplace<label_widget>(T_PLAYER_INFO, glm::vec2{500, 64}, tr::align::TOP_CENTER, 0, NO_TOOLTIP, player_info_tcb, text_style::NORMAL,
+							   32);
 	m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (engine::scorefile.categories.empty()) {
 		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, NO_SCORES_FOUND_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-								   loc_text_callback{T_NO_SCORES_FOUND}, tr::sys::ttf_style::NORMAL, 64, "80808080"_rgba8);
+								   loc_text_callback{T_NO_SCORES_FOUND}, text_style::NORMAL, 64, "80808080"_rgba8);
 		return;
 	}
 	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
@@ -170,11 +187,10 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 	}
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_D, GAMEMODE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, gamemode_change_scb, gamemode_d_acb);
 	m_ui.emplace<label_widget>(T_GAMEMODE_C, GAMEMODE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, cur_gamemode_ttcb, cur_gamemode_tcb,
-							   tr::sys::ttf_style::NORMAL, 48);
+							   text_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_I, GAMEMODE_I_MOVE_IN, tr::align::BOTTOM_RIGHT, 0.5_s, true, gamemode_change_scb, gamemode_i_acb);
 	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, page_d_scb, page_d_acb);
-	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, cur_page_tcb,
-							   tr::sys::ttf_style::NORMAL, 48);
+	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, cur_page_tcb, text_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_MOVE_IN, tr::align::BOTTOM_RIGHT, 0.5_s, true, page_i_scb, page_i_acb);
 }
 
@@ -192,17 +208,7 @@ std::unique_ptr<tr::state> scoreboard_state::update(tr::duration)
 			m_substate = substate_base::IN_SCOREBOARD | to_scoreboard(m_substate);
 		}
 		else if (m_timer == 0.25_s) {
-			m_sorted_scores = m_selected->scores;
-			std::ranges::sort(m_sorted_scores, to_scoreboard(m_substate) == scoreboard::SCORE ? compare_scores : compare_times);
-			for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
-				const bool nonempty{m_selected->scores.size() > m_page * SCORES_PER_PAGE + i};
-				score_widget& widget{m_ui.as<score_widget>(SCORE_TAGS[i])};
-				widget.rank = m_page * SCORES_PER_PAGE + i + 1;
-				widget.score = nonempty ? tr::opt_ref{m_sorted_scores.begin()[m_page * SCORES_PER_PAGE + i]} : std::nullopt;
-				widget.pos = {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y};
-				widget.pos.change(tween::CUBIC, {500, glm::vec2{widget.pos}.y}, 0.25_s);
-				widget.unhide(0.25_s);
-			}
+			m_ui.replace(m_next_widgets.get());
 		}
 		return nullptr;
 	case substate_base::EXITING_TO_SCOREBOARD_SELECTION:
@@ -234,6 +240,10 @@ void scoreboard_state::set_up_page_switch_animation()
 		widget.pos.change(tween::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.25_s);
 		widget.hide(0.25_s);
 	}
+	m_sorted_scores = m_selected->scores;
+	std::ranges::sort(m_sorted_scores, to_scoreboard(m_substate) == scoreboard::SCORE ? compare_scores : compare_times);
+	m_next_widgets =
+		std::async(std::launch::async, prepare_next_widgets, (enum score_widget::type)(to_scoreboard(m_substate)), m_sorted_scores, m_page);
 }
 
 void scoreboard_state::set_up_exit_animation()

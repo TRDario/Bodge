@@ -10,9 +10,9 @@ tooltip_manager::tooltip_manager(tr::gfx::renderer_2d& basic)
 
 void tooltip_manager::render(std::string_view text)
 {
-	const tr::bitmap render{engine::render_text(text, engine::determine_font(text), tr::sys::ttf_style::NORMAL, 20, 0, 800)};
+	const tr::bitmap render{engine::render_text(text, engine::determine_font(text), text_style::NORMAL, 20, 0, 800)};
 	m_last_text = text;
-	m_last_size = engine::text_size(text, engine::determine_font(text), tr::sys::ttf_style::NORMAL, 20, 0, 800);
+	m_last_size = engine::text_size(text, engine::determine_font(text), text_style::NORMAL, 20, 0, 800);
 	const glm::vec2 scaled_last_size{m_last_size * engine::render_scale()};
 
 	if (m_texture.size().x < scaled_last_size.x || m_texture.size().y < scaled_last_size.y) {

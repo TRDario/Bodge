@@ -15,6 +15,7 @@ class ui_manager {
 	template <class T, class... Args>
 		requires(std::constructible_from<T, Args...>)
 	T& emplace(tag tag, Args&&... args);
+	void replace(std::unordered_map<tag, std::unique_ptr<widget>>&& widgets);
 
 	void clear_selection();
 	void select_widget(tag tag);

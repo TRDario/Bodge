@@ -82,7 +82,7 @@ void widget::update()
 /////////////////////////////////////////////////////////////// TEXT WIDGET ///////////////////////////////////////////////////////////////
 
 text_widget::text_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
-						 text_callback text_cb, font font, tr::sys::ttf_style style, float font_size, int max_width)
+						 text_callback text_cb, font font, text_style style, float font_size, int max_width)
 	: widget{pos, alignment, unhide_time, tooltip_cb, writable}
 	, text_cb{text_cb}
 	, m_font{font}

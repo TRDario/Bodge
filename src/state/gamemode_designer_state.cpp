@@ -90,9 +90,6 @@ std::unique_ptr<tr::state> gamemode_designer_state::update(tr::duration)
 	case substate::IN_GAMEMODE_DESIGNER:
 		return nullptr;
 	case substate::ENTERING_TEST_GAME:
-		return m_timer >= 0.5_s
-				   ? std::make_unique<game_state>(std::make_unique<active_game>(m_pending), game_type::GAMEMODE_DESIGNER_TEST, true)
-				   : nullptr;
 	case substate::ENTERING_SUBMENU_OR_TITLE:
 		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
@@ -171,6 +168,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 			set_up_exit_animation();
 			engine::fade_song_out(0.5s);
+			m_next_state = make_async_game_state<active_game>(game_type::GAMEMODE_DESIGNER_TEST, true, m_pending);
 		},
 		[this] {
 			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
@@ -202,24 +200,24 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 
 	if (returning_from_subscreen) {
 		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::sys::ttf_style::NORMAL, 64);
+								   text_style::NORMAL, 64);
 	}
 	else {
 		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::sys::ttf_style::NORMAL, 64);
+								   text_style::NORMAL, 64);
 	}
-	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, tr::sys::ttf_style::NORMAL, 120, scb, name_enter_cb,
+	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, text_style::NORMAL, 120, scb, name_enter_cb,
 										m_pending.name);
-	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(author_tcb),
-							   tr::sys::ttf_style::NORMAL, 32);
-	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, tr::sys::ttf_style::ITALIC, 32, scb,
+	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(author_tcb), text_style::NORMAL,
+							   32);
+	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, text_style::ITALIC, 32, scb,
 										description_enter_cb, m_pending.description);
 	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, BALL_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 									 loc_text_callback{T_BALL_SETTINGS}, font::LANGUAGE, 64, scb, ball_settings_acb, sound::CONFIRM);
 	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, PLAYER_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 									 loc_text_callback{T_PLAYER_SETTINGS}, font::LANGUAGE, 64, scb, player_settings_acb, sound::CONFIRM);
-	m_ui.emplace<label_widget>(T_SONG, SONG_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SONG},
-							   tr::sys::ttf_style::NORMAL, 48);
+	m_ui.emplace<label_widget>(T_SONG, SONG_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SONG}, text_style::NORMAL,
+							   48);
 	m_ui.emplace<text_button_widget>(T_SONG_C, SONG_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, song_c_tcb, font::LANGUAGE, 64, scb,
 									 song_c_acb, sound::CONFIRM);
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {

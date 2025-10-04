@@ -147,19 +147,19 @@ void save_score_state::set_up_ui()
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
+							   text_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_RESULTS, RESULTS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_RESULTS},
-							   tr::sys::ttf_style::NORMAL, 48, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 48, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_TIME_LABEL, best_time_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TIME_LABEL},
-							   tr::sys::ttf_style::NORMAL, 32, "FFFF00C0"_rgba8);
-	m_ui.emplace<label_widget>(T_TIME, TIME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(time_tcb), tr::sys::ttf_style::NORMAL,
-							   64, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 32, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_TIME, TIME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(time_tcb), text_style::NORMAL, 64,
+							   "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_SCORE_LABEL, best_score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   loc_text_callback{T_SCORE_LABEL}, tr::sys::ttf_style::NORMAL, 32, "FFFF00C0"_rgba8);
-	m_ui.emplace<label_widget>(T_SCORE, SCORE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(score_tcb),
-							   tr::sys::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
+							   loc_text_callback{T_SCORE_LABEL}, text_style::NORMAL, 32, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_SCORE, SCORE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(score_tcb), text_style::NORMAL, 64,
+							   "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
-							   tr::sys::ttf_style::NORMAL, 48);
+							   text_style::NORMAL, 48);
 	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24, scb);
 	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
 									 font::LANGUAGE, 48, scb, save_acb, sound::CONFIRM);

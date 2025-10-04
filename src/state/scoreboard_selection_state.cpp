@@ -75,18 +75,18 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 	//
 
 	if (returning_from_subscreen) {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::sys::ttf_style::NORMAL, 64);
+		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE}, text_style::NORMAL,
+								   64);
 		m_ui.emplace<label_widget>(T_PLAYER_INFO, glm::vec2{500, 64}, tr::align::TOP_CENTER, 0, NO_TOOLTIP, player_info_tcb,
-								   tr::sys::ttf_style::NORMAL, 32);
+								   text_style::NORMAL, 32);
 		m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
 										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	}
 	else {
 		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::sys::ttf_style::NORMAL, 64);
+								   text_style::NORMAL, 64);
 		m_ui.emplace<label_widget>(T_PLAYER_INFO, PLAYER_INFO_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, player_info_tcb,
-								   tr::sys::ttf_style::NORMAL, 32);
+								   text_style::NORMAL, 32);
 		m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	}

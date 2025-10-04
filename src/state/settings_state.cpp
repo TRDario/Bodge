@@ -311,14 +311,14 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
+							   text_style::NORMAL, 64);
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		const label_info& label{LABELS[i]};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 158.5f + i * 75}, {15, 158.5f + i * 75}, 0.5_s};
 		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? "505050A0"_rgba8
 																											   : "A0A0A0A0"_rgba8};
 		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
-								   loc_text_callback{label.tag}, tr::sys::ttf_style::NORMAL, 48, color);
+								   loc_text_callback{label.tag}, text_style::NORMAL, 48, color);
 	}
 
 	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, DISPLAY_MODE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP,
@@ -332,7 +332,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	m_ui.emplace<text_button_widget>(T_VSYNC_C, VSYNC_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, vsync_c_tcb,
 									 font::LANGUAGE_PREVIEW, 48, scb, vsync_c_acb, sound::CONFIRM);
 	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, msaa_d_scb, msaa_d_acb);
-	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, msaa_c_tcb, tr::sys::ttf_style::NORMAL, 48);
+	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, msaa_c_tcb, text_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_MSAA_I, MSAA_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, msaa_i_scb, msaa_i_acb);
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, scb, primary_hue_d_acb);
 	m_ui.emplace<numeric_input_widget<u16, 3, "{}", "{}">>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,

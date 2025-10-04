@@ -11,7 +11,7 @@ class ui_manager;
 class label_widget : public text_widget {
   public:
 	label_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
-				 tr::sys::ttf_style style, float font_size, tr::rgba8 color = "A0A0A0A0"_rgba8);
+				 text_style style, float font_size, tr::rgba8 color = "A0A0A0A0"_rgba8);
 
 	tweener<tr::rgba8> color;
 
@@ -116,7 +116,7 @@ template <usize S> struct input_buffer {
 
 template <usize S> class line_input_widget : public input_buffer<S>, public text_widget {
   public:
-	line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size,
+	line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_style style, float font_size,
 					  status_callback status_cb, action_callback enter_cb, std::string_view initial_text);
 
 	void add_to_renderer() override;
@@ -254,41 +254,36 @@ struct replay_playback_indicator_widget : public widget {
 
 /////////////////////////////////////////////////////////////// SCORE WIDGET //////////////////////////////////////////////////////////////
 
-// Must be initialized before text_widget, so is separated out into its own struct.
-struct score_widget_data {
+struct score_widget : public text_widget {
 	enum class type {
 		TIME,
 		SCORE = 4
 	};
 
-	type type;
-	u32 rank;
-	tr::opt_ref<score_entry> score;
-};
-
-struct score_widget : public score_widget_data, public text_widget {
 	score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, enum type type, usize rank,
-				 tr::opt_ref<score_entry> score);
+				 tr::opt_ref<const score_entry> score);
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
+
+  private:
+	bool m_empty;
+	score_flags m_flags;
 };
 
 ////////////////////////////////////////////////////////////// REPLAY WIDGET //////////////////////////////////////////////////////////////
 
-using replay_widget_action_callback = std::function<void(std::map<std::string, replay_header>::iterator)>;
+using replay_widget_action_callback = std::function<void(std::map<std::string, replay_header>::const_iterator)>;
 
-// Must be initialized before text_widget, so is separated out into its own struct.
-struct replay_widget_data {
-	std::optional<std::map<std::string, replay_header>::iterator> it;
-};
-
-struct replay_widget : public replay_widget_data, public text_button_widget {
+struct replay_widget : public text_button_widget {
 	replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, status_callback scb, replay_widget_action_callback acb,
-				  std::optional<std::map<std::string, replay_header>::iterator> it);
+				  std::optional<std::map<std::string, replay_header>::const_iterator> it);
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;
+
+  private:
+	std::optional<std::map<std::string, replay_header>::const_iterator> m_it;
 };
 
 #include "line_input_widget_impl.hpp"

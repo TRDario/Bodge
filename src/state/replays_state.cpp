@@ -86,21 +86,10 @@ std::unique_ptr<tr::state> replays_state::update(tr::duration)
 			m_substate = substate::IN_REPLAYS;
 		}
 		else if (m_timer == 0.25_s) {
-			std::map<std::string, replay_header>::iterator it{std::next(m_replays.begin(), REPLAYS_PER_PAGE * m_page)};
-			for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
-				replay_widget& widget{m_ui.as<replay_widget>(REPLAY_TAGS[i])};
-				widget.it = it != m_replays.end() ? std::optional{it++} : std::nullopt;
-				widget.pos = {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y};
-				widget.pos.change(tween::CUBIC, {500, glm::vec2{widget.pos}.y}, 0.25_s);
-				widget.unhide(0.25_s);
-			}
+			m_ui.replace(m_next_widgets.get());
 		}
 		return nullptr;
 	case substate::STARTING_REPLAY:
-		return m_timer >= 0.5_s
-				   ? std::make_unique<game_state>(std::make_unique<replay_game>(m_selected->second.gamemode, replay{m_selected->first}),
-												  game_type::REPLAY, true)
-				   : nullptr;
 	case substate::ENTERING_TITLE:
 		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
@@ -122,6 +111,34 @@ float replays_state::fade_overlay_opacity()
 	}
 }
 
+std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_widgets()
+{
+	const status_callback scb{
+		[this] { return m_substate == substate::IN_REPLAYS; },
+	};
+	const replay_widget_action_callback acb{
+		[this](std::map<std::string, replay_header>::const_iterator it) {
+			m_substate = substate::STARTING_REPLAY;
+			m_timer = 0;
+			m_selected = it;
+			set_up_exit_animation();
+			engine::fade_song_out(0.5s);
+			m_next_state =
+				make_async_game_state<replay_game>(game_type::REPLAY, true, m_selected->second.gamemode, replay{m_selected->first});
+		},
+	};
+
+	std::unordered_map<tag, std::unique_ptr<widget>> map;
+	std::map<std::string, replay_header>::const_iterator it{std::next(m_replays.begin(), REPLAYS_PER_PAGE * m_page)};
+	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
+		const std::optional<std::map<std::string, replay_header>::const_iterator> opt_it{it != m_replays.end() ? std::optional{it++}
+																											   : std::nullopt};
+		const tweener<glm::vec2> move_in{tween::CUBIC, {i % 2 == 0 ? 600 : 400, 183 + 125 * i}, {500, 183 + 125 * i}, 0.25_s};
+		map.emplace(REPLAY_TAGS[i], std::make_unique<replay_widget>(move_in, tr::align::CENTER, 0.25_s, scb, acb, opt_it));
+	}
+	return map;
+}
+
 void replays_state::set_up_ui()
 {
 	// STATUS CALLBACKS
@@ -139,12 +156,14 @@ void replays_state::set_up_ui()
 	// ACTION CALLBACKS
 
 	const replay_widget_action_callback replay_acb{
-		[this](std::map<std::string, replay_header>::iterator it) {
+		[this](std::map<std::string, replay_header>::const_iterator it) {
 			m_substate = substate::STARTING_REPLAY;
 			m_timer = 0;
 			m_selected = it;
 			set_up_exit_animation();
 			engine::fade_song_out(0.5s);
+			m_next_state =
+				make_async_game_state<replay_game>(game_type::REPLAY, true, m_selected->second.gamemode, replay{m_selected->first});
 		},
 	};
 	const action_callback exit_acb{
@@ -181,12 +200,12 @@ void replays_state::set_up_ui()
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
+							   text_style::NORMAL, 64);
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (m_replays.empty()) {
 		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, NO_REPLAYS_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
-								   loc_text_callback{T_NO_REPLAYS_FOUND}, tr::sys::ttf_style::NORMAL, 64, "80808080"_rgba8);
+								   loc_text_callback{T_NO_REPLAYS_FOUND}, text_style::NORMAL, 64, "80808080"_rgba8);
 		return;
 	}
 	std::map<std::string, replay_header>::iterator it{m_replays.begin()};
@@ -197,8 +216,7 @@ void replays_state::set_up_ui()
 		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], move_in, tr::align::CENTER, 0.5_s, scb, replay_acb, opt_it);
 	}
 	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::align::BOTTOM_LEFT, 0.5_s, false, page_d_scb, page_d_acb);
-	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, page_c_tcb,
-							   tr::sys::ttf_style::NORMAL, 48);
+	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, page_c_tcb, text_style::NORMAL, 48);
 	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_MOVE_IN, tr::align::BOTTOM_RIGHT, 0.5_s, true, page_i_scb, page_i_acb);
 }
 
@@ -209,6 +227,7 @@ void replays_state::set_up_page_switch_animation()
 		widget.pos.change(tween::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.25_s);
 		widget.hide(0.25_s);
 	}
+	m_next_widgets = std::async(std::launch::async, &replays_state::prepare_next_widgets, this);
 }
 
 void replays_state::set_up_exit_animation()

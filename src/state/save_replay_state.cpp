@@ -73,6 +73,9 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 			if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
 				m_next_state = make_async<title_state>();
 			}
+			else {
+				m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, m_game->gamemode());
+			}
 		},
 	};
 	const action_callback discard_acb{
@@ -83,19 +86,22 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 			if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
 				m_next_state = make_async<title_state>();
 			}
+			else {
+				m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, m_game->gamemode());
+			}
 		},
 	};
 
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_NAME},
-							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, NAME_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, tr::sys::ttf_style::NORMAL, 64, scb,
+							   text_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_NAME}, text_style::NORMAL,
+							   48);
+	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, NAME_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, text_style::NORMAL, 64, scb,
 										name_acb, std::string_view{});
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
-							   tr::sys::ttf_style::NORMAL, 48);
+							   text_style::NORMAL, 48);
 	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24,
 											  scb);
 	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
@@ -111,12 +117,7 @@ std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
 	game_menu_state::update({});
 	if (m_timer >= 0.5_s && to_base(m_substate) == substate_base::EXITING) {
 		engine::basic_renderer().set_default_transform(TRANSFORM);
-		if (to_flags(m_substate) & save_screen_flags::RESTARTING) {
-			return std::make_unique<game_state>(std::make_unique<active_game>(m_game->gamemode()), game_type::REGULAR, true);
-		}
-		else {
-			return m_next_state.get();
-		}
+		return m_next_state.get();
 	}
 	else {
 		return nullptr;

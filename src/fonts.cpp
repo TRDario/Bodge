@@ -25,6 +25,7 @@ namespace engine {
 		optional_font_base* operator->();
 	};
 
+	std::mutex font_mutex;
 	std::optional<standard_fonts_t> standard_fonts;
 	optional_font language_font;
 	optional_font language_preview_font;
@@ -123,6 +124,8 @@ void engine::load_fonts()
 
 void engine::set_language_font()
 {
+	std::lock_guard font_lock{font_mutex};
+
 	if (language_preview_font.state == optional_font_state::USE_LANGUAGE) {
 		return;
 	}
@@ -140,6 +143,8 @@ void engine::set_language_font()
 
 void engine::reload_language_preview_font(const ::settings& pending)
 {
+	std::lock_guard font_lock{font_mutex};
+
 	const bool had_value{language_preview_font.state == optional_font_state::USE_STORED};
 	std::string new_font;
 	try {
@@ -171,6 +176,8 @@ void engine::reload_language_preview_font(const ::settings& pending)
 
 void engine::unload_fonts()
 {
+	std::lock_guard font_lock{font_mutex};
+
 	standard_fonts.reset();
 	if (language_font.state == optional_font_state::USE_STORED) {
 		language_font->~optional_font_base();
@@ -184,6 +191,8 @@ void engine::unload_fonts()
 
 font engine::determine_font(std::string_view text, font preferred)
 {
+	std::lock_guard font_lock{font_mutex};
+
 	tr::sys::ttfont& font{find_font(preferred)};
 	if (std::ranges::all_of(tr::utf8::range(text), [&](tr::codepoint chr) { return chr == '\n' || font.contains(chr); })) {
 		return preferred;
@@ -195,13 +204,17 @@ font engine::determine_font(std::string_view text, font preferred)
 
 float engine::line_skip(font font, float size)
 {
+	std::lock_guard font_lock{font_mutex};
+
 	tr::sys::ttfont& font_ref{find_font(font)};
 	font_ref.resize(size * render_scale());
 	return font_ref.line_skip() / render_scale();
 }
 
-glm::vec2 engine::text_size(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline, float max_w)
+glm::vec2 engine::text_size(std::string_view text, font font, text_style style, float size, float outline, float max_w)
 {
+	std::lock_guard font_lock{font_mutex};
+
 	const int scaled_outline{int(outline * render_scale())};
 	if (max_w != tr::sys::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * render_scale();
@@ -219,8 +232,10 @@ glm::vec2 engine::text_size(std::string_view text, font font, tr::sys::ttf_style
 	return glm::vec2{text_size} / render_scale();
 }
 
-usize engine::count_lines(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline, float max_w)
+usize engine::count_lines(std::string_view text, font font, text_style style, float size, float outline, float max_w)
 {
+	std::lock_guard font_lock{font_mutex};
+
 	const int scaled_outline{int(outline * render_scale())};
 	if (max_w != tr::sys::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * render_scale();
@@ -234,9 +249,10 @@ usize engine::count_lines(std::string_view text, font font, tr::sys::ttf_style s
 	return tr::sys::split_into_lines(text, font_ref, outline_max_w).size();
 }
 
-tr::bitmap engine::render_text(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline, float max_w,
-							   tr::halign align)
+tr::bitmap engine::render_text(std::string_view text, font font, text_style style, float size, float outline, float max_w, tr::halign align)
 {
+	std::lock_guard font_lock{font_mutex};
+
 	const int scaled_outline{int(outline * render_scale())};
 	if (max_w != tr::sys::UNLIMITED_WIDTH) {
 		max_w = (max_w - 2 * outline) * render_scale();
@@ -254,8 +270,10 @@ tr::bitmap engine::render_text(std::string_view text, font font, tr::sys::ttf_st
 	return render;
 }
 
-tr::bitmap engine::render_gradient_glyph(u32 glyph, font font, tr::sys::ttf_style style, float size, float outline)
+tr::bitmap engine::render_gradient_glyph(u32 glyph, font font, text_style style, float size, float outline)
 {
+	std::lock_guard font_lock{font_mutex};
+
 	const int scaled_outline{int(outline * render_scale())};
 
 	tr::sys::ttfont& font_ref{find_font(font)};

@@ -12,7 +12,7 @@ multiline_input_widget<S>::multiline_input_widget(tweener<glm::vec2> pos, tr::al
 				  true,
 				  [this] { return this->buffer.empty() ? std::string{engine::loc["empty"]} : std::string{this->buffer}; },
 				  font::LANGUAGE,
-				  tr::sys::ttf_style::NORMAL,
+				  text_style::NORMAL,
 				  font_size,
 				  int(width)}
 	, m_scb{std::move(status_cb)}
@@ -150,8 +150,7 @@ template <usize S> void multiline_input_widget<S>::on_write(std::string_view inp
 {
 	if (tr::utf8::length(this->buffer) + tr::utf8::length(input) <= S) {
 		this->buffer.append(input);
-		if (engine::count_lines(this->buffer, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) >
-			m_max_lines) {
+		if (engine::count_lines(this->buffer, font::LANGUAGE, text_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) > m_max_lines) {
 			this->buffer.resize(this->buffer.size() - input.size());
 		}
 		else {
@@ -162,8 +161,8 @@ template <usize S> void multiline_input_widget<S>::on_write(std::string_view inp
 
 template <usize S> void multiline_input_widget<S>::on_enter()
 {
-	if (tr::utf8::length(this->buffer) < S && engine::count_lines(this->buffer, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size,
-																  m_font_size / 12, m_size.x) < m_max_lines) {
+	if (tr::utf8::length(this->buffer) < S &&
+		engine::count_lines(this->buffer, font::LANGUAGE, text_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
 		this->buffer.append('\n');
 		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
 	}
@@ -199,8 +198,7 @@ template <usize S> void multiline_input_widget<S>::on_paste()
 						? std::string_view{pasted.begin(), tr::utf8::next(pasted.begin(), S - buffer_length)}
 						: pasted;
 			// Replace this with a smarter solution eventually, maybe.
-			if (engine::count_lines(copy, font::LANGUAGE, tr::sys::ttf_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) <=
-				m_max_lines) {
+			if (engine::count_lines(copy, font::LANGUAGE, text_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) <= m_max_lines) {
 				this->buffer = copy;
 			}
 			engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));

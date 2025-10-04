@@ -14,6 +14,7 @@ using namespace tr::color_literals;
 using namespace tr::integer_literals;
 using namespace tr::integer_aliases;
 using namespace tr::matrix_operators;
+using text_style = tr::sys::ttf_style;
 
 ///////////////////////////////////////////////////////////////// TICKRATE ////////////////////////////////////////////////////////////////
 

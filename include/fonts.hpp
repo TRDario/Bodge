@@ -17,11 +17,11 @@ namespace engine {
 
 	font determine_font(std::string_view text, font preferred = font::LANGUAGE);
 	float line_skip(font font, float size);
-	glm::vec2 text_size(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline,
+	glm::vec2 text_size(std::string_view text, font font, text_style style, float size, float outline,
 						float max_w = tr::sys::UNLIMITED_WIDTH);
-	usize count_lines(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline,
+	usize count_lines(std::string_view text, font font, text_style style, float size, float outline,
 					  float max_w = tr::sys::UNLIMITED_WIDTH);
-	tr::bitmap render_text(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline,
+	tr::bitmap render_text(std::string_view text, font font, text_style style, float size, float outline,
 						   float max_w = tr::sys::UNLIMITED_WIDTH, tr::halign align = tr::halign::LEFT);
-	tr::bitmap render_gradient_glyph(u32 glyph, font font, tr::sys::ttf_style style, float size, float outline);
+	tr::bitmap render_gradient_glyph(u32 glyph, font font, text_style style, float size, float outline);
 }; // namespace engine

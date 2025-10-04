@@ -25,8 +25,8 @@ std::string format_playtime(ticks playtime)
 
 std::string format_timestamp(i64 timestamp)
 {
-	const tm* tm{std::localtime(&timestamp)};
-	return TR_FMT::format("{}/{:02}/{:02} {:02}:{:02}", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min);
+	const std::tm time{tr::localtime(timestamp)};
+	return TR_FMT::format("{}/{:02}/{:02} {:02}:{:02}", time.tm_year + 1900, time.tm_mon + 1, time.tm_mday, time.tm_hour, time.tm_min);
 }
 
 //

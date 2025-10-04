@@ -1,7 +1,7 @@
 #include "../../include/ui/widget.hpp"
 
 label_widget::label_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
-						   tr::sys::ttf_style style, float font_size, tr::rgba8 color)
+						   text_style style, float font_size, tr::rgba8 color)
 	: text_widget{pos,
 				  alignment,
 				  unhide_time,

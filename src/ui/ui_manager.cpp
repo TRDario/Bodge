@@ -19,6 +19,15 @@ widget& ui_manager::operator[](tag tag)
 
 //
 
+void ui_manager::replace(std::unordered_map<tag, std::unique_ptr<widget>>&& widgets)
+{
+	for (auto& [tag, widget] : widgets) {
+		m_widgets.insert_or_assign(tag, std::move(widget));
+	}
+}
+
+//
+
 void ui_manager::clear_selection()
 {
 	change_selection(std::nullopt);

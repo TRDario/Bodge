@@ -61,7 +61,7 @@ class game : private playerless_game {
 	void update(const glm::vec2& input);
 
   private:
-	tr::gfx::dyn_atlas<char> m_number_atlas;
+	mutable std::variant<tr::gfx::bitmap_atlas<char>, tr::gfx::dyn_atlas<char>> m_number_atlas;
 	player m_player;
 	tr::static_vector<life_fragment, 9> m_life_fragments;
 	std::array<fragment, 6> m_shattered_life_fragments;

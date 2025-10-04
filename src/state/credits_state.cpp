@@ -52,22 +52,22 @@ credits_state::credits_state(std::shared_ptr<playerless_game> game)
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
+							   text_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_BODGE, glm::vec2{400, 210}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text_callback{T_BODGE},
-							   tr::sys::ttf_style::NORMAL, 128);
+							   text_style::NORMAL, 128);
 	m_ui.emplace<label_widget>(T_VERSION, glm::vec2{600, 290}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text_callback{T_VERSION},
-							   tr::sys::ttf_style::NORMAL, 32);
+							   text_style::NORMAL, 32);
 	m_ui.emplace<label_widget>(T_DEVELOPED_BY, glm::vec2{400, 410}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
-							   loc_text_callback{T_DEVELOPED_BY}, tr::sys::ttf_style::NORMAL, 64);
+							   loc_text_callback{T_DEVELOPED_BY}, text_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_TRDARIO, glm::vec2{600, 470}, tr::align::CENTER, DONT_UNHIDE, loc_text_callback{"trdario_tt"},
-							   string_text_callback{T_TRDARIO}, tr::sys::ttf_style::NORMAL, 48, "FF8080A0"_rgba8);
+							   string_text_callback{T_TRDARIO}, text_style::NORMAL, 48, "FF8080A0"_rgba8);
 	m_ui.emplace<image_widget>(T_ART, glm::vec2{500, 550}, tr::align::TOP_CENTER, DONT_UNHIDE, 0, "credits_art");
 	m_ui.emplace<label_widget>(T_PLAYTESTERS, glm::vec2{400, 710}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
-							   loc_text_callback{T_PLAYTESTERS}, tr::sys::ttf_style::NORMAL, 64);
+							   loc_text_callback{T_PLAYTESTERS}, text_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_STARSURGE, glm::vec2{600, 770}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
-							   string_text_callback{T_STARSURGE}, tr::sys::ttf_style::NORMAL, 48);
+							   string_text_callback{T_STARSURGE}, text_style::NORMAL, 48);
 	m_ui.emplace<label_widget>(T_TOWELI, glm::vec2{400, 820}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text_callback{T_TOWELI},
-							   tr::sys::ttf_style::NORMAL, 48);
+							   text_style::NORMAL, 48);
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 }

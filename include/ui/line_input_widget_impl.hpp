@@ -2,8 +2,8 @@
 #include "widget.hpp"
 
 template <usize S>
-line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
-										float font_size, status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
+line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_style style, float font_size,
+										status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
 	: input_buffer<S>{initial_text}
 	, text_widget{pos,
 				  alignment,

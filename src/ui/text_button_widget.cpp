@@ -3,11 +3,8 @@
 text_button_widget::text_button_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb,
 									   text_callback text_cb, font font, float font_size, status_callback status_cb,
 									   action_callback action_cb, sound action_sound)
-	: text_widget{pos,         alignment,
-				  unhide_time, std::move(tooltip_cb),
-				  false,       std::move(text_cb),
-				  font,        tr::sys::ttf_style::NORMAL,
-				  font_size,   tr::sys::UNLIMITED_WIDTH}
+	: text_widget{pos,  alignment,          unhide_time, std::move(tooltip_cb),   false, std::move(text_cb),
+				  font, text_style::NORMAL, font_size,   tr::sys::UNLIMITED_WIDTH}
 	, m_scb{std::move(status_cb)}
 	, m_acb{std::move(action_cb)}
 	, m_action_sound{action_sound}

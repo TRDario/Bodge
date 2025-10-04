@@ -53,8 +53,8 @@ name_entry_state::name_entry_state()
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 1.0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<line_input_widget<20>>(T_INPUT, glm::vec2{500, 500}, tr::align::CENTER, 1.0_s, tr::sys::ttf_style::NORMAL, 64, input_scb,
+							   text_style::NORMAL, 64);
+	m_ui.emplace<line_input_widget<20>>(T_INPUT, glm::vec2{500, 500}, tr::align::CENTER, 1.0_s, text_style::NORMAL, 64, input_scb,
 										action_cb, std::string_view{});
 	m_ui.emplace<text_button_widget>(T_CONFIRM, CONFIRM_MOVE_IN, tr::align::BOTTOM_CENTER, 1.0_s, NO_TOOLTIP, loc_text_callback{T_CONFIRM},
 									 font::LANGUAGE, 48, confirm_scb, action_cb, sound::CONFIRM);

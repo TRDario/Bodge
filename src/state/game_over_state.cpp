@@ -83,6 +83,7 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 			m_substate = substate::RESTARTING;
 			engine::scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
+			m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, m_game->gamemode());
 		},
 		[this] {
 			m_timer = 0;
@@ -128,20 +129,20 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 
 	//
 
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE}, text_style::NORMAL,
+							   64);
 	m_ui.emplace<label_widget>(T_TIME_LABEL, time_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TIME_LABEL},
-							   tr::sys::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
-	m_ui.emplace<label_widget>(T_TIME, time_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(time_tcb), tr::sys::ttf_style::NORMAL,
-							   64, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 24, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_TIME, time_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(time_tcb), text_style::NORMAL, 64,
+							   "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_BEST_TIME, best_time_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_time_tcb),
-							   tr::sys::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 24, "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_SCORE_LABEL, score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SCORE_LABEL},
-							   tr::sys::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
-	m_ui.emplace<label_widget>(T_SCORE, score_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(score_tcb),
-							   tr::sys::ttf_style::NORMAL, 64, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 24, "FFFF00C0"_rgba8);
+	m_ui.emplace<label_widget>(T_SCORE, score_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(score_tcb), text_style::NORMAL, 64,
+							   "FFFF00C0"_rgba8);
 	m_ui.emplace<label_widget>(T_BEST_SCORE, best_score_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_score_tcb),
-							   tr::sys::ttf_style::NORMAL, 24, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 24, "FFFF00C0"_rgba8);
 	for (usize i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
@@ -182,10 +183,8 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 		}
 		return nullptr;
 	case substate::SAVING:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	case substate::RESTARTING:
-		return m_timer >= 0.5_s ? std::make_unique<game_state>(std::make_unique<active_game>(m_game->gamemode()), game_type::REGULAR, true)
-								: nullptr;
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	case substate::QUITTING:
 		if (m_timer >= 0.5_s) {
 			engine::play_song("menu", 1.0s);
