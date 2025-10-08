@@ -10,10 +10,10 @@
 #include "../include/settings.hpp"
 #include "../include/system.hpp"
 
-tr::sys::result tr::sys::user_defined::initialize(std::span<const char*> args)
+tr::sys::signal tr::sys::user_defined::initialize(std::span<const char*> args)
 {
-	if (engine::parse_command_line(args) == tr::sys::result::SUCCESS) {
-		return result::SUCCESS;
+	if (engine::parse_command_line(args) == signal::SUCCESS) {
+		return signal::SUCCESS;
 	}
 	engine::load_settings();
 	engine::load_scorefile();
@@ -24,19 +24,19 @@ tr::sys::result tr::sys::user_defined::initialize(std::span<const char*> args)
 	engine::initialize_system();
 	engine::initialize_graphics();
 	engine::set_main_menu_state();
-	return result::CONTINUE;
+	return signal::CONTINUE;
 }
 
-tr::sys::result tr::sys::user_defined::handle_event(event& event)
+tr::sys::signal tr::sys::user_defined::handle_event(event& event)
 {
 	engine::handle_event(event);
-	return engine::active() ? result::CONTINUE : result::SUCCESS;
+	return engine::active() ? signal::CONTINUE : signal::SUCCESS;
 }
 
-tr::sys::result tr::sys::user_defined::iterate()
+tr::sys::signal tr::sys::user_defined::iterate()
 {
 	engine::redraw();
-	return result::CONTINUE;
+	return signal::CONTINUE;
 }
 
 void tr::sys::user_defined::quit()

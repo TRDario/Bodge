@@ -25,7 +25,7 @@ u16 max_window_size()
 
 //
 
-tr::sys::result engine::parse_command_line(std::span<const char*> args)
+tr::sys::signal engine::parse_command_line(std::span<const char*> args)
 {
 	for (auto it = args.begin(); it != args.end(); ++it) {
 		const std::string_view arg{*it};
@@ -53,7 +53,7 @@ tr::sys::result engine::parse_command_line(std::span<const char*> args)
 						 "--refreshrate <number> - Overrides the refresh rate.\n"
 						 "--gamespeed <factor>   - Overrides the speed multiplier.\n"
 						 "--showperf             - Shows performance information.\n";
-			return tr::sys::result::SUCCESS;
+			return tr::sys::signal::SUCCESS;
 		}
 	}
 
@@ -74,7 +74,7 @@ tr::sys::result engine::parse_command_line(std::span<const char*> args)
 		}
 	}
 
-	return tr::sys::result::CONTINUE;
+	return tr::sys::signal::CONTINUE;
 }
 
 void engine::raw_load_settings()

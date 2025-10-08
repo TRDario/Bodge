@@ -45,7 +45,7 @@ struct settings {
 
 namespace engine {
 	inline cli_settings cli_settings{};
-	tr::sys::result parse_command_line(std::span<const char*> args);
+	tr::sys::signal parse_command_line(std::span<const char*> args);
 
 	inline settings settings{};
 	void load_settings();
