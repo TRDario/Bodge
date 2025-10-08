@@ -38,23 +38,17 @@ namespace engine {
 
 tr::sys::ttfont engine::load_font(std::string_view name)
 {
-	try {
-		std::filesystem::path path{cli_settings.data_directory / "fonts" / name};
-		if (std::filesystem::is_regular_file(path)) {
-			tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
-			return font;
-		}
-		path = cli_settings.user_directory / "fonts" / name;
-		if (std::filesystem::is_regular_file(path)) {
-			tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
-			return font;
-		}
-		throw tr::file_not_found{path.string()};
+	std::filesystem::path path{cli_settings.data_directory / "fonts" / name};
+	if (std::filesystem::is_regular_file(path)) {
+		tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
+		return font;
 	}
-	catch (tr::sys::ttfont_load_error& err) {
-		tr::sys::show_fatal_error_message_box(err);
-		std::abort();
+	path = cli_settings.user_directory / "fonts" / name;
+	if (std::filesystem::is_regular_file(path)) {
+		tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
+		return font;
 	}
+	throw tr::file_not_found{path.string()};
 }
 
 engine::optional_font_base& engine::optional_font::operator*()

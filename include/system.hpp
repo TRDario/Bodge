@@ -9,8 +9,8 @@ namespace engine {
 	void shut_down_system();
 
 	bool active();
-	void handle_events();
-	void redraw_if_needed();
+	void handle_event(tr::sys::event& event);
+	void redraw();
 
 	tr::sys::keymod held_keymods();
 	template <class T> T keymods_choose(T min, T mid, T max); // Chooses one out of 3 options based on the held keymods.

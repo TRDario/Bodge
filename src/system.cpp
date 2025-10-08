@@ -15,12 +15,8 @@ namespace engine {
 	struct system_data {
 		// Timer that emits ticking events.
 		tr::timer tick_timer{tr::sys::create_tick_timer(240 * cli_settings.game_speed, 0)};
-		// Timer that emits drawing events.
-		tr::timer draw_timer{tr::sys::create_draw_timer(cli_settings.refresh_rate)};
 		// State manager.
 		tr::state_manager state;
-		// Whether the screen should be redrawn. If above 1, ticks will be paused to catch up.
-		int redraw{true};
 		// The held keyboard modifiers.
 		tr::sys::keymod held_keymods{tr::sys::keymod::NONE};
 		// The position of the mouse.
@@ -84,6 +80,7 @@ void engine::initialize_system()
 	}
 	set_icon();
 	tr::sys::set_window_vsync(settings.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
+	tr::sys::set_iteration_frequency(settings.vsync ? 0 : cli_settings.refresh_rate);
 	tr::sys::raise_window();
 	system.emplace();
 }
@@ -125,62 +122,52 @@ bool engine::active()
 	return system->state.state != nullptr;
 }
 
-void engine::handle_events()
+void engine::handle_event(tr::sys::event& event)
 {
-	tr::sys::handle_events([](tr::sys::event event) {
-		event.visit(tr::overloaded{
-			[](tr::sys::tick_event) {
-				if (system->redraw < 2) {
-					system->state.update(0s);
-				}
-			},
-			[](tr::sys::draw_event) { ++system->redraw; },
-			[](tr::sys::quit_event) { system->state.state.reset(); },
-			[](tr::sys::window_gain_focus_event) { tr::sys::set_mouse_relative_mode(true); },
-			[](tr::sys::window_lose_focus_event) { tr::sys::set_mouse_relative_mode(false); },
-			[](tr::sys::key_down_event event) { system->held_keymods = event.mods; },
-			[](tr::sys::key_up_event event) { system->held_keymods = event.mods; },
-			[](tr::sys::mouse_motion_event event) {
-				if (!tr::sys::window_has_focus()) {
-					return;
-				}
-				const glm::vec2 delta{event.delta / render_scale() * tr::sys::window_pixel_density()};
-				system->mouse_pos = glm::clamp(system->mouse_pos + delta, 0.0f, 1000.0f);
-			},
-			[](tr::sys::mouse_down_event event) { system->held_buttons |= event.button; },
-			[](tr::sys::mouse_up_event event) { system->held_buttons &= ~event.button; },
-			[](auto) {},
-		});
-		system->state.handle_event(event);
+	event.visit(tr::overloaded{
+		[](tr::sys::tick_event) { system->state.update(0s); },
+		[](tr::sys::quit_event) { system->state.state.reset(); },
+		[](tr::sys::window_gain_focus_event) { tr::sys::set_mouse_relative_mode(true); },
+		[](tr::sys::window_lose_focus_event) { tr::sys::set_mouse_relative_mode(false); },
+		[](tr::sys::key_down_event event) { system->held_keymods = event.mods; },
+		[](tr::sys::key_up_event event) { system->held_keymods = event.mods; },
+		[](tr::sys::mouse_motion_event event) {
+			if (!tr::sys::window_has_focus()) {
+				return;
+			}
+			const glm::vec2 delta{event.delta / render_scale() * tr::sys::window_pixel_density()};
+			system->mouse_pos = glm::clamp(system->mouse_pos + delta, 0.0f, 1000.0f);
+		},
+		[](tr::sys::mouse_down_event event) { system->held_buttons |= event.button; },
+		[](tr::sys::mouse_up_event event) { system->held_buttons &= ~event.button; },
+		[](auto) {},
 	});
+	system->state.handle_event(event);
 }
 
-void engine::redraw_if_needed()
+void engine::redraw()
 {
-	if (system->redraw || settings.vsync) {
-		if (cli_settings.show_perf) {
-			gpu_benchmark().start();
-		}
-		system->state.draw();
-		draw_cursor();
-		if (cli_settings.show_perf) {
-			tr::gfx::debug_renderer& renderer{debug_renderer()};
-			renderer.write_right(system->state.update_benchmark(), "Update:", 1.0s / 1_s);
-			renderer.newline_right();
-			renderer.write_right(system->state.draw_benchmark(), "Render (CPU):", 1.0s / cli_settings.refresh_rate);
-			renderer.newline_right();
-			renderer.write_right(gpu_benchmark(), "Render (GPU):", 1.0s / cli_settings.refresh_rate);
-			renderer.draw();
-		}
-		if (cli_settings.show_perf) {
-			gpu_benchmark().stop();
-		}
-		tr::gfx::flip_backbuffer();
-		tr::gfx::clear_backbuffer();
-		if (cli_settings.show_perf) {
-			gpu_benchmark().fetch();
-		}
-		system->redraw = false;
+	if (cli_settings.show_perf) {
+		gpu_benchmark().start();
+	}
+	system->state.draw();
+	draw_cursor();
+	if (cli_settings.show_perf) {
+		tr::gfx::debug_renderer& renderer{debug_renderer()};
+		renderer.write_right(system->state.update_benchmark(), "Update:", 1.0s / 1_s);
+		renderer.newline_right();
+		renderer.write_right(system->state.draw_benchmark(), "Render (CPU):", 1.0s / cli_settings.refresh_rate);
+		renderer.newline_right();
+		renderer.write_right(gpu_benchmark(), "Render (GPU):", 1.0s / cli_settings.refresh_rate);
+		renderer.draw();
+	}
+	if (cli_settings.show_perf) {
+		gpu_benchmark().stop();
+	}
+	tr::gfx::flip_backbuffer();
+	tr::gfx::clear_backbuffer();
+	if (cli_settings.show_perf) {
+		gpu_benchmark().fetch();
 	}
 }
 

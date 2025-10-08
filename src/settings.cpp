@@ -25,22 +25,22 @@ u16 max_window_size()
 
 //
 
-void engine::parse_command_line(int argc, const char** argv)
+tr::sys::result engine::parse_command_line(std::span<const char*> args)
 {
-	for (int i = 1; i < argc; ++i) {
-		const std::string_view arg{argv[i]};
+	for (auto it = args.begin(); it != args.end(); ++it) {
+		const std::string_view arg{*it};
 
-		if (arg == "--datadir" && ++i < argc) {
-			cli_settings.data_directory = argv[i];
+		if (arg == "--datadir" && ++it < args.end()) {
+			cli_settings.data_directory = *it;
 		}
-		else if (arg == "--userdir" && ++i < argc) {
-			cli_settings.user_directory = argv[i];
+		else if (arg == "--userdir" && ++it < args.end()) {
+			cli_settings.user_directory = *it;
 		}
-		else if (arg == "--refreshrate" && ++i < argc) {
-			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.refresh_rate);
+		else if (arg == "--refreshrate" && ++it < args.end()) {
+			std::from_chars(*it, *it + std::strlen(*it), cli_settings.refresh_rate);
 		}
-		else if (arg == "--gamespeed" && ++i < argc) {
-			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.game_speed);
+		else if (arg == "--gamespeed" && ++it < args.end()) {
+			std::from_chars(*it, *it + std::strlen(*it), cli_settings.game_speed);
 		}
 		else if (arg == "--showperf") {
 			cli_settings.show_perf = true;
@@ -53,11 +53,11 @@ void engine::parse_command_line(int argc, const char** argv)
 						 "--refreshrate <number> - Overrides the refresh rate.\n"
 						 "--gamespeed <factor>   - Overrides the speed multiplier.\n"
 						 "--showperf             - Shows performance information.\n";
-			std::exit(EXIT_SUCCESS);
+			return tr::sys::result::SUCCESS;
 		}
 	}
 
-	tr::sys::initialize("TRDario", "Bodge");
+	tr::sys::set_app_information("TRDario", "Bodge", VERSION_STRING);
 	if (cli_settings.data_directory.empty()) {
 		cli_settings.data_directory = tr::sys::executable_dir() / "data";
 	}
@@ -73,6 +73,8 @@ void engine::parse_command_line(int argc, const char** argv)
 			std::filesystem::create_directory(path);
 		}
 	}
+
+	return tr::sys::result::CONTINUE;
 }
 
 void engine::raw_load_settings()
