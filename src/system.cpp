@@ -3,6 +3,7 @@
 #include "../include/graphics.hpp"
 #include "../include/settings.hpp"
 #include "../include/state/state.hpp"
+#include <SDL3/SDL.h>
 
 namespace engine {
 	// Sets the program icon.
@@ -26,8 +27,6 @@ namespace engine {
 		glm::vec2 mouse_pos{500, 500};
 		// The held mouse buttons.
 		tr::sys::mouse_button held_buttons{};
-
-		int mouse_focus{};
 	};
 	std::optional<system_data> system;
 } // namespace engine
@@ -137,14 +136,8 @@ void engine::handle_events()
 			},
 			[](tr::sys::draw_event) { ++system->redraw; },
 			[](tr::sys::quit_event) { system->state.state.reset(); },
-			[](tr::sys::window_gain_focus_event) {
-				tr::sys::show_cursor(false);
-				tr::sys::set_mouse_relative_mode(true);
-			},
-			[](tr::sys::window_lose_focus_event) {
-				tr::sys::show_cursor(true);
-				tr::sys::set_mouse_relative_mode(false);
-			},
+			[](tr::sys::window_gain_focus_event) { tr::sys::set_mouse_relative_mode(true); },
+			[](tr::sys::window_lose_focus_event) { tr::sys::set_mouse_relative_mode(false); },
 			[](tr::sys::key_down_event event) { system->held_keymods = event.mods; },
 			[](tr::sys::key_up_event event) { system->held_keymods = event.mods; },
 			[](tr::sys::mouse_motion_event event) {

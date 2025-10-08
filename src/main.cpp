@@ -13,7 +13,6 @@
 int main(int argc, const char** argv)
 {
 	try {
-		tr::sys::initialize("TRDario", "Bodge");
 		engine::parse_command_line(argc, argv);
 		engine::load_settings();
 		engine::load_scorefile();

@@ -48,9 +48,10 @@
 |                                                                                                           - TRDario |
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
-| v1.2.0 (04 Oct 2025)                                                                                                |
+| v1.2.0 (05 Oct 2025)                                                                                                |
 | * Rewrote state changes to be multithreaded, reducing lag between screen transitions.                               |
-| * Fixed hovering over the score text.                                                                               |
+| * Tried to make frame times more stable when playing on higher framerates on Windows.                               |
+| * Fixed hovering over the score text not hiding it.                                                                 |
 | v1.1.1 (06 Sep 2025)                                                                                                |
 | * Added vertical synchronization to settings.                                                                       |
 | * Made the credits appear a bit faster.                                                                             |

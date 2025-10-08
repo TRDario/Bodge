@@ -6,7 +6,7 @@
 struct cli_settings {
 	std::filesystem::path data_directory;
 	std::filesystem::path user_directory;
-	float refresh_rate{0};
+	float refresh_rate{+INFINITY};
 	float game_speed{1.0f};
 #ifdef TR_ENABLE_ASSERTS
 	bool show_perf{true};

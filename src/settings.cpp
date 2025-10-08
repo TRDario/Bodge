@@ -38,7 +38,6 @@ void engine::parse_command_line(int argc, const char** argv)
 		}
 		else if (arg == "--refreshrate" && ++i < argc) {
 			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.refresh_rate);
-			cli_settings.refresh_rate = std::clamp(cli_settings.refresh_rate, 1.0f, tr::sys::refresh_rate());
 		}
 		else if (arg == "--gamespeed" && ++i < argc) {
 			std::from_chars(argv[i], argv[i] + std::strlen(argv[i]), cli_settings.game_speed);
@@ -53,20 +52,19 @@ void engine::parse_command_line(int argc, const char** argv)
 						 "--userdir <path>       - Overrides the user directory.\n"
 						 "--refreshrate <number> - Overrides the refresh rate.\n"
 						 "--gamespeed <factor>   - Overrides the speed multiplier.\n"
-						 "--showperf             - Enables performance information.\n";
+						 "--showperf             - Shows performance information.\n";
 			std::exit(EXIT_SUCCESS);
 		}
 	}
 
+	tr::sys::initialize("TRDario", "Bodge");
 	if (cli_settings.data_directory.empty()) {
 		cli_settings.data_directory = tr::sys::executable_dir() / "data";
 	}
 	if (cli_settings.user_directory.empty()) {
 		cli_settings.user_directory = tr::sys::user_dir();
 	}
-	if (cli_settings.refresh_rate == 0) {
-		cli_settings.refresh_rate = tr::sys::refresh_rate();
-	}
+	cli_settings.refresh_rate = std::clamp(cli_settings.refresh_rate, 1.0f, tr::sys::refresh_rate());
 
 	constexpr std::array<const char*, 5> DIRECTORIES{"localization", "fonts", "music", "replays", "gamemodes"};
 	for (const char* directory : DIRECTORIES) {
