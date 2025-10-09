@@ -4,16 +4,15 @@
 
 #include "../include/audio.hpp"
 #include "../include/fonts.hpp"
-#include "../include/global.hpp"
 #include "../include/graphics.hpp"
 #include "../include/score.hpp"
 #include "../include/settings.hpp"
 #include "../include/system.hpp"
 
-tr::sys::signal tr::sys::user_defined::initialize(std::span<const char*> args)
+tr::sys::signal initialize(std::span<const char*> args)
 {
-	if (engine::parse_command_line(args) == signal::SUCCESS) {
-		return signal::SUCCESS;
+	if (engine::parse_command_line(args) == tr::sys::signal::SUCCESS) {
+		return tr::sys::signal::SUCCESS;
 	}
 	engine::load_settings();
 	engine::load_scorefile();
@@ -24,22 +23,22 @@ tr::sys::signal tr::sys::user_defined::initialize(std::span<const char*> args)
 	engine::initialize_system();
 	engine::initialize_graphics();
 	engine::set_main_menu_state();
-	return signal::CONTINUE;
+	return tr::sys::signal::CONTINUE;
 }
 
-tr::sys::signal tr::sys::user_defined::handle_event(event& event)
+tr::sys::signal handle_event(tr::sys::event& event)
 {
 	engine::handle_event(event);
-	return engine::active() ? signal::CONTINUE : signal::SUCCESS;
+	return engine::active() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
 }
 
-tr::sys::signal tr::sys::user_defined::iterate()
+tr::sys::signal iterate()
 {
 	engine::redraw();
-	return signal::CONTINUE;
+	return tr::sys::signal::CONTINUE;
 }
 
-void tr::sys::user_defined::quit()
+void quit()
 {
 	engine::shut_down_graphics();
 	engine::shut_down_system();
