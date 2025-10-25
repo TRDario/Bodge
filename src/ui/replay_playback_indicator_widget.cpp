@@ -55,8 +55,8 @@ constexpr std::array<tr::rgba8, 19> FAST_SPEED_COLORS{{
 constexpr std::array<u16, tr::polygon_outline_indices(3) + tr::polygon_indices(3)> SLOW_NORMAL_SPEED_INDICES{[] {
 	std::array<u16, tr::polygon_outline_indices(3) + tr::polygon_indices(3)> arr{};
 	auto it{arr.begin()};
-	it = tr::fill_polygon_outline_indices(it, 3, 0);
-	it = tr::fill_polygon_indices(it, 3, 6);
+	it = tr::fill_convex_polygon_outline_indices(it, 3, 0);
+	it = tr::fill_convex_polygon_indices(it, 3, 6);
 	return arr;
 }()};
 

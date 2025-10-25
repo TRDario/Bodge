@@ -93,7 +93,7 @@ void engine::add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 c
 	tr::fill_rectangle_outline_vertices(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2);
 	std::ranges::fill(mesh.colors, color);
 	mesh = engine::basic_renderer().new_color_outline(layer::UI, 8);
-	tr::fill_polygon_outline_vertices(mesh.positions, {pos + glm::vec2{10, 10}, 7}, 25_deg, 2);
+	tr::fill_regular_polygon_outline_vertices(mesh.positions, {pos + glm::vec2{10, 10}, 7}, 25_deg, 2);
 	std::ranges::fill(mesh.colors, color);
 	mesh = engine::basic_renderer().new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(mesh.positions, {pos + glm::vec2{9, 5}, {2, 5}});

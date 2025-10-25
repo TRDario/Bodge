@@ -25,27 +25,25 @@ u16 max_window_size()
 
 //
 
-tr::sys::signal engine::parse_command_line(std::span<const char*> args)
+tr::sys::signal engine::parse_command_line(std::span<tr::cstring_view> args)
 {
 	for (auto it = args.begin(); it != args.end(); ++it) {
-		const std::string_view arg{*it};
-
-		if (arg == "--datadir" && ++it < args.end()) {
-			cli_settings.data_directory = *it;
+		if (*it == "--datadir" && ++it < args.end()) {
+			cli_settings.data_directory = std::filesystem::canonical(std::filesystem::path{*it});
 		}
-		else if (arg == "--userdir" && ++it < args.end()) {
-			cli_settings.user_directory = *it;
+		else if (*it == "--userdir" && ++it < args.end()) {
+			cli_settings.user_directory = std::filesystem::canonical(std::filesystem::path{*it});
 		}
-		else if (arg == "--refreshrate" && ++it < args.end()) {
+		else if (*it == "--refreshrate" && ++it < args.end()) {
 			std::from_chars(*it, *it + std::strlen(*it), cli_settings.refresh_rate);
 		}
-		else if (arg == "--gamespeed" && ++it < args.end()) {
+		else if (*it == "--gamespeed" && ++it < args.end()) {
 			std::from_chars(*it, *it + std::strlen(*it), cli_settings.game_speed);
 		}
-		else if (arg == "--showperf") {
+		else if (*it == "--showperf") {
 			cli_settings.show_perf = true;
 		}
-		else if (arg == "--help") {
+		else if (*it == "--help") {
 			std::cout << "Bodge v1.2.0 by TRDario, 2025.\n"
 						 "Supported arguments:\n"
 						 "--datadir <path>       - Overrides the data directory.\n"
@@ -66,8 +64,8 @@ tr::sys::signal engine::parse_command_line(std::span<const char*> args)
 	}
 	cli_settings.refresh_rate = std::clamp(cli_settings.refresh_rate, 1.0f, tr::sys::refresh_rate());
 
-	constexpr std::array<const char*, 5> DIRECTORIES{"localization", "fonts", "music", "replays", "gamemodes"};
-	for (const char* directory : DIRECTORIES) {
+	constexpr std::array<tr::cstring_view, 5> DIRECTORIES{"localization", "fonts", "music", "replays", "gamemodes"};
+	for (tr::cstring_view directory : DIRECTORIES) {
 		const std::filesystem::path path{cli_settings.user_directory / directory};
 		if (!std::filesystem::is_directory(path)) {
 			std::filesystem::create_directory(path);

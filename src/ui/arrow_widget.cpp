@@ -94,8 +94,8 @@ void arrow_widget::add_to_renderer()
 	const tr::gfx::color_mesh_ref arrow{engine::basic_renderer().new_color_mesh(layer::UI, 15, INDICES)};
 
 	auto indices_it{arrow.indices.begin()};
-	indices_it = tr::fill_polygon_outline_indices(indices_it, 5, arrow.base_index);
-	indices_it = tr::fill_polygon_indices(indices_it, 5, arrow.base_index + 10);
+	indices_it = tr::fill_convex_polygon_outline_indices(indices_it, 5, arrow.base_index);
+	indices_it = tr::fill_convex_polygon_indices(indices_it, 5, arrow.base_index + 10);
 
 	std::ranges::copy(positions | std::views::transform([&](glm::vec2 p) { return p + tl; }), arrow.positions.begin());
 	std::ranges::copy(ARROW_COLORS | std::views::transform([&](tr::rgba8 c) -> tr::rgba8 {

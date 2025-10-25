@@ -104,7 +104,7 @@ void life_fragment::add_pulse_to_renderer(tr::rgb8 color, ticks time_since_spawn
 		const usize vertices{tr::smooth_polygon_vertices(scale * engine::render_scale())};
 
 		const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_outline(layer::LIFE_FRAGMENTS, vertices)};
-		tr::fill_polygon_outline_vertices(mesh.positions, {m_pos, scale}, 0_deg, 2);
+		tr::fill_regular_polygon_outline_vertices(mesh.positions, {m_pos, scale}, 0_deg, 2);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
 }
@@ -119,7 +119,7 @@ void life_fragment::add_spawn_wave_to_renderer(tr::rgb8 color, ticks time_since_
 		const usize vertices{tr::smooth_polygon_vertices(scale * engine::render_scale())};
 
 		const tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_outline(layer::LIFE_FRAGMENTS, vertices)};
-		tr::fill_polygon_outline_vertices(mesh.positions, {m_pos, scale}, 0_deg, 2);
+		tr::fill_regular_polygon_outline_vertices(mesh.positions, {m_pos, scale}, 0_deg, 2);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
 }

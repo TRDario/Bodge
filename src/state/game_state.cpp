@@ -24,17 +24,17 @@ game_state::game_state(std::shared_ptr<game> game, game_type type, bool fade_in)
 
 std::unique_ptr<tr::state> game_state::handle_event(const tr::sys::event& event)
 {
-	return event.visit(tr::overloaded{
-		[this](tr::sys::key_down_event event) -> std::unique_ptr<tr::state> {
-			if (to_base(m_substate) != substate_base::FADING_IN && event.key == tr::sys::keycode::ESCAPE) {
-				engine::play_sound(sound::PAUSE, 0.8f, 0.0f);
-				engine::pause_song();
-				return std::make_unique<pause_state>(m_game, to_type(m_substate), engine::mouse_pos(), true);
-			}
-			return nullptr;
-		},
-		[](auto) -> std::unique_ptr<tr::state> { return nullptr; },
-	});
+	return event | tr::match{
+					   [this](tr::sys::key_down_event event) -> std::unique_ptr<tr::state> {
+						   if (to_base(m_substate) != substate_base::FADING_IN && event.key == tr::sys::keycode::ESCAPE) {
+							   engine::play_sound(sound::PAUSE, 0.8f, 0.0f);
+							   engine::pause_song();
+							   return std::make_unique<pause_state>(m_game, to_type(m_substate), engine::mouse_pos(), true);
+						   }
+						   return nullptr;
+					   },
+					   [](auto) -> std::unique_ptr<tr::state> { return nullptr; },
+				   };
 }
 
 std::unique_ptr<tr::state> game_state::update(tr::duration)

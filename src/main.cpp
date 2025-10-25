@@ -9,7 +9,7 @@
 #include "../include/settings.hpp"
 #include "../include/system.hpp"
 
-tr::sys::signal initialize(std::span<const char*> args)
+tr::sys::signal initialize(std::span<tr::cstring_view> args)
 {
 	if (engine::parse_command_line(args) == tr::sys::signal::SUCCESS) {
 		return tr::sys::signal::SUCCESS;

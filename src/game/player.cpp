@@ -92,14 +92,14 @@ void player::add_to_renderer_dead(ticks time_since_game_over) const
 void player::add_fill_to_renderer(u8 opacity, tr::angle rotation, float size) const
 {
 	const tr::gfx::simple_color_mesh_ref fill{engine::basic_renderer().new_color_fan(layer::PLAYER, 6)};
-	tr::fill_polygon_vertices(fill.positions, {m_hitbox.c, size}, rotation);
+	tr::fill_regular_polygon_vertices(fill.positions, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, opacity});
 }
 
 void player::add_outline_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
 {
 	const tr::gfx::simple_color_mesh_ref outline{engine::basic_renderer().new_color_outline(layer::PLAYER, 6)};
-	tr::fill_polygon_outline_vertices(outline.positions, {m_hitbox.c, size}, rotation, 4.0f);
+	tr::fill_regular_polygon_outline_vertices(outline.positions, {m_hitbox.c, size}, rotation, 4.0f);
 	std::fill_n(outline.colors.begin(), 6, tr::rgba8{tint, opacity});
 	std::fill_n(outline.colors.begin() + 6, 6, tr::rgba8{0, 0, 0, opacity});
 }
@@ -110,7 +110,7 @@ void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation
 	constexpr usize INDICES{tr::polygon_outline_indices(6) * trail::size()};
 
 	tr::gfx::color_mesh_ref trail_mesh{engine::basic_renderer().new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
-	tr::fill_polygon_vertices(trail_mesh.positions.begin(), 6, {m_hitbox.c, size}, rotation);
+	tr::fill_regular_polygon_vertices(trail_mesh.positions.begin(), 6, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(trail_mesh.colors, tr::rgba8{tint, opacity});
 
 	std::vector<u16>::iterator indices_it{trail_mesh.indices.begin()};
@@ -119,7 +119,7 @@ void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation
 		const float trail_size{size * trail_fade};
 		const u8 trail_opacity{u8(opacity / 3.0f * trail_fade)};
 
-		tr::fill_polygon_vertices(trail_mesh.positions.begin() + 6 * (i + 1), 6, {m_trail[i], trail_size}, rotation);
+		tr::fill_regular_polygon_vertices(trail_mesh.positions.begin() + 6 * (i + 1), 6, {m_trail[i], trail_size}, rotation);
 		for (int j = 0; j < 6; ++j) {
 			trail_mesh.colors[6 * (i + 1) + j].a = trail_opacity;
 			*indices_it++ = u16(trail_mesh.base_index + 6 * (i + 1) + j);

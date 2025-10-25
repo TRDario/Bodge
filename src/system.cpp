@@ -124,24 +124,24 @@ bool engine::active()
 
 void engine::handle_event(tr::sys::event& event)
 {
-	event.visit(tr::overloaded{
-		[](tr::sys::tick_event) { system->state.update(0s); },
-		[](tr::sys::quit_event) { system->state.state.reset(); },
-		[](tr::sys::window_gain_focus_event) { tr::sys::set_mouse_relative_mode(true); },
-		[](tr::sys::window_lose_focus_event) { tr::sys::set_mouse_relative_mode(false); },
-		[](tr::sys::key_down_event event) { system->held_keymods = event.mods; },
-		[](tr::sys::key_up_event event) { system->held_keymods = event.mods; },
-		[](tr::sys::mouse_motion_event event) {
-			if (!tr::sys::window_has_focus()) {
-				return;
-			}
-			const glm::vec2 delta{event.delta / render_scale() * tr::sys::window_pixel_density()};
-			system->mouse_pos = glm::clamp(system->mouse_pos + delta, 0.0f, 1000.0f);
-		},
-		[](tr::sys::mouse_down_event event) { system->held_buttons |= event.button; },
-		[](tr::sys::mouse_up_event event) { system->held_buttons &= ~event.button; },
-		[](auto) {},
-	});
+	event | tr::match{
+				[](tr::sys::tick_event) { system->state.update(0s); },
+				[](tr::sys::quit_event) { system->state.state.reset(); },
+				[](tr::sys::window_gain_focus_event) { tr::sys::set_mouse_relative_mode(true); },
+				[](tr::sys::window_lose_focus_event) { tr::sys::set_mouse_relative_mode(false); },
+				[](tr::sys::key_down_event event) { system->held_keymods = event.mods; },
+				[](tr::sys::key_up_event event) { system->held_keymods = event.mods; },
+				[](tr::sys::mouse_motion_event event) {
+					if (!tr::sys::window_has_focus()) {
+						return;
+					}
+					const glm::vec2 delta{event.delta / render_scale() * tr::sys::window_pixel_density()};
+					system->mouse_pos = glm::clamp(system->mouse_pos + delta, 0.0f, 1000.0f);
+				},
+				[](tr::sys::mouse_down_event event) { system->held_buttons |= event.button; },
+				[](tr::sys::mouse_up_event event) { system->held_buttons &= ~event.button; },
+				[](auto) {},
+			};
 	system->state.handle_event(event);
 }
 

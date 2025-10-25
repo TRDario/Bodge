@@ -264,149 +264,151 @@ void ui_manager::release_graphical_resources()
 
 void ui_manager::handle_event(const tr::sys::event& event)
 {
-	event.visit(tr::overloaded{
-		[this](tr::sys::mouse_motion_event) {
-			tr::opt_ref<kv_pair> new_hovered;
-			for (kv_pair& kv : m_widgets) {
-				if (!kv.second->hidden() && tr::frect2{kv.second->tl(), kv.second->size()}.contains(engine::mouse_pos())) {
-					new_hovered = kv;
-					break;
-				}
-			}
-
-			if (m_hovered != new_hovered) {
-				if (m_hovered.has_ref()) {
-					if (engine::held_buttons() == tr::sys::mouse_button::LEFT && m_hovered->second->interactible()) {
-						m_hovered->second->on_unheld();
-					}
-					m_hovered->second->on_unhover();
-				}
-				if (new_hovered.has_ref()) {
-					new_hovered->second->on_hover();
-					if (engine::held_buttons() == tr::sys::mouse_button::LEFT && new_hovered->second->interactible()) {
-						new_hovered->second->on_held();
-					}
-				}
-				m_hovered = new_hovered;
-			}
-		},
-		[this](tr::sys::mouse_down_event event) {
-			if (event.button == tr::sys::mouse_button::LEFT) {
-				if (m_selection.has_ref()) {
-					tr::sys::disable_text_input_events();
-					m_selection->second->on_unselected();
-					m_selection = std::nullopt;
-				}
-
-				tr::opt_ref<kv_pair> new_hovered;
-				for (kv_pair& kv : m_widgets) {
-					if (!kv.second->hidden() && tr::frect2{kv.second->tl(), kv.second->size()}.contains(engine::mouse_pos())) {
-						new_hovered = kv;
-						break;
-					}
-				}
-
-				if (m_hovered != new_hovered) {
-					if (m_hovered.has_ref()) {
-						m_hovered->second->on_unhover();
-					}
-					if (new_hovered.has_ref()) {
-						new_hovered->second->on_hover();
-					}
-					m_hovered = new_hovered;
-				}
-
-				if (m_hovered.has_ref() && m_hovered->second->interactible()) {
-					m_hovered->second->on_held();
-				}
-			}
-		},
-		[this](tr::sys::mouse_up_event event) {
-			if (event.button == tr::sys::mouse_button::LEFT) {
-				if (m_hovered.has_ref() && m_hovered->second->interactible()) {
-					m_hovered->second->on_unheld();
-					m_hovered->second->on_action();
-					if (m_hovered->second->writable()) {
-						tr::sys::enable_text_input_events();
-						m_selection = m_hovered;
-						m_hovered->second->on_selected();
-					}
-				}
-			}
-		},
-		[this](tr::sys::key_down_event event) {
-			if (event.key == tr::sys::keycode::TAB) {
-				if (event.mods == tr::sys::keymod::SHIFT) {
-					select_prev_widget();
-				}
-				else {
-					select_next_widget();
-				}
-			}
-			else if (event == tr::sys::key_chord{tr::sys::keycode::UP}) {
-				select_widget_above();
-			}
-			else if (event == tr::sys::key_chord{tr::sys::keycode::DOWN}) {
-				select_widget_below();
-			}
-			else if (event == tr::sys::key_chord{tr::sys::keycode::LEFT} && !m_shortcuts.contains({tr::sys::keycode::LEFT})) {
-				select_widget_to_the_left();
-			}
-			else if (event == tr::sys::key_chord{tr::sys::keycode::RIGHT} && !m_shortcuts.contains({tr::sys::keycode::RIGHT})) {
-				select_widget_to_the_right();
-			}
-			else if (m_selection.has_ref()) {
-				if (event == tr::sys::key_chord{tr::sys::keycode::ESCAPE}) {
-					clear_selection();
-				}
-				else if (m_selection->second->interactible()) {
-					if (m_selection->second->writable()) {
-						if (event == tr::sys::key_chord{tr::sys::keycode::C, tr::sys::keymod::CTRL}) {
-							m_selection->second->on_copy();
+	event | tr::match{
+				[this](tr::sys::mouse_motion_event) {
+					tr::opt_ref<kv_pair> new_hovered;
+					for (kv_pair& kv : m_widgets) {
+						const tr::frect2 hitbox{kv.second->tl(), kv.second->size()};
+						if (!kv.second->hidden() && hitbox.contains(engine::mouse_pos())) {
+							new_hovered = kv;
+							break;
 						}
-						else if (event == tr::sys::key_chord{tr::sys::keycode::X, tr::sys::keymod::CTRL}) {
-							m_selection->second->on_copy();
-							m_selection->second->on_clear();
-						}
-						else if (event == tr::sys::key_chord{tr::sys::keycode::V, tr::sys::keymod::CTRL}) {
-							m_selection->second->on_paste();
-						}
-						else if (event.key == tr::sys::keycode::BACKSPACE || event.key == tr::sys::keycode::DELETE) {
-							if (event.mods == tr::sys::keymod::CTRL) {
-								m_selection->second->on_clear();
+					}
+
+					if (m_hovered != new_hovered) {
+						if (m_hovered.has_ref()) {
+							if (engine::held_buttons() == tr::sys::mouse_button::LEFT && m_hovered->second->interactible()) {
+								m_hovered->second->on_unheld();
 							}
-							else {
-								m_selection->second->on_erase();
+							m_hovered->second->on_unhover();
+						}
+						if (new_hovered.has_ref()) {
+							new_hovered->second->on_hover();
+							if (engine::held_buttons() == tr::sys::mouse_button::LEFT && new_hovered->second->interactible()) {
+								new_hovered->second->on_held();
 							}
 						}
-						else if (event == tr::sys::key_chord{tr::sys::keycode::ENTER}) {
-							m_selection->second->on_enter();
+						m_hovered = new_hovered;
+					}
+				},
+				[this](tr::sys::mouse_down_event event) {
+					if (event.button == tr::sys::mouse_button::LEFT) {
+						if (m_selection.has_ref()) {
+							tr::sys::disable_text_input_events();
+							m_selection->second->on_unselected();
+							m_selection = std::nullopt;
+						}
+
+						tr::opt_ref<kv_pair> new_hovered;
+						for (kv_pair& kv : m_widgets) {
+							const tr::frect2 hitbox{kv.second->tl(), kv.second->size()};
+							if (!kv.second->hidden() && hitbox.contains(engine::mouse_pos())) {
+								new_hovered = kv;
+								break;
+							}
+						}
+
+						if (m_hovered != new_hovered) {
+							if (m_hovered.has_ref()) {
+								m_hovered->second->on_unhover();
+							}
+							if (new_hovered.has_ref()) {
+								new_hovered->second->on_hover();
+							}
+							m_hovered = new_hovered;
+						}
+
+						if (m_hovered.has_ref() && m_hovered->second->interactible()) {
+							m_hovered->second->on_held();
 						}
 					}
-					else if (event == tr::sys::key_chord{tr::sys::keycode::ENTER}) {
-						m_selection->second->on_action();
+				},
+				[this](tr::sys::mouse_up_event event) {
+					if (event.button == tr::sys::mouse_button::LEFT) {
+						if (m_hovered.has_ref() && m_hovered->second->interactible()) {
+							m_hovered->second->on_unheld();
+							m_hovered->second->on_action();
+							if (m_hovered->second->writable()) {
+								tr::sys::enable_text_input_events();
+								m_selection = m_hovered;
+								m_hovered->second->on_selected();
+							}
+						}
 					}
-				}
-			}
-			else {
-				auto it{m_shortcuts.find({event.key, event.mods})};
-				if (it != m_shortcuts.end()) {
-					widget& widget{(*this)[it->second]};
-					if (widget.interactible()) {
-						widget.on_action();
-						clear_selection();
+				},
+				[this](tr::sys::key_down_event event) {
+					if (event.key == tr::sys::keycode::TAB) {
+						if (event.mods == tr::sys::keymod::SHIFT) {
+							select_prev_widget();
+						}
+						else {
+							select_next_widget();
+						}
 					}
-				}
-			}
-		},
-		[this](tr::sys::text_input_event event) {
-			if (m_selection.has_ref() && m_selection->second->interactible() && m_selection->second->writable() &&
-				!(engine::held_keymods() & tr::sys::keymod::CTRL)) {
-				m_selection->second->on_write(event.text);
-			}
-		},
-		[](auto) {},
-	});
+					else if (event == tr::sys::key_chord{tr::sys::keycode::UP}) {
+						select_widget_above();
+					}
+					else if (event == tr::sys::key_chord{tr::sys::keycode::DOWN}) {
+						select_widget_below();
+					}
+					else if (event == tr::sys::key_chord{tr::sys::keycode::LEFT} && !m_shortcuts.contains({tr::sys::keycode::LEFT})) {
+						select_widget_to_the_left();
+					}
+					else if (event == tr::sys::key_chord{tr::sys::keycode::RIGHT} && !m_shortcuts.contains({tr::sys::keycode::RIGHT})) {
+						select_widget_to_the_right();
+					}
+					else if (m_selection.has_ref()) {
+						if (event == tr::sys::key_chord{tr::sys::keycode::ESCAPE}) {
+							clear_selection();
+						}
+						else if (m_selection->second->interactible()) {
+							if (m_selection->second->writable()) {
+								if (event == tr::sys::key_chord{tr::sys::keycode::C, tr::sys::keymod::CTRL}) {
+									m_selection->second->on_copy();
+								}
+								else if (event == tr::sys::key_chord{tr::sys::keycode::X, tr::sys::keymod::CTRL}) {
+									m_selection->second->on_copy();
+									m_selection->second->on_clear();
+								}
+								else if (event == tr::sys::key_chord{tr::sys::keycode::V, tr::sys::keymod::CTRL}) {
+									m_selection->second->on_paste();
+								}
+								else if (event.key == tr::sys::keycode::BACKSPACE || event.key == tr::sys::keycode::DELETE) {
+									if (event.mods == tr::sys::keymod::CTRL) {
+										m_selection->second->on_clear();
+									}
+									else {
+										m_selection->second->on_erase();
+									}
+								}
+								else if (event == tr::sys::key_chord{tr::sys::keycode::ENTER}) {
+									m_selection->second->on_enter();
+								}
+							}
+							else if (event == tr::sys::key_chord{tr::sys::keycode::ENTER}) {
+								m_selection->second->on_action();
+							}
+						}
+					}
+					else {
+						auto it{m_shortcuts.find({event.key, event.mods})};
+						if (it != m_shortcuts.end()) {
+							widget& widget{(*this)[it->second]};
+							if (widget.interactible()) {
+								widget.on_action();
+								clear_selection();
+							}
+						}
+					}
+				},
+				[this](tr::sys::text_input_event event) {
+					if (m_selection.has_ref() && m_selection->second->interactible() && m_selection->second->writable() &&
+						!(engine::held_keymods() & tr::sys::keymod::CTRL)) {
+						m_selection->second->on_write(event.text);
+					}
+				},
+				[](auto) {},
+			};
 }
 
 void ui_manager::update()

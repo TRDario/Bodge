@@ -503,7 +503,7 @@ void game::add_lives_to_renderer() const
 		const glm::vec2 pos{(glm::vec2{grid_pos} + 0.5f) * 2.5f * life_size + 8.0f};
 
 		const tr::gfx::simple_color_mesh_ref outline{engine::basic_renderer().new_color_outline(layer::GAME_OVERLAY, 6)};
-		tr::fill_polygon_outline_vertices(outline.positions, {pos, life_size}, rotation, 2.0f);
+		tr::fill_regular_polygon_outline_vertices(outline.positions, {pos, life_size}, rotation, 2.0f);
 		std::ranges::fill(outline.colors, tr::rgba8{color, opacity});
 	}
 
@@ -527,7 +527,7 @@ void game::add_appearing_life_to_renderer(tr::rgb8 color, u8 base_opacity) const
 	const u8 opacity{u8(base_opacity * std::pow(raw_age_factor, 1 / 3.0f))};
 
 	const tr::gfx::simple_color_mesh_ref outline{engine::basic_renderer().new_color_outline(layer::GAME_OVERLAY, 6)};
-	tr::fill_polygon_outline_vertices(outline.positions, {pos, life_size * size_factor}, rotation, 2.0f * size_factor);
+	tr::fill_regular_polygon_outline_vertices(outline.positions, {pos, life_size * size_factor}, rotation, 2.0f * size_factor);
 	std::ranges::fill(outline.colors, tr::rgba8{color, opacity});
 }
 
