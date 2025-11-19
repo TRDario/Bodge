@@ -22,8 +22,8 @@ void engine::load_language(const std::filesystem::path& entry)
 void engine::load_languages()
 {
 	try {
-		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.data_directory / "localization"}, load_language);
-		std::ranges::for_each(std::filesystem::directory_iterator{cli_settings.user_directory / "localization"}, load_language);
+		std::ranges::for_each(std::filesystem::directory_iterator{g_cli_settings.data_directory / "localization"}, load_language);
+		std::ranges::for_each(std::filesystem::directory_iterator{g_cli_settings.user_directory / "localization"}, load_language);
 	}
 	catch (std::exception&) {
 		languages.clear();
@@ -32,17 +32,17 @@ void engine::load_languages()
 
 void engine::load_localization()
 {
-	if (!languages.contains(settings.language)) {
+	if (!languages.contains(g_settings.language)) {
 		return;
 	}
 
-	const std::string_view name{settings.language.data(), 2};
+	const std::string_view name{g_settings.language.data(), 2};
 	tr::localization_map old{std::move(loc)};
 	try {
 		const std::string filename{TR_FMT::format("localization/{}.txt", name)};
-		std::filesystem::path path{cli_settings.data_directory / filename};
+		std::filesystem::path path{g_cli_settings.data_directory / filename};
 		if (!std::filesystem::exists(path)) {
-			path = cli_settings.user_directory / filename;
+			path = g_cli_settings.user_directory / filename;
 		}
 		loc.load(path);
 	}

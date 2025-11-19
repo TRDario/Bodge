@@ -29,14 +29,14 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::TOP_ROW_1}, T_REPLAY_0},
-	{{tr::sys::keycode::TOP_ROW_2}, T_REPLAY_1},
-	{{tr::sys::keycode::TOP_ROW_3}, T_REPLAY_2},
-	{{tr::sys::keycode::TOP_ROW_4}, T_REPLAY_3},
-	{{tr::sys::keycode::TOP_ROW_5}, T_REPLAY_4},
-	{{tr::sys::keycode::ESCAPE}, T_EXIT},
-	{{tr::sys::keycode::LEFT}, T_PAGE_D},
-	{{tr::sys::keycode::RIGHT}, T_PAGE_I},
+	{"1"_kc, T_REPLAY_0},
+	{"2"_kc, T_REPLAY_1},
+	{"3"_kc, T_REPLAY_2},
+	{"4"_kc, T_REPLAY_3},
+	{"5"_kc, T_REPLAY_4},
+	{"Enter"_kc, T_EXIT},
+	{"Left"_kc, T_PAGE_D},
+	{"Right"_kc, T_PAGE_I},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
@@ -49,10 +49,7 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 // clang-format on
 
 replays_state::replays_state()
-	: main_menu_state{SELECTION_TREE, SHORTCUTS}
-	, m_substate{substate::RETURNING_FROM_REPLAY}
-	, m_page{0}
-	, m_replays{engine::load_replay_headers()}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::RETURNING_FROM_REPLAY}, m_page{0}, m_replays{load_replay_headers()}
 {
 	set_up_ui();
 }
@@ -61,7 +58,7 @@ replays_state::replays_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_REPLAYS}
 	, m_page{0}
-	, m_replays{engine::load_replay_headers()}
+	, m_replays{load_replay_headers()}
 {
 	set_up_ui();
 }
@@ -122,7 +119,7 @@ std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_wid
 			m_timer = 0;
 			m_selected = it;
 			set_up_exit_animation();
-			engine::fade_song_out(0.5s);
+			g_audio.fade_song_out(0.5s);
 			m_next_state =
 				make_async_game_state<replay_game>(game_type::REPLAY, true, m_selected->second.gamemode, replay{m_selected->first});
 		},
@@ -161,7 +158,7 @@ void replays_state::set_up_ui()
 			m_timer = 0;
 			m_selected = it;
 			set_up_exit_animation();
-			engine::fade_song_out(0.5s);
+			g_audio.fade_song_out(0.5s);
 			m_next_state =
 				make_async_game_state<replay_game>(game_type::REPLAY, true, m_selected->second.gamemode, replay{m_selected->first});
 		},

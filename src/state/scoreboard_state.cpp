@@ -33,11 +33,11 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::ESCAPE}, T_EXIT},
-	{{tr::sys::keycode::LEFT, tr::sys::keymod::SHIFT}, T_GAMEMODE_D},
-	{{tr::sys::keycode::RIGHT, tr::sys::keymod::SHIFT}, T_GAMEMODE_I},
-	{{tr::sys::keycode::LEFT}, T_PAGE_D},
-	{{tr::sys::keycode::RIGHT}, T_PAGE_I},
+	{"Enter"_kc, T_EXIT},
+	{"Shift+Left"_kc, T_GAMEMODE_D},
+	{"Shift+Right"_kc, T_GAMEMODE_I},
+	{"Left"_kc, T_PAGE_D},
+	{"Right"_kc, T_PAGE_I},
 };
 
 constexpr tweener<glm::vec2> NO_SCORES_FOUND_MOVE_IN{tween::CUBIC, {600, 500}, {500, 500}, 0.5_s};
@@ -71,9 +71,9 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate_base::IN_SCOREBOARD | scoreboard}
 	, m_page{0}
-	, m_selected{engine::scorefile.categories.begin()}
+	, m_selected{g_scorefile.categories.begin()}
 {
-	if (!engine::scorefile.categories.empty()) {
+	if (!g_scorefile.categories.empty()) {
 		m_sorted_scores = m_selected->scores;
 		std::ranges::sort(m_sorted_scores, scoreboard == scoreboard::SCORE ? compare_scores : compare_times);
 	}
@@ -90,7 +90,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		[this] { return to_base(m_substate) == substate_base::IN_SCOREBOARD; },
 	};
 	const status_callback gamemode_change_scb{
-		[this] { return to_base(m_substate) == substate_base::IN_SCOREBOARD && engine::scorefile.categories.size() != 1; },
+		[this] { return to_base(m_substate) == substate_base::IN_SCOREBOARD && g_scorefile.categories.size() != 1; },
 	};
 	const status_callback page_d_scb{
 		[this] { return to_base(m_substate) == substate_base::IN_SCOREBOARD && m_page > 0; },
@@ -117,8 +117,8 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 			m_substate = substate_base::SWITCHING_PAGE | to_scoreboard(m_substate);
 			m_timer = 0;
 			m_page = 0;
-			if (m_selected == engine::scorefile.categories.begin()) {
-				m_selected = engine::scorefile.categories.end();
+			if (m_selected == g_scorefile.categories.begin()) {
+				m_selected = g_scorefile.categories.end();
 			}
 			--m_selected;
 			set_up_page_switch_animation();
@@ -129,8 +129,8 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 			m_substate = substate_base::SWITCHING_PAGE | to_scoreboard(m_substate);
 			m_timer = 0;
 			m_page = 0;
-			if (++m_selected == engine::scorefile.categories.end()) {
-				m_selected = engine::scorefile.categories.begin();
+			if (++m_selected == g_scorefile.categories.end()) {
+				m_selected = g_scorefile.categories.begin();
 			}
 			set_up_page_switch_animation();
 		},
@@ -155,8 +155,8 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 	// TEXT CALLBACKS
 
 	const text_callback player_info_tcb{
-		string_text_callback{TR_FMT::format("{} {}: {}", engine::loc["total_playtime"], engine::scorefile.name,
-											format_playtime(engine::scorefile.playtime))},
+		string_text_callback{
+			TR_FMT::format("{} {}: {}", engine::loc["total_playtime"], g_scorefile.name, format_playtime(g_scorefile.playtime))},
 	};
 	const text_callback cur_gamemode_tcb{
 		[this] { return std::string{m_selected->gamemode.name_loc()}; },
@@ -173,7 +173,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 							   32);
 	m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
-	if (engine::scorefile.categories.empty()) {
+	if (g_scorefile.categories.empty()) {
 		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, NO_SCORES_FOUND_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 								   loc_text_callback{T_NO_SCORES_FOUND}, text_style::NORMAL, 64, "80808080"_rgba8);
 		return;
@@ -248,7 +248,7 @@ void scoreboard_state::set_up_page_switch_animation()
 
 void scoreboard_state::set_up_exit_animation()
 {
-	if (engine::scorefile.categories.empty()) {
+	if (g_scorefile.categories.empty()) {
 		widget& no_scores_found{m_ui[T_NO_SCORES_FOUND]};
 		no_scores_found.pos.change(tween::CUBIC, {400, 500}, 0.5_s);
 		no_scores_found.hide(0.5_s);

@@ -33,8 +33,8 @@ void player::kill()
 {
 	for (usize i = 0; i < m_fragments.size(); ++i) {
 		const tr::angle th{60_deg * i + 30_deg};
-		const glm::vec2 vel{tr::magth(engine::rng.generate(100.0f, 400.0f), engine::rng.generate(th - 30_deg, th + 30_deg))};
-		const tr::angle ang_vel{engine::rng.generate(360_deg, 720_deg) * (engine::rng.generate_bool() ? 1 : -1)};
+		const glm::vec2 vel{tr::magth(g_rng.generate(100.0f, 400.0f), g_rng.generate(th - 30_deg, th + 30_deg))};
+		const tr::angle ang_vel{g_rng.generate(360_deg, 720_deg) * (g_rng.generate_bool() ? 1 : -1)};
 		m_fragments[i] = {m_hitbox.c + tr::magth(m_hitbox.r, th), vel, th + 90_deg, ang_vel};
 	}
 }
@@ -65,7 +65,7 @@ void player::update_fragments()
 
 void player::add_to_renderer_alive(ticks time_since_start, const decrementing_timer<0.1_s>& style_cooldown_timer) const
 {
-	const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
+	const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(std::abs(tr::turns(4.0f * m_invincibility_timer.elapsed_ratio()).cos()))};
 	const tr::angle rotation{270_deg * time_since_start / 1_s};
 	const float size_offset{3.0f * tr::turns(time_since_start / 2_sf).sin()};
@@ -152,7 +152,7 @@ void player::add_death_wave_to_renderer(ticks time_since_game_over) const
 {
 	const float t{(time_since_game_over + 1) / 0.5_sf};
 	const float scale{std::sqrt(t) * 200};
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
+	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(0.5f * std::sqrt(1 - t))};
 
 	const usize indices{tr::smooth_polygon_vertices(scale * engine::render_scale()) + 2};
@@ -169,7 +169,7 @@ void player::add_death_wave_to_renderer(ticks time_since_game_over) const
 void player::add_death_fragments_to_renderer(ticks time_since_game_over) const
 {
 	const float t{(time_since_game_over + 1) / 0.5_sf};
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
+	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t))};
 	const float length{2 * m_hitbox.r * (30_deg).tan()};
 

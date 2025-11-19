@@ -53,7 +53,7 @@ engine::graphics_data::graphics_data()
 void engine::initialize_graphics()
 {
 	graphics.emplace();
-	if (cli_settings.show_perf) {
+	if (g_cli_settings.show_perf) {
 		graphics->extra.emplace();
 	}
 	tr::sys::show_window();

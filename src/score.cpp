@@ -3,11 +3,6 @@
 #include "../include/legacy_formats.hpp"
 #include "../include/settings.hpp"
 
-namespace engine {
-	void load_scorefile_v0(std::ifstream& file);
-	void load_scorefile_v1(std::ifstream& file);
-} // namespace engine
-
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings file version identifier.
@@ -85,18 +80,18 @@ void scorefile::add_score(const gamemode& gm, const score_entry& s)
 
 ///////////////////////////////////////////////////////////////// ENGINE //////////////////////////////////////////////////////////////////
 
-void engine::load_scorefile()
+void scorefile::load_from_file()
 {
-	const std::filesystem::path path{cli_settings.user_directory / "scorefile.dat"};
+	const std::filesystem::path path{g_cli_settings.user_directory / "scorefile.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const u8 version{tr::binary_read<u8>(file)};
 		switch (version) {
 		case 0:
-			load_scorefile_v0(file);
+			load_v0(file);
 			return;
 		case 1:
-			load_scorefile_v1(file);
+			load_v1(file);
 			return;
 		default:
 			return;
@@ -107,37 +102,37 @@ void engine::load_scorefile()
 	}
 }
 
-void engine::load_scorefile_v0(std::ifstream& file)
+void scorefile::load_v0(std::ifstream& file)
 {
 	const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 	std::span<const std::byte> data{raw};
 	std::vector<score_category_v0> ignore;
-	data = tr::binary_read(data, scorefile.name);
+	data = tr::binary_read(data, name);
 	data = tr::binary_read(data, ignore);
-	data = tr::binary_read(data, scorefile.playtime);
+	data = tr::binary_read(data, playtime);
 }
 
-void engine::load_scorefile_v1(std::ifstream& file)
+void scorefile::load_v1(std::ifstream& file)
 {
 	const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 	std::span<const std::byte> data{raw};
-	data = tr::binary_read(data, scorefile.name);
-	data = tr::binary_read(data, scorefile.categories);
-	data = tr::binary_read(data, scorefile.playtime);
-	data = tr::binary_read(data, scorefile.last_selected);
+	data = tr::binary_read(data, name);
+	data = tr::binary_read(data, categories);
+	data = tr::binary_read(data, playtime);
+	data = tr::binary_read(data, last_selected);
 }
 
-void engine::save_scorefile()
+void scorefile::save_to_file() const
 {
-	const std::filesystem::path path{cli_settings.user_directory / "scorefile.dat"};
+	const std::filesystem::path path{g_cli_settings.user_directory / "scorefile.dat"};
 	try {
 		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
 		std::ostringstream buffer;
-		tr::binary_write(buffer, scorefile.name);
-		tr::binary_write(buffer, scorefile.categories);
-		tr::binary_write(buffer, scorefile.playtime);
-		tr::binary_write(buffer, scorefile.last_selected);
-		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), rng.generate<u8>())};
+		tr::binary_write(buffer, name);
+		tr::binary_write(buffer, categories);
+		tr::binary_write(buffer, playtime);
+		tr::binary_write(buffer, last_selected);
+		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), g_rng.generate<u8>())};
 		tr::binary_write(file, SCOREFILE_VERSION);
 		tr::binary_write(file, std::span{encrypted});
 	}

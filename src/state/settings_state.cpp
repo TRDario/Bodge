@@ -85,10 +85,10 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::Z, tr::sys::keymod::CTRL}, T_REVERT},
-	{{tr::sys::keycode::S, tr::sys::keymod::CTRL}, T_APPLY},
-	{{tr::sys::keycode::ENTER}, T_APPLY},
-	{{tr::sys::keycode::ESCAPE}, T_EXIT},
+	{"Ctrl+Z"_kc, T_REVERT},
+	{"Ctrl+S"_kc, T_APPLY},
+	{"Enter"_kc, T_APPLY},
+	{"Enter"_kc, T_EXIT},
 };
 
 constexpr glm::vec2 DISPLAY_MODE_START_POS{1050, 158.5f};
@@ -129,7 +129,7 @@ constexpr tweener<glm::vec2> LANGUAGE_C_MOVE_IN{tween::CUBIC, LANGUAGE_START_POS
 // clang-format on
 
 settings_state::settings_state(std::shared_ptr<playerless_game> game)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SETTINGS}, m_pending{engine::settings}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SETTINGS}, m_pending{g_settings}
 {
 	// STATUS CALLBACKS
 
@@ -176,9 +176,9 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		},
 	};
 	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_scbs{
-		[this] { return m_substate != substate::ENTERING_TITLE && m_pending != engine::settings; },
-		[this] { return m_substate != substate::ENTERING_TITLE && m_pending != engine::settings; },
-		[this] { return m_substate != substate::ENTERING_TITLE && m_pending == engine::settings; },
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending != g_settings; },
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending != g_settings; },
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending == g_settings; },
 	};
 
 	// ACTION CALLBACKS
@@ -248,14 +248,14 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	};
 	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_acbs{
 		[this] {
-			m_pending = engine::settings;
+			m_pending = g_settings;
 			engine::reload_language_preview_font(m_pending);
 			const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8};
 			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, window_size_color, 0.1_s);
 		},
 		[this] {
-			const settings old{engine::settings};
-			engine::settings = m_pending;
+			const settings old{g_settings};
+			g_settings = m_pending;
 			if (engine::restart_required(old)) {
 				m_ui.release_graphical_resources();
 			}
@@ -263,11 +263,11 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 				tr::sys::set_window_vsync(m_pending.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
 			}
 
-			if (old.language != engine::settings.language) {
+			if (old.language != g_settings.language) {
 				engine::load_localization();
 			}
 			if (!engine::languages.contains(old.language) ||
-				engine::languages[old.language].font != engine::languages[engine::settings.language].font) {
+				engine::languages[old.language].font != engine::languages[g_settings.language].font) {
 				m_ui.release_graphical_resources();
 				engine::set_language_font();
 			}

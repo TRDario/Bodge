@@ -1,7 +1,6 @@
 #pragma once
-#include <charconv>
-#include <tr/audio.hpp>
-#include <tr/sysgfx.hpp>
+#include <tr/audio.hpp>  // IWYU pragma: export
+#include <tr/sysgfx.hpp> // IWYU pragma: export
 
 // Bodge version string.
 constexpr const char* VERSION_STRING{"v1.2.0"};
@@ -14,6 +13,7 @@ using namespace tr::color_literals;
 using namespace tr::integer_literals;
 using namespace tr::integer_aliases;
 using namespace tr::matrix_operators;
+using namespace tr::sys::keyboard_literals;
 using text_style = tr::sys::ttf_style;
 
 ///////////////////////////////////////////////////////////////// TICKRATE ////////////////////////////////////////////////////////////////
@@ -89,11 +89,9 @@ struct label_info {
 	const char* tooltip;
 };
 
-////////////////////////////////////////////////////////////////// ENGINE /////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////// RNG ///////////////////////////////////////////////////////////////////
 
-namespace engine {
-	inline tr::xorshiftr_128p rng;
-} // namespace engine
+inline tr::xorshiftr_128p g_rng;
 
 //
 

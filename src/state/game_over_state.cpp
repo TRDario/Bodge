@@ -25,17 +25,17 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::R, tr::sys::keymod::SHIFT}, T_SAVE_AND_RESTART},
-	{{tr::sys::keycode::TOP_ROW_1}, T_SAVE_AND_RESTART},
-	{{tr::sys::keycode::R}, T_RESTART},
-	{{tr::sys::keycode::TOP_ROW_2}, T_RESTART},
-	{{tr::sys::keycode::ESCAPE, tr::sys::keymod::SHIFT}, T_SAVE_AND_QUIT},
-	{{tr::sys::keycode::Q, tr::sys::keymod::SHIFT}, T_SAVE_AND_QUIT},
-	{{tr::sys::keycode::E, tr::sys::keymod::SHIFT}, T_SAVE_AND_QUIT},
-	{{tr::sys::keycode::TOP_ROW_3}, T_SAVE_AND_QUIT},
-	{{tr::sys::keycode::ESCAPE}, T_QUIT},
-	{{tr::sys::keycode::Q}, T_QUIT},
-	{{tr::sys::keycode::TOP_ROW_4}, T_QUIT},
+	{"Shift+R"_kc, T_SAVE_AND_RESTART},
+	{"1"_kc, T_SAVE_AND_RESTART},
+	{"R"_kc, T_RESTART},
+	{"2"_kc, T_RESTART},
+	{"Shift+Escape"_kc, T_SAVE_AND_QUIT},
+	{"Shift+Q"_kc, T_SAVE_AND_QUIT},
+	{"Shift+E"_kc, T_SAVE_AND_QUIT},
+	{"3"_kc, T_SAVE_AND_QUIT},
+	{"Escape"_kc, T_QUIT},
+	{"Q"_kc, T_QUIT},
+	{"4"_kc, T_QUIT},
 };
 
 constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
@@ -76,12 +76,12 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 			m_next_state = make_async<save_score_state>(m_game, save_screen_flags::RESTARTING);
 		},
 		[this] {
-			const score_flags score_flags{false, engine::cli_settings.game_speed != 1};
+			const score_flags score_flags{false, g_cli_settings.game_speed != 1};
 			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 
 			m_timer = 0;
 			m_substate = substate::RESTARTING;
-			engine::scorefile.add_score(m_game->gamemode(), score);
+			g_scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
 			m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, m_game->gamemode());
 		},
@@ -92,12 +92,12 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 			m_next_state = make_async<save_score_state>(m_game, save_screen_flags::NONE);
 		},
 		[this] {
-			const score_flags score_flags{false, engine::cli_settings.game_speed != 1};
+			const score_flags score_flags{false, g_cli_settings.game_speed != 1};
 			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 
 			m_timer = 0;
 			m_substate = substate::QUITTING;
-			engine::scorefile.add_score(m_game->gamemode(), score);
+			g_scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
 			m_next_state = make_async<title_state>();
 		},
@@ -105,7 +105,7 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 
 	// TEXT CALLBACKS
 
-	const bests& bests{engine::scorefile.bests(m_game->gamemode())};
+	const bests& bests{g_scorefile.bests(m_game->gamemode())};
 
 	text_callback time_tcb{string_text_callback{format_time(m_game->final_time())}};
 	text_callback best_time_tcb;
@@ -114,7 +114,7 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 	}
 	else {
 		best_time_tcb = string_text_callback{
-			TR_FMT::format("{}: {}", engine::loc["personal_best"], format_time(engine::scorefile.bests(m_game->gamemode()).time))};
+			TR_FMT::format("{}: {}", engine::loc["personal_best"], format_time(g_scorefile.bests(m_game->gamemode()).time))};
 	}
 
 	text_callback score_tcb{string_text_callback{format_score(m_game->final_score())}};
@@ -124,7 +124,7 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 	}
 	else {
 		best_score_tcb =
-			string_text_callback{TR_FMT::format("{}: {}", engine::loc["personal_best"], engine::scorefile.bests(m_game->gamemode()).score)};
+			string_text_callback{TR_FMT::format("{}: {}", engine::loc["personal_best"], g_scorefile.bests(m_game->gamemode()).score)};
 	}
 
 	//
@@ -144,7 +144,7 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 	m_ui.emplace<label_widget>(T_BEST_SCORE, best_score_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_score_tcb),
 							   text_style::NORMAL, 24, "FFFF00C0"_rgba8);
 	for (usize i = 0; i < BUTTONS.size(); ++i) {
-		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
+		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		const tweener<glm::vec2> pos{tween::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], pos, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{BUTTONS[i]},
@@ -165,7 +165,7 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 		}
 		[[fallthrough]];
 	case substate::GAME_OVER:
-		if (engine::scorefile.bests(m_game->gamemode()).time < m_game->final_time()) {
+		if (g_scorefile.bests(m_game->gamemode()).time < m_game->final_time()) {
 			if (m_timer % 0.5_s == 0) {
 				m_ui[T_BEST_TIME].hide();
 			}
@@ -173,7 +173,7 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 				m_ui[T_BEST_TIME].unhide();
 			}
 		}
-		if (engine::scorefile.bests(m_game->gamemode()).score < m_game->final_score()) {
+		if (g_scorefile.bests(m_game->gamemode()).score < m_game->final_score()) {
 			if (m_timer % 0.5_s == 0) {
 				m_ui[T_BEST_SCORE].hide();
 			}
@@ -187,7 +187,7 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	case substate::QUITTING:
 		if (m_timer >= 0.5_s) {
-			engine::play_song("menu", 1.0s);
+			g_audio.play_song("menu", 1.0s);
 			return m_next_state.get();
 		}
 		else {
@@ -245,7 +245,7 @@ void game_over_state::set_up_exit_animation()
 	score.pos.change(tween::CUBIC, {850, glm::vec2{score.pos}.y}, 0.5_s);
 	best_score.pos.change(tween::CUBIC, {850, glm::vec2{best_score.pos}.y}, 0.5_s);
 	for (usize i = 0; i < BUTTONS.size(); ++i) {
-		const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
+		const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		widget& widget{m_ui[BUTTONS[i]]};
 		widget.pos.change(tween::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}

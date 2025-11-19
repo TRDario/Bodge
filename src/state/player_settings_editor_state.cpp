@@ -52,8 +52,8 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::ESCAPE}, T_EXIT},
-	{{tr::sys::keycode::TOP_ROW_1}, T_EXIT},
+	{"Enter"_kc, T_EXIT},
+	{"1"_kc, T_EXIT},
 };
 
 constexpr glm::vec2 STARTING_LIVES_START_POS{1050, 375};

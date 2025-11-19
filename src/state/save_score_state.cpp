@@ -21,12 +21,12 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::ENTER}, T_SAVE},
-	{{tr::sys::keycode::S}, T_SAVE},
-	{{tr::sys::keycode::TOP_ROW_1}, T_SAVE},
-	{{tr::sys::keycode::ESCAPE}, T_CANCEL},
-	{{tr::sys::keycode::C}, T_CANCEL},
-	{{tr::sys::keycode::TOP_ROW_2}, T_CANCEL},
+	{"Enter"_kc, T_SAVE},
+	{"S"_kc, T_SAVE},
+	{"1"_kc, T_SAVE},
+	{"Enter"_kc, T_CANCEL},
+	{"C"_kc, T_CANCEL},
+	{"2"_kc, T_CANCEL},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
@@ -45,11 +45,7 @@ save_score_state::save_score_state(std::shared_ptr<game> game, glm::vec2 mouse_p
 	, m_substate{substate_base::SAVING_SCORE | flags}
 	, m_start_mouse_pos{mouse_pos}
 	, m_score{
-		  {},
-		  current_timestamp(),
-		  m_game->final_score(),
-		  m_game->final_time(),
-		  {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f},
+		  {}, current_timestamp(), m_game->final_score(), m_game->final_time(), {!m_game->game_over(), g_cli_settings.game_speed != 1.0f},
 	  }
 {
 	set_up_ui();
@@ -59,11 +55,7 @@ save_score_state::save_score_state(std::shared_ptr<game> game, save_screen_flags
 	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), true}
 	, m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
 	, m_score{
-		  {},
-		  current_timestamp(),
-		  m_game->final_score(),
-		  m_game->final_time(),
-		  {!m_game->game_over(), engine::cli_settings.game_speed != 1.0f},
+		  {}, current_timestamp(), m_game->final_score(), m_game->final_time(), {!m_game->game_over(), g_cli_settings.game_speed != 1.0f},
 	  }
 {
 	set_up_ui();
@@ -126,7 +118,7 @@ void save_score_state::set_up_ui()
 			m_substate = substate_base::RETURNING_OR_ENTERING_SAVE_REPLAY | to_flags(m_substate);
 			m_timer = 0;
 			set_up_exit_animation();
-			engine::scorefile.add_score(m_game->gamemode(), m_score);
+			g_scorefile.add_score(m_game->gamemode(), m_score);
 			m_next_state = make_async<save_replay_state>(m_game, to_flags(m_substate));
 		},
 	};

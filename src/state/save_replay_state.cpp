@@ -19,12 +19,12 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::ENTER}, T_SAVE},
-	{{tr::sys::keycode::S}, T_SAVE},
-	{{tr::sys::keycode::TOP_ROW_1}, T_SAVE},
-	{{tr::sys::keycode::ESCAPE}, T_DISCARD},
-	{{tr::sys::keycode::C}, T_DISCARD},
-	{{tr::sys::keycode::TOP_ROW_2}, T_DISCARD},
+	{"Enter"_kc, T_SAVE},
+	{"S"_kc, T_SAVE},
+	{"1"_kc, T_SAVE},
+	{"Enter"_kc, T_DISCARD},
+	{"C"_kc, T_DISCARD},
+	{"2"_kc, T_DISCARD},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
@@ -60,7 +60,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 	};
 	const action_callback save_acb{
 		[this] {
-			const score_flags flags{!m_game->game_over(), engine::cli_settings.game_speed != 1.0f};
+			const score_flags flags{!m_game->game_over(), g_cli_settings.game_speed != 1.0f};
 			const auto& description{m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).buffer};
 			const auto& name{m_ui.as<line_input_widget<20>>("name_input").buffer};
 			active_game& game{(active_game&)*m_game};

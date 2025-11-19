@@ -57,7 +57,7 @@ void ui_manager::change_selection(tr::opt_ref<kv_pair> new_selection)
 			new_selection->second->on_selected();
 		}
 		m_selection = new_selection;
-		engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+		g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 	}
 }
 
@@ -337,7 +337,7 @@ void ui_manager::handle_event(const tr::sys::event& event)
 					}
 				},
 				[this](tr::sys::key_down_event event) {
-					if (event.key == tr::sys::keycode::TAB) {
+					if (event.key == "Tab"_k) {
 						if (event.mods == tr::sys::keymod::SHIFT) {
 							select_prev_widget();
 						}
@@ -345,35 +345,35 @@ void ui_manager::handle_event(const tr::sys::event& event)
 							select_next_widget();
 						}
 					}
-					else if (event == tr::sys::key_chord{tr::sys::keycode::UP}) {
+					else if (event == "Up"_kc) {
 						select_widget_above();
 					}
-					else if (event == tr::sys::key_chord{tr::sys::keycode::DOWN}) {
+					else if (event == "Down"_kc) {
 						select_widget_below();
 					}
-					else if (event == tr::sys::key_chord{tr::sys::keycode::LEFT} && !m_shortcuts.contains({tr::sys::keycode::LEFT})) {
+					else if (event == "Left"_kc && !m_shortcuts.contains("Left"_kc)) {
 						select_widget_to_the_left();
 					}
-					else if (event == tr::sys::key_chord{tr::sys::keycode::RIGHT} && !m_shortcuts.contains({tr::sys::keycode::RIGHT})) {
+					else if (event == "Right"_kc && !m_shortcuts.contains("Right"_kc)) {
 						select_widget_to_the_right();
 					}
 					else if (m_selection.has_ref()) {
-						if (event == tr::sys::key_chord{tr::sys::keycode::ESCAPE}) {
+						if (event == "Enter"_kc) {
 							clear_selection();
 						}
 						else if (m_selection->second->interactible()) {
 							if (m_selection->second->writable()) {
-								if (event == tr::sys::key_chord{tr::sys::keycode::C, tr::sys::keymod::CTRL}) {
+								if (event == "Ctrl+C"_kc) {
 									m_selection->second->on_copy();
 								}
-								else if (event == tr::sys::key_chord{tr::sys::keycode::X, tr::sys::keymod::CTRL}) {
+								else if (event == "Ctrl+X"_kc) {
 									m_selection->second->on_copy();
 									m_selection->second->on_clear();
 								}
-								else if (event == tr::sys::key_chord{tr::sys::keycode::V, tr::sys::keymod::CTRL}) {
+								else if (event == "Ctrl+V"_kc) {
 									m_selection->second->on_paste();
 								}
-								else if (event.key == tr::sys::keycode::BACKSPACE || event.key == tr::sys::keycode::DELETE) {
+								else if (event.key == "Backspace"_k || event.key == "Delete"_k) {
 									if (event.mods == tr::sys::keymod::CTRL) {
 										m_selection->second->on_clear();
 									}
@@ -381,17 +381,17 @@ void ui_manager::handle_event(const tr::sys::event& event)
 										m_selection->second->on_erase();
 									}
 								}
-								else if (event == tr::sys::key_chord{tr::sys::keycode::ENTER}) {
+								else if (event == "Enter"_kc) {
 									m_selection->second->on_enter();
 								}
 							}
-							else if (event == tr::sys::key_chord{tr::sys::keycode::ENTER}) {
+							else if (event == "Enter"_kc) {
 								m_selection->second->on_action();
 							}
 						}
 					}
 					else {
-						auto it{m_shortcuts.find({event.key, event.mods})};
+						auto it{m_shortcuts.find({event.mods, event.key})};
 						if (it != m_shortcuts.end()) {
 							widget& widget{(*this)[it->second]};
 							if (widget.interactible()) {

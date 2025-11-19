@@ -29,20 +29,20 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::B}, T_BALL_SETTINGS},
-	{{tr::sys::keycode::TOP_ROW_1}, T_BALL_SETTINGS},
-	{{tr::sys::keycode::P}, T_PLAYER_SETTINGS},
-	{{tr::sys::keycode::TOP_ROW_2}, T_PLAYER_SETTINGS},
-	{{tr::sys::keycode::T}, T_TEST},
-	{{tr::sys::keycode::TOP_ROW_3}, T_TEST},
-	{{tr::sys::keycode::S}, T_SAVE},
-	{{tr::sys::keycode::ENTER}, T_SAVE},
-	{{tr::sys::keycode::TOP_ROW_4}, T_SAVE},
-	{{tr::sys::keycode::C}, T_DISCARD},
-	{{tr::sys::keycode::Q}, T_DISCARD},
-	{{tr::sys::keycode::E}, T_DISCARD},
-	{{tr::sys::keycode::ESCAPE}, T_DISCARD},
-	{{tr::sys::keycode::TOP_ROW_5}, T_DISCARD},
+	{"B"_kc, T_BALL_SETTINGS},
+	{"1"_kc, T_BALL_SETTINGS},
+	{"P"_kc, T_PLAYER_SETTINGS},
+	{"2"_kc, T_PLAYER_SETTINGS},
+	{"T"_kc, T_TEST},
+	{"3"_kc, T_TEST},
+	{"S"_kc, T_SAVE},
+	{"Enter"_kc, T_SAVE},
+	{"4"_kc, T_SAVE},
+	{"C"_kc, T_DISCARD},
+	{"Q"_kc, T_DISCARD},
+	{"E"_kc, T_DISCARD},
+	{"Enter"_kc, T_DISCARD},
+	{"5"_kc, T_DISCARD},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
@@ -61,7 +61,7 @@ gamemode_designer_state::gamemode_designer_state(std::shared_ptr<playerless_game
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_GAMEMODE_DESIGNER}
 	, m_pending{gamemode}
-	, m_available_songs{engine::create_available_song_list()}
+	, m_available_songs{create_available_song_list()}
 {
 	set_up_ui(returning_from_subscreen);
 }
@@ -70,7 +70,7 @@ gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS}
 	, m_substate{substate::RETURNING_FROM_TEST_GAME}
 	, m_pending{gamemode}
-	, m_available_songs{engine::create_available_song_list()}
+	, m_available_songs{create_available_song_list()}
 {
 	set_up_ui(false);
 }
@@ -167,7 +167,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
 			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 			set_up_exit_animation();
-			engine::fade_song_out(0.5s);
+			g_audio.fade_song_out(0.5s);
 			m_next_state = make_async_game_state<active_game>(game_type::GAMEMODE_DESIGNER_TEST, true, m_pending);
 		},
 		[this] {
@@ -190,7 +190,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	// TEXT CALLBACKS
 
 	text_callback author_tcb{
-		string_text_callback{TR_FMT::format("{}: {}", engine::loc["by"], engine::scorefile.name)},
+		string_text_callback{TR_FMT::format("{}: {}", engine::loc["by"], g_scorefile.name)},
 	};
 	text_callback song_c_tcb{
 		[&] { return std::string{m_pending.song}; },

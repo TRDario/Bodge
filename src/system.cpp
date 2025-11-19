@@ -13,8 +13,6 @@ namespace engine {
 
 	// System state.
 	struct system_data {
-		// Timer that emits ticking events.
-		tr::timer tick_timer{tr::sys::create_tick_timer(240 * cli_settings.game_speed, 0)};
 		// State manager.
 		tr::state_manager state;
 		// The held keyboard modifiers.
@@ -30,7 +28,7 @@ namespace engine {
 void engine::set_icon()
 {
 	try {
-		tr::sys::set_window_icon(tr::load_bitmap_file(cli_settings.data_directory / "graphics" / "icon.qoi"));
+		tr::sys::set_window_icon(tr::load_bitmap_file(g_cli_settings.data_directory / "graphics" / "icon.qoi"));
 	}
 	catch (std::exception&) {
 		return;
@@ -41,7 +39,7 @@ void engine::draw_cursor()
 {
 	tr::gfx::renderer_2d& renderer{basic_renderer()};
 	const glm::vec2 mouse_pos{engine::mouse_pos()};
-	const tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(settings.primary_hue), 1, 1})};
+	const tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
 
 	tr::gfx::simple_color_mesh_ref quad{renderer.new_color_fan(layer::CURSOR, 4)};
 	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
@@ -61,8 +59,8 @@ void engine::draw_cursor()
 
 bool engine::restart_required(const ::settings& old)
 {
-	return old.display_mode != settings.display_mode ||
-		   (settings.display_mode == display_mode::WINDOWED && old.window_size != settings.window_size) || old.msaa != settings.msaa;
+	return old.display_mode != g_settings.display_mode ||
+		   (g_settings.display_mode == display_mode::WINDOWED && old.window_size != g_settings.window_size) || old.msaa != g_settings.msaa;
 }
 
 ///////////////////////////////////////////////////////////////// LIFETIME ////////////////////////////////////////////////////////////////
@@ -70,30 +68,30 @@ bool engine::restart_required(const ::settings& old)
 void engine::initialize_system()
 {
 	const tr::gfx::properties gfx{
-		.multisamples = settings.msaa,
+		.multisamples = g_settings.msaa,
 	};
-	if (settings.display_mode == display_mode::FULLSCREEN) {
+	if (g_settings.display_mode == display_mode::FULLSCREEN) {
 		tr::sys::open_fullscreen_window("Bodge", tr::sys::NOT_RESIZABLE, gfx);
 	}
 	else {
-		tr::sys::open_window("Bodge", glm::ivec2{settings.window_size}, tr::sys::NOT_RESIZABLE, gfx);
+		tr::sys::open_window("Bodge", glm::ivec2{g_settings.window_size}, tr::sys::NOT_RESIZABLE, gfx);
 	}
 	set_icon();
-	tr::sys::set_window_vsync(settings.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
-	tr::sys::set_iteration_frequency(settings.vsync ? 0 : cli_settings.refresh_rate);
+	tr::sys::set_window_vsync(g_settings.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
+	tr::sys::set_draw_frequency(g_settings.vsync ? 0 : g_cli_settings.refresh_rate);
 	tr::sys::raise_window();
 	system.emplace();
 }
 
 void engine::set_main_menu_state()
 {
-	if (scorefile.name.empty()) {
+	if (g_scorefile.name.empty()) {
 		system->state.state = std::make_unique<name_entry_state>();
 	}
 	else {
 		system->state.state = std::make_unique<title_state>();
 	}
-	engine::play_song("menu", 1.0s);
+	g_audio.play_song("menu", 1.0s);
 }
 
 void engine::apply_settings(const ::settings& old)
@@ -147,26 +145,26 @@ void engine::handle_event(tr::sys::event& event)
 
 void engine::redraw()
 {
-	if (cli_settings.show_perf) {
+	if (g_cli_settings.show_perf) {
 		gpu_benchmark().start();
 	}
 	system->state.draw();
 	draw_cursor();
-	if (cli_settings.show_perf) {
+	if (g_cli_settings.show_perf) {
 		tr::gfx::debug_renderer& renderer{debug_renderer()};
 		renderer.write_right(system->state.update_benchmark(), "Update:", 1.0s / 1_s);
 		renderer.newline_right();
-		renderer.write_right(system->state.draw_benchmark(), "Render (CPU):", 1.0s / cli_settings.refresh_rate);
+		renderer.write_right(system->state.draw_benchmark(), "Render (CPU):", 1.0s / g_cli_settings.refresh_rate);
 		renderer.newline_right();
-		renderer.write_right(gpu_benchmark(), "Render (GPU):", 1.0s / cli_settings.refresh_rate);
+		renderer.write_right(gpu_benchmark(), "Render (GPU):", 1.0s / g_cli_settings.refresh_rate);
 		renderer.draw();
 	}
-	if (cli_settings.show_perf) {
+	if (g_cli_settings.show_perf) {
 		gpu_benchmark().stop();
 	}
 	tr::gfx::flip_backbuffer();
 	tr::gfx::clear_backbuffer();
-	if (cli_settings.show_perf) {
+	if (g_cli_settings.show_perf) {
 		gpu_benchmark().fetch();
 	}
 }

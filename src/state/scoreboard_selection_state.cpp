@@ -22,9 +22,9 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::TOP_ROW_1}, T_VIEW_TIMES},
-	{{tr::sys::keycode::TOP_ROW_2}, T_VIEW_SCORES},
-	{{tr::sys::keycode::ESCAPE}, T_EXIT},
+	{"1"_kc, T_VIEW_TIMES},
+	{"2"_kc, T_VIEW_SCORES},
+	{"Enter"_kc, T_EXIT},
 };
 
 //
@@ -68,8 +68,8 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 	// TEXT CALLBACKS
 
 	const text_callback player_info_tcb{
-		string_text_callback{TR_FMT::format("{} {}: {}", engine::loc["total_playtime"], engine::scorefile.name,
-											format_playtime(engine::scorefile.playtime))},
+		string_text_callback{
+			TR_FMT::format("{} {}: {}", engine::loc["total_playtime"], g_scorefile.name, format_playtime(g_scorefile.playtime))},
 	};
 
 	//

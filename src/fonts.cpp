@@ -38,12 +38,12 @@ namespace engine {
 
 tr::sys::ttfont engine::load_font(std::string_view name)
 {
-	std::filesystem::path path{cli_settings.data_directory / "fonts" / name};
+	std::filesystem::path path{g_cli_settings.data_directory / "fonts" / name};
 	if (std::filesystem::is_regular_file(path)) {
 		tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
 		return font;
 	}
-	path = cli_settings.user_directory / "fonts" / name;
+	path = g_cli_settings.user_directory / "fonts" / name;
 	if (std::filesystem::is_regular_file(path)) {
 		tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
 		return font;
@@ -98,7 +98,7 @@ void engine::load_fonts()
 {
 	standard_fonts.emplace(load_font("charge_vector_b.otf"), load_font("linux_biolinum_rb.ttf"));
 	try {
-		std::string language_font_file{languages.contains(settings.language) ? languages.at(settings.language).font : std::string{}};
+		std::string language_font_file{languages.contains(g_settings.language) ? languages.at(g_settings.language).font : std::string{}};
 		if (language_font_file.empty() || language_font_file == "charge_vector_b.otf") {
 			language_font.state = optional_font_state::USE_DEFAULT;
 		}

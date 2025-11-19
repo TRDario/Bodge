@@ -111,7 +111,7 @@ class game : private playerless_game {
 // Game that is actively being played.
 class active_game : public game {
   public:
-	active_game(const ::gamemode& gamemode, u64 seed = engine::rng.generate<u64>());
+	active_game(const ::gamemode& gamemode, u64 seed = g_rng.generate<u64>());
 
 	void update() override;
 

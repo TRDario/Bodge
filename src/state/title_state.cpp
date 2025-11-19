@@ -30,18 +30,12 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::ENTER}, T_START_GAME},
-	{{tr::sys::keycode::TOP_ROW_1}, T_START_GAME},
-	{{tr::sys::keycode::G}, T_GAMEMODE_DESIGNER},
-	{{tr::sys::keycode::TOP_ROW_2}, T_GAMEMODE_DESIGNER},
-	{{tr::sys::keycode::B}, T_SCOREBOARDS},
-	 {{tr::sys::keycode::TOP_ROW_3}, T_SCOREBOARDS},
-	{{tr::sys::keycode::R}, T_REPLAYS},
-	{{tr::sys::keycode::TOP_ROW_4}, T_REPLAYS},
-	{{tr::sys::keycode::S}, T_SETTINGS},
-	{{tr::sys::keycode::TOP_ROW_5}, T_SETTINGS},
-	{{tr::sys::keycode::ESCAPE}, T_EXIT},
-	{{tr::sys::keycode::TOP_ROW_6}, T_EXIT},
+	{"Enter"_kc, T_START_GAME},	   {"1"_kc, T_START_GAME},
+	{"G"_kc, T_GAMEMODE_DESIGNER}, {"2"_kc, T_GAMEMODE_DESIGNER},
+	{"B"_kc, T_SCOREBOARDS},	   {"3"_kc, T_SCOREBOARDS},
+	{"R"_kc, T_REPLAYS},		   {"4"_kc, T_REPLAYS},
+	{"S"_kc, T_SETTINGS},		   {"5"_kc, T_SETTINGS},
+	{"Enter"_kc, T_EXIT},		   {"6"_kc, T_EXIT},
 };
 
 constexpr tweener<glm::vec2> LOGO_TEXT_MOVE_IN{tween::CUBIC, {500, 100}, {500, 160}, 2.5_s};
@@ -100,9 +94,8 @@ float title_state::fade_overlay_opacity()
 void title_state::set_up_ui()
 {
 	m_ui.emplace<image_widget>(T_LOGO_TEXT, LOGO_TEXT_MOVE_IN, tr::align::CENTER, 2.5_s, 0, "logo_text");
-	m_ui.emplace<image_widget>(T_LOGO_OVERLAY, LOGO_TEXT_MOVE_IN, tr::align::CENTER, 2.5_s, 1, "logo_overlay",
-							   engine::settings.primary_hue);
-	m_ui.emplace<image_widget>(T_LOGO_BALL, LOGO_BALL_MOVE_IN, tr::align::CENTER, 2.5_s, 2, "logo_ball", engine::settings.secondary_hue);
+	m_ui.emplace<image_widget>(T_LOGO_OVERLAY, LOGO_TEXT_MOVE_IN, tr::align::CENTER, 2.5_s, 1, "logo_overlay", g_settings.primary_hue);
+	m_ui.emplace<image_widget>(T_LOGO_BALL, LOGO_BALL_MOVE_IN, tr::align::CENTER, 2.5_s, 2, "logo_ball", g_settings.secondary_hue);
 
 	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, 1_s, NO_TOOLTIP,
 												 string_text_callback{T_COPYRIGHT}, text_style::NORMAL, 24)};
@@ -125,8 +118,7 @@ void title_state::set_up_ui()
 			m_substate = substate::ENTERING_SUBMENU;
 			m_timer = 0;
 			set_up_exit_animation();
-			m_next_state =
-				make_async<gamemode_designer_state>(m_game, gamemode{.author = engine::scorefile.name, .song = "classic"}, false);
+			m_next_state = make_async<gamemode_designer_state>(m_game, gamemode{.author = g_scorefile.name, .song = "classic"}, false);
 		},
 		[this] {
 			m_substate = substate::ENTERING_SUBMENU;
@@ -156,13 +148,13 @@ void title_state::set_up_ui()
 			m_substate = substate::EXITING_GAME;
 			m_timer = 0;
 			set_up_exit_animation();
-			engine::fade_song_out(0.5s);
+			g_audio.fade_song_out(0.5s);
 		},
 	};
 
 	glm::vec2 end_pos{990, 965 - (BUTTONS.size() - 1) * 50};
 	for (usize i = 0; i < BUTTONS.size(); ++i) {
-		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(35.0f, 75.0f)};
+		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(35.0f, 75.0f)};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {end_pos.x + offset, end_pos.y}, end_pos, 1_s};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], move_in, tr::align::CENTER_RIGHT, 1_s, NO_TOOLTIP, loc_text_callback{BUTTONS[i]},
 										 font::LANGUAGE, 48, scb, action_cbs[i], i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL);
@@ -174,7 +166,7 @@ void title_state::set_up_exit_animation()
 {
 	int i = 0;
 	for (tag tag : BUTTONS) {
-		const float offset{(i++ % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(35.0f, 75.0f)};
+		const float offset{(i++ % 2 != 0 ? -1.0f : 1.0f) * g_rng.generate(35.0f, 75.0f)};
 		widget& widget{m_ui[tag]};
 		widget.pos.change(tween::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 	}

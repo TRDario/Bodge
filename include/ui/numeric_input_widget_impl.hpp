@@ -76,7 +76,7 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 			this->m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 		else if (this->m_interp.done() && (this->m_hovered || this->m_selected) && !this->m_held) {
-			this->m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 0.2f, 1.0f}), 4_s);
+			this->m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s);
 		}
 	}
 	else {
@@ -105,7 +105,7 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 		this->m_hovered = true;
 		if (!this->m_selected) {
 			this->m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
-			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+			g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }
@@ -143,7 +143,7 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 			this->m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 		}
 		else {
-			engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+			g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 
 		this->m_buffer.clear();
@@ -169,7 +169,7 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 {
 	if (input.size() == 1 && (std::isdigit(input.front()) || input.front() == '.') && this->m_buffer.size() < S) {
 		this->m_buffer.append(input);
-		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
+		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
@@ -182,12 +182,12 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 {
 	if (!this->m_buffer.empty()) {
 		this->m_buffer.pop_back();
-		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
+		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_clear()
 {
 	this->m_buffer.clear();
-	engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
+	g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 }

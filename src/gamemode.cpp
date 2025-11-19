@@ -83,11 +83,11 @@ std::string_view gamemode::description_loc() const
 
 void gamemode::save_to_file() const
 {
-	std::filesystem::path path{engine::cli_settings.user_directory / "gamemodes" / TR_FMT::format("{}.gmd", name)};
+	std::filesystem::path path{g_cli_settings.user_directory / "gamemodes" / TR_FMT::format("{}.gmd", name)};
 	if (std::filesystem::exists(path)) {
 		int index{0};
 		do {
-			path = engine::cli_settings.user_directory / "gamemodes" / TR_FMT::format("{}({}).gmd", name, index++);
+			path = g_cli_settings.user_directory / "gamemodes" / TR_FMT::format("{}({}).gmd", name, index++);
 		} while (std::filesystem::exists(path));
 	}
 
@@ -95,7 +95,7 @@ void gamemode::save_to_file() const
 		std::ofstream file = tr::open_file_w(path, std::ios::binary);
 		std::ostringstream bufstream{std::ios::binary};
 		tr::binary_write(bufstream, *this);
-		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), engine::rng.generate<u8>())};
+		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(bufstream.view()), g_rng.generate<u8>())};
 		tr::binary_write(file, GAMEMODE_VERSION);
 		tr::binary_write(file, std::span{encrypted});
 	}
@@ -130,7 +130,7 @@ void tr::binary_writer<gamemode>::write_to_stream(std::ostream& os, const gamemo
 
 gamemode engine::pick_menu_gamemode()
 {
-	return MENU_GAMEMODES[engine::rng.generate(MENU_GAMEMODES.size())];
+	return MENU_GAMEMODES[g_rng.generate(MENU_GAMEMODES.size())];
 }
 
 std::vector<gamemode> engine::load_gamemodes()
@@ -138,7 +138,7 @@ std::vector<gamemode> engine::load_gamemodes()
 	std::vector<gamemode> gamemodes;
 	try {
 		gamemodes.insert(gamemodes.end(), BUILTIN_GAMEMODES.begin(), BUILTIN_GAMEMODES.end());
-		const std::filesystem::path gamemode_dir{engine::cli_settings.user_directory / "gamemodes"};
+		const std::filesystem::path gamemode_dir{g_cli_settings.user_directory / "gamemodes"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{gamemode_dir}) {
 			const std::filesystem::path path{file};
 			try {

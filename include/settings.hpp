@@ -15,6 +15,8 @@ struct cli_settings {
 #endif
 };
 
+inline cli_settings g_cli_settings{};
+
 //////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
 
 constexpr u16 MIN_WINDOW_SIZE{500};
@@ -39,15 +41,14 @@ struct settings {
 	language_code language{'e', 'n'};
 
 	bool operator==(const settings&) const = default;
+
+	void load_from_file();
+	void save_to_file() const;
+
+  private:
+	void raw_load_from_file();
+	void raw_load_v0(std::span<const std::byte> data);
+	void validate();
 };
 
-///////////////////////////////////////////////////////////////// ENGINE //////////////////////////////////////////////////////////////////
-
-namespace engine {
-	inline cli_settings cli_settings{};
-	tr::sys::signal parse_command_line(std::span<tr::cstring_view> args);
-
-	inline settings settings{};
-	void load_settings();
-	void save_settings();
-} // namespace engine
+inline settings g_settings{};

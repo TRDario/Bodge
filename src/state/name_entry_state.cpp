@@ -13,7 +13,7 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::ENTER}, T_CONFIRM},
+	{"Enter"_kc, T_CONFIRM},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 1.0_s};
@@ -44,7 +44,7 @@ name_entry_state::name_entry_state()
 				m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 1.0_s);
 				m_ui[T_CONFIRM].pos.change(tween::CUBIC, BOTTOM_START_POS, 1.0_s);
 				m_ui.hide_all_widgets(1.0_s);
-				engine::scorefile.name = input.buffer;
+				g_scorefile.name = input.buffer;
 				m_next_state = make_async<title_state>(m_game);
 			}
 		},

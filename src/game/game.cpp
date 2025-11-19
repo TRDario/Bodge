@@ -68,7 +68,7 @@ void playerless_game::update()
 	++m_last_ball_timer;
 	if (m_last_ball_timer >= m_gamemode.ball.spawn_interval && m_balls.size() < m_gamemode.ball.max_count) {
 		add_new_ball();
-		engine::play_sound(sound::BALL_SPAWN, 0.25f, (m_balls.back().hitbox().c.x - 500) / 500);
+		g_audio.play_sound(sound::BALL_SPAWN, 0.25f, (m_balls.back().hitbox().c.x - 500) / 500);
 	}
 
 	for (u8 i = 0; i < m_balls.size(); ++i) {
@@ -110,7 +110,7 @@ void playerless_game::add_border_to_renderer() const
 {
 	const tr::gfx::simple_color_mesh_ref border{engine::basic_renderer().new_color_outline(layer::BORDER, 4)};
 	tr::fill_rectangle_outline_vertices(border.positions, {{2, 2}, {996, 996}}, 4);
-	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{float(engine::settings.secondary_hue), 1, 1}));
+	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{float(g_settings.secondary_hue), 1, 1}));
 }
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
@@ -190,7 +190,7 @@ void game::play_tick_sound_if_needed()
 	if (!m_last_life_fragments_timer.active() || m_last_life_fragments_timer.elapsed() >= LIFE_FRAGMENT_DURATION ||
 		m_collected_fragments == 9) {
 		if (m_start_timer % 1_s == 0) {
-			engine::play_sound(sound::TICK, 0.33f, 0.0f, m_tock ? 0.75f : 1.0f);
+			g_audio.play_sound(sound::TICK, 0.33f, 0.0f, m_tock ? 0.75f : 1.0f);
 			m_tock = !m_tock;
 		}
 	}
@@ -199,7 +199,7 @@ void game::play_tick_sound_if_needed()
 		if ((time >= LIFE_FRAGMENT_FAST_FLASH_START && time % 0.1_s == 0) ||
 			(time < LIFE_FRAGMENT_FAST_FLASH_START && time >= LIFE_FRAGMENT_SLOW_FLASH_START && time % 0.25_s == 0) ||
 			(time < LIFE_FRAGMENT_SLOW_FLASH_START && time % 0.5_s == 0)) {
-			engine::play_sound(sound::TICK_ALT, 0.75f, 0.0f, 1.0f);
+			g_audio.play_sound(sound::TICK_ALT, 0.75f, 0.0f, 1.0f);
 		}
 	}
 }
@@ -237,7 +237,7 @@ void game::update_life_fragments()
 		}
 		m_last_life_fragments_timer.start();
 		m_collected_fragments = 0;
-		engine::play_sound(sound::FRAGMENT_SPAWN, 1, 0);
+		g_audio.play_sound(sound::FRAGMENT_SPAWN, 1, 0);
 	}
 
 	for (auto it = m_life_fragments.begin(); it != m_life_fragments.end();) {
@@ -298,14 +298,14 @@ void game::check_if_player_was_hit()
 			m_game_over_timer.start();
 			m_screen_shake_timer.start();
 			m_player.kill();
-			engine::play_sound(sound::GAME_OVER, 1, 0);
+			g_audio.play_sound(sound::GAME_OVER, 1, 0);
 		}
 		else {
 			m_hit_animation_timer.start();
 			m_screen_shake_timer.start();
 			m_player.hit();
 			set_up_shattered_life_fragments();
-			engine::play_sound(sound::HIT, 1, 0);
+			g_audio.play_sound(sound::HIT, 1, 0);
 		}
 	}
 }
@@ -318,8 +318,8 @@ void game::set_up_shattered_life_fragments()
 	const glm::vec2 pos{(glm::vec2{grid_pos} + 0.5f) * 2.5f * life_size + 8.0f};
 	for (usize i = 0; i < m_shattered_life_fragments.size(); ++i) {
 		const tr::angle th{60_deg * i + 30_deg};
-		const glm::vec2 vel{tr::magth(engine::rng.generate(200.0f, 400.0f), engine::rng.generate(th - 30_deg, th + 30_deg))};
-		const tr::angle ang_vel{engine::rng.generate(420_deg, 780_deg) * (engine::rng.generate_bool() ? 1 : -1)};
+		const glm::vec2 vel{tr::magth(g_rng.generate(200.0f, 400.0f), g_rng.generate(th - 30_deg, th + 30_deg))};
+		const tr::angle ang_vel{g_rng.generate(420_deg, 780_deg) * (g_rng.generate_bool() ? 1 : -1)};
 		m_shattered_life_fragments[i] = {pos + tr::magth(life_size, th), vel, th + 90_deg, ang_vel};
 	}
 }
@@ -336,9 +336,9 @@ void game::check_if_player_collected_life_fragments()
 				++m_lives_left;
 				m_1up_animation_timer.start();
 				add_to_score(150);
-				engine::play_sound(sound::ONE_UP, 1.25f, 0);
+				g_audio.play_sound(sound::ONE_UP, 1.25f, 0);
 			}
-			engine::play_sound(sound::COLLECT, 0.65f, 0, COLLECT_PITCHES[m_collected_fragments - 1]);
+			g_audio.play_sound(sound::COLLECT, 0.65f, 0, COLLECT_PITCHES[m_collected_fragments - 1]);
 		}
 	}
 }
@@ -413,7 +413,7 @@ void game::check_for_style_points()
 			add_to_score(max_points);
 			m_style_cooldown_timer.start();
 			const float pan{(m_player.hitbox().c.x - 500) / 500};
-			engine::play_sound(sound::STYLE, 0.25f, pan);
+			g_audio.play_sound(sound::STYLE, 0.25f, pan);
 		}
 	}
 }
@@ -421,7 +421,7 @@ void game::check_for_style_points()
 void game::set_screen_shake() const
 {
 	if (m_screen_shake_timer.active()) {
-		const glm::vec2 tl{tr::magth(40 * (1 - m_screen_shake_timer.elapsed_ratio()), engine::rng.generate_angle())};
+		const glm::vec2 tl{tr::magth(40 * (1 - m_screen_shake_timer.elapsed_ratio()), g_rng.generate_angle())};
 		const glm::mat4 mat{tr::ortho(tr::frect2{tl, glm::vec2{1000}})};
 		engine::basic_renderer().set_default_transform(mat);
 	}
@@ -460,7 +460,7 @@ void game::add_timer_to_renderer() const
 	float scale;
 	if (game_over()) {
 		time = final_time();
-		tint = (time >= engine::scorefile.bests(gamemode()).time) ? "00FF00"_rgba8 : "FF0000"_rgba8;
+		tint = (time >= g_scorefile.bests(gamemode()).time) ? "00FF00"_rgba8 : "FF0000"_rgba8;
 		scale = 1;
 	}
 	else {
@@ -490,7 +490,7 @@ void game::add_lives_to_renderer() const
 {
 	const float life_size{m_lives_left > (m_hit_animation_timer.active() ? MAX_LARGE_LIVES - 1 : MAX_LARGE_LIVES) ? SMALL_LIFE_SIZE
 																												  : LARGE_LIFE_SIZE};
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
+	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
 	const u8 opacity{u8(255 - 180 * m_lives_hover_timer.accumulated() / m_lives_hover_timer.max())};
 	const tr::angle rotation{120_deg * m_start_timer / 1_s};
 
@@ -550,7 +550,7 @@ void game::add_score_to_renderer() const
 	float scale;
 
 	if (game_over()) {
-		tint = (m_score >= engine::scorefile.bests(gamemode()).score) ? "00FF00"_rgba8 : "FF0000"_rgba8;
+		tint = (m_score >= g_scorefile.bests(gamemode()).score) ? "00FF00"_rgba8 : "FF0000"_rgba8;
 		scale = 0.85f;
 	}
 	else {

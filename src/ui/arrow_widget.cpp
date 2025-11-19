@@ -115,7 +115,7 @@ void arrow_widget::update()
 			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 		else if (m_interp.done() && (m_hovered || m_selected) && !m_held && m_action_left == 0) {
-			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 0.2f, 1.0f}), 4_s);
+			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s);
 		}
 	}
 	else {
@@ -142,7 +142,7 @@ void arrow_widget::on_action()
 	m_acb();
 	m_action_left = 0.36_s;
 	m_interp = "FFFFFF"_rgba8;
-	engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+	g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 
 void arrow_widget::on_hover()
@@ -151,7 +151,7 @@ void arrow_widget::on_hover()
 		m_hovered = true;
 		if (!m_selected) {
 			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
-			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+			g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }

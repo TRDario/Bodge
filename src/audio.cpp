@@ -1,25 +1,22 @@
 #include "../include/audio.hpp"
 #include "../include/settings.hpp"
 
-namespace engine {
-	std::array<const char*, int(sound::COUNT)> SFX_FILENAMES{
-		"hover.ogg",          "hold.ogg",    "confirm.ogg",  "cancel.ogg",     "type.ogg",      "pause.ogg",
-		"unpause.ogg",        "tick.ogg",    "tick_alt.ogg", "ball_spawn.ogg", "bounce.ogg",    "style.ogg",
-		"fragment_spawn.ogg", "collect.ogg", "1up.ogg",      "hit.ogg",        "game_over.ogg",
-	};
+std::array<const char*, int(sound::COUNT)> SFX_FILENAMES{
+	"hover.ogg",          "hold.ogg",    "confirm.ogg",  "cancel.ogg",     "type.ogg",      "pause.ogg",
+	"unpause.ogg",        "tick.ogg",    "tick_alt.ogg", "ball_spawn.ogg", "bounce.ogg",    "style.ogg",
+	"fragment_spawn.ogg", "collect.ogg", "1up.ogg",      "hit.ogg",        "game_over.ogg",
+};
 
-	std::array<std::optional<tr::audio::buffer>, int(sound::COUNT)> sounds;
-	std::optional<tr::audio::source> current_song;
+std::filesystem::path find_song_path(std::string_view name);
+std::optional<tr::audio::buffer> load_audio_file(const char* filename);
 
-	std::filesystem::path find_song_path(std::string_view name);
-	std::optional<tr::audio::buffer> load_audio_file(const char* filename);
-} // namespace engine
+//
 
-std::filesystem::path engine::find_song_path(std::string_view name)
+std::filesystem::path find_song_path(std::string_view name)
 {
-	std::filesystem::path path{cli_settings.data_directory / "music" / TR_FMT::format("{}.ogg", name)};
+	std::filesystem::path path{g_cli_settings.data_directory / "music" / TR_FMT::format("{}.ogg", name)};
 	if (!std::filesystem::exists(path)) {
-		path = cli_settings.user_directory / "music" / TR_FMT::format("{}.ogg", name);
+		path = g_cli_settings.user_directory / "music" / TR_FMT::format("{}.ogg", name);
 		if (!std::filesystem::exists(path)) {
 			return {};
 		}
@@ -27,39 +24,21 @@ std::filesystem::path engine::find_song_path(std::string_view name)
 	return path;
 }
 
-std::optional<tr::audio::buffer> engine::load_audio_file(const char* filename)
+std::optional<tr::audio::buffer> load_audio_file(const char* filename)
 {
 	try {
-		return tr::audio::load_file(cli_settings.data_directory / "sounds" / filename);
+		return tr::audio::load_file(g_cli_settings.data_directory / "sounds" / filename);
 	}
 	catch (tr::audio::file_open_error&) {
 		return std::nullopt;
 	}
 }
 
-void engine::initialize_audio()
-{
-	try {
-		tr::audio::initialize();
-		tr::audio::set_master_gain(2);
-		tr::audio::set_class_gain(0, settings.sfx_volume / 100.0f);
-		tr::audio::set_class_gain(1, settings.music_volume / 100.0f);
-		for (int i = 0; i < int(sound::COUNT); ++i) {
-			sounds[i] = load_audio_file(SFX_FILENAMES[i]);
-		}
-		current_song.emplace(1000);
-		current_song->set_classes(2);
-	}
-	catch (tr::audio::init_error&) {
-		return;
-	}
-}
-
-std::vector<std::string> engine::create_available_song_list()
+std::vector<std::string> create_available_song_list()
 {
 	std::vector<std::string> songs{"classic", "chonk", "swarm"};
 	try {
-		const std::filesystem::path userdir{engine::cli_settings.user_directory / "music"};
+		const std::filesystem::path userdir{g_cli_settings.user_directory / "music"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{userdir}) {
 			if (file.is_regular_file() && file.path().extension() == ".ogg") {
 				songs.push_back(file.path().stem().string());
@@ -72,12 +51,53 @@ std::vector<std::string> engine::create_available_song_list()
 	return songs;
 }
 
-void engine::play_sound(sound sound, float volume, float pan, float pitch)
+//
+
+void audio::initialize()
 {
-	if (tr::audio::active() && sounds[int(sound)].has_value()) {
+	try {
+		tr::audio::initialize();
+		tr::audio::set_master_gain(2);
+		tr::audio::set_class_gain(0, g_settings.sfx_volume / 100.0f);
+		tr::audio::set_class_gain(1, g_settings.music_volume / 100.0f);
+		for (int i = 0; i < int(sound::COUNT); ++i) {
+			m_sounds[i] = load_audio_file(SFX_FILENAMES[i]);
+		}
+		m_current_song.emplace(1000);
+		m_current_song->set_classes(2);
+	}
+	catch (tr::audio::init_error&) {
+		return;
+	}
+}
+
+void audio::apply_settings()
+{
+	if (tr::audio::active()) {
+		tr::audio::set_class_gain(0, g_settings.sfx_volume / 100.0f);
+		tr::audio::set_class_gain(1, g_settings.music_volume / 100.0f);
+	}
+}
+
+void audio::shut_down()
+{
+	if (tr::audio::active()) {
+		m_current_song.reset();
+		for (std::optional<tr::audio::buffer>& sound : m_sounds) {
+			sound.reset();
+		}
+		tr::audio::shut_down();
+	}
+}
+
+//
+
+void audio::play_sound(sound sound, float volume, float pan, float pitch)
+{
+	if (tr::audio::active() && m_sounds[int(sound)].has_value()) {
 		std::optional<tr::audio::source> source{tr::audio::try_allocating_source(0)};
 		if (source.has_value()) {
-			source->use(*sounds[int(sound)]);
+			source->use(*m_sounds[int(sound)]);
 			source->set_classes(1);
 			source->set_gain(volume * 0.75f);
 			source->set_pitch(pitch);
@@ -88,25 +108,25 @@ void engine::play_sound(sound sound, float volume, float pan, float pitch)
 	}
 }
 
-void engine::play_song(std::string_view name, tr::fsecs fade_in)
+void audio::play_song(std::string_view name, tr::fsecs fade_in)
 {
 	play_song(name, 0s, fade_in);
 }
 
-void engine::play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_in)
+void audio::play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_in)
 {
-	if (current_song.has_value()) {
+	if (m_current_song.has_value()) {
 		const std::filesystem::path& path{find_song_path(name)};
 		if (path.empty()) {
 			return;
 		}
 		try {
-			current_song->stop();
-			current_song->use(tr::audio::open_file(path));
-			current_song->set_offset(offset);
-			current_song->set_gain(0.25f);
-			current_song->set_gain(0.6f, fade_in);
-			current_song->play();
+			m_current_song->stop();
+			m_current_song->use(tr::audio::open_file(path));
+			m_current_song->set_offset(offset);
+			m_current_song->set_gain(0.25f);
+			m_current_song->set_gain(0.6f, fade_in);
+			m_current_song->play();
 		}
 		catch (tr::exception& err) {
 			return;
@@ -114,44 +134,25 @@ void engine::play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_i
 	}
 }
 
-void engine::pause_song()
+void audio::pause_song()
 {
-	if (current_song.has_value()) {
-		current_song->pause();
+	if (m_current_song.has_value()) {
+		m_current_song->pause();
 	}
 }
 
-void engine::unpause_song()
+void audio::unpause_song()
 {
-	if (current_song.has_value()) {
-		current_song->play();
-		current_song->set_gain(0);
-		current_song->set_gain(0.75f, 0.5s);
+	if (m_current_song.has_value()) {
+		m_current_song->play();
+		m_current_song->set_gain(0);
+		m_current_song->set_gain(0.75f, 0.5s);
 	}
 }
 
-void engine::fade_song_out(tr::fsecs time)
+void audio::fade_song_out(tr::fsecs time)
 {
-	if (current_song.has_value()) {
-		current_song->set_gain(0, time);
-	}
-}
-
-void engine::apply_audio_settings()
-{
-	if (tr::audio::active()) {
-		tr::audio::set_class_gain(0, settings.sfx_volume / 100.0f);
-		tr::audio::set_class_gain(1, settings.music_volume / 100.0f);
-	}
-}
-
-void engine::shut_down_audio()
-{
-	if (tr::audio::active()) {
-		current_song.reset();
-		for (std::optional<tr::audio::buffer>& sound : sounds) {
-			sound.reset();
-		}
-		tr::audio::shut_down();
+	if (m_current_song.has_value()) {
+		m_current_song->set_gain(0, time);
 	}
 }

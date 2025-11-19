@@ -25,12 +25,12 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{{tr::sys::keycode::LEFT}, T_PREV},
-	{{tr::sys::keycode::RIGHT}, T_NEXT},
-	{{tr::sys::keycode::ENTER}, T_START},
-	{{tr::sys::keycode::TOP_ROW_1}, T_START},
-	{{tr::sys::keycode::ESCAPE}, T_EXIT},
-	{{tr::sys::keycode::TOP_ROW_2}, T_EXIT},
+	{"Left"_kc, T_PREV},
+	{"Right"_kc, T_NEXT},
+	{"Enter"_kc, T_START},
+	{"1"_kc, T_START},
+	{"Enter"_kc, T_EXIT},
+	{"2"_kc, T_EXIT},
 };
 
 constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, TITLE_POS, 0.5_s};
@@ -73,8 +73,8 @@ std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const game
 	string_text_callback description_tcb{
 		std::string{!selected.description_loc().empty() ? selected.description_loc() : engine::loc["no_description"]},
 	};
-	text_callback best_time_tcb{string_text_callback{format_time(engine::scorefile.bests(selected).time)}};
-	text_callback best_score_tcb{string_text_callback{format_score(engine::scorefile.bests(selected).score)}};
+	text_callback best_time_tcb{string_text_callback{format_time(g_scorefile.bests(selected).time)}};
+	text_callback best_score_tcb{string_text_callback{format_score(g_scorefile.bests(selected).score)}};
 
 	//
 
@@ -106,7 +106,7 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	, m_gamemodes{engine::load_gamemodes()}
 	, m_selected{m_gamemodes.begin()}
 {
-	std::vector<gamemode>::iterator last_selected_it{std::ranges::find(m_gamemodes, engine::scorefile.last_selected)};
+	std::vector<gamemode>::iterator last_selected_it{std::ranges::find(m_gamemodes, g_scorefile.last_selected)};
 	if (last_selected_it != m_gamemodes.end()) {
 		m_selected = last_selected_it;
 	}
@@ -124,8 +124,8 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	text_callback author_tcb{string_text_callback{TR_FMT::format("{}: {}", engine::loc["by"], m_selected->author)}};
 	text_callback description_tcb{string_text_callback{
 		std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : engine::loc["no_description"]}}};
-	text_callback best_time_tcb{string_text_callback{format_time(engine::scorefile.bests(*m_selected).time)}};
-	text_callback best_score_tcb{string_text_callback{format_score(engine::scorefile.bests(*m_selected).score)}};
+	text_callback best_time_tcb{string_text_callback{format_time(g_scorefile.bests(*m_selected).time)}};
+	text_callback best_score_tcb{string_text_callback{format_score(g_scorefile.bests(*m_selected).score)}};
 
 	// STATUS CALLBACKS
 
@@ -171,8 +171,8 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 			m_substate = substate::ENTERING_GAME;
 			m_timer = 0;
 			set_up_exit_animation();
-			engine::scorefile.last_selected = *m_selected;
-			engine::fade_song_out(0.5s);
+			g_scorefile.last_selected = *m_selected;
+			g_audio.fade_song_out(0.5s);
 			m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, *m_selected);
 		},
 	};
@@ -181,7 +181,7 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 			m_substate = substate::ENTERING_TITLE;
 			m_timer = 0;
 			set_up_exit_animation();
-			engine::scorefile.last_selected = *m_selected;
+			g_scorefile.last_selected = *m_selected;
 			m_next_state = make_async<title_state>(m_game);
 		},
 	};

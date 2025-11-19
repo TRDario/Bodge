@@ -14,7 +14,7 @@ void play_ball_sound(glm::vec2 pos, float velocity)
 {
 	const float pan{(pos.x - 500) / 500};
 	const float pitch{std::clamp(velocity / 600, 0.75f, 1.25f)};
-	engine::play_sound(sound::BOUNCE, 0.15f, pan, engine::rng.generate(pitch - 0.2f, pitch + 0.2f));
+	g_audio.play_sound(sound::BOUNCE, 0.15f, pan, g_rng.generate(pitch - 0.2f, pitch + 0.2f));
 }
 
 //
@@ -115,7 +115,7 @@ void ball::update()
 
 void ball::add_to_renderer() const
 {
-	const tr::rgb8 tint{tr::color_cast<tr::rgb8>(tr::hsv{float(engine::settings.secondary_hue), 1, 1})};
+	const tr::rgb8 tint{tr::color_cast<tr::rgb8>(tr::hsv{float(g_settings.secondary_hue), 1, 1})};
 	const float raw_age_factor{std::min(float(m_time_since_spawned) / BALL_SPAWN_ANIMATION_TIME, 1.0f)};
 	const float eased_age_factor{raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor)};
 	const float size{m_hitbox.r * (5 - 4 * eased_age_factor)};

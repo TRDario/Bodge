@@ -286,6 +286,6 @@ struct replay_widget : public text_button_widget {
 	std::optional<std::map<std::string, replay_header>::const_iterator> m_it;
 };
 
-#include "line_input_widget_impl.hpp"
-#include "multiline_input_widget_impl.hpp"
-#include "numeric_input_widget_impl.hpp"
+#include "line_input_widget_impl.hpp"      // IWYU pragma: keep
+#include "multiline_input_widget_impl.hpp" // IWYU pragma: keep
+#include "numeric_input_widget_impl.hpp"   // IWYU pragma: keep

@@ -27,8 +27,8 @@ std::unique_ptr<tr::state> game_state::handle_event(const tr::sys::event& event)
 	return event | tr::match{
 					   [this](tr::sys::key_down_event event) -> std::unique_ptr<tr::state> {
 						   if (to_base(m_substate) != substate_base::FADING_IN && event.key == tr::sys::keycode::ESCAPE) {
-							   engine::play_sound(sound::PAUSE, 0.8f, 0.0f);
-							   engine::pause_song();
+							   g_audio.play_sound(sound::PAUSE, 0.8f, 0.0f);
+							   g_audio.pause_song();
 							   return std::make_unique<pause_state>(m_game, to_type(m_substate), engine::mouse_pos(), true);
 						   }
 						   return nullptr;
@@ -45,8 +45,8 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 		if (m_timer >= 0.5_s) {
 			m_substate = substate_base::ONGOING | to_type(m_substate);
 			m_timer = 0;
-			engine::play_song(m_game->gamemode().song, 0.1s);
-			engine::play_sound(sound::BALL_SPAWN, 0.25f, 0);
+			g_audio.play_song(m_game->gamemode().song, 0.1s);
+			g_audio.play_sound(sound::BALL_SPAWN, 0.25f, 0);
 		}
 		return nullptr;
 	case substate_base::ONGOING:
@@ -76,7 +76,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 					m_substate = substate_base::EXITING | game_type::REPLAY;
 					m_next_state = make_async<replays_state>();
 				}
-				engine::fade_song_out(0.5s);
+				g_audio.fade_song_out(0.5s);
 				m_timer = 0;
 			}
 			else if (m_timer % 120 == 60) {
@@ -91,7 +91,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 			if (m_game->game_over()) {
 				m_substate = substate_base::GAME_OVER | to_type(m_substate);
 				m_timer = 0;
-				engine::fade_song_out(0.5s);
+				g_audio.fade_song_out(0.5s);
 				if (to_type(m_substate) == game_type::REGULAR) {
 					m_next_state = make_async<game_over_state>(m_game, true);
 				}
@@ -122,7 +122,7 @@ std::unique_ptr<tr::state> game_state::update(tr::duration)
 	case substate_base::EXITING:
 		if (m_timer >= 1_s) {
 			engine::basic_renderer().set_default_transform(TRANSFORM);
-			engine::play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
+			g_audio.play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
 			return m_next_state.get();
 		}
 		return nullptr;
@@ -174,8 +174,8 @@ void game_state::add_replay_cursor_to_renderer(glm::vec2 pos) const
 {
 	tr::gfx::simple_color_mesh_ref quad{engine::basic_renderer().new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(quad.positions, pos, {6, 1}, {12, 2}, 45_deg);
-	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 1, 1}));
+	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1}));
 	quad = engine::basic_renderer().new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(quad.positions, pos, {6, 1}, {12, 2}, -45_deg);
-	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 1, 1}));
+	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1}));
 }

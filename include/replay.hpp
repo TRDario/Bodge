@@ -40,6 +40,4 @@ class replay {
 	std::vector<glm::vec2>::iterator m_next_it;
 };
 
-namespace engine {
-	std::map<std::string, replay_header> load_replay_headers();
-} // namespace engine
+std::map<std::string, replay_header> load_replay_headers();

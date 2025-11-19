@@ -57,7 +57,7 @@ void life_fragment::update(ticks time_since_spawned)
 
 void life_fragment::add_to_renderer(ticks time_since_spawned) const
 {
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(engine::settings.primary_hue), 1, 1})};
+	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
 
 	float raw_age_factor;
 	float eased_age_factor;

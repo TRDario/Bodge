@@ -30,24 +30,16 @@ constexpr selection_tree SELECTION_TREE_SPECIAL{
 };
 
 constexpr shortcut_table SHORTCUTS_REGULAR{
-	{{tr::sys::keycode::ESCAPE}, T_UNPAUSE},
-	{{tr::sys::keycode::TOP_ROW_1}, T_UNPAUSE},
-	{{tr::sys::keycode::R, tr::sys::keymod::SHIFT}, T_SAVE_AND_RESTART},
-	{{tr::sys::keycode::TOP_ROW_2}, T_SAVE_AND_RESTART},
-	{{tr::sys::keycode::R}, T_RESTART},
-	{{tr::sys::keycode::TOP_ROW_3}, T_RESTART},
-	{{tr::sys::keycode::Q, tr::sys::keymod::SHIFT}, T_SAVE_AND_QUIT},
-	{{tr::sys::keycode::TOP_ROW_4}, T_SAVE_AND_QUIT},
-	{{tr::sys::keycode::Q}, T_QUIT},
-	{{tr::sys::keycode::TOP_ROW_5}, T_QUIT},
+	{"Enter"_kc, T_UNPAUSE},			{"1"_kc, T_UNPAUSE},
+	{"Shift+R"_kc, T_SAVE_AND_RESTART}, {"2"_kc, T_SAVE_AND_RESTART},
+	{"R"_kc, T_RESTART},				{"3"_kc, T_RESTART},
+	{"Shift+Q"_kc, T_SAVE_AND_QUIT},	{"4"_kc, T_SAVE_AND_QUIT},
+	{"Q"_kc, T_QUIT},					{"5"_kc, T_QUIT},
 };
 constexpr shortcut_table SHORTCUTS_SPECIAL{
-	{{tr::sys::keycode::ESCAPE}, T_UNPAUSE},
-	{{tr::sys::keycode::TOP_ROW_1}, T_UNPAUSE},
-	{{tr::sys::keycode::R}, T_RESTART},
-	{{tr::sys::keycode::TOP_ROW_2}, T_RESTART},
-	{{tr::sys::keycode::Q}, T_QUIT},
-	{{tr::sys::keycode::TOP_ROW_3}, T_QUIT},
+	{"Enter"_kc, T_UNPAUSE}, {"1"_kc, T_UNPAUSE},
+	{"R"_kc, T_RESTART},	 {"2"_kc, T_RESTART},
+	{"Q"_kc, T_QUIT},		 {"3"_kc, T_QUIT},
 };
 
 // clang-format on
@@ -93,7 +85,7 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 		}
 
 		if (m_timer >= 0.5_s) {
-			engine::unpause_song();
+			g_audio.unpause_song();
 			return m_next_state.get();
 		}
 		else {
@@ -114,11 +106,11 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 		engine::basic_renderer().set_default_transform(TRANSFORM);
 		switch (to_type(m_substate)) {
 		case game_type::REGULAR:
-			engine::play_song("menu", 1.0s);
+			g_audio.play_song("menu", 1.0s);
 			break;
 		case game_type::GAMEMODE_DESIGNER_TEST:
 		case game_type::REPLAY:
-			engine::play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
+			g_audio.play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
 			break;
 		}
 		return m_next_state.get();
@@ -193,7 +185,7 @@ void pause_state::set_up_full_ui()
 			m_substate = substate_base::UNPAUSING | game_type::REGULAR;
 			m_end_mouse_pos = engine::mouse_pos();
 			set_up_exit_animation();
-			engine::play_sound(sound::UNPAUSE, 0.8f, 0.0f);
+			g_audio.play_sound(sound::UNPAUSE, 0.8f, 0.0f);
 			m_next_state = make_async<game_state>(m_game, game_type::REGULAR, false);
 		},
 		[this] {
@@ -203,12 +195,12 @@ void pause_state::set_up_full_ui()
 			m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::RESTARTING);
 		},
 		[this] {
-			const score_flags score_flags{true, engine::cli_settings.game_speed != 1};
+			const score_flags score_flags{true, g_cli_settings.game_speed != 1};
 			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 
 			m_timer = 0;
 			m_substate = substate_base::RESTARTING | game_type::REGULAR;
-			engine::scorefile.add_score(m_game->gamemode(), score);
+			g_scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
 			m_next_state = make_async_game_state<active_game>(to_type(m_substate), true, m_game->gamemode());
 		},
@@ -219,18 +211,18 @@ void pause_state::set_up_full_ui()
 			m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::NONE);
 		},
 		[this] {
-			const score_flags score_flags{true, engine::cli_settings.game_speed != 1};
+			const score_flags score_flags{true, g_cli_settings.game_speed != 1};
 			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 
 			m_timer = 0;
 			m_substate = substate_base::QUITTING | game_type::REGULAR;
-			engine::scorefile.add_score(m_game->gamemode(), score);
+			g_scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
 			m_next_state = make_async<title_state>();
 		},
 	};
 	for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
-		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
+		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
 		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
@@ -282,7 +274,7 @@ void pause_state::set_up_limited_ui()
 		},
 	};
 	for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
-		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
+		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
 		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
@@ -296,7 +288,7 @@ void pause_state::set_up_exit_animation()
 	if (to_type(m_substate) == game_type::REGULAR) {
 		m_ui[T_PAUSED].pos.change(tween::CUBIC, {500, 400 - (BUTTONS_REGULAR.size() + 1) * 30}, 0.5_s);
 		for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
-			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
+			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 			widget& widget{m_ui[BUTTONS_REGULAR[i]]};
 			widget.pos.change(tween::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}
@@ -305,7 +297,7 @@ void pause_state::set_up_exit_animation()
 		widget& title{m_ui[to_type(m_substate) == game_type::GAMEMODE_DESIGNER_TEST ? T_TEST_PAUSED : T_REPLAY_PAUSED]};
 		title.pos.change(tween::CUBIC, {500, 400 - (BUTTONS_SPECIAL.size() + 1) * 30}, 0.5_s);
 		for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
-			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * engine::rng.generate(50.0f, 150.0f)};
+			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 			widget& widget{m_ui[BUTTONS_SPECIAL[i]]};
 			widget.pos.change(tween::CUBIC, glm::vec2{widget.pos} + glm::vec2{offset, 0}, 0.5_s);
 		}

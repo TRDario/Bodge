@@ -64,7 +64,7 @@ template <usize S> void multiline_input_widget<S>::update()
 			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
 		}
 		else if (m_interp.done() && (m_hovered || m_selected) && !m_held) {
-			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(engine::settings.primary_hue), 0.2f, 1.0f}), 4_s);
+			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s);
 		}
 	}
 	else {
@@ -93,7 +93,7 @@ template <usize S> void multiline_input_widget<S>::on_hover()
 		m_hovered = true;
 		if (!m_selected) {
 			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
-			engine::play_sound(sound::HOVER, 0.15f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+			g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }
@@ -131,7 +131,7 @@ template <usize S> void multiline_input_widget<S>::on_selected()
 			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
 		}
 		else {
-			engine::play_sound(sound::CONFIRM, 0.5f, 0.0f, engine::rng.generate(0.9f, 1.1f));
+			g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }
@@ -154,7 +154,7 @@ template <usize S> void multiline_input_widget<S>::on_write(std::string_view inp
 			this->buffer.resize(this->buffer.size() - input.size());
 		}
 		else {
-			engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
+			g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 		}
 	}
 }
@@ -164,7 +164,7 @@ template <usize S> void multiline_input_widget<S>::on_enter()
 	if (tr::utf8::length(this->buffer) < S &&
 		engine::count_lines(this->buffer, font::LANGUAGE, text_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) < m_max_lines) {
 		this->buffer.append('\n');
-		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
+		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
@@ -172,14 +172,14 @@ template <usize S> void multiline_input_widget<S>::on_erase()
 {
 	if (!this->buffer.empty()) {
 		tr::utf8::pop_back(this->buffer);
-		engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
+		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <usize S> void multiline_input_widget<S>::on_clear()
 {
 	this->buffer.clear();
-	engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
+	g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 }
 
 template <usize S> void multiline_input_widget<S>::on_copy()
@@ -201,7 +201,7 @@ template <usize S> void multiline_input_widget<S>::on_paste()
 			if (engine::count_lines(copy, font::LANGUAGE, text_style::NORMAL, m_font_size, m_font_size / 12, m_size.x) <= m_max_lines) {
 				this->buffer = copy;
 			}
-			engine::play_sound(sound::TYPE, 0.2f, 0.0f, engine::rng.generate(0.75f, 1.25f));
+			g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 		}
 	}
 	catch (...) {

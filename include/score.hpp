@@ -59,12 +59,13 @@ struct scorefile {
 
 	bests bests(const gamemode& gm) const;
 	void add_score(const gamemode& gm, const score_entry& s);
+
+	void load_from_file();
+	void save_to_file() const;
+
+  private:
+	void load_v0(std::ifstream& file);
+	void load_v1(std::ifstream& file);
 };
 
-///////////////////////////////////////////////////////////////// ENGINE //////////////////////////////////////////////////////////////////
-
-namespace engine {
-	inline scorefile scorefile;
-	void load_scorefile();
-	void save_scorefile();
-} // namespace engine
+inline scorefile g_scorefile;

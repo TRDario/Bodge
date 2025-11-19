@@ -24,7 +24,7 @@ std::unique_ptr<tr::state> state::update(tr::duration)
 ///////////////////////////////////////////////////////////// MAIN MENU STATE /////////////////////////////////////////////////////////////
 
 main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts)
-	: state{selection_tree, shortcuts}, m_game{std::make_shared<playerless_game>(engine::pick_menu_gamemode(), engine::rng.generate<u64>())}
+	: state{selection_tree, shortcuts}, m_game{std::make_shared<playerless_game>(engine::pick_menu_gamemode(), g_rng.generate<u64>())}
 {
 }
 
