@@ -4,14 +4,6 @@
 
 //
 
-namespace engine {
-	std::string format_score_tooltip(tr::opt_ref<const ::score_entry> score);
-	std::string format_score_text(tr::opt_ref<const ::score_entry> score, score_widget::type type, usize rank);
-	std::string format_replay_text(std::optional<std::map<std::string, replay_header>::iterator> it);
-	void add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity);
-	void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity);
-} // namespace engine
-
 std::string format_score_tooltip(tr::opt_ref<const ::score_entry> score)
 {
 	if (!score.has_ref()) {
@@ -27,13 +19,13 @@ std::string format_score_tooltip(tr::opt_ref<const ::score_entry> score)
 			if (!str.empty()) {
 				str.push_back('\n');
 			}
-			str.append(engine::loc["exited_prematurely"]);
+			str.append(g_loc["exited_prematurely"]);
 		}
 		if (flags.modified_game_speed) {
 			if (!str.empty()) {
 				str.push_back('\n');
 			}
-			str.append(engine::loc["modified_game_speed"]);
+			str.append(g_loc["modified_game_speed"]);
 		}
 		return str;
 	}
@@ -60,42 +52,42 @@ std::string format_replay_text(std::optional<std::map<std::string, replay_header
 	}
 
 	const replay_header& rpy{(*it)->second};
-	return TR_FMT::format("{} ({}: {})\n{} | {} | {} | {}", rpy.name, engine::loc["by"], rpy.player, rpy.gamemode.name_loc(),
+	return TR_FMT::format("{} ({}: {})\n{} | {} | {} | {}", rpy.name, g_loc["by"], rpy.player, rpy.gamemode.name_loc(),
 						  format_score(rpy.score), format_time_long(rpy.time), format_timestamp(rpy.timestamp));
 }
 
-void engine::add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity)
+void add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity)
 {
 	color = {color.r, color.g, color.b, u8(color.a * opacity)};
 
-	tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_fan(layer::UI, 4)};
+	tr::gfx::simple_color_mesh_ref mesh{g_graphics->basic_renderer.new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
 	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
-	mesh = engine::basic_renderer().new_color_outline(layer::UI, 4);
+	mesh = g_graphics->basic_renderer.new_color_outline(layer::UI, 4);
 	tr::fill_rectangle_outline_vertices(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2.0f);
 	std::ranges::fill(mesh.colors, color);
-	mesh = engine::basic_renderer().new_color_fan(layer::UI, 4);
+	mesh = g_graphics->basic_renderer.new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, 45_deg);
 	std::ranges::fill(mesh.colors, color);
-	mesh = engine::basic_renderer().new_color_fan(layer::UI, 4);
+	mesh = g_graphics->basic_renderer.new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, -45_deg);
 	std::ranges::fill(mesh.colors, color);
 }
 
-void engine::add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity)
+void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity)
 {
 	color = {color.r, color.g, color.b, u8(color.a * opacity)};
 
-	tr::gfx::simple_color_mesh_ref mesh{engine::basic_renderer().new_color_fan(layer::UI, 4)};
+	tr::gfx::simple_color_mesh_ref mesh{g_graphics->basic_renderer.new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
 	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
-	mesh = engine::basic_renderer().new_color_outline(layer::UI, 4);
+	mesh = g_graphics->basic_renderer.new_color_outline(layer::UI, 4);
 	tr::fill_rectangle_outline_vertices(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2);
 	std::ranges::fill(mesh.colors, color);
-	mesh = engine::basic_renderer().new_color_outline(layer::UI, 8);
+	mesh = g_graphics->basic_renderer.new_color_outline(layer::UI, 8);
 	tr::fill_regular_polygon_outline_vertices(mesh.positions, {pos + glm::vec2{10, 10}, 7}, 25_deg, 2);
 	std::ranges::fill(mesh.colors, color);
-	mesh = engine::basic_renderer().new_color_fan(layer::UI, 4);
+	mesh = g_graphics->basic_renderer.new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(mesh.positions, {pos + glm::vec2{9, 5}, {2, 5}});
 	std::ranges::fill(mesh.colors, color);
 }
@@ -108,9 +100,9 @@ score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks un
 		pos,
 		alignment,
 		unhide_time,
-		string_text_callback{format_score_tooltip(score)},
+		string_text{format_score_tooltip(score)},
 		false,
-		string_text_callback(format_score_text(score, type, rank)),
+		string_text(format_score_text(score, type, rank)),
 		font::LANGUAGE,
 		text_style::NORMAL,
 		48,
@@ -137,11 +129,11 @@ void score_widget::add_to_renderer()
 		glm::vec2 offset{text_size.x / 2 - 15 * icons, text_size.y};
 
 		if (m_flags.exited_prematurely) {
-			engine::add_exited_prematurely_icon_to_renderer(tl() + offset, color, opacity());
+			add_exited_prematurely_icon_to_renderer(tl() + offset, color, opacity());
 			offset.x += 30;
 		}
 		if (m_flags.modified_game_speed) {
-			engine::add_modified_game_speed_icon_to_renderer(tl() + offset, color, opacity());
+			add_modified_game_speed_icon_to_renderer(tl() + offset, color, opacity());
 			offset.x += 30;
 		}
 	}
@@ -155,8 +147,8 @@ replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks 
 		  pos,
 		  alignment,
 		  unhide_time,
-		  string_text_callback{it.has_value() ? format_score_tooltip((*it)->second) : "-------------------------------------------------"},
-		  string_text_callback{format_replay_text(it)},
+		  string_text{it.has_value() ? format_score_tooltip((*it)->second) : "-------------------------------------------------"},
+		  string_text{format_replay_text(it)},
 		  font::LANGUAGE,
 		  34,
 		  [=, this] { return scb() && m_it.has_value(); },
@@ -199,11 +191,11 @@ void replay_widget::add_to_renderer()
 		glm::vec2 offset{text_size.x / 2 - 15 * icons, text_size.y};
 
 		if (flags.exited_prematurely) {
-			engine::add_exited_prematurely_icon_to_renderer(tl() + offset, color, opacity());
+			add_exited_prematurely_icon_to_renderer(tl() + offset, color, opacity());
 			offset.x += 30;
 		}
 		if (flags.modified_game_speed) {
-			engine::add_modified_game_speed_icon_to_renderer(tl() + offset, color, opacity());
+			add_modified_game_speed_icon_to_renderer(tl() + offset, color, opacity());
 			offset.x += 30;
 		}
 	}

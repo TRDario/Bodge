@@ -1,29 +1,7 @@
 #include "../include/graphics.hpp"
 #include "../include/settings.hpp"
 
-namespace engine {
-	tr::gfx::render_target setup_screen();
-
-	struct extra_graphics_data {
-		tr::gfx::debug_renderer debug;
-		tr::gfx::gpu_benchmark benchmark;
-	};
-
-	struct graphics_data {
-		graphics_data();
-
-		tr::gfx::render_target screen{setup_screen()};
-		tr::gfx::renderer_2d basic;
-		std::optional<extra_graphics_data> extra;
-		::blur_renderer blur{screen.size().x};
-		tooltip_manager tooltip{basic};
-	};
-	std::optional<graphics_data> graphics;
-
-	void initialize_2d_renderer();
-} // namespace engine
-
-tr::gfx::render_target engine::setup_screen()
+tr::gfx::render_target setup_screen()
 {
 	const glm::ivec2 size{tr::sys::window_size()};
 	if (size.x > size.y) {
@@ -39,81 +17,65 @@ tr::gfx::render_target engine::setup_screen()
 	}
 }
 
-engine::graphics_data::graphics_data()
+//
+
+graphics::graphics()
+	: screen{setup_screen()}, blur_renderer{screen.size().x}, tooltip_renderer{basic_renderer}
 {
-	basic.set_default_transform(TRANSFORM);
-	basic.set_default_layer_blend_mode(layer::BALL_TRAILS, tr::gfx::MAX_BLENDING);
-	basic.set_default_layer_blend_mode(layer::BALL_TRAILS_OVERLAY, tr::gfx::REVERSE_ALPHA_BLENDING);
+	if (g_cli_settings.show_perf) {
+		extra.emplace();
+	}
+
+	basic_renderer.set_default_transform(TRANSFORM);
+	basic_renderer.set_default_layer_blend_mode(layer::BALL_TRAILS, tr::gfx::MAX_BLENDING);
+	basic_renderer.set_default_layer_blend_mode(layer::BALL_TRAILS_OVERLAY, tr::gfx::REVERSE_ALPHA_BLENDING);
 	for (int layer = layer::GAME_OVERLAY; layer <= layer::CURSOR; ++layer) {
 		// Explicitly set default transform for these because the global default is modified by screenshake.
-		basic.set_default_layer_transform(layer, TRANSFORM);
+		basic_renderer.set_default_layer_transform(layer, TRANSFORM);
 	}
 }
 
-void engine::initialize_graphics()
+float graphics::render_scale() const
 {
-	graphics.emplace();
-	if (g_cli_settings.show_perf) {
-		graphics->extra.emplace();
-	}
-	tr::sys::show_window();
+	return screen.size().x / 1000.0f;
 }
 
-void engine::shut_down_graphics()
-{
-	tr::sys::hide_window();
-	graphics.reset();
-}
+//
 
-tr::gfx::renderer_2d& engine::basic_renderer()
+void graphics::add_menu_game_overlay_to_renderer()
 {
-	return graphics->basic;
-}
-
-tr::gfx::debug_renderer& engine::debug_renderer()
-{
-	return graphics->extra->debug;
-}
-
-blur_renderer& engine::blur_renderer()
-{
-	return graphics->blur;
-}
-
-tooltip_manager& engine::tooltip()
-{
-	return graphics->tooltip;
-}
-
-tr::gfx::gpu_benchmark& engine::gpu_benchmark()
-{
-	return graphics->extra->benchmark;
-}
-
-float engine::render_scale()
-{
-	return graphics->screen.size().x / 1000.0f;
-}
-
-const tr::gfx::render_target& engine::screen()
-{
-	return graphics->screen;
-}
-
-void engine::add_menu_game_overlay_to_renderer()
-{
-	const tr::gfx::simple_color_mesh_ref fade_overlay{basic_renderer().new_color_fan(layer::GAME_OVERLAY, 4)};
+	const tr::gfx::simple_color_mesh_ref fade_overlay{basic_renderer.new_color_fan(layer::GAME_OVERLAY, 4)};
 	tr::fill_rectangle_vertices(fade_overlay.positions, {{}, {1000, 1000}});
 	std::ranges::fill(fade_overlay.colors, MENU_GAME_OVERLAY_TINT);
 }
 
-void engine::add_fade_overlay_to_renderer(float opacity)
+void graphics::add_fade_overlay_to_renderer(float opacity)
 {
 	if (opacity == 0) {
 		return;
 	}
 
-	const tr::gfx::simple_color_mesh_ref fade_overlay{basic_renderer().new_color_fan(layer::FADE_OVERLAY, 4)};
+	const tr::gfx::simple_color_mesh_ref fade_overlay{basic_renderer.new_color_fan(layer::FADE_OVERLAY, 4)};
 	tr::fill_rectangle_vertices(fade_overlay.positions, {{}, {1000, 1000}});
 	std::ranges::fill(fade_overlay.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
+}
+
+void graphics::draw_cursor()
+{
+	const tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+
+	tr::gfx::simple_color_mesh_ref quad{basic_renderer.new_color_fan(layer::CURSOR, 4)};
+	tr::fill_rectangle_vertices(quad.positions, {{g_mouse_pos.x - 12, g_mouse_pos.y - 1}, {8, 2}});
+	std::ranges::fill(quad.colors, color);
+	quad = basic_renderer.new_color_fan(layer::CURSOR, 4);
+	tr::fill_rectangle_vertices(quad.positions, {{g_mouse_pos.x + 4, g_mouse_pos.y - 1}, {8, 2}});
+	std::ranges::fill(quad.colors, color);
+	quad = basic_renderer.new_color_fan(layer::CURSOR, 4);
+	tr::fill_rectangle_vertices(quad.positions, {{g_mouse_pos.x - 1, g_mouse_pos.y - 12}, {2, 8}});
+	std::ranges::fill(quad.colors, color);
+	quad = basic_renderer.new_color_fan(layer::CURSOR, 4);
+	tr::fill_rectangle_vertices(quad.positions, {{g_mouse_pos.x - 1, g_mouse_pos.y + 4}, {2, 8}});
+	std::ranges::fill(quad.colors, color);
+
+	basic_renderer.draw(screen);
 }

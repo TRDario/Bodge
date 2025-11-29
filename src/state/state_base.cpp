@@ -1,5 +1,6 @@
-#include "../../include/state/state_base.hpp"
+#include "../../include/audio.hpp"
 #include "../../include/graphics.hpp"
+#include "../../include/state/state.hpp"
 
 ////////////////////////////////////////////////////////////////// STATE //////////////////////////////////////////////////////////////////
 
@@ -8,23 +9,23 @@ state::state(selection_tree selection_tree, shortcut_table shortcuts)
 {
 }
 
-std::unique_ptr<tr::state> state::handle_event(const tr::sys::event& event)
+next_state state::handle_event(const tr::sys::event& event)
 {
 	m_ui.handle_event(event);
-	return nullptr;
+	return tr::KEEP_STATE;
 }
 
-std::unique_ptr<tr::state> state::update(tr::duration)
+next_state state::tick()
 {
 	m_ui.update();
 	++m_timer;
-	return nullptr;
+	return tr::KEEP_STATE;
 }
 
 ///////////////////////////////////////////////////////////// MAIN MENU STATE /////////////////////////////////////////////////////////////
 
 main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts)
-	: state{selection_tree, shortcuts}, m_game{std::make_shared<playerless_game>(engine::pick_menu_gamemode(), g_rng.generate<u64>())}
+	: state{selection_tree, shortcuts}, m_game{std::make_shared<playerless_game>(pick_menu_gamemode(), g_rng.generate<u64>())}
 {
 }
 
@@ -38,20 +39,20 @@ float main_menu_state::fade_overlay_opacity()
 	return 0;
 }
 
-std::unique_ptr<tr::state> main_menu_state::update(tr::duration)
+next_state main_menu_state::tick()
 {
-	state::update({});
+	state::tick();
 	m_game->update();
-	return nullptr;
+	return tr::KEEP_STATE;
 }
 
 void main_menu_state::draw()
 {
 	m_game->add_to_renderer();
-	engine::add_menu_game_overlay_to_renderer();
+	g_graphics->add_menu_game_overlay_to_renderer();
 	m_ui.add_to_renderer();
-	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
-	engine::basic_renderer().draw(engine::screen());
+	g_graphics->add_fade_overlay_to_renderer(fade_overlay_opacity());
+	g_graphics->basic_renderer.draw(g_graphics->screen);
 }
 
 ///////////////////////////////////////////////////////////// GAME MENU STATE /////////////////////////////////////////////////////////////
@@ -61,25 +62,25 @@ game_menu_state::game_menu_state(selection_tree selection_tree, shortcut_table s
 {
 }
 
-std::unique_ptr<tr::state> game_menu_state::update(tr::duration)
+next_state game_menu_state::tick()
 {
-	state::update({});
+	state::tick();
 	if (m_update_game) {
 		m_game->update();
 	}
-	return nullptr;
+	return tr::KEEP_STATE;
 }
 
 void game_menu_state::draw()
 {
 	if (m_update_game) {
 		m_game->add_to_renderer();
-		engine::basic_renderer().draw(engine::blur_renderer().input());
+		g_graphics->basic_renderer.draw(g_graphics->blur_renderer.input());
 	}
-	engine::blur_renderer().draw(saturation_factor(), blur_strength());
+	g_graphics->blur_renderer.draw(saturation_factor(), blur_strength());
 	m_ui.add_to_renderer();
-	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
-	engine::basic_renderer().draw(engine::screen());
+	g_graphics->add_fade_overlay_to_renderer(fade_overlay_opacity());
+	g_graphics->basic_renderer.draw(g_graphics->screen);
 }
 
 float game_menu_state::saturation_factor()
@@ -95,4 +96,17 @@ float game_menu_state::blur_strength()
 float game_menu_state::fade_overlay_opacity()
 {
 	return 0;
+}
+
+////////////////////////////////////////////////////////////// STATE MACHINE //////////////////////////////////////////////////////////////
+
+void set_main_menu_state()
+{
+	if (g_scorefile.name.empty()) {
+		g_state_machine.emplace<name_entry_state>();
+	}
+	else {
+		g_state_machine.emplace<title_state>().set_up_ui();
+	}
+	g_audio.play_song("menu", 1.0s);
 }

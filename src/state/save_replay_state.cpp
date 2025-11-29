@@ -42,85 +42,32 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 	, m_substate{substate_base::SAVING_REPLAY | flags}
 	, m_replay{((active_game&)*m_game).replay.header()}
 {
-	// STATUS CALLBACKS
+	using enum tr::align;
 
-	const status_callback scb{
-		[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; },
-	};
-	const status_callback save_scb{
-		[this] {
-			return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(T_NAME_INPUT).buffer.empty();
-		},
-	};
-
-	// ACTION CALLBACKS
-
-	const action_callback name_acb{
-		[this] { m_ui.select_next_widget(); },
-	};
-	const action_callback save_acb{
-		[this] {
-			const score_flags flags{!m_game->game_over(), g_cli_settings.game_speed != 1.0f};
-			const auto& description{m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).buffer};
-			const auto& name{m_ui.as<line_input_widget<20>>("name_input").buffer};
-			active_game& game{(active_game&)*m_game};
-
-			m_substate = substate_base::EXITING | to_flags(m_substate);
-			m_timer = 0;
-			set_up_exit_animation();
-			game.replay.set_header(score_entry{description, current_timestamp(), game.final_score(), game.final_time(), flags}, name);
-			game.replay.save_to_file();
-			if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
-				m_next_state = make_async<title_state>();
-			}
-			else {
-				m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, m_game->gamemode());
-			}
-		},
-	};
-	const action_callback discard_acb{
-		[this] {
-			m_substate = substate_base::EXITING | to_flags(m_substate);
-			m_timer = 0;
-			set_up_exit_animation();
-			if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
-				m_next_state = make_async<title_state>();
-			}
-			else {
-				m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, m_game->gamemode());
-			}
-		},
-	};
-
-	//
-
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   text_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_NAME}, text_style::NORMAL,
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, TOP_CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_TITLE}, text_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_NAME}, text_style::NORMAL, 48);
+	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, NAME_INPUT_MOVE_IN, TOP_CENTER, 0.5_s, text_style::NORMAL, 64, interactible, on_name,
+										std::string_view{});
+	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_DESCRIPTION}, text_style::NORMAL,
 							   48);
-	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, NAME_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, text_style::NORMAL, 64, scb,
-										name_acb, std::string_view{});
-	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
-							   text_style::NORMAL, 48);
-	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24,
-											  scb);
-	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
-									 font::LANGUAGE, 48, save_scb, save_acb, sound::CONFIRM);
-	m_ui.emplace<text_button_widget>(T_DISCARD, DISCARD_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DISCARD},
-									 font::LANGUAGE, 48, scb, discard_acb, sound::CONFIRM);
+	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_MOVE_IN, TOP_CENTER, 0.5_s, 800, 10, 24, interactible);
+	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_SAVE}, font::LANGUAGE, 48,
+									 save_interactible, on_save, sound::CONFIRM);
+	m_ui.emplace<text_button_widget>(T_DISCARD, DISCARD_MOVE_IN, BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_DISCARD}, font::LANGUAGE, 48,
+									 interactible, on_discard, sound::CONFIRM);
 }
 
 //
 
-std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
+next_state save_replay_state::tick()
 {
-	game_menu_state::update({});
+	game_menu_state::tick();
 	if (m_timer >= 0.5_s && to_base(m_substate) == substate_base::EXITING) {
-		engine::basic_renderer().set_default_transform(TRANSFORM);
-		return m_next_state.get();
+		g_graphics->basic_renderer.set_default_transform(TRANSFORM);
+		return g_next_state.get();
 	}
 	else {
-		return nullptr;
+		return tr::KEEP_STATE;
 	}
 }
 
@@ -161,4 +108,64 @@ void save_replay_state::set_up_exit_animation()
 	m_ui[T_SAVE].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	m_ui[T_DISCARD].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	m_ui.hide_all_widgets(0.5_s);
+}
+
+//
+
+bool save_replay_state::interactible()
+{
+	const save_replay_state& self{g_state_machine.get<save_replay_state>()};
+
+	return to_base(self.m_substate) == substate_base::SAVING_REPLAY;
+}
+
+bool save_replay_state::save_interactible()
+{
+	const save_replay_state& self{g_state_machine.get<save_replay_state>()};
+
+	return to_base(self.m_substate) == substate_base::SAVING_REPLAY && !self.m_ui.as<line_input_widget<20>>(T_NAME_INPUT).buffer.empty();
+}
+
+void save_replay_state::on_name()
+{
+	save_replay_state& self{g_state_machine.get<save_replay_state>()};
+
+	self.m_ui.select_next_widget();
+}
+
+void save_replay_state::on_save()
+{
+	save_replay_state& self{g_state_machine.get<save_replay_state>()};
+
+	const score_flags flags{!self.m_game->game_over(), g_cli_settings.game_speed != 1.0f};
+	const auto& description{self.m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).buffer};
+	const auto& name{self.m_ui.as<line_input_widget<20>>("name_input").buffer};
+	active_game& game{(active_game&)*self.m_game};
+
+	self.m_substate = substate_base::EXITING | to_flags(self.m_substate);
+	self.m_timer = 0;
+	self.set_up_exit_animation();
+	game.replay.set_header(score_entry{description, current_timestamp(), game.final_score(), game.final_time(), flags}, name);
+	game.replay.save_to_file();
+	if (!(to_flags(self.m_substate) & save_screen_flags::RESTARTING)) {
+		prepare_next_state<title_state>();
+	}
+	else {
+		prepare_next_game_state<active_game>(game_type::REGULAR, true, self.m_game->gamemode());
+	}
+}
+
+void save_replay_state::on_discard()
+{
+	save_replay_state& self{g_state_machine.get<save_replay_state>()};
+
+	self.m_substate = substate_base::EXITING | to_flags(self.m_substate);
+	self.m_timer = 0;
+	self.set_up_exit_animation();
+	if (!(to_flags(self.m_substate) & save_screen_flags::RESTARTING)) {
+		prepare_next_state<title_state>();
+	}
+	else {
+		prepare_next_game_state<active_game>(game_type::REGULAR, true, self.m_game->gamemode());
+	}
 }

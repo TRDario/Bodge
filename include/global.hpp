@@ -1,6 +1,7 @@
 #pragma once
-#include <tr/audio.hpp>  // IWYU pragma: export
-#include <tr/sysgfx.hpp> // IWYU pragma: export
+#include <tr/audio.hpp>   // IWYU pragma: export
+#include <tr/sysgfx.hpp>  // IWYU pragma: export
+#include <tr/utility.hpp> // IWYU pragma: export
 
 // Bodge version string.
 constexpr const char* VERSION_STRING{"v1.2.0"};
@@ -89,8 +90,15 @@ struct label_info {
 	const char* tooltip;
 };
 
-/////////////////////////////////////////////////////////////////// RNG ///////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// GLOBALS //////////////////////////////////////////////////////////////////
 
+// The held keyboard modifiers.
+inline tr::sys::keymod g_held_keymods{tr::sys::keymod::NONE};
+// The position of the mouse.
+inline glm::vec2 g_mouse_pos{500, 500};
+// The held mouse buttons.
+inline tr::sys::mouse_button g_held_buttons{};
+// The global RNG.
 inline tr::xorshiftr_128p g_rng;
 
 //

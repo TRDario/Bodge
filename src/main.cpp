@@ -7,6 +7,7 @@
 #include "../include/graphics.hpp"
 #include "../include/score.hpp"
 #include "../include/settings.hpp"
+#include "../include/state/state.hpp"
 #include "../include/system.hpp"
 
 tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
@@ -38,7 +39,11 @@ tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 			return tr::sys::signal::SUCCESS;
 		}
 	}
+	return tr::sys::signal::CONTINUE;
+}
 
+tr::sys::signal initialize()
+{
 	tr::sys::set_app_information("TRDario", "Bodge", VERSION_STRING);
 	if (g_cli_settings.data_directory.empty()) {
 		g_cli_settings.data_directory = tr::sys::executable_dir() / "data";
@@ -46,8 +51,6 @@ tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 	if (g_cli_settings.user_directory.empty()) {
 		g_cli_settings.user_directory = tr::sys::user_dir();
 	}
-	g_cli_settings.refresh_rate = std::clamp(g_cli_settings.refresh_rate, 1.0f, tr::sys::refresh_rate());
-
 	constexpr std::array<tr::cstring_view, 5> DIRECTORIES{"localization", "fonts", "music", "replays", "gamemodes"};
 	for (tr::cstring_view directory : DIRECTORIES) {
 		const std::filesystem::path path{g_cli_settings.user_directory / directory};
@@ -56,42 +59,86 @@ tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 		}
 	}
 
-	return tr::sys::signal::CONTINUE;
-}
+	g_cli_settings.refresh_rate = std::clamp(g_cli_settings.refresh_rate, 1.0f, tr::sys::refresh_rate());
+	tr::sys::set_draw_frequency(g_cli_settings.refresh_rate);
+	tr::sys::set_tick_frequency(240);
 
-tr::sys::signal initialize()
-{
 	g_settings.load_from_file();
 	g_scorefile.load_from_file();
-	engine::load_languages();
-	engine::load_localization();
-	engine::load_fonts();
+	load_languages();
+	load_localization();
+	g_text_engine.load_fonts();
 	g_audio.initialize();
 	engine::initialize_system();
-	engine::initialize_graphics();
-	engine::set_main_menu_state();
-	tr::sys::set_tick_frequency(240);
+	g_graphics.emplace();
+	set_main_menu_state();
+	tr::sys::show_window();
 	return tr::sys::signal::CONTINUE;
 }
 
 tr::sys::signal handle_event(tr::sys::event& event)
 {
-	engine::handle_event(event);
-	return engine::active() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
+	event | tr::match{
+				[](tr::sys::quit_event) { g_state_machine.clear(); },
+				[](tr::sys::window_gain_focus_event) { tr::sys::set_mouse_relative_mode(true); },
+				[](tr::sys::window_lose_focus_event) { tr::sys::set_mouse_relative_mode(false); },
+				[](tr::sys::key_down_event event) { g_held_keymods = event.mods; },
+				[](tr::sys::key_up_event event) { g_held_keymods = event.mods; },
+				[](tr::sys::mouse_motion_event event) {
+					if (!tr::sys::window_has_focus()) {
+						return;
+					}
+					const glm::vec2 delta{event.delta / g_graphics->render_scale() * tr::sys::window_pixel_density()};
+					g_mouse_pos = glm::clamp(g_mouse_pos + delta, 0.0f, 1000.0f);
+				},
+				[](tr::sys::mouse_down_event event) { g_held_buttons |= event.button; },
+				[](tr::sys::mouse_up_event event) { g_held_buttons &= ~event.button; },
+				[](auto) {},
+			};
+	g_state_machine.handle_event(event);
+	return !g_state_machine.empty() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
+}
+
+tr::sys::signal tick()
+{
+	g_state_machine.tick();
+	return !g_state_machine.empty() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
 }
 
 tr::sys::signal draw()
 {
-	engine::redraw();
+	if (g_cli_settings.show_perf) {
+		g_graphics->extra->benchmark.start();
+	}
+	g_state_machine.draw();
+	g_graphics->draw_cursor();
+	if (g_cli_settings.show_perf) {
+		tr::gfx::debug_renderer& debug{g_graphics->extra->debug_renderer};
+
+		debug.write_right(g_state_machine.tick_benchmark(), "Tick:", 1.0s / 1_s);
+		debug.newline_right();
+		debug.write_right(g_state_machine.draw_benchmark(), "Render (CPU):", 1.0s / g_cli_settings.refresh_rate);
+		debug.newline_right();
+		debug.write_right(g_graphics->extra->benchmark, "Render (GPU):", 1.0s / g_cli_settings.refresh_rate);
+		debug.draw();
+	}
+	if (g_cli_settings.show_perf) {
+		g_graphics->extra->benchmark.stop();
+	}
+	tr::gfx::flip_backbuffer();
+	tr::gfx::clear_backbuffer();
+	if (g_cli_settings.show_perf) {
+		g_graphics->extra->benchmark.fetch();
+	}
 	return tr::sys::signal::CONTINUE;
 }
 
 void shut_down()
 {
-	engine::shut_down_graphics();
-	engine::shut_down_system();
+	g_graphics.reset();
+	tr::sys::close_window();
 	g_audio.shut_down();
-	engine::unload_fonts();
+	g_text_engine.unload_fonts();
 	g_scorefile.save_to_file();
 	g_settings.save_to_file();
 }

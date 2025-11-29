@@ -91,7 +91,7 @@ void arrow_widget::add_to_renderer()
 	constexpr usize INDICES{tr::polygon_outline_indices(5) + tr::polygon_indices(5)};
 	const glm::vec2 tl{this->tl()};
 	const std::array<glm::vec2, 15>& positions{m_right ? RIGHT_ARROW_POSITIONS : LEFT_ARROW_POSITIONS};
-	const tr::gfx::color_mesh_ref arrow{engine::basic_renderer().new_color_mesh(layer::UI, 15, INDICES)};
+	const tr::gfx::color_mesh_ref arrow{g_graphics->basic_renderer.new_color_mesh(layer::UI, 15, INDICES)};
 
 	auto indices_it{arrow.indices.begin()};
 	indices_it = tr::fill_convex_polygon_outline_indices(indices_it, 5, arrow.base_index);

@@ -32,7 +32,7 @@ void settings::raw_load_from_file()
 			raw_load_v0(data);
 			return;
 		case 1:
-			*this = tr::binary_read<::settings>(data);
+			tr::binary_read<settings>(data, *this);
 			return;
 		default:
 			return;

@@ -84,20 +84,20 @@ void replay_playback_indicator_widget::add_to_renderer()
 	tr::gfx::color_mesh_ref mesh{};
 	const auto shift_indices{[&](u16 i) -> u16 { return i + mesh.base_index; }};
 
-	if (engine::held_keymods() & tr::sys::keymod::SHIFT) {
-		mesh = engine::basic_renderer().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
+	if (g_held_keymods & tr::sys::keymod::SHIFT) {
+		mesh = g_graphics->basic_renderer.new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
 		std::ranges::copy(SLOW_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
-	else if (engine::held_keymods() & tr::sys::keymod::CTRL) {
-		mesh = engine::basic_renderer().new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size());
+	else if (g_held_keymods & tr::sys::keymod::CTRL) {
+		mesh = g_graphics->basic_renderer.new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size());
 		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(FAST_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(FAST_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
 	else {
-		mesh = engine::basic_renderer().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
+		mesh = g_graphics->basic_renderer.new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
 		std::ranges::copy(NORMAL_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());

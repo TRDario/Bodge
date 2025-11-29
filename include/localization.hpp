@@ -9,12 +9,10 @@ struct language_info {
 	std::string font;
 };
 
-///////////////////////////////////////////////////////////////// ENGINE //////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// GLOBALS /////////////////////////////////////////////////////////////////
 
-namespace engine {
-	inline std::map<language_code, language_info> languages;
-	void load_languages();
+inline std::map<language_code, language_info> g_languages;
+void load_languages();
 
-	inline tr::localization_map loc;
-	void load_localization();
-} // namespace engine
+inline tr::localization_map g_loc;
+void load_localization();

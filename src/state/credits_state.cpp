@@ -30,53 +30,37 @@ constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 
 credits_state::credits_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_CREDITS}
 {
-	// STATUS CALLBACKS
-
-	const status_callback scb{
-		[this] { return m_substate == substate::IN_CREDITS; },
-	};
-
-	// ACTION CALLBACKS
-
-	const action_callback exit_acb{
-		[this] {
-			m_substate = substate::ENTERING_TITLE;
-			m_timer = 0;
-			m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 0.5_s);
-			m_ui[T_EXIT].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
-			m_ui.hide_all_widgets(0.5_s);
-			m_next_state = make_async<title_state>(m_game);
-		},
-	};
-
-	//
-
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   text_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_BODGE, glm::vec2{400, 210}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text_callback{T_BODGE},
-							   text_style::NORMAL, 128);
-	m_ui.emplace<label_widget>(T_VERSION, glm::vec2{600, 290}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text_callback{T_VERSION},
-							   text_style::NORMAL, 32);
-	m_ui.emplace<label_widget>(T_DEVELOPED_BY, glm::vec2{400, 410}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
-							   loc_text_callback{T_DEVELOPED_BY}, text_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_TRDARIO, glm::vec2{600, 470}, tr::align::CENTER, DONT_UNHIDE, loc_text_callback{"trdario_tt"},
-							   string_text_callback{T_TRDARIO}, text_style::NORMAL, 48, "FF8080A0"_rgba8);
-	m_ui.emplace<image_widget>(T_ART, glm::vec2{500, 550}, tr::align::TOP_CENTER, DONT_UNHIDE, 0, "credits_art");
-	m_ui.emplace<label_widget>(T_PLAYTESTERS, glm::vec2{400, 710}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
-							   loc_text_callback{T_PLAYTESTERS}, text_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_STARSURGE, glm::vec2{600, 770}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
-							   string_text_callback{T_STARSURGE}, text_style::NORMAL, 48);
-	m_ui.emplace<label_widget>(T_TOWELI, glm::vec2{400, 820}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text_callback{T_TOWELI},
-							   text_style::NORMAL, 48);
-	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
-									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 }
 
 //
 
-std::unique_ptr<tr::state> credits_state::update(tr::duration)
+void credits_state::set_up_ui()
 {
-	main_menu_state::update({});
+	using enum tr::align;
+
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, TOP_CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_TITLE}, text_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_BODGE, glm::vec2{400, 210}, CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text{T_BODGE}, text_style::NORMAL,
+							   128);
+	m_ui.emplace<label_widget>(T_VERSION, glm::vec2{600, 290}, CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text{T_VERSION}, text_style::NORMAL,
+							   32);
+	m_ui.emplace<label_widget>(T_DEVELOPED_BY, glm::vec2{400, 410}, CENTER, DONT_UNHIDE, NO_TOOLTIP, tag_loc{T_DEVELOPED_BY},
+							   text_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_TRDARIO, glm::vec2{600, 470}, CENTER, DONT_UNHIDE, tag_loc{"trdario_tt"}, string_text{T_TRDARIO},
+							   text_style::NORMAL, 48, "FF8080A0"_rgba8);
+	m_ui.emplace<image_widget>(T_ART, glm::vec2{500, 550}, TOP_CENTER, DONT_UNHIDE, 0, "credits_art");
+	m_ui.emplace<label_widget>(T_PLAYTESTERS, glm::vec2{400, 710}, CENTER, DONT_UNHIDE, NO_TOOLTIP, tag_loc{T_PLAYTESTERS},
+							   text_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_STARSURGE, glm::vec2{600, 770}, CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text{T_STARSURGE},
+							   text_style::NORMAL, 48);
+	m_ui.emplace<label_widget>(T_TOWELI, glm::vec2{400, 820}, CENTER, DONT_UNHIDE, NO_TOOLTIP, string_text{T_TOWELI}, text_style::NORMAL,
+							   48);
+	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_EXIT}, font::LANGUAGE, 48,
+									 interactible, on_exit, sound::CANCEL);
+}
+
+next_state credits_state::tick()
+{
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::IN_CREDITS:
 		switch (m_timer) {
@@ -121,8 +105,29 @@ std::unique_ptr<tr::state> credits_state::update(tr::duration)
 		default:
 			break;
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return m_timer >= 0.5_s ? g_next_state.get() : tr::KEEP_STATE;
 	};
+}
+
+//
+
+bool credits_state::interactible()
+{
+	const credits_state& self{g_state_machine.get<credits_state>()};
+
+	return self.m_substate == substate::IN_CREDITS;
+}
+
+void credits_state::on_exit()
+{
+	credits_state& self{g_state_machine.get<credits_state>()};
+
+	self.m_substate = substate::ENTERING_TITLE;
+	self.m_timer = 0;
+	self.m_ui[T_TITLE].pos.change(tween::CUBIC, TOP_START_POS, 0.5_s);
+	self.m_ui[T_EXIT].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
+	self.m_ui.hide_all_widgets(0.5_s);
+	prepare_next_state<title_state>(self.m_game);
 }

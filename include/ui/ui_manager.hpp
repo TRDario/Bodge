@@ -10,7 +10,9 @@ class ui_manager {
 	ui_manager(selection_tree selection_tree, shortcut_table shortcuts);
 
 	widget& operator[](tag tag);
+	const widget& operator[](tag tag) const;
 	template <class T> T& as(tag tag);
+	template <class T> const T& as(tag tag) const;
 
 	template <class T, class... Args>
 		requires(std::constructible_from<T, Args...>)
@@ -57,6 +59,11 @@ class ui_manager {
 template <class T> T& ui_manager::as(tag tag)
 {
 	return (T&)((*this)[tag]);
+}
+
+template <class T> const T& ui_manager::as(tag tag) const
+{
+	return (const T&)((*this)[tag]);
 }
 
 template <class T, class... Args>

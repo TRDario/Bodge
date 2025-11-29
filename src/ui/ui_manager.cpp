@@ -17,6 +17,13 @@ widget& ui_manager::operator[](tag tag)
 	return *m_widgets.find(tag)->second;
 }
 
+const widget& ui_manager::operator[](tag tag) const
+{
+	TR_ASSERT(m_widgets.contains(tag), "Tried to get widget with nonexistant tag \"{}\".", tag);
+
+	return *m_widgets.find(tag)->second;
+}
+
 //
 
 void ui_manager::replace(std::unordered_map<tag, std::unique_ptr<widget>>&& widgets)
@@ -269,7 +276,7 @@ void ui_manager::handle_event(const tr::sys::event& event)
 					tr::opt_ref<kv_pair> new_hovered;
 					for (kv_pair& kv : m_widgets) {
 						const tr::frect2 hitbox{kv.second->tl(), kv.second->size()};
-						if (!kv.second->hidden() && hitbox.contains(engine::mouse_pos())) {
+						if (!kv.second->hidden() && hitbox.contains(g_mouse_pos)) {
 							new_hovered = kv;
 							break;
 						}
@@ -277,14 +284,14 @@ void ui_manager::handle_event(const tr::sys::event& event)
 
 					if (m_hovered != new_hovered) {
 						if (m_hovered.has_ref()) {
-							if (engine::held_buttons() == tr::sys::mouse_button::LEFT && m_hovered->second->interactible()) {
+							if (g_held_buttons == tr::sys::mouse_button::LEFT && m_hovered->second->interactible()) {
 								m_hovered->second->on_unheld();
 							}
 							m_hovered->second->on_unhover();
 						}
 						if (new_hovered.has_ref()) {
 							new_hovered->second->on_hover();
-							if (engine::held_buttons() == tr::sys::mouse_button::LEFT && new_hovered->second->interactible()) {
+							if (g_held_buttons == tr::sys::mouse_button::LEFT && new_hovered->second->interactible()) {
 								new_hovered->second->on_held();
 							}
 						}
@@ -302,7 +309,7 @@ void ui_manager::handle_event(const tr::sys::event& event)
 						tr::opt_ref<kv_pair> new_hovered;
 						for (kv_pair& kv : m_widgets) {
 							const tr::frect2 hitbox{kv.second->tl(), kv.second->size()};
-							if (!kv.second->hidden() && hitbox.contains(engine::mouse_pos())) {
+							if (!kv.second->hidden() && hitbox.contains(g_mouse_pos)) {
 								new_hovered = kv;
 								break;
 							}
@@ -403,7 +410,7 @@ void ui_manager::handle_event(const tr::sys::event& event)
 				},
 				[this](tr::sys::text_input_event event) {
 					if (m_selection.has_ref() && m_selection->second->interactible() && m_selection->second->writable() &&
-						!(engine::held_keymods() & tr::sys::keymod::CTRL)) {
+						!(g_held_keymods & tr::sys::keymod::CTRL)) {
 						m_selection->second->on_write(event.text);
 					}
 				},
@@ -431,7 +438,7 @@ void ui_manager::add_to_renderer()
 		if (m_hovered->second->tooltip_cb) {
 			const std::string tooltip{m_hovered->second->tooltip_cb()};
 			if (!tooltip.empty()) {
-				engine::tooltip().add_to_renderer(tooltip);
+				g_graphics->tooltip_renderer.add_to_renderer(tooltip);
 			}
 		}
 	}

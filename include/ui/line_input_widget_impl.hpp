@@ -10,7 +10,7 @@ line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignm
 				  unhide_time,
 				  NO_TOOLTIP,
 				  true,
-				  [this] { return this->buffer.empty() ? std::string{engine::loc["empty"]} : std::string{this->buffer}; },
+				  [this] { return this->buffer.empty() ? std::string{g_loc["empty"]} : std::string{this->buffer}; },
 				  font::LANGUAGE,
 				  style,
 				  font_size,

@@ -73,12 +73,12 @@ constexpr std::array<gamemode, 6> MENU_GAMEMODES{{
 
 std::string_view gamemode::name_loc() const
 {
-	return builtin ? engine::loc[name] : std::string_view{name};
+	return builtin ? g_loc[name] : std::string_view{name};
 }
 
 std::string_view gamemode::description_loc() const
 {
-	return builtin ? engine::loc[description] : std::string_view{description};
+	return builtin ? g_loc[description] : std::string_view{description};
 }
 
 void gamemode::save_to_file() const
@@ -128,12 +128,12 @@ void tr::binary_writer<gamemode>::write_to_stream(std::ostream& os, const gamemo
 
 //
 
-gamemode engine::pick_menu_gamemode()
+gamemode pick_menu_gamemode()
 {
 	return MENU_GAMEMODES[g_rng.generate(MENU_GAMEMODES.size())];
 }
 
-std::vector<gamemode> engine::load_gamemodes()
+std::vector<gamemode> load_gamemodes()
 {
 	std::vector<gamemode> gamemodes;
 	try {

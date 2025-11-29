@@ -56,7 +56,5 @@ template <> struct tr::binary_writer<gamemode> {
 	static void write_to_stream(std::ostream& os, const gamemode& in);
 };
 
-namespace engine {
-	gamemode pick_menu_gamemode();
-	std::vector<gamemode> load_gamemodes();
-} // namespace engine
+gamemode pick_menu_gamemode();
+std::vector<gamemode> load_gamemodes();

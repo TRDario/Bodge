@@ -52,10 +52,15 @@ pause_state::pause_state(std::shared_ptr<game> game, game_type type, glm::vec2 m
 {
 	if (blur_in) {
 		m_game->add_to_renderer();
-		engine::basic_renderer().draw(engine::blur_renderer().input());
+		g_graphics->basic_renderer.draw(g_graphics->blur_renderer.input());
 	}
+}
 
-	if (type == game_type::REGULAR) {
+//
+
+void pause_state::set_up_ui()
+{
+	if (to_type(m_substate) == game_type::REGULAR) {
 		set_up_full_ui();
 	}
 	else {
@@ -63,47 +68,45 @@ pause_state::pause_state(std::shared_ptr<game> game, game_type type, glm::vec2 m
 	}
 }
 
-//
-
-std::unique_ptr<tr::state> pause_state::update(tr::duration)
+next_state pause_state::tick()
 {
-	game_menu_state::update({});
+	game_menu_state::tick();
 	switch (to_base(m_substate)) {
 	case substate_base::PAUSING:
 		if (m_timer >= 0.5_s) {
 			m_timer = 0;
 			m_substate = substate_base::PAUSED | to_type(m_substate);
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate_base::PAUSED:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate_base::UNPAUSING:
 		if (to_type(m_substate) != game_type::REPLAY) {
 			float ratio{m_timer / 0.5_sf};
 			ratio = ratio < 0.5 ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
-			engine::set_mouse_pos(m_end_mouse_pos + (m_start_mouse_pos - m_end_mouse_pos) * ratio);
+			g_mouse_pos = m_end_mouse_pos + (m_start_mouse_pos - m_end_mouse_pos) * ratio;
 		}
 
 		if (m_timer >= 0.5_s) {
 			g_audio.unpause_song();
-			return m_next_state.get();
+			return g_next_state.get();
 		}
 		else {
-			return nullptr;
+			return tr::KEEP_STATE;
 		}
 	case substate_base::RESTARTING:
 		if (m_timer < 0.5_s) {
-			return nullptr;
+			return tr::KEEP_STATE;
 		}
-		engine::basic_renderer().set_default_transform(TRANSFORM);
-		return m_next_state.get();
+		g_graphics->basic_renderer.set_default_transform(TRANSFORM);
+		return g_next_state.get();
 	case substate_base::SAVING:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return m_timer >= 0.5_s ? g_next_state.get() : tr::KEEP_STATE;
 	case substate_base::QUITTING:
 		if (m_timer < 0.5_s) {
-			return nullptr;
+			return tr::KEEP_STATE;
 		}
-		engine::basic_renderer().set_default_transform(TRANSFORM);
+		g_graphics->basic_renderer.set_default_transform(TRANSFORM);
 		switch (to_type(m_substate)) {
 		case game_type::REGULAR:
 			g_audio.play_song("menu", 1.0s);
@@ -113,7 +116,7 @@ std::unique_ptr<tr::state> pause_state::update(tr::duration)
 			g_audio.play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
 			break;
 		}
-		return m_next_state.get();
+		return g_next_state.get();
 	}
 }
 
@@ -171,115 +174,40 @@ float pause_state::blur_strength()
 
 void pause_state::set_up_full_ui()
 {
+	using enum tr::align;
+
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
 	constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
-	m_ui.emplace<label_widget>(T_PAUSED, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PAUSED},
-							   text_style::NORMAL, 64);
 
-	const status_callback scb{
-		[this] { return to_base(m_substate) == substate_base::PAUSED || to_base(m_substate) == substate_base::PAUSING; }};
-	const status_callback unpause_scb{[this] { return to_base(m_substate) == substate_base::PAUSED; }};
-	std::array<action_callback, BUTTONS_REGULAR.size()> action_cbs{
-		[this] {
-			m_timer = 0;
-			m_substate = substate_base::UNPAUSING | game_type::REGULAR;
-			m_end_mouse_pos = engine::mouse_pos();
-			set_up_exit_animation();
-			g_audio.play_sound(sound::UNPAUSE, 0.8f, 0.0f);
-			m_next_state = make_async<game_state>(m_game, game_type::REGULAR, false);
-		},
-		[this] {
-			m_timer = 0;
-			m_substate = substate_base::SAVING | game_type::REGULAR;
-			set_up_exit_animation();
-			m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::RESTARTING);
-		},
-		[this] {
-			const score_flags score_flags{true, g_cli_settings.game_speed != 1};
-			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
-
-			m_timer = 0;
-			m_substate = substate_base::RESTARTING | game_type::REGULAR;
-			g_scorefile.add_score(m_game->gamemode(), score);
-			set_up_exit_animation();
-			m_next_state = make_async_game_state<active_game>(to_type(m_substate), true, m_game->gamemode());
-		},
-		[this] {
-			m_timer = 0;
-			m_substate = substate_base::SAVING | game_type::REGULAR;
-			set_up_exit_animation();
-			m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::NONE);
-		},
-		[this] {
-			const score_flags score_flags{true, g_cli_settings.game_speed != 1};
-			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
-
-			m_timer = 0;
-			m_substate = substate_base::QUITTING | game_type::REGULAR;
-			g_scorefile.add_score(m_game->gamemode(), score);
-			set_up_exit_animation();
-			m_next_state = make_async<title_state>();
-		},
-	};
+	m_ui.emplace<label_widget>(T_PAUSED, TITLE_MOVE_IN, CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_PAUSED}, text_style::NORMAL, 64);
 	for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
-		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-										 loc_text_callback{BUTTONS_REGULAR[i]}, font::LANGUAGE, 48, i == 0 ? unpause_scb : scb,
-										 std::move(action_cbs[i]), sound::CONFIRM);
+
+		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], move_in, CENTER, 0.5_s, NO_TOOLTIP, tag_loc{BUTTONS_REGULAR[i]},
+										 font::LANGUAGE, 48, i == 0 ? unpause_interactible : interactible, FULL_ACTION_CALLBACKS[i],
+										 sound::CONFIRM);
 	}
 }
 
 void pause_state::set_up_limited_ui()
 {
+	using enum tr::align;
+
 	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
 	constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 	const tag title_tag{to_type(m_substate) == game_type::REPLAY ? T_REPLAY_PAUSED : T_TEST_PAUSED};
-	m_ui.emplace<label_widget>(title_tag, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PAUSED},
-							   text_style::NORMAL, 64);
 
-	const status_callback scb{
-		[this] { return to_base(m_substate) == substate_base::PAUSED || to_base(m_substate) == substate_base::PAUSING; }};
-	const status_callback unpause_scb{[this] { return to_base(m_substate) == substate_base::PAUSED; }};
-	std::array<action_callback, BUTTONS_SPECIAL.size()> action_cbs{
-		[this] {
-			m_timer = 0;
-			m_substate = substate_base::UNPAUSING | to_type(m_substate);
-			m_end_mouse_pos = engine::mouse_pos();
-			set_up_exit_animation();
-			m_next_state = make_async<game_state>(m_game, to_type(m_substate), false);
-		},
-		[this] {
-			m_timer = 0;
-			m_substate = substate_base::RESTARTING | to_type(m_substate);
-			set_up_exit_animation();
-			if (to_type(m_substate) == game_type::REPLAY) {
-				m_next_state = make_async_game_state<replay_game>(game_type::REPLAY, true, (replay_game&)*m_game);
-			}
-			else {
-				m_next_state = make_async_game_state<active_game>(game_type::GAMEMODE_DESIGNER_TEST, true, m_game->gamemode());
-			}
-		},
-		[this] {
-			m_timer = 0;
-			m_substate = substate_base::QUITTING | to_type(m_substate);
-			set_up_exit_animation();
-			if (to_type(m_substate) == game_type::GAMEMODE_DESIGNER_TEST) {
-				m_next_state = make_async<gamemode_designer_state>(m_game->gamemode());
-			}
-			else {
-				m_next_state = make_async<replays_state>();
-			}
-		},
-	};
+	m_ui.emplace<label_widget>(title_tag, TITLE_MOVE_IN, CENTER, 0.5_s, NO_TOOLTIP, tag_loc{title_tag}, text_style::NORMAL, 64);
 	for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {500 + offset, y}, {500, y}, 0.5_s};
-		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-										 loc_text_callback{BUTTONS_SPECIAL[i]}, font::LANGUAGE, 48, i == 0 ? unpause_scb : scb,
-										 std::move(action_cbs[i]), sound::CONFIRM);
+
+		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], move_in, CENTER, 0.5_s, NO_TOOLTIP, tag_loc{BUTTONS_SPECIAL[i]},
+										 font::LANGUAGE, 48, i == 0 ? unpause_interactible : interactible, LIMITED_ACTION_CALLBACKS[i],
+										 sound::CONFIRM);
 	}
 }
 
@@ -304,4 +232,97 @@ void pause_state::set_up_exit_animation()
 	}
 
 	m_ui.hide_all_widgets(0.5_s);
+}
+
+//
+
+bool pause_state::interactible()
+{
+	const pause_state& self{g_state_machine.get<pause_state>()};
+
+	return to_base(self.m_substate) == substate_base::PAUSED || to_base(self.m_substate) == substate_base::PAUSING;
+}
+
+bool pause_state::unpause_interactible()
+{
+	const pause_state& self{g_state_machine.get<pause_state>()};
+
+	return to_base(self.m_substate) == substate_base::PAUSED;
+}
+
+void pause_state::on_unpause()
+{
+	pause_state& self{g_state_machine.get<pause_state>()};
+
+	self.m_timer = 0;
+	self.m_substate = substate_base::UNPAUSING | to_type(self.m_substate);
+	self.m_end_mouse_pos = g_mouse_pos;
+	self.set_up_exit_animation();
+	g_audio.play_sound(sound::UNPAUSE, 0.8f, 0.0f);
+	prepare_next_state<game_state>(self.m_game, game_type::REGULAR, false);
+}
+
+void pause_state::on_save_and_restart()
+{
+	pause_state& self{g_state_machine.get<pause_state>()};
+
+	self.m_timer = 0;
+	self.m_substate = substate_base::SAVING | game_type::REGULAR;
+	self.set_up_exit_animation();
+	prepare_next_state<save_score_state>(self.m_game, self.m_start_mouse_pos, save_screen_flags::RESTARTING);
+}
+
+void pause_state::on_restart()
+{
+	pause_state& self{g_state_machine.get<pause_state>()};
+
+	self.m_timer = 0;
+	self.m_substate = substate_base::RESTARTING | to_type(self.m_substate);
+	self.set_up_exit_animation();
+	if (to_type(self.m_substate) == game_type::REPLAY) {
+		prepare_next_game_state<replay_game>(game_type::REPLAY, true, (replay_game&)*self.m_game);
+	}
+	else {
+		if (to_type(self.m_substate) == game_type::REGULAR) {
+			const score_flags score_flags{true, g_cli_settings.game_speed != 1};
+			const score_entry score{{}, current_timestamp(), self.m_game->final_score(), self.m_game->final_time(), score_flags};
+
+			g_scorefile.add_score(self.m_game->gamemode(), score);
+		}
+		prepare_next_game_state<active_game>(to_type(self.m_substate), true, self.m_game->gamemode());
+	}
+}
+
+void pause_state::on_save_and_quit()
+{
+	pause_state& self{g_state_machine.get<pause_state>()};
+
+	self.m_timer = 0;
+	self.m_substate = substate_base::SAVING | game_type::REGULAR;
+	self.set_up_exit_animation();
+	prepare_next_state<save_score_state>(self.m_game, self.m_start_mouse_pos, save_screen_flags::NONE);
+}
+
+void pause_state::on_quit()
+{
+	pause_state& self{g_state_machine.get<pause_state>()};
+
+	self.m_timer = 0;
+	self.m_substate = substate_base::QUITTING | to_type(self.m_substate);
+	self.set_up_exit_animation();
+	switch (to_type(self.m_substate)) {
+	case game_type::REGULAR: {
+		const score_flags score_flags{true, g_cli_settings.game_speed != 1};
+		const score_entry score{{}, current_timestamp(), self.m_game->final_score(), self.m_game->final_time(), score_flags};
+
+		g_scorefile.add_score(self.m_game->gamemode(), score);
+		prepare_next_state<title_state>();
+	} break;
+	case game_type::GAMEMODE_DESIGNER_TEST:
+		prepare_next_state<gamemode_designer_state>(self.m_game->gamemode());
+		break;
+	case game_type::REPLAY:
+		prepare_next_state<replays_state>();
+		break;
+	}
 }
