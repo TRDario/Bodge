@@ -63,15 +63,15 @@ save_score_state::save_score_state(std::shared_ptr<game> game, save_screen_flags
 
 //
 
-std::unique_ptr<tr::state> save_score_state::update(tr::duration)
+tr::next_state save_score_state::tick()
 {
-	game_menu_state::update({});
+	game_menu_state::tick();
 	m_score.description = m_ui.as<multiline_input_widget<255>>(T_INPUT).buffer;
 	switch (to_base(m_substate)) {
 	case substate_base::SAVING_SCORE:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate_base::RETURNING_OR_ENTERING_SAVE_REPLAY:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	}
 }
 
@@ -96,7 +96,7 @@ void save_score_state::set_up_ui()
 {
 	// MOVE-INS
 
-	const float label_h{296 - engine::line_skip(font::LANGUAGE, 32)};
+	const float label_h{296 - g_text_engine.line_skip(font::LANGUAGE, 32)};
 	const tweener<glm::vec2> best_time_label_move_in{tween::CUBIC, {225, label_h}, {325, label_h}, 0.5_s};
 	const tweener<glm::vec2> best_score_label_move_in{tween::CUBIC, {775, label_h}, {675, label_h}, 0.5_s};
 

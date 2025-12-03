@@ -57,22 +57,22 @@ title_state::title_state(std::shared_ptr<playerless_game> game)
 
 //
 
-std::unique_ptr<tr::state> title_state::update(tr::duration)
+tr::next_state title_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::ENTERING_GAME:
 		if (m_timer >= 1.0_s) {
 			m_timer = 0;
 			m_substate = substate::IN_TITLE;
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::IN_TITLE:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::ENTERING_SUBMENU:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	case substate::EXITING_GAME:
-		return m_timer >= 0.5_s ? std::make_unique<tr::drop_state>() : nullptr;
+		return m_timer >= 0.5_s ? tr::next_state{nullptr} : tr::KEEP_STATE;
 	}
 }
 

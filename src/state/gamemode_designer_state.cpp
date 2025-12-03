@@ -77,21 +77,21 @@ gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 
 //
 
-std::unique_ptr<tr::state> gamemode_designer_state::update(tr::duration)
+tr::next_state gamemode_designer_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::RETURNING_FROM_TEST_GAME:
 		if (m_timer >= 0.5_s) {
 			m_substate = substate::IN_GAMEMODE_DESIGNER;
 			m_timer = 0;
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::IN_GAMEMODE_DESIGNER:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::ENTERING_TEST_GAME:
 	case substate::ENTERING_SUBMENU_OR_TITLE:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return m_timer >= 0.5_s ? std::optional{m_next_state.get()} : tr::KEEP_STATE;
 	}
 }
 
@@ -168,7 +168,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 			set_up_exit_animation();
 			g_audio.fade_song_out(0.5s);
-			m_next_state = make_async_game_state<active_game>(game_type::GAMEMODE_DESIGNER_TEST, true, m_pending);
+			m_next_state = make_game_state_async<active_game>(game_type::GAMEMODE_DESIGNER_TEST, true, m_pending);
 		},
 		[this] {
 			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
@@ -190,7 +190,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	// TEXT CALLBACKS
 
 	text_callback author_tcb{
-		string_text_callback{TR_FMT::format("{}: {}", engine::loc["by"], g_scorefile.name)},
+		string_text_callback{TR_FMT::format("{}: {}", g_loc["by"], g_scorefile.name)},
 	};
 	text_callback song_c_tcb{
 		[&] { return std::string{m_pending.song}; },

@@ -50,8 +50,8 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 	// HEIGHTS AND MOVE-INS
 
 	const float result_h{(500 - (BUTTONS.size() - 0.75f) * 30) + 4};
-	const float label_h{result_h - engine::line_skip(font::LANGUAGE, 48) + 14};
-	const float best_h{result_h + engine::line_skip(font::LANGUAGE, 48) - 14};
+	const float label_h{result_h - g_text_engine.line_skip(font::LANGUAGE, 48) + 14};
+	const float best_h{result_h + g_text_engine.line_skip(font::LANGUAGE, 48) - 14};
 
 	const tweener<glm::vec2> time_label_move_in{tween::CUBIC, {175, label_h}, {275, label_h}, 0.5_s};
 	const tweener<glm::vec2> time_move_in{tween::CUBIC, {175, result_h}, {275, result_h}, 0.5_s};
@@ -83,7 +83,7 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 			m_substate = substate::RESTARTING;
 			g_scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
-			m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, m_game->gamemode());
+			m_next_state = make_game_state_async<active_game>(game_type::REGULAR, true, m_game->gamemode());
 		},
 		[this] {
 			m_timer = 0;
@@ -113,8 +113,8 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 		best_time_tcb = loc_text_callback{"new_personal_best"};
 	}
 	else {
-		best_time_tcb = string_text_callback{
-			TR_FMT::format("{}: {}", engine::loc["personal_best"], format_time(g_scorefile.bests(m_game->gamemode()).time))};
+		best_time_tcb =
+			string_text_callback{TR_FMT::format("{}: {}", g_loc["personal_best"], format_time(g_scorefile.bests(m_game->gamemode()).time))};
 	}
 
 	text_callback score_tcb{string_text_callback{format_score(m_game->final_score())}};
@@ -124,7 +124,7 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 	}
 	else {
 		best_score_tcb =
-			string_text_callback{TR_FMT::format("{}: {}", engine::loc["personal_best"], g_scorefile.bests(m_game->gamemode()).score)};
+			string_text_callback{TR_FMT::format("{}: {}", g_loc["personal_best"], g_scorefile.bests(m_game->gamemode()).score)};
 	}
 
 	//
@@ -154,9 +154,9 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 
 //
 
-std::unique_ptr<tr::state> game_over_state::update(tr::duration)
+tr::next_state game_over_state::tick()
 {
-	game_menu_state::update({});
+	game_menu_state::tick();
 	switch (m_substate) {
 	case substate::BLURRING_IN:
 		if (m_timer >= 0.5_s) {
@@ -181,17 +181,17 @@ std::unique_ptr<tr::state> game_over_state::update(tr::duration)
 				m_ui[T_BEST_SCORE].unhide();
 			}
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::SAVING:
 	case substate::RESTARTING:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	case substate::QUITTING:
 		if (m_timer >= 0.5_s) {
 			g_audio.play_song("menu", 1.0s);
 			return m_next_state.get();
 		}
 		else {
-			return nullptr;
+			return tr::KEEP_STATE;
 		}
 	}
 }

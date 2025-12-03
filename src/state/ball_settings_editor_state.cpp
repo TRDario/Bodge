@@ -297,14 +297,14 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 
 //
 
-std::unique_ptr<tr::state> ball_settings_editor_state::update(tr::duration)
+tr::next_state ball_settings_editor_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::IN_EDITOR:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::EXITING:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	}
 }
 

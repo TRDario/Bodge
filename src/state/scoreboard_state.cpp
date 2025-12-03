@@ -155,8 +155,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 	// TEXT CALLBACKS
 
 	const text_callback player_info_tcb{
-		string_text_callback{
-			TR_FMT::format("{} {}: {}", engine::loc["total_playtime"], g_scorefile.name, format_playtime(g_scorefile.playtime))},
+		string_text_callback{TR_FMT::format("{} {}: {}", g_loc["total_playtime"], g_scorefile.name, format_playtime(g_scorefile.playtime))},
 	};
 	const text_callback cur_gamemode_tcb{
 		[this] { return std::string{m_selected->gamemode.name_loc()}; },
@@ -196,12 +195,12 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
 
-std::unique_ptr<tr::state> scoreboard_state::update(tr::duration)
+tr::next_state scoreboard_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (to_base(m_substate)) {
 	case substate_base::IN_SCOREBOARD:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate_base::SWITCHING_PAGE:
 		if (m_timer >= 0.5_s) {
 			m_timer = 0;
@@ -210,9 +209,9 @@ std::unique_ptr<tr::state> scoreboard_state::update(tr::duration)
 		else if (m_timer == 0.25_s) {
 			m_ui.replace(m_next_widgets.get());
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate_base::EXITING_TO_SCOREBOARD_SELECTION:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	}
 }
 
@@ -235,15 +234,16 @@ scoreboard to_scoreboard(scoreboard_state::substate state)
 
 void scoreboard_state::set_up_page_switch_animation()
 {
+	const scoreboard scoreboard{to_scoreboard(m_substate)};
+
 	for (usize i = 0; i < SCORES_PER_PAGE; i++) {
 		widget& widget{m_ui[SCORE_TAGS[i]]};
 		widget.pos.change(tween::CUBIC, {i % 2 == 0 ? 600 : 400, glm::vec2{widget.pos}.y}, 0.25_s);
 		widget.hide(0.25_s);
 	}
 	m_sorted_scores = m_selected->scores;
-	std::ranges::sort(m_sorted_scores, to_scoreboard(m_substate) == scoreboard::SCORE ? compare_scores : compare_times);
-	m_next_widgets =
-		std::async(std::launch::async, prepare_next_widgets, (enum score_widget::type)(to_scoreboard(m_substate)), m_sorted_scores, m_page);
+	std::ranges::sort(m_sorted_scores, scoreboard == scoreboard::SCORE ? compare_scores : compare_times);
+	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, (enum score_widget::type)(scoreboard), m_sorted_scores, m_page);
 }
 
 void scoreboard_state::set_up_exit_animation()

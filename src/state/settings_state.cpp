@@ -171,8 +171,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	};
 	const status_callback language_c_scb{
 		[this] {
-			return m_substate != substate::ENTERING_TITLE &&
-				   (engine::languages.size() >= 2 - (!engine::languages.contains(m_pending.language)));
+			return m_substate != substate::ENTERING_TITLE && (g_languages.size() >= 2 - (!g_languages.contains(m_pending.language)));
 		},
 	};
 	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_scbs{
@@ -238,18 +237,18 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	};
 	const action_callback language_c_acb{
 		[this] {
-			std::map<language_code, language_info>::iterator it{engine::languages.find(m_pending.language)};
-			if (it == engine::languages.end() || ++it == engine::languages.end()) {
-				it = engine::languages.begin();
+			std::map<language_code, language_info>::iterator it{g_languages.find(m_pending.language)};
+			if (it == g_languages.end() || ++it == g_languages.end()) {
+				it = g_languages.begin();
 			}
 			m_pending.language = it->first;
-			engine::reload_language_preview_font(m_pending);
+			g_text_engine.reload_language_preview_font(m_pending);
 		},
 	};
 	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_acbs{
 		[this] {
 			m_pending = g_settings;
-			engine::reload_language_preview_font(m_pending);
+			g_text_engine.reload_language_preview_font(m_pending);
 			const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8};
 			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, window_size_color, 0.1_s);
 		},
@@ -264,12 +263,11 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 			}
 
 			if (old.language != g_settings.language) {
-				engine::load_localization();
+				load_localization();
 			}
-			if (!engine::languages.contains(old.language) ||
-				engine::languages[old.language].font != engine::languages[g_settings.language].font) {
+			if (!g_languages.contains(old.language) || g_languages[old.language].font != g_languages[g_settings.language].font) {
 				m_ui.release_graphical_resources();
-				engine::set_language_font();
+				g_text_engine.set_language_font();
 			}
 			engine::apply_settings(old);
 		},
@@ -296,16 +294,16 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	// TEXT CALLBACKS
 
 	const text_callback display_mode_c_tcb{
-		[&dm = m_pending.display_mode] { return std::string{engine::loc[dm == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
+		[&dm = m_pending.display_mode] { return std::string{g_loc[dm == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
 	};
 	const text_callback vsync_c_tcb{
-		[&vsync = m_pending.vsync] { return std::string{engine::loc[vsync ? "on" : "off"]}; },
+		[&vsync = m_pending.vsync] { return std::string{g_loc[vsync ? "on" : "off"]}; },
 	};
 	const text_callback msaa_c_tcb{
 		[this] { return m_pending.msaa == NO_MSAA ? "--" : TR_FMT::format("x{}", m_pending.msaa); },
 	};
 	const text_callback language_c_tcb{
-		[this] { return engine::languages.contains(m_pending.language) ? engine::languages[m_pending.language].name : "???"; },
+		[this] { return g_languages.contains(m_pending.language) ? g_languages[m_pending.language].name : "???"; },
 	};
 
 	//
@@ -370,14 +368,14 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 
 //
 
-std::unique_ptr<tr::state> settings_state::update(tr::duration)
+tr::next_state settings_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::IN_SETTINGS:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	}
 }
 

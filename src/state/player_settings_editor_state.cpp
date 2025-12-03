@@ -87,7 +87,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 	// TEXT CALLBACKS
 
 	const text_callback spawn_life_fragments_c_tcb{
-		[&slf = m_pending.player.spawn_life_fragments] { return std::string{engine::loc[slf ? "on" : "off"]}; },
+		[&slf = m_pending.player.spawn_life_fragments] { return std::string{g_loc[slf ? "on" : "off"]}; },
 	};
 
 	// STATUS CALLBACKS
@@ -231,14 +231,14 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 
 //
 
-std::unique_ptr<tr::state> player_settings_editor_state::update(tr::duration)
+tr::next_state player_settings_editor_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::IN_EDITOR:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::EXITING:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	}
 }
 

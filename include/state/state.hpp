@@ -7,7 +7,7 @@ class name_entry_state : public main_menu_state {
   public:
 	name_entry_state();
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -28,7 +28,7 @@ class title_state : public main_menu_state {
 	title_state();
 	title_state(std::shared_ptr<playerless_game> game);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -51,7 +51,7 @@ class start_game_state : public main_menu_state {
   public:
 	start_game_state(std::shared_ptr<playerless_game> game);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -78,7 +78,7 @@ class gamemode_designer_state : public main_menu_state {
 	gamemode_designer_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode, bool returning_from_subscreen);
 	gamemode_designer_state(const gamemode& gamemode);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -104,7 +104,7 @@ class ball_settings_editor_state : public main_menu_state {
   public:
 	ball_settings_editor_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -124,7 +124,7 @@ class player_settings_editor_state : public main_menu_state {
   public:
 	player_settings_editor_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -144,7 +144,7 @@ class scoreboard_selection_state : public main_menu_state {
   public:
 	scoreboard_selection_state(std::shared_ptr<playerless_game> game, bool returning_from_subscreen);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -169,7 +169,7 @@ class scoreboard_state : public main_menu_state {
   public:
 	scoreboard_state(std::shared_ptr<playerless_game> game, scoreboard scoreboard);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate_base {
@@ -202,7 +202,7 @@ class replays_state : public main_menu_state {
 	replays_state(std::shared_ptr<playerless_game> game);
 
   public:
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -232,7 +232,7 @@ class settings_state : public main_menu_state {
   public:
 	settings_state(std::shared_ptr<playerless_game> game);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -252,7 +252,7 @@ class credits_state : public main_menu_state {
   public:
 	credits_state(std::shared_ptr<playerless_game> game);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -269,8 +269,8 @@ class game_state : public state {
   public:
 	game_state(std::shared_ptr<game> game, game_type type, bool fade_in);
 
-	std::unique_ptr<tr::state> handle_event(const tr::sys::event& event) override;
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state handle_event(const tr::sys::event& event) override;
+	tr::next_state tick() override;
 	void draw() override;
 
   private:
@@ -295,13 +295,13 @@ class game_state : public state {
 };
 
 template <class T, class... Ts>
-std::future<std::unique_ptr<tr::state>> make_async_game_state(game_type type, bool fade_in, Ts&&... gargs)
+std::future<tr::next_state> make_game_state_async(game_type type, bool fade_in, Ts&&... gargs)
 	requires(std::constructible_from<T, Ts...>)
 {
 	return std::async(
 		std::launch::async,
 		[]<class... Us>(game_type type, bool fade_in, Us&&... gargs) {
-			return (std::unique_ptr<tr::state>)std::make_unique<game_state>(std::make_shared<T>(std::forward<Us>(gargs)...), type, fade_in);
+			return (tr::next_state)std::make_unique<game_state>(std::make_shared<T>(std::forward<Us>(gargs)...), type, fade_in);
 		},
 		type, fade_in, std::forward<Ts>(gargs)...);
 }
@@ -312,7 +312,7 @@ class pause_state : public game_menu_state {
   public:
 	pause_state(std::shared_ptr<game> game, game_type type, glm::vec2 mouse_pos, bool blur_in);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate_base {
@@ -349,7 +349,7 @@ class game_over_state : public game_menu_state {
   public:
 	game_over_state(std::shared_ptr<game> game, bool blur_in);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate {
@@ -386,7 +386,7 @@ class save_score_state : public game_menu_state {
 	// Used when coming from the game over screen.
 	save_score_state(std::shared_ptr<game> game, save_screen_flags flags);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate_base {
@@ -414,7 +414,7 @@ class save_replay_state : public game_menu_state {
   public:
 	save_replay_state(std::shared_ptr<game> game, save_screen_flags flags);
 
-	std::unique_ptr<tr::state> update(tr::duration) override;
+	tr::next_state tick() override;
 
   private:
 	enum class substate_base {

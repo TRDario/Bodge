@@ -64,20 +64,20 @@ name_entry_state::name_entry_state()
 
 //
 
-std::unique_ptr<tr::state> name_entry_state::update(tr::duration)
+tr::next_state name_entry_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::FADING_IN:
 		if (m_timer >= 1.0_s) {
 			m_timer = 0;
 			m_substate = substate::IN_NAME_ENTRY;
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::IN_NAME_ENTRY:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::ENTERING_TITLE:
-		return m_timer >= 1.0_s ? m_next_state.get() : nullptr;
+		return m_timer >= 1.0_s ? std::optional{m_next_state.get()} : tr::KEEP_STATE;
 	}
 }
 

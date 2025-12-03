@@ -74,7 +74,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 				m_next_state = make_async<title_state>();
 			}
 			else {
-				m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, m_game->gamemode());
+				m_next_state = make_game_state_async<active_game>(game_type::REGULAR, true, m_game->gamemode());
 			}
 		},
 	};
@@ -87,7 +87,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 				m_next_state = make_async<title_state>();
 			}
 			else {
-				m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, m_game->gamemode());
+				m_next_state = make_game_state_async<active_game>(game_type::REGULAR, true, m_game->gamemode());
 			}
 		},
 	};
@@ -112,15 +112,15 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 
 //
 
-std::unique_ptr<tr::state> save_replay_state::update(tr::duration)
+tr::next_state save_replay_state::tick()
 {
-	game_menu_state::update({});
+	game_menu_state::tick();
 	if (m_timer >= 0.5_s && to_base(m_substate) == substate_base::EXITING) {
-		engine::basic_renderer().set_default_transform(TRANSFORM);
+		g_graphics->basic_renderer.set_default_transform(TRANSFORM);
 		return m_next_state.get();
 	}
 	else {
-		return nullptr;
+		return tr::KEEP_STATE;
 	}
 }
 

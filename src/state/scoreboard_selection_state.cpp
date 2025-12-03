@@ -68,8 +68,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 	// TEXT CALLBACKS
 
 	const text_callback player_info_tcb{
-		string_text_callback{
-			TR_FMT::format("{} {}: {}", engine::loc["total_playtime"], g_scorefile.name, format_playtime(g_scorefile.playtime))},
+		string_text_callback{TR_FMT::format("{} {}: {}", g_loc["total_playtime"], g_scorefile.name, format_playtime(g_scorefile.playtime))},
 	};
 
 	//
@@ -96,14 +95,14 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 									 loc_text_callback{T_VIEW_SCORES}, font::LANGUAGE, 64, scb, view_scores_acb, sound::CONFIRM);
 }
 
-std::unique_ptr<tr::state> scoreboard_selection_state::update(tr::duration)
+tr::next_state scoreboard_selection_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::IN_SCOREBOARD_SELECTION:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::ENTERING_SUBMENU_OR_TITLE:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	}
 }
 

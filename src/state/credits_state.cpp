@@ -74,9 +74,9 @@ credits_state::credits_state(std::shared_ptr<playerless_game> game)
 
 //
 
-std::unique_ptr<tr::state> credits_state::update(tr::duration)
+tr::next_state credits_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::IN_CREDITS:
 		switch (m_timer) {
@@ -121,8 +121,8 @@ std::unique_ptr<tr::state> credits_state::update(tr::duration)
 		default:
 			break;
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	};
 }

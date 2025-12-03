@@ -65,18 +65,18 @@ replays_state::replays_state(std::shared_ptr<playerless_game> game)
 
 //
 
-std::unique_ptr<tr::state> replays_state::update(tr::duration)
+tr::next_state replays_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::RETURNING_FROM_REPLAY:
 		if (m_timer >= 0.5_s) {
 			m_timer = 0;
 			m_substate = substate::IN_REPLAYS;
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::IN_REPLAYS:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::SWITCHING_PAGE:
 		if (m_timer >= 0.5_s) {
 			m_timer = 0;
@@ -85,10 +85,10 @@ std::unique_ptr<tr::state> replays_state::update(tr::duration)
 		else if (m_timer == 0.25_s) {
 			m_ui.replace(m_next_widgets.get());
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::STARTING_REPLAY:
 	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	}
 }
 
@@ -121,7 +121,7 @@ std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_wid
 			set_up_exit_animation();
 			g_audio.fade_song_out(0.5s);
 			m_next_state =
-				make_async_game_state<replay_game>(game_type::REPLAY, true, m_selected->second.gamemode, replay{m_selected->first});
+				make_game_state_async<replay_game>(game_type::REPLAY, true, m_selected->second.gamemode, replay{m_selected->first});
 		},
 	};
 
@@ -160,7 +160,7 @@ void replays_state::set_up_ui()
 			set_up_exit_animation();
 			g_audio.fade_song_out(0.5s);
 			m_next_state =
-				make_async_game_state<replay_game>(game_type::REPLAY, true, m_selected->second.gamemode, replay{m_selected->first});
+				make_game_state_async<replay_game>(game_type::REPLAY, true, m_selected->second.gamemode, replay{m_selected->first});
 		},
 	};
 	const action_callback exit_acb{

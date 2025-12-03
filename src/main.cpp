@@ -71,7 +71,7 @@ tr::sys::signal initialize()
 	g_audio.initialize();
 	engine::initialize_system();
 	g_graphics.emplace();
-	set_main_menu_state();
+	g_state_machine.emplace<title_state>();
 	tr::sys::show_window();
 	return tr::sys::signal::CONTINUE;
 }

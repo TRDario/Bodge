@@ -57,7 +57,7 @@ std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const game
 
 	using enum starting_side;
 
-	const float label_h{621 - engine::line_skip(font::LANGUAGE, 32)};
+	const float label_h{621 - g_text_engine.line_skip(font::LANGUAGE, 32)};
 	const tweener<glm::vec2> name_move_in{tween::CUBIC, {side == LEFT ? 250 : 750, 400}, {500, 400}, 0.25_s};
 	const tweener<glm::vec2> author_move_in{tween::CUBIC, {side == LEFT ? 250 : 750, 475}, {500, 475}, 0.25_s};
 	const tweener<glm::vec2> description_move_in{tween::CUBIC, {side == LEFT ? 250 : 750, 525}, {500, 525}, 0.25_s};
@@ -69,9 +69,9 @@ std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const game
 	// TEXT CALLBACKS
 
 	string_text_callback name_tcb{std::string{selected.name_loc()}};
-	string_text_callback author_tcb{TR_FMT::format("{}: {}", engine::loc["by"], selected.author)};
+	string_text_callback author_tcb{TR_FMT::format("{}: {}", g_loc["by"], selected.author)};
 	string_text_callback description_tcb{
-		std::string{!selected.description_loc().empty() ? selected.description_loc() : engine::loc["no_description"]},
+		std::string{!selected.description_loc().empty() ? selected.description_loc() : g_loc["no_description"]},
 	};
 	text_callback best_time_tcb{string_text_callback{format_time(g_scorefile.bests(selected).time)}};
 	text_callback best_score_tcb{string_text_callback{format_score(g_scorefile.bests(selected).score)}};
@@ -103,7 +103,7 @@ std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const game
 start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::ENTERING_START_GAME}
-	, m_gamemodes{engine::load_gamemodes()}
+	, m_gamemodes{load_gamemodes()}
 	, m_selected{m_gamemodes.begin()}
 {
 	std::vector<gamemode>::iterator last_selected_it{std::ranges::find(m_gamemodes, g_scorefile.last_selected)};
@@ -113,7 +113,7 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 
 	// MOVE-INS
 
-	const float label_h{621 - engine::line_skip(font::LANGUAGE, 32)};
+	const float label_h{621 - g_text_engine.line_skip(font::LANGUAGE, 32)};
 	const tweener<glm::vec2> best_time_label_move_in{tween::CUBIC, {325, label_h + 100}, {325, label_h}, 0.5_s};
 	const tweener<glm::vec2> best_score_label_move_in{tween::CUBIC, {675, label_h + 100}, {675, label_h}, 0.5_s};
 
@@ -121,9 +121,9 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	using enum text_style;
 
 	text_callback name_tcb{string_text_callback{std::string{m_selected->name_loc()}}};
-	text_callback author_tcb{string_text_callback{TR_FMT::format("{}: {}", engine::loc["by"], m_selected->author)}};
+	text_callback author_tcb{string_text_callback{TR_FMT::format("{}: {}", g_loc["by"], m_selected->author)}};
 	text_callback description_tcb{string_text_callback{
-		std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : engine::loc["no_description"]}}};
+		std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : g_loc["no_description"]}}};
 	text_callback best_time_tcb{string_text_callback{format_time(g_scorefile.bests(*m_selected).time)}};
 	text_callback best_score_tcb{string_text_callback{format_score(g_scorefile.bests(*m_selected).score)}};
 
@@ -173,7 +173,7 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 			set_up_exit_animation();
 			g_scorefile.last_selected = *m_selected;
 			g_audio.fade_song_out(0.5s);
-			m_next_state = make_async_game_state<active_game>(game_type::REGULAR, true, *m_selected);
+			m_next_state = make_game_state_async<active_game>(game_type::REGULAR, true, *m_selected);
 		},
 	};
 	const action_callback exit_acb{
@@ -218,18 +218,18 @@ float start_game_state::fade_overlay_opacity()
 	return m_substate == substate::ENTERING_GAME ? m_timer / 0.5_sf : 0;
 }
 
-std::unique_ptr<tr::state> start_game_state::update(tr::duration)
+tr::next_state start_game_state::tick()
 {
-	main_menu_state::update({});
+	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::ENTERING_START_GAME:
 		if (m_timer >= 0.5_s) {
 			m_substate = substate::IN_START_GAME;
 			m_timer = 0;
 		}
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::IN_START_GAME:
-		return nullptr;
+		return tr::KEEP_STATE;
 	case substate::SWITCHING_GAMEMODE:
 		if (m_timer >= 0.5_s) {
 			m_substate = substate::IN_START_GAME;
@@ -240,7 +240,7 @@ std::unique_ptr<tr::state> start_game_state::update(tr::duration)
 		}
 	case substate::ENTERING_TITLE:
 	case substate::ENTERING_GAME:
-		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
+		return next_state_if_after(0.5_s);
 	}
 }
 
