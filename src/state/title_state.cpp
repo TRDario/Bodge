@@ -46,59 +46,33 @@ constexpr tweener<glm::vec2> LOGO_BALL_MOVE_IN{tween::CUBIC, {-180, 644}, {327, 
 title_state::title_state()
 	: main_menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::ENTERING_GAME}
 {
+	set_up_ui();
 }
 
 title_state::title_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_TITLE}
 {
+	set_up_ui();
 }
 
 //
 
-void title_state::set_up_ui()
+std::unique_ptr<tr::state> title_state::update(tr::duration)
 {
-	using enum tr::align;
-
-	m_ui.emplace<image_widget>(T_LOGO_TEXT, LOGO_TEXT_MOVE_IN, CENTER, 2.5_s, 0, "logo_text");
-	m_ui.emplace<image_widget>(T_LOGO_OVERLAY, LOGO_TEXT_MOVE_IN, CENTER, 2.5_s, 1, "logo_overlay", g_settings.primary_hue);
-	m_ui.emplace<image_widget>(T_LOGO_BALL, LOGO_BALL_MOVE_IN, CENTER, 2.5_s, 2, "logo_ball", g_settings.secondary_hue);
-
-	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, TOP_LEFT, 1_s, NO_TOOLTIP, string_text{T_COPYRIGHT},
-												 text_style::NORMAL, 24)};
-	copyright.pos.change(tween::CUBIC, {4, 998 - copyright.size().y}, 1_s);
-	widget& version{m_ui.emplace<label_widget>(T_VERSION, glm::vec2{996, 1000}, TOP_RIGHT, 1_s, NO_TOOLTIP, string_text{T_VERSION},
-											   text_style::NORMAL, 24)};
-	version.pos.change(tween::CUBIC, {996, 998 - version.size().y}, 1_s);
-
-	glm::vec2 end_pos{990, 965 - (BUTTONS.size() - 1) * 50};
-	for (usize i = 0; i < BUTTONS.size(); ++i) {
-		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(35.0f, 75.0f)};
-		const tweener<glm::vec2> move_in{tween::CUBIC, {end_pos.x + offset, end_pos.y}, end_pos, 1_s};
-		const sound sound{i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
-		m_ui.emplace<text_button_widget>(BUTTONS[i], move_in, CENTER_RIGHT, 1_s, NO_TOOLTIP, tag_loc{BUTTONS[i]}, font::LANGUAGE, 48,
-										 interactible, ACTION_CALLBACKS[i], sound);
-		end_pos += glm::vec2{-25, 50};
-	}
-}
-
-//
-
-next_state title_state::tick()
-{
-	main_menu_state::tick();
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::ENTERING_GAME:
 		if (m_timer >= 1.0_s) {
 			m_timer = 0;
 			m_substate = substate::IN_TITLE;
 		}
-		return tr::KEEP_STATE;
+		return nullptr;
 	case substate::IN_TITLE:
-		return tr::KEEP_STATE;
+		return nullptr;
 	case substate::ENTERING_SUBMENU:
-		return m_timer >= 0.5_s ? g_next_state.get() : tr::KEEP_STATE;
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	case substate::EXITING_GAME:
-		return m_timer >= 0.5_s ? next_state{tr::DROP_STATE} : tr::KEEP_STATE;
+		return m_timer >= 0.5_s ? std::make_unique<tr::drop_state>() : nullptr;
 	}
 }
 
@@ -117,7 +91,76 @@ float title_state::fade_overlay_opacity()
 	}
 }
 
-//
+void title_state::set_up_ui()
+{
+	m_ui.emplace<image_widget>(T_LOGO_TEXT, LOGO_TEXT_MOVE_IN, tr::align::CENTER, 2.5_s, 0, "logo_text");
+	m_ui.emplace<image_widget>(T_LOGO_OVERLAY, LOGO_TEXT_MOVE_IN, tr::align::CENTER, 2.5_s, 1, "logo_overlay", g_settings.primary_hue);
+	m_ui.emplace<image_widget>(T_LOGO_BALL, LOGO_BALL_MOVE_IN, tr::align::CENTER, 2.5_s, 2, "logo_ball", g_settings.secondary_hue);
+
+	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, glm::vec2{4, 1000}, tr::align::TOP_LEFT, 1_s, NO_TOOLTIP,
+												 string_text_callback{T_COPYRIGHT}, text_style::NORMAL, 24)};
+	copyright.pos.change(tween::CUBIC, {4, 998 - copyright.size().y}, 1_s);
+	widget& version{m_ui.emplace<label_widget>(T_VERSION, glm::vec2{996, 1000}, tr::align::TOP_RIGHT, 1_s, NO_TOOLTIP,
+											   string_text_callback{T_VERSION}, text_style::NORMAL, 24)};
+	version.pos.change(tween::CUBIC, {996, 998 - version.size().y}, 1_s);
+
+	const status_callback scb{
+		[this] { return m_substate == substate::IN_TITLE || m_substate == substate::ENTERING_GAME; },
+	};
+	const std::array<action_callback, BUTTONS.size()> action_cbs{
+		[this] {
+			m_substate = substate::ENTERING_SUBMENU;
+			m_timer = 0;
+			set_up_exit_animation();
+			m_next_state = make_async<start_game_state>(m_game);
+		},
+		[this] {
+			m_substate = substate::ENTERING_SUBMENU;
+			m_timer = 0;
+			set_up_exit_animation();
+			m_next_state = make_async<gamemode_designer_state>(m_game, gamemode{.author = g_scorefile.name, .song = "classic"}, false);
+		},
+		[this] {
+			m_substate = substate::ENTERING_SUBMENU;
+			m_timer = 0;
+			set_up_exit_animation();
+			m_next_state = make_async<scoreboard_selection_state>(m_game, false);
+		},
+		[this] {
+			m_substate = substate::ENTERING_SUBMENU;
+			m_timer = 0;
+			set_up_exit_animation();
+			m_next_state = make_async<replays_state>(m_game);
+		},
+		[this] {
+			m_substate = substate::ENTERING_SUBMENU;
+			m_timer = 0;
+			set_up_exit_animation();
+			m_next_state = make_async<settings_state>(m_game);
+		},
+		[this] {
+			m_substate = substate::ENTERING_SUBMENU;
+			m_timer = 0;
+			set_up_exit_animation();
+			m_next_state = make_async<credits_state>(m_game);
+		},
+		[this] {
+			m_substate = substate::EXITING_GAME;
+			m_timer = 0;
+			set_up_exit_animation();
+			g_audio.fade_song_out(0.5s);
+		},
+	};
+
+	glm::vec2 end_pos{990, 965 - (BUTTONS.size() - 1) * 50};
+	for (usize i = 0; i < BUTTONS.size(); ++i) {
+		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(35.0f, 75.0f)};
+		const tweener<glm::vec2> move_in{tween::CUBIC, {end_pos.x + offset, end_pos.y}, end_pos, 1_s};
+		m_ui.emplace<text_button_widget>(BUTTONS[i], move_in, tr::align::CENTER_RIGHT, 1_s, NO_TOOLTIP, loc_text_callback{BUTTONS[i]},
+										 font::LANGUAGE, 48, scb, action_cbs[i], i != BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL);
+		end_pos += glm::vec2{-25, 50};
+	}
+}
 
 void title_state::set_up_exit_animation()
 {
@@ -133,83 +176,4 @@ void title_state::set_up_exit_animation()
 	m_ui[T_COPYRIGHT].pos.change(tween::CUBIC, {4, 1000}, 0.5_s);
 	m_ui[T_VERSION].pos.change(tween::CUBIC, {996, 1000}, 0.5_s);
 	m_ui.hide_all_widgets(0.5_s);
-}
-
-//
-
-bool title_state::interactible()
-{
-	const title_state& self{g_state_machine.get<title_state>()};
-
-	return self.m_substate == substate::IN_TITLE || self.m_substate == substate::ENTERING_GAME;
-}
-
-void title_state::on_start_game()
-{
-	title_state& self{g_state_machine.get<title_state>()};
-
-	self.m_substate = substate::ENTERING_SUBMENU;
-	self.m_timer = 0;
-	self.set_up_exit_animation();
-	prepare_next_state<start_game_state>(self.m_game);
-}
-
-void title_state::on_gamemode_designer()
-{
-	title_state& self{g_state_machine.get<title_state>()};
-
-	self.m_substate = substate::ENTERING_SUBMENU;
-	self.m_timer = 0;
-	self.set_up_exit_animation();
-	prepare_next_state<gamemode_designer_state>(self.m_game, gamemode{.author = g_scorefile.name, .song = "classic"}, false);
-}
-
-void title_state::on_scoreboards()
-{
-	title_state& self{g_state_machine.get<title_state>()};
-
-	self.m_substate = substate::ENTERING_SUBMENU;
-	self.m_timer = 0;
-	self.set_up_exit_animation();
-	prepare_next_state<scoreboard_selection_state>(self.m_game, false);
-}
-
-void title_state::on_replays()
-{
-	title_state& self{g_state_machine.get<title_state>()};
-
-	self.m_substate = substate::ENTERING_SUBMENU;
-	self.m_timer = 0;
-	self.set_up_exit_animation();
-	prepare_next_state<replays_state>(self.m_game);
-}
-
-void title_state::on_settings()
-{
-	title_state& self{g_state_machine.get<title_state>()};
-
-	self.m_substate = substate::ENTERING_SUBMENU;
-	self.m_timer = 0;
-	self.set_up_exit_animation();
-	prepare_next_state<settings_state>(self.m_game);
-}
-
-void title_state::on_credits()
-{
-	title_state& self{g_state_machine.get<title_state>()};
-
-	self.m_substate = substate::ENTERING_SUBMENU;
-	self.m_timer = 0;
-	self.set_up_exit_animation();
-	prepare_next_state<credits_state>(self.m_game);
-}
-
-void title_state::on_exit()
-{
-	title_state& self{g_state_machine.get<title_state>()};
-
-	self.m_substate = substate::EXITING_GAME;
-	self.m_timer = 0;
-	self.set_up_exit_animation();
-	g_audio.fade_song_out(0.5s);
 }

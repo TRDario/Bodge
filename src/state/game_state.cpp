@@ -1,5 +1,6 @@
 #include "../../include/graphics.hpp"
 #include "../../include/state/state.hpp"
+#include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
 //
@@ -12,36 +13,33 @@ constexpr tag T_INDICATOR{"indicator"};
 game_state::game_state(std::shared_ptr<game> game, game_type type, bool fade_in)
 	: state{{}, {}}, m_substate{(fade_in ? substate_base::FADING_IN : substate_base::ONGOING) | type}, m_game{std::move(game)}
 {
+	if (type == game_type::REPLAY) {
+		m_ui.emplace<label_widget>(T_REPLAY, glm::vec2{4, 1000}, tr::align::BOTTOM_LEFT, 0, NO_TOOLTIP, loc_text_callback{T_REPLAY},
+								   text_style::NORMAL, 48);
+		m_ui.emplace<replay_playback_indicator_widget>(T_INDICATOR, glm::vec2{992, 994}, tr::align::BOTTOM_RIGHT, 0);
+	}
 }
 
 //
 
-void game_state::set_up_ui()
+std::unique_ptr<tr::state> game_state::handle_event(const tr::sys::event& event)
 {
-	using enum tr::align;
-
-	if (to_type(m_substate) == game_type::REPLAY) {
-		m_ui.emplace<label_widget>(T_REPLAY, glm::vec2{4, 1000}, BOTTOM_LEFT, 0, NO_TOOLTIP, tag_loc{T_REPLAY}, text_style::NORMAL, 48);
-		m_ui.emplace<replay_playback_indicator_widget>(T_INDICATOR, glm::vec2{992, 994}, BOTTOM_RIGHT, 0);
-	}
+	return event | tr::match{
+					   [this](tr::sys::key_down_event event) -> std::unique_ptr<tr::state> {
+						   if (to_base(m_substate) != substate_base::FADING_IN && event.key == tr::sys::keycode::ESCAPE) {
+							   g_audio.play_sound(sound::PAUSE, 0.8f, 0.0f);
+							   g_audio.pause_song();
+							   return std::make_unique<pause_state>(m_game, to_type(m_substate), engine::mouse_pos(), true);
+						   }
+						   return nullptr;
+					   },
+					   [](auto) -> std::unique_ptr<tr::state> { return nullptr; },
+				   };
 }
 
-next_state game_state::handle_event(const tr::sys::event& event)
+std::unique_ptr<tr::state> game_state::update(tr::duration)
 {
-	if (event.is<tr::sys::key_down_event>() && to_base(m_substate) != substate_base::FADING_IN &&
-		event.as<tr::sys::key_down_event>().key == "Escape"_k) {
-		g_audio.play_sound(sound::PAUSE, 0.8f, 0.0f);
-		g_audio.pause_song();
-		return pause_state{m_game, to_type(m_substate), g_mouse_pos, true};
-	}
-	else {
-		return tr::KEEP_STATE;
-	}
-}
-
-next_state game_state::tick()
-{
-	state::tick();
+	state::update({});
 	switch (to_base(m_substate)) {
 	case substate_base::FADING_IN:
 		if (m_timer >= 0.5_s) {
@@ -50,15 +48,15 @@ next_state game_state::tick()
 			g_audio.play_song(m_game->gamemode().song, 0.1s);
 			g_audio.play_sound(sound::BALL_SPAWN, 0.25f, 0);
 		}
-		return tr::KEEP_STATE;
+		return nullptr;
 	case substate_base::ONGOING:
 		if (to_type(m_substate) == game_type::REPLAY) {
-			if (g_held_keymods & tr::sys::keymod::SHIFT) {
+			if (engine::held_keymods() & tr::sys::keymod::SHIFT) {
 				if (m_timer % 4 == 0) {
 					m_game->update();
 				}
 			}
-			else if (g_held_keymods & tr::sys::keymod::CTRL) {
+			else if (engine::held_keymods() & tr::sys::keymod::CTRL) {
 				for (int i = 0; i < 4; ++i) {
 					m_game->update();
 					if (((replay_game*)m_game.get())->done()) {
@@ -76,7 +74,7 @@ next_state game_state::tick()
 				}
 				else {
 					m_substate = substate_base::EXITING | game_type::REPLAY;
-					prepare_next_state<replays_state>();
+					m_next_state = make_async<replays_state>();
 				}
 				g_audio.fade_song_out(0.5s);
 				m_timer = 0;
@@ -95,39 +93,39 @@ next_state game_state::tick()
 				m_timer = 0;
 				g_audio.fade_song_out(0.5s);
 				if (to_type(m_substate) == game_type::REGULAR) {
-					prepare_next_state<game_over_state>(m_game, true);
+					m_next_state = make_async<game_over_state>(m_game, true);
 				}
 			}
 		}
-		return tr::KEEP_STATE;
+		return nullptr;
 	case substate_base::GAME_OVER:
 		m_game->update();
 		if (m_timer >= 0.75_s) {
-			g_graphics->basic_renderer.set_default_transform(TRANSFORM);
+			engine::basic_renderer().set_default_transform(TRANSFORM);
 			switch (to_type(m_substate)) {
 			case game_type::REGULAR: {
-				return g_next_state.get();
+				return m_next_state.get();
 			}
 			case game_type::GAMEMODE_DESIGNER_TEST:
 				m_substate = substate_base::EXITING | game_type::GAMEMODE_DESIGNER_TEST;
 				m_timer = 0;
-				prepare_next_state<replays_state>();
+				m_next_state = make_async<replays_state>();
 				break;
 			case game_type::REPLAY:
 				m_substate = substate_base::EXITING | game_type::REPLAY;
 				m_timer = 0;
-				prepare_next_state<gamemode_designer_state>(m_game->gamemode());
+				m_next_state = make_async<gamemode_designer_state>(m_game->gamemode());
 				break;
 			}
 		}
-		return tr::KEEP_STATE;
+		return nullptr;
 	case substate_base::EXITING:
 		if (m_timer >= 1_s) {
-			g_graphics->basic_renderer.set_default_transform(TRANSFORM);
+			engine::basic_renderer().set_default_transform(TRANSFORM);
 			g_audio.play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
-			return g_next_state.get();
+			return m_next_state.get();
 		}
-		return tr::KEEP_STATE;
+		return nullptr;
 	}
 }
 
@@ -138,8 +136,8 @@ void game_state::draw()
 		m_ui.add_to_renderer();
 		add_replay_cursor_to_renderer(((replay_game*)m_game.get())->cursor_pos());
 	}
-	g_graphics->add_fade_overlay_to_renderer(fade_overlay_opacity());
-	g_graphics->basic_renderer.draw(g_graphics->screen);
+	engine::add_fade_overlay_to_renderer(fade_overlay_opacity());
+	engine::basic_renderer().draw(engine::screen());
 }
 
 //
@@ -174,10 +172,10 @@ float game_state::fade_overlay_opacity() const
 
 void game_state::add_replay_cursor_to_renderer(glm::vec2 pos) const
 {
-	tr::gfx::simple_color_mesh_ref quad{g_graphics->basic_renderer.new_color_fan(layer::UI, 4)};
+	tr::gfx::simple_color_mesh_ref quad{engine::basic_renderer().new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(quad.positions, pos, {6, 1}, {12, 2}, 45_deg);
 	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1}));
-	quad = g_graphics->basic_renderer.new_color_fan(layer::UI, 4);
+	quad = engine::basic_renderer().new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(quad.positions, pos, {6, 1}, {12, 2}, -45_deg);
 	std::ranges::fill(quad.colors, color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1}));
 }

@@ -243,20 +243,6 @@ class arrow_widget : public widget {
 	ticks m_action_left;
 };
 
-struct dec {
-	template <class T, T Limit> static bool compare(T v);
-	template <class T, T Limit, T SmallChange, T MediumChange, T LargeChange> static void execute(T& v);
-};
-struct inc {
-	template <class T, T Limit> static bool compare(T v);
-	template <class T, T Limit, T SmallChange, T MediumChange, T LargeChange> static void execute(T& v);
-};
-template <class T, tr::one_of<dec, inc> Operation, T Limit, T SmallChange, T MediumChange, T LargeChange>
-class numeric_arrow_widget : public arrow_widget {
-  public:
-	numeric_arrow_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, status_callback base_status_cb, T& ref);
-};
-
 /////////////////////////////////////////////////////////////// ARROW WIDGET //////////////////////////////////////////////////////////////
 
 struct replay_playback_indicator_widget : public widget {
@@ -302,5 +288,4 @@ struct replay_widget : public text_button_widget {
 
 #include "line_input_widget_impl.hpp"      // IWYU pragma: keep
 #include "multiline_input_widget_impl.hpp" // IWYU pragma: keep
-#include "numeric_arrow_widget_impl.hpp"   // IWYU pragma: keep
 #include "numeric_input_widget_impl.hpp"   // IWYU pragma: keep

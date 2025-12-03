@@ -1,6 +1,5 @@
 #pragma once
 #include "../fonts.hpp"
-#include "../system.hpp"
 #include "interpolator.hpp"
 
 ////////////////////////////////////////////////////////////////// COMMON /////////////////////////////////////////////////////////////////
@@ -12,30 +11,22 @@ template <class T> using validation_callback = std::function<T(std::common_type_
 
 inline const text_callback NO_TOOLTIP{};
 // Common callback for text widgets: getting a localization string using the widget name as the key.
-struct tag_loc {
+struct loc_text_callback {
 	tag tag;
 
 	std::string operator()() const;
 };
 // Common callback for text widgets: getting a tooltip localization string.
-struct tag_tooltip_loc {
+struct tooltip_loc_text_callback {
 	tag tag;
 
 	std::string operator()() const;
 };
 // Common callback for text widgets: copying a string directly.
-struct copy_string {
+struct string_text_callback {
 	std::string str;
 
 	std::string operator()() const;
-};
-
-// Common validation callback: clamp between two values.
-template <class T, T Min, T Max> struct clamp_validation {
-	T operator()(std::common_type_t<T, int> v) const
-	{
-		return T(std::clamp<std::common_type_t<T, int>>(v, Min, Max));
-	}
 };
 
 constexpr ticks DONT_UNHIDE{std::numeric_limits<ticks>::max()};

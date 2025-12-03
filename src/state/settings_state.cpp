@@ -131,79 +131,253 @@ constexpr tweener<glm::vec2> LANGUAGE_C_MOVE_IN{tween::CUBIC, LANGUAGE_START_POS
 settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SETTINGS}, m_pending{g_settings}
 {
-}
+	// STATUS CALLBACKS
 
-//
+	const status_callback scb{
+		[this] { return m_substate != substate::ENTERING_TITLE; },
+	};
+	const status_callback window_size_d_scb{
+		[this] {
+			return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN &&
+				   m_pending.window_size > MIN_WINDOW_SIZE;
+		},
+	};
+	const status_callback window_size_i_scb{
+		[this] {
+			return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN &&
+				   m_pending.window_size < max_window_size();
+		},
+	};
+	const status_callback window_size_c_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.display_mode != display_mode::FULLSCREEN; },
+	};
+	const status_callback msaa_d_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != NO_MSAA; },
+	};
+	const status_callback msaa_i_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.msaa != tr::sys::max_msaa(); },
+	};
+	const status_callback sfx_volume_d_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume > 0; },
+	};
+	const status_callback sfx_volume_i_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.sfx_volume < 100; },
+	};
+	const status_callback music_volume_d_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.music_volume > 0; },
+	};
+	const status_callback music_volume_i_scb{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending.music_volume < 100; },
+	};
+	const status_callback language_c_scb{
+		[this] {
+			return m_substate != substate::ENTERING_TITLE &&
+				   (engine::languages.size() >= 2 - (!engine::languages.contains(m_pending.language)));
+		},
+	};
+	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_scbs{
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending != g_settings; },
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending != g_settings; },
+		[this] { return m_substate != substate::ENTERING_TITLE && m_pending == g_settings; },
+	};
 
-void settings_state::set_up_ui()
-{
-	using enum tr::align;
+	// ACTION CALLBACKS
 
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, TOP_CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_TITLE}, text_style::NORMAL, 64);
+	const action_callback display_mode_c_acb{
+		[&, &dm = m_pending.display_mode] {
+			switch (dm) {
+			case display_mode::WINDOWED:
+				dm = display_mode::FULLSCREEN;
+				m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
+				break;
+			case display_mode::FULLSCREEN:
+				dm = display_mode::WINDOWED;
+				m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+				break;
+			}
+		},
+	};
+	const action_callback window_size_d_acb{
+		[&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, u16(ws - engine::keymods_choose(1, 10, 100))); },
+	};
+	const action_callback window_size_i_acb{
+		[&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + engine::keymods_choose(1, 10, 100))); },
+	};
+	const action_callback vsync_c_acb{
+		[&vsync = m_pending.vsync] { vsync = !vsync; },
+	};
+	const action_callback msaa_d_acb{
+		[&msaa = m_pending.msaa] { msaa = msaa == 2 ? NO_MSAA : u8(msaa / 2); },
+	};
+	const action_callback msaa_i_acb{
+		[&msaa = m_pending.msaa] { msaa = msaa == NO_MSAA ? 2 : u8(msaa * 2); },
+	};
+	const action_callback primary_hue_d_acb{
+		[&ph = m_pending.primary_hue] { ph = u16((ph - engine::keymods_choose(1, 10, 100) + 360) % 360); },
+	};
+	const action_callback primary_hue_i_acb{
+		[&ph = m_pending.primary_hue] { ph = u16((ph + engine::keymods_choose(1, 10, 100)) % 360); },
+	};
+	const action_callback secondary_hue_d_acb{
+		[&sh = m_pending.secondary_hue] { sh = u16((sh - engine::keymods_choose(1, 10, 100) + 360) % 360); },
+	};
+	const action_callback secondary_hue_i_acb{
+		[&sh = m_pending.secondary_hue] { sh = u16((sh + engine::keymods_choose(1, 10, 100)) % 360); },
+	};
+	const action_callback sfx_volume_d_acb{
+		[&sv = m_pending.sfx_volume] { sv = u8(std::max(sv - engine::keymods_choose(1, 10, 25), 0)); },
+	};
+	const action_callback sfx_volume_i_acb{
+		[&sv = m_pending.sfx_volume] { sv = u8(std::min(sv + engine::keymods_choose(1, 10, 25), 100)); },
+	};
+	const action_callback music_volume_d_acb{
+		[&mv = m_pending.music_volume] { mv = u8(std::max(mv - engine::keymods_choose(1, 10, 25), 0)); },
+	};
+	const action_callback music_volume_i_acb{
+		[&mv = m_pending.music_volume] { mv = u8(std::min(mv + engine::keymods_choose(1, 10, 25), 100)); },
+	};
+	const action_callback language_c_acb{
+		[this] {
+			std::map<language_code, language_info>::iterator it{engine::languages.find(m_pending.language)};
+			if (it == engine::languages.end() || ++it == engine::languages.end()) {
+				it = engine::languages.begin();
+			}
+			m_pending.language = it->first;
+			engine::reload_language_preview_font(m_pending);
+		},
+	};
+	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_acbs{
+		[this] {
+			m_pending = g_settings;
+			engine::reload_language_preview_font(m_pending);
+			const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8};
+			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, window_size_color, 0.1_s);
+		},
+		[this] {
+			const settings old{g_settings};
+			g_settings = m_pending;
+			if (engine::restart_required(old)) {
+				m_ui.release_graphical_resources();
+			}
+			else if (m_pending.vsync != old.vsync) {
+				tr::sys::set_window_vsync(m_pending.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
+			}
+
+			if (old.language != g_settings.language) {
+				engine::load_localization();
+			}
+			if (!engine::languages.contains(old.language) ||
+				engine::languages[old.language].font != engine::languages[g_settings.language].font) {
+				m_ui.release_graphical_resources();
+				engine::set_language_font();
+			}
+			engine::apply_settings(old);
+		},
+		[this] {
+			m_substate = substate::ENTERING_TITLE;
+			m_timer = 0;
+			set_up_exit_animation();
+			m_next_state = make_async<title_state>(m_game);
+		},
+	};
+
+	// VALIDATION CALLBACKS
+
+	const validation_callback<u16> window_size_c_vcb{
+		[](u16 v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); },
+	};
+	const validation_callback<u16> hue_c_vcb{
+		[](int v) { return u16(v % 360); },
+	};
+	const validation_callback<u8> volume_c_vcb{
+		[](int v) { return u8(std::min(v, 100)); },
+	};
+
+	// TEXT CALLBACKS
+
+	const text_callback display_mode_c_tcb{
+		[&dm = m_pending.display_mode] { return std::string{engine::loc[dm == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
+	};
+	const text_callback vsync_c_tcb{
+		[&vsync = m_pending.vsync] { return std::string{engine::loc[vsync ? "on" : "off"]}; },
+	};
+	const text_callback msaa_c_tcb{
+		[this] { return m_pending.msaa == NO_MSAA ? "--" : TR_FMT::format("x{}", m_pending.msaa); },
+	};
+	const text_callback language_c_tcb{
+		[this] { return engine::languages.contains(m_pending.language) ? engine::languages[m_pending.language].name : "???"; },
+	};
+
+	//
+
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+							   text_style::NORMAL, 64);
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		const label_info& label{LABELS[i]};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 158.5f + i * 75}, {15, 158.5f + i * 75}, 0.5_s};
 		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? "505050A0"_rgba8
 																											   : "A0A0A0A0"_rgba8};
-		m_ui.emplace<label_widget>(label.tag, move_in, CENTER_LEFT, 0.5_s, tag_tooltip_loc{LABELS[i].tooltip}, tag_loc{label.tag},
-								   text_style::NORMAL, 48, color);
+		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
+								   loc_text_callback{label.tag}, text_style::NORMAL, 48, color);
 	}
 
-	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, DISPLAY_MODE_C_MOVE_IN, CENTER_RIGHT, 0.5_s, NO_TOOLTIP, display_mode_c_text,
-									 font::LANGUAGE, 48, interactible, on_display_mode_c, sound::CONFIRM);
-	m_ui.emplace<numeric_arrow_widget<u16, dec, MIN_WINDOW_SIZE, 1, 10, 100>>(T_WINDOW_SIZE_D, WINDOW_SIZE_D_MOVE_IN, CENTER_LEFT, 0.5_s,
-																			  window_size_dc_interactible, m_pending.window_size);
-	m_ui.emplace<numeric_input_widget<u16, 4, "{}", "{}">>(T_WINDOW_SIZE_C, WINDOW_SIZE_C_MOVE_IN, CENTER, 0.5_s, 48, m_ui,
-														   m_pending.window_size, window_size_dc_interactible,
-														   [](u16 v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); });
-	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, WINDOW_SIZE_I_MOVE_IN, CENTER_RIGHT, 0.5_s, true, window_size_i_interactible,
-							   on_window_size_i);
-	m_ui.emplace<text_button_widget>(T_VSYNC_C, VSYNC_C_MOVE_IN, CENTER_RIGHT, 0.5_s, NO_TOOLTIP, vsync_c_text, font::LANGUAGE_PREVIEW, 48,
-									 interactible, on_vsync_c, sound::CONFIRM);
-	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_MOVE_IN, CENTER_LEFT, 0.5_s, false, msaa_d_interactible, on_msaa_d);
-	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_MOVE_IN, CENTER, 0.5_s, NO_TOOLTIP, msaa_c_text, text_style::NORMAL, 48);
-	m_ui.emplace<arrow_widget>(T_MSAA_I, MSAA_I_MOVE_IN, CENTER_RIGHT, 0.5_s, true, msaa_i_interactible, on_msaa_i);
-	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_MOVE_IN, CENTER_LEFT, 0.5_s, false, interactible, on_primary_hue_d);
-	m_ui.emplace<numeric_input_widget<u16, 3, "{}", "{}">>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_MOVE_IN, CENTER, 0.5_s, 48, m_ui,
-														   m_pending.primary_hue, interactible, [](int v) { return u16(v % 360); });
-	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, PRIMARY_HUE_I_MOVE_IN, CENTER_RIGHT, 0.5_s, true, interactible, on_primary_hue_i);
-	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, PRIMARY_HUE_PREVIEW_MOVE_IN, CENTER_RIGHT, 0.5_s, m_pending.primary_hue);
-	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, SECONDARY_HUE_D_MOVE_IN, CENTER_LEFT, 0.5_s, false, interactible, on_secondary_hue_d);
-	m_ui.emplace<numeric_input_widget<u16, 3, "{}", "{}">>(T_SECONDARY_HUE_C, SECONDARY_HUE_C_MOVE_IN, CENTER, 0.5_s, 48, m_ui,
-														   m_pending.secondary_hue, interactible, [](int v) { return u16(v % 360); });
-	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, SECONDARY_HUE_I_MOVE_IN, CENTER_RIGHT, 0.5_s, true, interactible, on_secondary_hue_i);
-	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, SECONDARY_HUE_PREVIEW_MOVE_IN, CENTER_RIGHT, 0.5_s,
+	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, DISPLAY_MODE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP,
+									 display_mode_c_tcb, font::LANGUAGE, 48, scb, display_mode_c_acb, sound::CONFIRM);
+	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, WINDOW_SIZE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, window_size_d_scb,
+							   window_size_d_acb);
+	m_ui.emplace<numeric_input_widget<u16, 4, "{}", "{}">>(T_WINDOW_SIZE_C, WINDOW_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														   m_pending.window_size, window_size_c_scb, window_size_c_vcb);
+	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, WINDOW_SIZE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, window_size_i_scb,
+							   window_size_i_acb);
+	m_ui.emplace<text_button_widget>(T_VSYNC_C, VSYNC_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, vsync_c_tcb,
+									 font::LANGUAGE_PREVIEW, 48, scb, vsync_c_acb, sound::CONFIRM);
+	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, msaa_d_scb, msaa_d_acb);
+	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, msaa_c_tcb, text_style::NORMAL, 48);
+	m_ui.emplace<arrow_widget>(T_MSAA_I, MSAA_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, msaa_i_scb, msaa_i_acb);
+	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, scb, primary_hue_d_acb);
+	m_ui.emplace<numeric_input_widget<u16, 3, "{}", "{}">>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														   m_pending.primary_hue, scb, hue_c_vcb);
+	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, PRIMARY_HUE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, scb, primary_hue_i_acb);
+	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, PRIMARY_HUE_PREVIEW_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s,
+									   m_pending.primary_hue);
+	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, SECONDARY_HUE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, scb, secondary_hue_d_acb);
+	m_ui.emplace<numeric_input_widget<u16, 3, "{}", "{}">>(T_SECONDARY_HUE_C, SECONDARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														   m_pending.secondary_hue, scb, hue_c_vcb);
+	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, SECONDARY_HUE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, scb, secondary_hue_i_acb);
+	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, SECONDARY_HUE_PREVIEW_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s,
 									   m_pending.secondary_hue);
-	m_ui.emplace<numeric_arrow_widget<u8, dec, 0, 1, 10, 25>>(T_SFX_VOLUME_D, SFX_VOLUME_D_MOVE_IN, CENTER_LEFT, 0.5_s, interactible,
-															  m_pending.sfx_volume);
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, SFX_VOLUME_C_MOVE_IN, CENTER, 0.5_s, 48, m_ui,
-															m_pending.sfx_volume, interactible, clamp_validation<u8, 0, 100>{});
-	m_ui.emplace<numeric_arrow_widget<u8, inc, 100, 1, 10, 25>>(T_SFX_VOLUME_I, SFX_VOLUME_I_MOVE_IN, CENTER_RIGHT, 0.5_s, interactible,
-																m_pending.sfx_volume);
-	m_ui.emplace<numeric_arrow_widget<u8, dec, 0, 1, 10, 25>>(T_MUSIC_VOLUME_D, MUSIC_VOLUME_D_MOVE_IN, CENTER_LEFT, 0.5_s, interactible,
-															  m_pending.music_volume);
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, MUSIC_VOLUME_C_MOVE_IN, CENTER, 0.5_s, 48, m_ui,
-															m_pending.music_volume, interactible, clamp_validation<u8, 0, 100>{});
-	m_ui.emplace<numeric_arrow_widget<u8, inc, 100, 1, 10, 25>>(T_MUSIC_VOLUME_I, MUSIC_VOLUME_I_MOVE_IN, CENTER_RIGHT, 0.5_s, interactible,
-																m_pending.music_volume);
-	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, LANGUAGE_C_MOVE_IN, CENTER_RIGHT, 0.5_s, NO_TOOLTIP, language_c_text,
-									 font::LANGUAGE_PREVIEW, 48, language_c_interactible, on_language_c, sound::CONFIRM);
+	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_D, SFX_VOLUME_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, sfx_volume_d_scb,
+							   sfx_volume_d_acb);
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, SFX_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+															m_pending.sfx_volume, scb, volume_c_vcb);
+	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_I, SFX_VOLUME_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, sfx_volume_i_scb,
+							   sfx_volume_i_acb);
+	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_D, MUSIC_VOLUME_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, music_volume_d_scb,
+							   music_volume_d_acb);
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, MUSIC_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+															m_pending.music_volume, scb, volume_c_vcb);
+	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_I, MUSIC_VOLUME_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, music_volume_i_scb,
+							   music_volume_i_acb);
+	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, LANGUAGE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, language_c_tcb,
+									 font::LANGUAGE_PREVIEW, 48, language_c_scb, language_c_acb, sound::CONFIRM);
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const tweener<glm::vec2> move_in{tween::CUBIC, BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s};
 		const sound sound{i == 1 ? sound::CONFIRM : sound::CANCEL};
-		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, tag_loc{BOTTOM_BUTTONS[i]},
-										 font::LANGUAGE, 48, BOTTOM_STATUS_CALLBACKS[i], BOTTOM_ACTION_CALLBACKS[i], sound);
+		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
+										 loc_text_callback{BOTTOM_BUTTONS[i]}, font::LANGUAGE, 48, bottom_scbs[i], bottom_acbs[i], sound);
 	}
 }
 
-next_state settings_state::tick()
+//
+
+std::unique_ptr<tr::state> settings_state::update(tr::duration)
 {
-	main_menu_state::tick();
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::IN_SETTINGS:
-		return tr::KEEP_STATE;
+		return nullptr;
 	case substate::ENTERING_TITLE:
-		return m_timer >= 0.5_s ? g_next_state.get() : tr::KEEP_STATE;
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
 }
 
@@ -224,218 +398,4 @@ void settings_state::set_up_exit_animation()
 		widget.pos.change(tween::CUBIC, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
 	}
 	m_ui.hide_all_widgets(0.5_s);
-}
-
-//
-
-std::string settings_state::display_mode_c_text()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return std::string{g_loc[self.m_pending.display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]};
-}
-
-std::string settings_state::vsync_c_text()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return std::string{g_loc[self.m_pending.vsync ? "on" : "off"]};
-}
-
-std::string settings_state::msaa_c_text()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return self.m_pending.msaa == NO_MSAA ? "--" : TR_FMT::format("x{}", self.m_pending.msaa);
-}
-
-std::string settings_state::language_c_text()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return g_languages.contains(self.m_pending.language) ? g_languages[self.m_pending.language].name : "???";
-}
-
-bool settings_state::interactible()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return self.m_substate == substate::IN_SETTINGS;
-}
-
-bool settings_state::window_size_dc_interactible()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return self.m_substate != substate::ENTERING_TITLE && self.m_pending.display_mode != display_mode::FULLSCREEN;
-}
-
-bool settings_state::window_size_i_interactible()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return self.m_substate != substate::ENTERING_TITLE && self.m_pending.display_mode != display_mode::FULLSCREEN &&
-		   self.m_pending.window_size < max_window_size();
-}
-
-bool settings_state::msaa_d_interactible()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return self.m_substate != substate::ENTERING_TITLE && self.m_pending.msaa != NO_MSAA;
-}
-
-bool settings_state::msaa_i_interactible()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return self.m_substate != substate::ENTERING_TITLE && self.m_pending.msaa != tr::sys::max_msaa();
-}
-
-bool settings_state::revert_apply_interactible()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return self.m_substate != substate::ENTERING_TITLE && self.m_pending != g_settings;
-}
-
-bool settings_state::exit_interactible()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return self.m_substate != substate::ENTERING_TITLE && self.m_pending == g_settings;
-}
-
-bool settings_state::language_c_interactible()
-{
-	const settings_state& self{g_state_machine.get<settings_state>()};
-
-	return self.m_substate != substate::ENTERING_TITLE && (g_languages.size() >= 2 - (!g_languages.contains(self.m_pending.language)));
-}
-
-void settings_state::on_display_mode_c()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	switch (self.m_pending.display_mode) {
-	case display_mode::WINDOWED:
-		self.m_pending.display_mode = display_mode::FULLSCREEN;
-		self.m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
-		break;
-	case display_mode::FULLSCREEN:
-		self.m_pending.display_mode = display_mode::WINDOWED;
-		self.m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
-		break;
-	}
-}
-
-void settings_state::on_window_size_i()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	self.m_pending.window_size = std::min(max_window_size(), u16(self.m_pending.window_size + engine::keymods_choose(1, 10, 100)));
-}
-
-void settings_state::on_vsync_c()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	self.m_pending.vsync = !self.m_pending.vsync;
-}
-
-void settings_state::on_msaa_d()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	self.m_pending.msaa = self.m_pending.msaa == 2 ? NO_MSAA : u8(self.m_pending.msaa / 2);
-}
-
-void settings_state::on_msaa_i()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	self.m_pending.msaa = self.m_pending.msaa == NO_MSAA ? 2 : u8(self.m_pending.msaa * 2);
-}
-
-void settings_state::on_primary_hue_d()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	self.m_pending.primary_hue = u16((self.m_pending.primary_hue - engine::keymods_choose(1, 10, 100) + 360) % 360);
-}
-
-void settings_state::on_primary_hue_i()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	self.m_pending.primary_hue = u16((self.m_pending.primary_hue + engine::keymods_choose(1, 10, 100)) % 360);
-}
-
-void settings_state::on_secondary_hue_d()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	self.m_pending.secondary_hue = u16((self.m_pending.secondary_hue - engine::keymods_choose(1, 10, 100) + 360) % 360);
-}
-
-void settings_state::on_secondary_hue_i()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	self.m_pending.secondary_hue = u16((self.m_pending.secondary_hue + engine::keymods_choose(1, 10, 100)) % 360);
-}
-
-void settings_state::on_language_c()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	std::map<language_code, language_info>::iterator it{g_languages.find(self.m_pending.language)};
-	if (it == g_languages.end() || ++it == g_languages.end()) {
-		it = g_languages.begin();
-	}
-	self.m_pending.language = it->first;
-	g_text_engine.reload_language_preview_font(self.m_pending);
-}
-
-void settings_state::on_revert()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	self.m_pending = g_settings;
-	g_text_engine.reload_language_preview_font(self.m_pending);
-	const tr::rgba8 window_size_color{self.m_pending.display_mode == display_mode::WINDOWED ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8};
-	self.m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, window_size_color, 0.1_s);
-}
-
-void settings_state::on_apply()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	const settings old{g_settings};
-	g_settings = self.m_pending;
-	if (engine::restart_required(old)) {
-		self.m_ui.release_graphical_resources();
-	}
-	else if (self.m_pending.vsync != old.vsync) {
-		tr::sys::set_window_vsync(self.m_pending.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
-	}
-
-	if (old.language != g_settings.language) {
-		load_localization();
-	}
-	if (!g_languages.contains(old.language) || g_languages[old.language].font != g_languages[g_settings.language].font) {
-		self.m_ui.release_graphical_resources();
-		g_text_engine.set_language_font();
-	}
-	engine::apply_settings(old);
-}
-
-void settings_state::on_exit()
-{
-	settings_state& self{g_state_machine.get<settings_state>()};
-
-	self.m_substate = substate::ENTERING_TITLE;
-	self.m_timer = 0;
-	self.set_up_exit_animation();
-	prepare_next_state<title_state>(self.m_game);
 }

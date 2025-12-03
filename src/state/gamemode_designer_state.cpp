@@ -59,10 +59,11 @@ constexpr tweener<glm::vec2> SONG_C_MOVE_IN{tween::CUBIC, glm::vec2{400, 700}, g
 gamemode_designer_state::gamemode_designer_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode,
 												 bool returning_from_subscreen)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
-	, m_substate{returning_from_subscreen ? substate::RETURNING_FROM_SUBSCREEN : substate::IN_GAMEMODE_DESIGNER}
+	, m_substate{substate::IN_GAMEMODE_DESIGNER}
 	, m_pending{gamemode}
 	, m_available_songs{create_available_song_list()}
 {
+	set_up_ui(returning_from_subscreen);
 }
 
 gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
@@ -71,62 +72,26 @@ gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
 	, m_pending{gamemode}
 	, m_available_songs{create_available_song_list()}
 {
+	set_up_ui(false);
 }
 
 //
 
-void gamemode_designer_state::set_up_ui()
+std::unique_ptr<tr::state> gamemode_designer_state::update(tr::duration)
 {
-	using enum tr::align;
-
-	// TEXT CALLBACKS
-
-	text_callback author_tcb{string_text{TR_FMT::format("{}: {}", g_loc["by"], g_scorefile.name)}};
-
-	//
-
-	if (m_substate == substate::RETURNING_FROM_SUBSCREEN) {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, TOP_CENTER, 0_s, NO_TOOLTIP, tag_loc{T_TITLE}, text_style::NORMAL, 64);
-	}
-	else {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, TOP_CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_TITLE}, text_style::NORMAL, 64);
-	}
-	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_MOVE_IN, CENTER, 0.5_s, text_style::NORMAL, 120, status_callback, on_name,
-										m_pending.name);
-	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, CENTER, 0.5_s, NO_TOOLTIP, std::move(author_tcb), text_style::NORMAL, 32);
-	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, CENTER, 0.5_s, text_style::ITALIC, 32, status_callback,
-										on_description, m_pending.description);
-	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, BALL_SETTINGS_MOVE_IN, CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_BALL_SETTINGS},
-									 font::LANGUAGE, 64, status_callback, on_ball_settings, sound::CONFIRM);
-	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, PLAYER_SETTINGS_MOVE_IN, CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_PLAYER_SETTINGS},
-									 font::LANGUAGE, 64, status_callback, on_ball_settings, sound::CONFIRM);
-	m_ui.emplace<label_widget>(T_SONG, SONG_MOVE_IN, CENTER, 0.5_s, NO_TOOLTIP, tag_loc{T_SONG}, text_style::NORMAL, 48);
-	m_ui.emplace<text_button_widget>(T_SONG_C, SONG_C_MOVE_IN, CENTER, 0.5_s, NO_TOOLTIP, song_c_text, font::LANGUAGE, 64, status_callback,
-									 on_song_c, sound::CONFIRM);
-	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
-		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
-		const tweener<glm::vec2> move_in{tween::CUBIC, BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s};
-		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, tag_loc{BOTTOM_BUTTONS[i]},
-										 font::LANGUAGE, 48, BOTTOM_STATUS_CALLBACKS[i], BOTTOM_ACTION_CALLBACKS[i], sound);
-	}
-}
-
-next_state gamemode_designer_state::tick()
-{
-	main_menu_state::tick();
+	main_menu_state::update({});
 	switch (m_substate) {
 	case substate::RETURNING_FROM_TEST_GAME:
-	case substate::RETURNING_FROM_SUBSCREEN:
 		if (m_timer >= 0.5_s) {
 			m_substate = substate::IN_GAMEMODE_DESIGNER;
 			m_timer = 0;
 		}
-		return tr::KEEP_STATE;
+		return nullptr;
 	case substate::IN_GAMEMODE_DESIGNER:
-		return tr::KEEP_STATE;
+		return nullptr;
 	case substate::ENTERING_TEST_GAME:
 	case substate::ENTERING_SUBMENU_OR_TITLE:
-		return m_timer >= 0.5_s ? g_next_state.get() : tr::KEEP_STATE;
+		return m_timer >= 0.5_s ? m_next_state.get() : nullptr;
 	}
 }
 
@@ -137,12 +102,129 @@ float gamemode_designer_state::fade_overlay_opacity()
 	switch (m_substate) {
 	case substate::RETURNING_FROM_TEST_GAME:
 		return 1 - m_timer / 0.5_sf;
-	case substate::RETURNING_FROM_SUBSCREEN:
 	case substate::IN_GAMEMODE_DESIGNER:
 	case substate::ENTERING_SUBMENU_OR_TITLE:
 		return 0;
 	case substate::ENTERING_TEST_GAME:
 		return m_timer / 0.5_sf;
+	}
+}
+
+void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
+{
+	// STATUS CALLBACKS
+
+	const status_callback scb{
+		[this] { return m_substate == substate::IN_GAMEMODE_DESIGNER; },
+	};
+	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_scbs{
+		scb,
+		[this] { return m_substate == substate::IN_GAMEMODE_DESIGNER && !m_ui.as<line_input_widget<12>>(T_NAME).buffer.empty(); },
+		scb,
+	};
+
+	// ACTION CALLBACKS
+
+	const action_callback name_enter_cb{
+		[this] { m_ui.select_next_widget(); },
+	};
+	const action_callback description_enter_cb{
+		[this] { m_ui.clear_selection(); },
+	};
+	const action_callback ball_settings_acb{
+		[this] {
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
+			m_timer = 0;
+			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
+			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			set_up_subscreen_animation();
+			m_next_state = make_async<ball_settings_editor_state>(m_game, m_pending);
+		},
+	};
+	const action_callback player_settings_acb{
+		[this] {
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
+			m_timer = 0;
+			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
+			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			set_up_subscreen_animation();
+			m_next_state = make_async<player_settings_editor_state>(m_game, m_pending);
+		},
+	};
+	const action_callback song_c_acb{
+		[this] {
+			std::vector<std::string>::iterator it{std::ranges::find(m_available_songs, m_pending.song)};
+			if (it == m_available_songs.end() || ++it == m_available_songs.end()) {
+				it = m_available_songs.begin();
+			}
+			m_pending.song = *it;
+		},
+	};
+	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_acbs{
+		[this] {
+			m_substate = substate::ENTERING_TEST_GAME;
+			m_timer = 0;
+			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
+			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			set_up_exit_animation();
+			g_audio.fade_song_out(0.5s);
+			m_next_state = make_async_game_state<active_game>(game_type::GAMEMODE_DESIGNER_TEST, true, m_pending);
+		},
+		[this] {
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
+			m_timer = 0;
+			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
+			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			m_pending.save_to_file();
+			set_up_exit_animation();
+			m_next_state = make_async<title_state>(m_game);
+		},
+		[this] {
+			m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
+			m_timer = 0;
+			set_up_exit_animation();
+			m_next_state = make_async<title_state>(m_game);
+		},
+	};
+
+	// TEXT CALLBACKS
+
+	text_callback author_tcb{
+		string_text_callback{TR_FMT::format("{}: {}", engine::loc["by"], g_scorefile.name)},
+	};
+	text_callback song_c_tcb{
+		[&] { return std::string{m_pending.song}; },
+	};
+
+	//
+
+	if (returning_from_subscreen) {
+		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+								   text_style::NORMAL, 64);
+	}
+	else {
+		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+								   text_style::NORMAL, 64);
+	}
+	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, text_style::NORMAL, 120, scb, name_enter_cb,
+										m_pending.name);
+	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(author_tcb), text_style::NORMAL,
+							   32);
+	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, text_style::ITALIC, 32, scb,
+										description_enter_cb, m_pending.description);
+	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, BALL_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+									 loc_text_callback{T_BALL_SETTINGS}, font::LANGUAGE, 64, scb, ball_settings_acb, sound::CONFIRM);
+	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, PLAYER_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+									 loc_text_callback{T_PLAYER_SETTINGS}, font::LANGUAGE, 64, scb, player_settings_acb, sound::CONFIRM);
+	m_ui.emplace<label_widget>(T_SONG, SONG_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SONG}, text_style::NORMAL,
+							   48);
+	m_ui.emplace<text_button_widget>(T_SONG_C, SONG_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, song_c_tcb, font::LANGUAGE, 64, scb,
+									 song_c_acb, sound::CONFIRM);
+	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
+		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
+		const tweener<glm::vec2> move_in{tween::CUBIC, BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s};
+		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
+										 loc_text_callback{BOTTOM_BUTTONS[i]}, font::LANGUAGE, 48, bottom_scbs[i], bottom_acbs[i], sound);
 	}
 }
 
@@ -190,112 +272,4 @@ void gamemode_designer_state::set_up_exit_animation()
 		m_ui[tag].pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
 	}
 	m_ui.hide_all_widgets(0.5_s);
-}
-
-//
-
-std::string gamemode_designer_state::song_c_text()
-{
-	const gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	return std::string{self.m_pending.song};
-}
-
-bool gamemode_designer_state::status_callback()
-{
-	const gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	return self.m_substate == substate::IN_GAMEMODE_DESIGNER;
-}
-
-bool gamemode_designer_state::save_interactible()
-{
-	const gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	return self.m_substate == substate::IN_GAMEMODE_DESIGNER && !self.m_ui.as<line_input_widget<12>>(T_NAME).buffer.empty();
-}
-
-void gamemode_designer_state::on_name()
-{
-	gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	self.m_ui.select_next_widget();
-}
-
-void gamemode_designer_state::on_description()
-{
-	gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	self.m_ui.clear_selection();
-}
-
-void gamemode_designer_state::on_ball_settings()
-{
-	gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	self.m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
-	self.m_timer = 0;
-	self.m_pending.name = self.m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-	self.m_pending.description = self.m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
-	self.set_up_subscreen_animation();
-	prepare_next_state<ball_settings_editor_state>(self.m_game, self.m_pending);
-}
-
-void gamemode_designer_state::on_player_settings()
-{
-	gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	self.m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
-	self.m_timer = 0;
-	self.m_pending.name = self.m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-	self.m_pending.description = self.m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
-	self.set_up_subscreen_animation();
-	prepare_next_state<player_settings_editor_state>(self.m_game, self.m_pending);
-}
-
-void gamemode_designer_state::on_song_c()
-{
-	gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	std::vector<std::string>::iterator it{std::ranges::find(self.m_available_songs, self.m_pending.song)};
-	if (it == self.m_available_songs.end() || ++it == self.m_available_songs.end()) {
-		it = self.m_available_songs.begin();
-	}
-	self.m_pending.song = *it;
-}
-
-void gamemode_designer_state::on_test()
-{
-	gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	self.m_substate = substate::ENTERING_TEST_GAME;
-	self.m_timer = 0;
-	self.m_pending.name = self.m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-	self.m_pending.description = self.m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
-	self.set_up_exit_animation();
-	g_audio.fade_song_out(0.5s);
-	prepare_next_game_state<active_game>(game_type::GAMEMODE_DESIGNER_TEST, true, self.m_pending);
-}
-
-void gamemode_designer_state::on_save()
-{
-	gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	self.m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
-	self.m_timer = 0;
-	self.m_pending.name = self.m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-	self.m_pending.description = self.m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
-	self.m_pending.save_to_file();
-	self.set_up_exit_animation();
-	prepare_next_state<title_state>(self.m_game);
-}
-
-void gamemode_designer_state::on_discard()
-{
-	gamemode_designer_state& self{g_state_machine.get<gamemode_designer_state>()};
-
-	self.m_substate = substate::ENTERING_SUBMENU_OR_TITLE;
-	self.m_timer = 0;
-	self.set_up_exit_animation();
-	prepare_next_state<title_state>(self.m_game);
 }
