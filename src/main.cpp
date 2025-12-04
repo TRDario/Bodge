@@ -4,11 +4,10 @@
 
 #include "../include/audio.hpp"
 #include "../include/fonts.hpp"
-#include "../include/graphics.hpp"
+#include "../include/graphics/graphics.hpp"
 #include "../include/score.hpp"
 #include "../include/settings.hpp"
 #include "../include/state/state.hpp"
-#include "../include/system.hpp"
 
 tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 {
@@ -69,9 +68,10 @@ tr::sys::signal initialize()
 	load_localization();
 	g_text_engine.load_fonts();
 	g_audio.initialize();
-	engine::initialize_system();
+	open_window();
 	g_graphics.emplace();
 	g_state_machine.emplace<title_state>();
+	g_audio.play_song("menu", 1.0s);
 	tr::sys::show_window();
 	return tr::sys::signal::CONTINUE;
 }

@@ -41,7 +41,7 @@ constexpr shortcut_table SHORTCUTS{
 	{"C"_kc, T_DISCARD},
 	{"Q"_kc, T_DISCARD},
 	{"E"_kc, T_DISCARD},
-	{"Enter"_kc, T_DISCARD},
+	{"Escape"_kc, T_DISCARD},
 	{"5"_kc, T_DISCARD},
 };
 
@@ -190,7 +190,7 @@ void gamemode_designer_state::set_up_ui(bool returning_from_subscreen)
 	// TEXT CALLBACKS
 
 	text_callback author_tcb{
-		string_text_callback{TR_FMT::format("{}: {}", g_loc["by"], g_scorefile.name)},
+		const_text_callback{TR_FMT::format("{}: {}", g_loc["by"], g_scorefile.name)},
 	};
 	text_callback song_c_tcb{
 		[&] { return std::string{m_pending.song}; },

@@ -1,4 +1,4 @@
-#include "../../include/graphics.hpp"
+#include "../../include/graphics/graphics.hpp"
 #include "../../include/ui/widget.hpp"
 
 ///////////////////////////////////////////////////////////// TEXT CALLBACKS //////////////////////////////////////////////////////////////
@@ -13,7 +13,7 @@ std::string tooltip_loc_text_callback::operator()() const
 	return std::string{tag != nullptr ? g_loc[tag] : std::string{}};
 }
 
-std::string string_text_callback::operator()() const
+std::string const_text_callback::operator()() const
 {
 	return str;
 }

@@ -1,5 +1,5 @@
-#include "../include/graphics.hpp"
-#include "../include/settings.hpp"
+#include "../../include/graphics/graphics.hpp"
+#include "../../include/settings.hpp"
 
 tr::gfx::render_target setup_screen()
 {

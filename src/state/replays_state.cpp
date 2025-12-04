@@ -34,7 +34,7 @@ constexpr shortcut_table SHORTCUTS{
 	{"3"_kc, T_REPLAY_2},
 	{"4"_kc, T_REPLAY_3},
 	{"5"_kc, T_REPLAY_4},
-	{"Enter"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT},
 	{"Left"_kc, T_PAGE_D},
 	{"Right"_kc, T_PAGE_I},
 };
@@ -202,7 +202,7 @@ void replays_state::set_up_ui()
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (m_replays.empty()) {
 		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, NO_REPLAYS_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
-								   loc_text_callback{T_NO_REPLAYS_FOUND}, text_style::NORMAL, 64, "80808080"_rgba8);
+								   loc_text_callback{T_NO_REPLAYS_FOUND}, text_style::NORMAL, 64, DARK_GRAY);
 		return;
 	}
 	std::map<std::string, replay_header>::iterator it{m_replays.begin()};

@@ -1,6 +1,5 @@
 #include "../../include/audio.hpp"
 #include "../../include/state/state.hpp"
-#include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
 // clang-format off
@@ -64,8 +63,8 @@ constexpr std::array<label_info, 9> LABELS{{
 	{T_MSAA, "msaa_tt"},
 	{T_PRIMARY_HUE, "primary_hue_tt"},
 	{T_SECONDARY_HUE, "secondary_hue_tt"},
-	{T_SFX_VOLUME, NO_TOOLTIP_STR},
-	{T_MUSIC_VOLUME, NO_TOOLTIP_STR},
+	{T_SFX_VOLUME, "sfx_volume_tt"},
+	{T_MUSIC_VOLUME, "music_volume_tt"},
 	{T_LANGUAGE, NO_TOOLTIP_STR},
 }};
 
@@ -88,7 +87,7 @@ constexpr shortcut_table SHORTCUTS{
 	{"Ctrl+Z"_kc, T_REVERT},
 	{"Ctrl+S"_kc, T_APPLY},
 	{"Enter"_kc, T_APPLY},
-	{"Enter"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT},
 };
 
 constexpr glm::vec2 DISPLAY_MODE_START_POS{1050, 158.5f};
@@ -187,20 +186,20 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 			switch (dm) {
 			case display_mode::WINDOWED:
 				dm = display_mode::FULLSCREEN;
-				m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
+				m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, DISABLED_GRAY, 0.1_s);
 				break;
 			case display_mode::FULLSCREEN:
 				dm = display_mode::WINDOWED;
-				m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+				m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, GRAY, 0.1_s);
 				break;
 			}
 		},
 	};
 	const action_callback window_size_d_acb{
-		[&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, u16(ws - engine::keymods_choose(1, 10, 100))); },
+		[&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, u16(ws - keymods_choose(1, 10, 100))); },
 	};
 	const action_callback window_size_i_acb{
-		[&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + engine::keymods_choose(1, 10, 100))); },
+		[&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + keymods_choose(1, 10, 100))); },
 	};
 	const action_callback vsync_c_acb{
 		[&vsync = m_pending.vsync] { vsync = !vsync; },
@@ -212,28 +211,28 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		[&msaa = m_pending.msaa] { msaa = msaa == NO_MSAA ? 2 : u8(msaa * 2); },
 	};
 	const action_callback primary_hue_d_acb{
-		[&ph = m_pending.primary_hue] { ph = u16((ph - engine::keymods_choose(1, 10, 100) + 360) % 360); },
+		[&ph = m_pending.primary_hue] { ph = u16((ph - keymods_choose(1, 10, 100) + 360) % 360); },
 	};
 	const action_callback primary_hue_i_acb{
-		[&ph = m_pending.primary_hue] { ph = u16((ph + engine::keymods_choose(1, 10, 100)) % 360); },
+		[&ph = m_pending.primary_hue] { ph = u16((ph + keymods_choose(1, 10, 100)) % 360); },
 	};
 	const action_callback secondary_hue_d_acb{
-		[&sh = m_pending.secondary_hue] { sh = u16((sh - engine::keymods_choose(1, 10, 100) + 360) % 360); },
+		[&sh = m_pending.secondary_hue] { sh = u16((sh - keymods_choose(1, 10, 100) + 360) % 360); },
 	};
 	const action_callback secondary_hue_i_acb{
-		[&sh = m_pending.secondary_hue] { sh = u16((sh + engine::keymods_choose(1, 10, 100)) % 360); },
+		[&sh = m_pending.secondary_hue] { sh = u16((sh + keymods_choose(1, 10, 100)) % 360); },
 	};
 	const action_callback sfx_volume_d_acb{
-		[&sv = m_pending.sfx_volume] { sv = u8(std::max(sv - engine::keymods_choose(1, 10, 25), 0)); },
+		[&sv = m_pending.sfx_volume] { sv = u8(std::max(sv - keymods_choose(1, 10, 25), 0)); },
 	};
 	const action_callback sfx_volume_i_acb{
-		[&sv = m_pending.sfx_volume] { sv = u8(std::min(sv + engine::keymods_choose(1, 10, 25), 100)); },
+		[&sv = m_pending.sfx_volume] { sv = u8(std::min(sv + keymods_choose(1, 10, 25), 100)); },
 	};
 	const action_callback music_volume_d_acb{
-		[&mv = m_pending.music_volume] { mv = u8(std::max(mv - engine::keymods_choose(1, 10, 25), 0)); },
+		[&mv = m_pending.music_volume] { mv = u8(std::max(mv - keymods_choose(1, 10, 25), 0)); },
 	};
 	const action_callback music_volume_i_acb{
-		[&mv = m_pending.music_volume] { mv = u8(std::min(mv + engine::keymods_choose(1, 10, 25), 100)); },
+		[&mv = m_pending.music_volume] { mv = u8(std::min(mv + keymods_choose(1, 10, 25), 100)); },
 	};
 	const action_callback language_c_acb{
 		[this] {
@@ -249,27 +248,14 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		[this] {
 			m_pending = g_settings;
 			g_text_engine.reload_language_preview_font(m_pending);
-			const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8};
+			const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? GRAY : DISABLED_GRAY};
 			m_ui.as<label_widget>(T_WINDOW_SIZE).color.change(tween::LERP, window_size_color, 0.1_s);
 		},
 		[this] {
-			const settings old{g_settings};
-			g_settings = m_pending;
-			if (engine::restart_required(old)) {
+			if (g_settings.releasing_graphical_resources_required_to_apply(m_pending)) {
 				m_ui.release_graphical_resources();
 			}
-			else if (m_pending.vsync != old.vsync) {
-				tr::sys::set_window_vsync(m_pending.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
-			}
-
-			if (old.language != g_settings.language) {
-				load_localization();
-			}
-			if (!g_languages.contains(old.language) || g_languages[old.language].font != g_languages[g_settings.language].font) {
-				m_ui.release_graphical_resources();
-				g_text_engine.set_language_font();
-			}
-			engine::apply_settings(old);
+			g_settings.apply(m_pending);
 		},
 		[this] {
 			m_substate = substate::ENTERING_TITLE;
@@ -313,8 +299,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		const label_info& label{LABELS[i]};
 		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 158.5f + i * 75}, {15, 158.5f + i * 75}, 0.5_s};
-		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? "505050A0"_rgba8
-																											   : "A0A0A0A0"_rgba8};
+		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? DISABLED_GRAY : GRAY};
 		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
 								   loc_text_callback{label.tag}, text_style::NORMAL, 48, color);
 	}

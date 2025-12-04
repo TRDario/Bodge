@@ -23,7 +23,7 @@ struct tooltip_loc_text_callback {
 	std::string operator()() const;
 };
 // Common callback for text widgets: copying a string directly.
-struct string_text_callback {
+struct const_text_callback {
 	std::string str;
 
 	std::string operator()() const;

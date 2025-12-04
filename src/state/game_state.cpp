@@ -1,4 +1,4 @@
-#include "../../include/graphics.hpp"
+#include "../../include/graphics/graphics.hpp"
 #include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 

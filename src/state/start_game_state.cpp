@@ -29,7 +29,7 @@ constexpr shortcut_table SHORTCUTS{
 	{"Right"_kc, T_NEXT},
 	{"Enter"_kc, T_START},
 	{"1"_kc, T_START},
-	{"Enter"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT},
 	{"2"_kc, T_EXIT},
 };
 
@@ -51,6 +51,11 @@ enum class starting_side : bool {
 	RIGHT
 };
 
+template <class... Args> void emplace_label_widget(std::unordered_map<tag, std::unique_ptr<widget>>& map, tag tag, Args&&... args)
+{
+	map.emplace(tag, std::make_unique<label_widget>(std::forward<Args>(args)...));
+}
+
 std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const gamemode& selected, starting_side side)
 {
 	// MOVE-INS
@@ -68,33 +73,30 @@ std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const game
 
 	// TEXT CALLBACKS
 
-	string_text_callback name_tcb{std::string{selected.name_loc()}};
-	string_text_callback author_tcb{TR_FMT::format("{}: {}", g_loc["by"], selected.author)};
-	string_text_callback description_tcb{
-		std::string{!selected.description_loc().empty() ? selected.description_loc() : g_loc["no_description"]},
+	text_callback name_tcb{const_text_callback{std::string{selected.name_loc()}}};
+	text_callback author_tcb{const_text_callback{TR_FMT::format("{}: {}", g_loc["by"], selected.author)}};
+	text_callback description_tcb{
+		const_text_callback{std::string{!selected.description_loc().empty() ? selected.description_loc() : g_loc["no_description"]}},
 	};
-	text_callback best_time_tcb{string_text_callback{format_time(g_scorefile.bests(selected).time)}};
-	text_callback best_score_tcb{string_text_callback{format_score(g_scorefile.bests(selected).score)}};
+	text_callback best_time_tcb{const_text_callback{format_time(g_scorefile.bests(selected).time)}};
+	text_callback best_score_tcb{const_text_callback{format_score(g_scorefile.bests(selected).score)}};
 
 	//
 
 	std::unordered_map<tag, std::unique_ptr<widget>> map;
-	map.emplace(T_NAME, std::make_unique<label_widget>(name_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP, std::move(name_tcb),
-													   text_style::NORMAL, 120));
-	map.emplace(T_AUTHOR, std::make_unique<label_widget>(author_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP, std::move(author_tcb),
-														 text_style::NORMAL, 32));
-	map.emplace(T_DESCRIPTION, std::make_unique<label_widget>(description_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-															  std::move(description_tcb), text_style::ITALIC, 32, "80808080"_rgba8));
-	map.emplace(T_BEST_TIME_LABEL,
-				std::make_unique<label_widget>(best_time_label_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-											   loc_text_callback{T_BEST_TIME_LABEL}, text_style::NORMAL, 32, "FFFF00C0"_rgba8));
-	map.emplace(T_BEST_TIME, std::make_unique<label_widget>(best_time_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-															std::move(best_time_tcb), text_style::NORMAL, 64, "FFFF00C0"_rgba8));
-	map.emplace(T_BEST_SCORE_LABEL,
-				std::make_unique<label_widget>(best_score_label_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-											   loc_text_callback{T_BEST_SCORE_LABEL}, text_style::NORMAL, 32, "FFFF00C0"_rgba8));
-	map.emplace(T_BEST_SCORE, std::make_unique<label_widget>(best_score_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-															 std::move(best_score_tcb), text_style::NORMAL, 64, "FFFF00C0"_rgba8));
+	emplace_label_widget(map, T_NAME, name_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP, std::move(name_tcb), text_style::NORMAL, 120);
+	emplace_label_widget(map, T_AUTHOR, author_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP, std::move(author_tcb), text_style::NORMAL,
+						 32);
+	emplace_label_widget(map, T_DESCRIPTION, description_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP, std::move(description_tcb),
+						 text_style::ITALIC, 32, DARK_GRAY);
+	emplace_label_widget(map, T_BEST_TIME_LABEL, best_time_label_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
+						 loc_text_callback{T_BEST_TIME_LABEL}, text_style::NORMAL, 32, YELLOW);
+	emplace_label_widget(map, T_BEST_TIME, best_time_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP, std::move(best_time_tcb),
+						 text_style::NORMAL, 64, YELLOW);
+	emplace_label_widget(map, T_BEST_SCORE_LABEL, best_score_label_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
+						 loc_text_callback{T_BEST_SCORE_LABEL}, text_style::NORMAL, 32, YELLOW);
+	emplace_label_widget(map, T_BEST_SCORE, best_score_move_in, tr::align::CENTER, 0.25_s, NO_TOOLTIP, std::move(best_score_tcb),
+						 text_style::NORMAL, 64, YELLOW);
 	return map;
 }
 
@@ -120,12 +122,12 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	// TEXT CALLBACKSusing enum tr::align;
 	using enum text_style;
 
-	text_callback name_tcb{string_text_callback{std::string{m_selected->name_loc()}}};
-	text_callback author_tcb{string_text_callback{TR_FMT::format("{}: {}", g_loc["by"], m_selected->author)}};
-	text_callback description_tcb{string_text_callback{
-		std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : g_loc["no_description"]}}};
-	text_callback best_time_tcb{string_text_callback{format_time(g_scorefile.bests(*m_selected).time)}};
-	text_callback best_score_tcb{string_text_callback{format_score(g_scorefile.bests(*m_selected).score)}};
+	text_callback name_tcb{const_text_callback{std::string{m_selected->name_loc()}}};
+	text_callback author_tcb{const_text_callback{TR_FMT::format("{}: {}", g_loc["by"], m_selected->author)}};
+	text_callback description_tcb{
+		const_text_callback{std::string{!m_selected->description_loc().empty() ? m_selected->description_loc() : g_loc["no_description"]}}};
+	text_callback best_time_tcb{const_text_callback{format_time(g_scorefile.bests(*m_selected).time)}};
+	text_callback best_score_tcb{const_text_callback{format_score(g_scorefile.bests(*m_selected).score)}};
 
 	// STATUS CALLBACKS
 
@@ -194,15 +196,15 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(author_tcb), text_style::NORMAL,
 							   32);
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(description_tcb),
-							   text_style::ITALIC, 32, "80808080"_rgba8);
+							   text_style::ITALIC, 32, DARK_GRAY);
 	m_ui.emplace<label_widget>(T_BEST_TIME_LABEL, best_time_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   loc_text_callback{T_BEST_TIME_LABEL}, text_style::NORMAL, 32, "FFFF00C0"_rgba8);
+							   loc_text_callback{T_BEST_TIME_LABEL}, text_style::NORMAL, 32, YELLOW);
 	m_ui.emplace<label_widget>(T_BEST_TIME, BEST_TIME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_time_tcb),
-							   text_style::NORMAL, 64, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 64, YELLOW);
 	m_ui.emplace<label_widget>(T_BEST_SCORE_LABEL, best_score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   loc_text_callback{T_BEST_SCORE_LABEL}, text_style::NORMAL, 32, "FFFF00C0"_rgba8);
+							   loc_text_callback{T_BEST_SCORE_LABEL}, text_style::NORMAL, 32, YELLOW);
 	m_ui.emplace<label_widget>(T_BEST_SCORE, BEST_SCORE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_score_tcb),
-							   text_style::NORMAL, 64, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 64, YELLOW);
 	m_ui.emplace<arrow_widget>(T_PREV, PREV_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, arrow_scb, prev_acb);
 	m_ui.emplace<arrow_widget>(T_NEXT, NEXT_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, arrow_scb, next_acb);
 	m_ui.emplace<text_button_widget>(T_START, START_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_START},

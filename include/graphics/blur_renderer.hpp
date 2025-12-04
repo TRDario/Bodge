@@ -1,5 +1,5 @@
 #pragma once
-#include "global.hpp"
+#include "../global.hpp"
 
 // Renderer for drawing blurred and desaturated images.
 struct blur_renderer {

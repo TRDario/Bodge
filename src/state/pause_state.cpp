@@ -29,14 +29,14 @@ constexpr selection_tree SELECTION_TREE_SPECIAL{
 };
 
 constexpr shortcut_table SHORTCUTS_REGULAR{
-	{"Enter"_kc, T_UNPAUSE},			{"1"_kc, T_UNPAUSE},
+	{"Escape"_kc, T_UNPAUSE},			{"1"_kc, T_UNPAUSE},
 	{"Shift+R"_kc, T_SAVE_AND_RESTART}, {"2"_kc, T_SAVE_AND_RESTART},
 	{"R"_kc, T_RESTART},				{"3"_kc, T_RESTART},
 	{"Shift+Q"_kc, T_SAVE_AND_QUIT},	{"4"_kc, T_SAVE_AND_QUIT},
 	{"Q"_kc, T_QUIT},					{"5"_kc, T_QUIT},
 };
 constexpr shortcut_table SHORTCUTS_SPECIAL{
-	{"Enter"_kc, T_UNPAUSE}, {"1"_kc, T_UNPAUSE},
+	{"Escape"_kc, T_UNPAUSE}, {"1"_kc, T_UNPAUSE},
 	{"R"_kc, T_RESTART},	 {"2"_kc, T_RESTART},
 	{"Q"_kc, T_QUIT},		 {"3"_kc, T_QUIT},
 };
@@ -235,7 +235,7 @@ void pause_state::set_up_limited_ui()
 	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
 	constexpr tweener<glm::vec2> TITLE_MOVE_IN{tween::CUBIC, {500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 	const tag title_tag{to_type(m_substate) == game_type::REPLAY ? T_REPLAY_PAUSED : T_TEST_PAUSED};
-	m_ui.emplace<label_widget>(title_tag, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PAUSED},
+	m_ui.emplace<label_widget>(title_tag, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{title_tag},
 							   text_style::NORMAL, 64);
 
 	const status_callback scb{

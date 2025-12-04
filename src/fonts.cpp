@@ -1,5 +1,5 @@
 #include "../include/fonts.hpp"
-#include "../include/graphics.hpp"
+#include "../include/graphics/graphics.hpp"
 
 tr::sys::ttfont load_font(std::string_view name)
 {
@@ -226,9 +226,9 @@ tr::bitmap text_engine::render_text(std::string_view text, font font, text_style
 	font_ref.resize(size * g_graphics->render_scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
-	tr::bitmap render{font_ref.render(text, outline_max_w, align, "80808080"_rgba8)};
+	tr::bitmap render{font_ref.render(text, outline_max_w, align, DARK_GRAY)};
 	font_ref.set_outline(0);
-	const tr::bitmap fill{font_ref.render(text, int(max_w), align, "FFFFFF"_rgba8)};
+	const tr::bitmap fill{font_ref.render(text, int(max_w), align, WHITE)};
 	render.blit(glm::ivec2{scaled_outline}, fill.sub({{}, render.size() - scaled_outline * 2}));
 	return render;
 }
@@ -245,7 +245,7 @@ tr::bitmap text_engine::render_gradient_glyph(u32 glyph, font font, text_style s
 	font_ref.set_outline(scaled_outline);
 	tr::bitmap render{font_ref.render(glyph, "00000080"_rgba8)};
 	font_ref.set_outline(0);
-	tr::bitmap fill{font_ref.render(glyph, "FFFFFF"_rgba8)};
+	tr::bitmap fill{font_ref.render(glyph, WHITE)};
 	for (tr::bitmap::mut_it it = fill.begin(); it != fill.end(); ++it) {
 		const tr::rgba8 value{*it};
 		u8 shade{u8(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};

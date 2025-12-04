@@ -1,6 +1,6 @@
 #include "../../include/game/ball.hpp"
 #include "../../include/audio.hpp"
-#include "../../include/graphics.hpp"
+#include "../../include/graphics/graphics.hpp"
 #include "../../include/settings.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////

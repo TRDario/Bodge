@@ -24,7 +24,7 @@ constexpr shortcut_table SHORTCUTS{
 	{"Enter"_kc, T_SAVE},
 	{"S"_kc, T_SAVE},
 	{"1"_kc, T_SAVE},
-	{"Enter"_kc, T_CANCEL},
+	{"Escape"_kc, T_CANCEL},
 	{"C"_kc, T_CANCEL},
 	{"2"_kc, T_CANCEL},
 };
@@ -102,8 +102,8 @@ void save_score_state::set_up_ui()
 
 	// TEXT CALLBACKS
 
-	text_callback time_tcb{string_text_callback{format_time(m_score.time)}};
-	text_callback score_tcb{string_text_callback{format_score(m_score.score)}};
+	text_callback time_tcb{const_text_callback{format_time(m_score.time)}};
+	text_callback score_tcb{const_text_callback{format_score(m_score.score)}};
 
 	// STATUS CALLBACKS
 
@@ -141,15 +141,15 @@ void save_score_state::set_up_ui()
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   text_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_RESULTS, RESULTS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_RESULTS},
-							   text_style::NORMAL, 48, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 48, YELLOW);
 	m_ui.emplace<label_widget>(T_TIME_LABEL, best_time_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TIME_LABEL},
-							   text_style::NORMAL, 32, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 32, YELLOW);
 	m_ui.emplace<label_widget>(T_TIME, TIME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(time_tcb), text_style::NORMAL, 64,
-							   "FFFF00C0"_rgba8);
+							   YELLOW);
 	m_ui.emplace<label_widget>(T_SCORE_LABEL, best_score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   loc_text_callback{T_SCORE_LABEL}, text_style::NORMAL, 32, "FFFF00C0"_rgba8);
+							   loc_text_callback{T_SCORE_LABEL}, text_style::NORMAL, 32, YELLOW);
 	m_ui.emplace<label_widget>(T_SCORE, SCORE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(score_tcb), text_style::NORMAL, 64,
-							   "FFFF00C0"_rgba8);
+							   YELLOW);
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
 							   text_style::NORMAL, 48);
 	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24, scb);

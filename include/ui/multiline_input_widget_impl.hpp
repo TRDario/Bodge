@@ -1,5 +1,5 @@
 #pragma once
-#include "../graphics.hpp"
+#include "../graphics/graphics.hpp"
 #include "widget.hpp"
 
 template <usize S>
@@ -18,7 +18,7 @@ multiline_input_widget<S>::multiline_input_widget(tweener<glm::vec2> pos, tr::al
 	, m_scb{std::move(status_cb)}
 	, m_size{width, g_text_engine.line_skip(font::LANGUAGE, font_size) * max_lines + 4}
 	, m_max_lines{max_lines}
-	, m_interp{m_scb() ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8}
+	, m_interp{m_scb() ? GRAY : DISABLED_GRAY}
 	, m_hovered{false}
 	, m_held{false}
 	, m_selected{false}
@@ -60,8 +60,8 @@ template <usize S> void multiline_input_widget<S>::update()
 	m_interp.update();
 
 	if (interactible()) {
-		if (interactible() && !(m_held || m_hovered || m_selected) && m_interp.done() && m_interp != "A0A0A0A0"_rgba8) {
-			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		if (interactible() && !(m_held || m_hovered || m_selected) && m_interp.done() && m_interp != GRAY) {
+			m_interp.change(tween::LERP, GRAY, 0.1_s);
 		}
 		else if (m_interp.done() && (m_hovered || m_selected) && !m_held) {
 			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s);
@@ -71,8 +71,8 @@ template <usize S> void multiline_input_widget<S>::update()
 		m_hovered = false;
 		m_held = false;
 		m_selected = false;
-		if ((m_interp.done() && m_interp != "505050A0"_rgba8) || m_interp.cycling()) {
-			m_interp.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
+		if ((m_interp.done() && m_interp != DISABLED_GRAY) || m_interp.cycling()) {
+			m_interp.change(tween::LERP, DISABLED_GRAY, 0.1_s);
 		}
 	}
 }
@@ -84,7 +84,7 @@ template <usize S> bool multiline_input_widget<S>::interactible() const
 
 template <usize S> void multiline_input_widget<S>::on_action()
 {
-	m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
+	m_interp.change(tween::LERP, WHITE, 0.1_s);
 }
 
 template <usize S> void multiline_input_widget<S>::on_hover()
@@ -92,7 +92,7 @@ template <usize S> void multiline_input_widget<S>::on_hover()
 	if (interactible()) {
 		m_hovered = true;
 		if (!m_selected) {
-			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, WHITE, 0.1_s);
 			g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
@@ -103,7 +103,7 @@ template <usize S> void multiline_input_widget<S>::on_unhover()
 	if (interactible()) {
 		m_hovered = false;
 		if (!m_selected) {
-			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, GRAY, 0.1_s);
 		}
 	}
 }
@@ -112,7 +112,7 @@ template <usize S> void multiline_input_widget<S>::on_held()
 {
 	if (interactible()) {
 		m_held = true;
-		m_interp = "202020"_rgba8;
+		m_interp = HELD_GRAY;
 	}
 }
 
@@ -128,7 +128,7 @@ template <usize S> void multiline_input_widget<S>::on_selected()
 	if (interactible()) {
 		m_selected = true;
 		if (!m_hovered) {
-			m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, WHITE, 0.1_s);
 		}
 		else {
 			g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
@@ -141,7 +141,7 @@ template <usize S> void multiline_input_widget<S>::on_unselected()
 	if (interactible()) {
 		m_selected = false;
 		if (!m_hovered) {
-			m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			m_interp.change(tween::LERP, GRAY, 0.1_s);
 		}
 	}
 }

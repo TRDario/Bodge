@@ -1,6 +1,5 @@
 
 #include "../../include/state/state.hpp"
-#include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
 // clang-format off
@@ -69,7 +68,7 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{"Enter"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT},
 	{"1"_kc, T_EXIT},
 };
 
@@ -164,50 +163,50 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 	// ACTION CALLBACKS
 
 	const action_callback starting_count_d_acb{
-		[&sc = m_pending.ball.starting_count] { sc = u8(std::max(sc - engine::keymods_choose(1, 5, 10), 0)); },
+		[&sc = m_pending.ball.starting_count] { sc = u8(std::max(sc - keymods_choose(1, 5, 10), 0)); },
 	};
 	const action_callback starting_count_i_acb{
 		[&sc = m_pending.ball.starting_count, &mc = m_pending.ball.max_count] {
-			sc = u8(std::min(sc + engine::keymods_choose(1, 5, 10), int(mc)));
+			sc = u8(std::min(sc + keymods_choose(1, 5, 10), int(mc)));
 		},
 	};
 	const action_callback max_count_d_acb{
 		[&sc = m_pending.ball.starting_count, &mc = m_pending.ball.max_count] {
-			mc = u8(std::max({1, int(sc), mc - engine::keymods_choose(1, 5, 10)}));
+			mc = u8(std::max({1, int(sc), mc - keymods_choose(1, 5, 10)}));
 		},
 	};
 	const action_callback max_count_i_acb{
-		[&mc = m_pending.ball.max_count] { mc = u8(std::min(mc + engine::keymods_choose(1, 5, 10), 255)); },
+		[&mc = m_pending.ball.max_count] { mc = u8(std::min(mc + keymods_choose(1, 5, 10), 255)); },
 	};
 	const action_callback spawn_interval_d_acb{
-		[&si = m_pending.ball.spawn_interval] { si = ticks(std::max(int(si - engine::keymods_choose(0.1_s, 1_s, 10_s)), int(1_s))); },
+		[&si = m_pending.ball.spawn_interval] { si = ticks(std::max(int(si - keymods_choose(0.1_s, 1_s, 10_s)), int(1_s))); },
 	};
 	const action_callback spawn_interval_i_acb{
-		[&si = m_pending.ball.spawn_interval] { si = std::min(si + engine::keymods_choose(0.1_s, 1_s, 10_s), 60_s); },
+		[&si = m_pending.ball.spawn_interval] { si = std::min(si + keymods_choose(0.1_s, 1_s, 10_s), 60_s); },
 	};
 	const action_callback initial_size_d_acb{
-		[&is = m_pending.ball.initial_size] { is = std::max(is - engine::keymods_choose(1, 10, 100), 10.0f); },
+		[&is = m_pending.ball.initial_size] { is = std::max(is - keymods_choose(1, 5, 10), 10.0f); },
 	};
 	const action_callback initial_size_i_acb{
-		[&is = m_pending.ball.initial_size] { is = std::min(is + engine::keymods_choose(1, 10, 100), 100.0f); },
+		[&is = m_pending.ball.initial_size] { is = std::min(is + keymods_choose(1, 5, 10), 100.0f); },
 	};
 	const action_callback size_step_d_acb{
-		[&ss = m_pending.ball.size_step] { ss = std::max(ss - engine::keymods_choose(0.1f, 1.0f, 2.5f), 0.0f); },
+		[&ss = m_pending.ball.size_step] { ss = std::max(ss - keymods_choose(0.1f, 1.0f, 2.5f), 0.0f); },
 	};
 	const action_callback size_step_i_acb{
-		[&ss = m_pending.ball.size_step] { ss = std::min(ss + engine::keymods_choose(0.1f, 1.0f, 2.5f), 10.0f); },
+		[&ss = m_pending.ball.size_step] { ss = std::min(ss + keymods_choose(0.1f, 1.0f, 2.5f), 10.0f); },
 	};
 	const action_callback initial_velocity_d_acb{
-		[&iv = m_pending.ball.initial_velocity] { iv = std::max(iv - engine::keymods_choose(1, 10, 100), 100.0f); },
+		[&iv = m_pending.ball.initial_velocity] { iv = std::max(iv - keymods_choose(1, 10, 100), 100.0f); },
 	};
 	const action_callback initial_velocity_i_acb{
-		[&iv = m_pending.ball.initial_velocity] { iv = std::min(iv + engine::keymods_choose(1, 10, 100), 5000.0f); },
+		[&iv = m_pending.ball.initial_velocity] { iv = std::min(iv + keymods_choose(1, 10, 100), 5000.0f); },
 	};
 	const action_callback velocity_step_d_acb{
-		[&vs = m_pending.ball.velocity_step] { vs = std::max(vs - engine::keymods_choose(1, 10, 100), 0.0f); },
+		[&vs = m_pending.ball.velocity_step] { vs = std::max(vs - keymods_choose(1, 10, 100), 0.0f); },
 	};
 	const action_callback velocity_step_i_acb{
-		[&vs = m_pending.ball.velocity_step] { vs = std::min(vs + engine::keymods_choose(1, 10, 100), 1000.0f); },
+		[&vs = m_pending.ball.velocity_step] { vs = std::min(vs + keymods_choose(1, 10, 100), 1000.0f); },
 	};
 	const action_callback exit_acb{
 		[this] {

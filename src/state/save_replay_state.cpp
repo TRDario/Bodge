@@ -22,7 +22,7 @@ constexpr shortcut_table SHORTCUTS{
 	{"Enter"_kc, T_SAVE},
 	{"S"_kc, T_SAVE},
 	{"1"_kc, T_SAVE},
-	{"Enter"_kc, T_DISCARD},
+	{"Escape"_kc, T_DISCARD},
 	{"C"_kc, T_DISCARD},
 	{"2"_kc, T_DISCARD},
 };

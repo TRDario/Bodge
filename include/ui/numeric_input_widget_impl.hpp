@@ -24,15 +24,8 @@ template <class T, usize S, class Formatter>
 basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time,
 																		float font_size, ui_manager& ui, T& ref, status_callback status_cb,
 																		validation_callback<T> validation_cb)
-	: basic_numeric_input_widget_data<T, S>{ui,
-											ref,
-											{},
-											status_cb,
-											std::move(validation_cb),
-											status_cb() ? "A0A0A0A0"_rgba8 : "505050A0"_rgba8,
-											false,
-											false,
-											false}
+	: basic_numeric_input_widget_data<T, S>{ui,    ref,   {},   status_cb, std::move(validation_cb), status_cb() ? GRAY : DISABLED_GRAY,
+											false, false, false}
 	, text_widget{
 		  pos,
 		  alignment,
@@ -71,9 +64,8 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 	this->m_interp.update();
 
 	if (interactible()) {
-		if (interactible() && !(this->m_held || this->m_hovered || this->m_selected) && this->m_interp.done() &&
-			this->m_interp != "A0A0A0A0"_rgba8) {
-			this->m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+		if (interactible() && !(this->m_held || this->m_hovered || this->m_selected) && this->m_interp.done() && this->m_interp != GRAY) {
+			this->m_interp.change(tween::LERP, GRAY, 0.1_s);
 		}
 		else if (this->m_interp.done() && (this->m_hovered || this->m_selected) && !this->m_held) {
 			this->m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s);
@@ -83,8 +75,8 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 		this->m_hovered = false;
 		this->m_held = false;
 		this->m_selected = false;
-		if ((this->m_interp.done() && this->m_interp != "505050A0"_rgba8) || this->m_interp.cycling()) {
-			this->m_interp.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
+		if ((this->m_interp.done() && this->m_interp != DISABLED_GRAY) || this->m_interp.cycling()) {
+			this->m_interp.change(tween::LERP, DISABLED_GRAY, 0.1_s);
 		}
 	}
 }
@@ -96,7 +88,7 @@ template <class T, usize S, class Formatter> bool basic_numeric_input_widget<T, 
 
 template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_action()
 {
-	this->m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
+	this->m_interp.change(tween::LERP, WHITE, 0.1_s);
 }
 
 template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_hover()
@@ -104,7 +96,7 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 	if (interactible()) {
 		this->m_hovered = true;
 		if (!this->m_selected) {
-			this->m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
+			this->m_interp.change(tween::LERP, WHITE, 0.1_s);
 			g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
@@ -115,7 +107,7 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 	if (interactible()) {
 		this->m_hovered = false;
 		if (!this->m_selected) {
-			this->m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			this->m_interp.change(tween::LERP, GRAY, 0.1_s);
 		}
 	}
 }
@@ -124,7 +116,7 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 {
 	if (interactible()) {
 		this->m_held = true;
-		this->m_interp = "202020"_rgba8;
+		this->m_interp = HELD_GRAY;
 	}
 }
 
@@ -140,7 +132,7 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 	if (interactible()) {
 		this->m_selected = true;
 		if (!this->m_hovered) {
-			this->m_interp.change(tween::LERP, "FFFFFF"_rgba8, 0.1_s);
+			this->m_interp.change(tween::LERP, WHITE, 0.1_s);
 		}
 		else {
 			g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
@@ -155,7 +147,7 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 	if (interactible()) {
 		this->m_selected = false;
 		if (!this->m_hovered) {
-			this->m_interp.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+			this->m_interp.change(tween::LERP, GRAY, 0.1_s);
 		}
 
 		// Promote small integers to int so writing e.g. '435' clamps nicely to '255' instead of failing.

@@ -1,5 +1,7 @@
 #include "../include/settings.hpp"
-#include "../include/legacy_formats.hpp"
+#include "../include/audio.hpp"
+#include "../include/graphics/graphics.hpp"
+#include "../include/state/state_base.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -26,34 +28,13 @@ void settings::raw_load_from_file()
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 		std::span<const std::byte> data{raw};
-		const u8 version{tr::binary_read<u8>(data)};
-		switch (version) {
-		case 0:
-			raw_load_v0(data);
-			return;
-		case 1:
+		if (tr::binary_read<u8>(data) == SETTINGS_VERSION) {
 			tr::binary_read<settings>(data, *this);
-			return;
-		default:
-			return;
 		}
 	}
 	catch (std::exception&) {
 		return;
 	}
-}
-
-void settings::raw_load_v0(std::span<const std::byte> data)
-{
-	const settings_v0 temp{tr::binary_read<settings_v0>(data)};
-	window_size = temp.window_size;
-	display_mode = temp.display_mode;
-	msaa = temp.msaa;
-	primary_hue = temp.primary_hue;
-	secondary_hue = temp.secondary_hue;
-	sfx_volume = temp.sfx_volume;
-	music_volume = temp.music_volume;
-	language = temp.language;
 }
 
 void settings::validate()
@@ -85,4 +66,47 @@ void settings::save_to_file() const
 	catch (std::exception&) {
 		return;
 	}
+}
+
+//
+
+bool settings::restart_required_to_apply(const settings& new_settings) const
+{
+	return new_settings.display_mode != display_mode ||
+		   (display_mode == display_mode::WINDOWED && new_settings.window_size != window_size) || new_settings.msaa != msaa;
+}
+
+bool settings::releasing_graphical_resources_required_to_apply(const settings& new_settings) const
+{
+	return restart_required_to_apply(new_settings) || !g_languages.contains(language) ||
+		   g_languages[language].font != g_languages[new_settings.language].font;
+}
+
+void settings::apply(const settings& new_settings)
+{
+	const bool restart_required{restart_required_to_apply(new_settings)};
+	const settings& previous{*this};
+
+	*this = new_settings;
+	if (restart_required) {
+		auto temp{std::move(g_state_machine)};
+		g_graphics.reset();
+		tr::sys::close_window();
+		open_window();
+		g_graphics.emplace();
+		g_state_machine = std::move(temp);
+		tr::sys::show_window();
+	}
+	else if (vsync != previous.vsync) {
+		tr::sys::set_window_vsync(vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
+	}
+
+	if (previous.language != language) {
+		load_localization();
+	}
+	if (!g_languages.contains(previous.language) || g_languages[previous.language].font != g_languages[g_settings.language].font) {
+		g_text_engine.set_language_font();
+	}
+
+	g_audio.apply_settings();
 }

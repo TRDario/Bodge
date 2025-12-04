@@ -1,5 +1,5 @@
 #pragma once
-#include "global.hpp"
+#include "../global.hpp"
 
 class tooltip_manager {
   public:

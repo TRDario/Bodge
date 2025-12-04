@@ -11,7 +11,7 @@ class ui_manager;
 class label_widget : public text_widget {
   public:
 	label_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
-				 text_style style, float font_size, tr::rgba8 color = "A0A0A0A0"_rgba8);
+				 text_style style, float font_size, tr::rgba8 color = GRAY);
 
 	tweener<tr::rgba8> color;
 

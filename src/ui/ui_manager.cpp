@@ -1,7 +1,6 @@
 #include "../../include/ui/ui_manager.hpp"
 #include "../../include/audio.hpp"
-#include "../../include/graphics.hpp"
-#include "../../include/system.hpp"
+#include "../../include/graphics/graphics.hpp"
 
 ui_manager::ui_manager(selection_tree selection_tree, shortcut_table shortcuts)
 	: m_selection_tree(selection_tree), m_shortcuts{shortcuts}
@@ -358,7 +357,7 @@ void ui_manager::handle_event(const tr::sys::event& event)
 						select_widget_to_the_right();
 					}
 					else if (m_selection.has_ref()) {
-						if (event == "Enter"_kc) {
+						if (event == "Escape"_kc) {
 							clear_selection();
 						}
 						else if (m_selection->second->interactible()) {

@@ -1,6 +1,5 @@
 #include "../include/score.hpp"
 #include "../include/gamemode.hpp"
-#include "../include/legacy_formats.hpp"
 #include "../include/settings.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -85,41 +84,18 @@ void scorefile::load_from_file()
 	const std::filesystem::path path{g_cli_settings.user_directory / "scorefile.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
-		const u8 version{tr::binary_read<u8>(file)};
-		switch (version) {
-		case 0:
-			load_v0(file);
-			return;
-		case 1:
-			load_v1(file);
-			return;
-		default:
-			return;
+		if (tr::binary_read<u8>(file) == SCOREFILE_VERSION) {
+			const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
+			std::span<const std::byte> data{raw};
+			data = tr::binary_read(data, name);
+			data = tr::binary_read(data, categories);
+			data = tr::binary_read(data, playtime);
+			data = tr::binary_read(data, last_selected);
 		}
 	}
 	catch (std::exception&) {
 		return;
 	}
-}
-
-void scorefile::load_v0(std::ifstream& file)
-{
-	const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
-	std::span<const std::byte> data{raw};
-	std::vector<score_category_v0> ignore;
-	data = tr::binary_read(data, name);
-	data = tr::binary_read(data, ignore);
-	data = tr::binary_read(data, playtime);
-}
-
-void scorefile::load_v1(std::ifstream& file)
-{
-	const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
-	std::span<const std::byte> data{raw};
-	data = tr::binary_read(data, name);
-	data = tr::binary_read(data, categories);
-	data = tr::binary_read(data, playtime);
-	data = tr::binary_read(data, last_selected);
 }
 
 void scorefile::save_to_file() const

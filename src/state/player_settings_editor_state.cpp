@@ -1,5 +1,4 @@
 #include "../../include/state/state.hpp"
-#include "../../include/system.hpp"
 #include "../../include/ui/widget.hpp"
 
 // clang-format off
@@ -52,7 +51,7 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{"Enter"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT},
 	{"1"_kc, T_EXIT},
 };
 
@@ -128,39 +127,39 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 	// ACTION CALLBACKS
 
 	const action_callback starting_lives_d_acb{
-		[&sl = m_pending.player.starting_lives] { sl = std::max(int(sl - engine::keymods_choose(1, 5, 10)), 0); },
+		[&sl = m_pending.player.starting_lives] { sl = std::max(int(sl - keymods_choose(1, 5, 10)), 0); },
 	};
 	const action_callback starting_lives_i_acb{
-		[&sl = m_pending.player.starting_lives] { sl = std::min(sl + engine::keymods_choose(1, 5, 10), 255); },
+		[&sl = m_pending.player.starting_lives] { sl = std::min(sl + keymods_choose(1, 5, 10), 255); },
 	};
 	const action_callback spawn_life_fragments_c_acb{
 		[&slf = m_pending.player.spawn_life_fragments, this] {
 			slf = !slf;
 			if (slf) {
-				m_ui.as<label_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL).color.change(tween::LERP, "A0A0A0A0"_rgba8, 0.1_s);
+				m_ui.as<label_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL).color.change(tween::LERP, GRAY, 0.1_s);
 			}
 			else {
-				m_ui.as<label_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL).color.change(tween::LERP, "505050A0"_rgba8, 0.1_s);
+				m_ui.as<label_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL).color.change(tween::LERP, DISABLED_GRAY, 0.1_s);
 			}
 		},
 	};
 	const action_callback life_fragment_spawn_interval_d_acb{
-		[&lfsi = m_pending.player.life_fragment_spawn_interval] { lfsi = std::max(lfsi - engine::keymods_choose(0.1_s, 1_s, 10_s), 15_s); },
+		[&lfsi = m_pending.player.life_fragment_spawn_interval] { lfsi = std::max(lfsi - keymods_choose(0.1_s, 1_s, 10_s), 15_s); },
 	};
 	const action_callback life_fragment_spawn_interval_i_acb{
-		[&lfsi = m_pending.player.life_fragment_spawn_interval] { lfsi = std::min(lfsi + engine::keymods_choose(0.1_s, 1_s, 10_s), 90_s); },
+		[&lfsi = m_pending.player.life_fragment_spawn_interval] { lfsi = std::min(lfsi + keymods_choose(0.1_s, 1_s, 10_s), 90_s); },
 	};
 	const action_callback hitbox_radius_d_acb{
-		[&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - engine::keymods_choose(1, 5, 10), 1.0f); },
+		[&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - keymods_choose(1, 5, 10), 1.0f); },
 	};
 	const action_callback hitbox_radius_i_acb{
-		[&hr = m_pending.player.hitbox_radius] { hr = std::min(hr + engine::keymods_choose(1, 5, 10), 100.0f); },
+		[&hr = m_pending.player.hitbox_radius] { hr = std::min(hr + keymods_choose(1, 5, 10), 100.0f); },
 	};
 	const action_callback inertia_factor_d_acb{
-		[&in = m_pending.player.inertia_factor] { in = std::max(in - engine::keymods_choose(0.01f, 0.05f, 0.1f), 0.0f); },
+		[&in = m_pending.player.inertia_factor] { in = std::max(in - keymods_choose(0.01f, 0.05f, 0.1f), 0.0f); },
 	};
 	const action_callback inertia_factor_i_acb{
-		[&in = m_pending.player.inertia_factor] { in = std::min(in + engine::keymods_choose(0.01f, 0.05f, 0.1f), 0.99f); },
+		[&in = m_pending.player.inertia_factor] { in = std::min(in + keymods_choose(0.01f, 0.05f, 0.1f), 0.99f); },
 	};
 	const action_callback exit_acb{
 		[this] {

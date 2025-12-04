@@ -1,7 +1,6 @@
-#include "../include/tooltip_manager.hpp"
-#include "../include/fonts.hpp"
-#include "../include/graphics.hpp"
-#include "../include/system.hpp"
+#include "../../include/graphics/tooltip_manager.hpp"
+#include "../../include/fonts.hpp"
+#include "../../include/graphics/graphics.hpp"
 
 tooltip_manager::tooltip_manager(tr::gfx::renderer_2d& basic)
 {
@@ -45,5 +44,5 @@ void tooltip_manager::add_to_renderer(std::string_view text)
 	const tr::gfx::simple_textured_mesh_ref uv{g_graphics->basic_renderer.new_textured_fan(layer::TOOLTIP, 4)};
 	tr::fill_rectangle_vertices(uv.positions, {tl + OUTLINE / 2 + PADDING, m_last_size});
 	tr::fill_rectangle_vertices(uv.uvs, {{}, m_last_size * g_graphics->render_scale() / glm::vec2{m_texture.size()}});
-	std::ranges::fill(uv.tints, "FFFFFF"_rgba8);
+	std::ranges::fill(uv.tints, WHITE);
 }

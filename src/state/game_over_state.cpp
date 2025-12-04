@@ -107,24 +107,23 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 
 	const bests& bests{g_scorefile.bests(m_game->gamemode())};
 
-	text_callback time_tcb{string_text_callback{format_time(m_game->final_time())}};
+	text_callback time_tcb{const_text_callback{format_time(m_game->final_time())}};
 	text_callback best_time_tcb;
 	if (bests.time < m_game->final_time()) {
 		best_time_tcb = loc_text_callback{"new_personal_best"};
 	}
 	else {
 		best_time_tcb =
-			string_text_callback{TR_FMT::format("{}: {}", g_loc["personal_best"], format_time(g_scorefile.bests(m_game->gamemode()).time))};
+			const_text_callback{TR_FMT::format("{}: {}", g_loc["personal_best"], format_time(g_scorefile.bests(m_game->gamemode()).time))};
 	}
 
-	text_callback score_tcb{string_text_callback{format_score(m_game->final_score())}};
+	text_callback score_tcb{const_text_callback{format_score(m_game->final_score())}};
 	text_callback best_score_tcb;
 	if (bests.score < m_game->final_score()) {
 		best_score_tcb = loc_text_callback{"new_personal_best"};
 	}
 	else {
-		best_score_tcb =
-			string_text_callback{TR_FMT::format("{}: {}", g_loc["personal_best"], g_scorefile.bests(m_game->gamemode()).score)};
+		best_score_tcb = const_text_callback{TR_FMT::format("{}: {}", g_loc["personal_best"], g_scorefile.bests(m_game->gamemode()).score)};
 	}
 
 	//
@@ -132,17 +131,17 @@ game_over_state::game_over_state(std::shared_ptr<game> game, bool blur_in)
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE}, text_style::NORMAL,
 							   64);
 	m_ui.emplace<label_widget>(T_TIME_LABEL, time_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TIME_LABEL},
-							   text_style::NORMAL, 24, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 24, YELLOW);
 	m_ui.emplace<label_widget>(T_TIME, time_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(time_tcb), text_style::NORMAL, 64,
-							   "FFFF00C0"_rgba8);
+							   YELLOW);
 	m_ui.emplace<label_widget>(T_BEST_TIME, best_time_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_time_tcb),
-							   text_style::NORMAL, 24, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 24, YELLOW);
 	m_ui.emplace<label_widget>(T_SCORE_LABEL, score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SCORE_LABEL},
-							   text_style::NORMAL, 24, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 24, YELLOW);
 	m_ui.emplace<label_widget>(T_SCORE, score_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(score_tcb), text_style::NORMAL, 64,
-							   "FFFF00C0"_rgba8);
+							   YELLOW);
 	m_ui.emplace<label_widget>(T_BEST_SCORE, best_score_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, std::move(best_score_tcb),
-							   text_style::NORMAL, 24, "FFFF00C0"_rgba8);
+							   text_style::NORMAL, 24, YELLOW);
 	for (usize i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};

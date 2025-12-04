@@ -45,10 +45,14 @@ struct settings {
 	void load_from_file();
 	void save_to_file() const;
 
+	bool releasing_graphical_resources_required_to_apply(const settings& new_settings) const;
+	void apply(const settings& new_settings);
+
   private:
 	void raw_load_from_file();
-	void raw_load_v0(std::span<const std::byte> data);
 	void validate();
+
+	bool restart_required_to_apply(const settings& new_settings) const;
 };
 
 inline settings g_settings{};

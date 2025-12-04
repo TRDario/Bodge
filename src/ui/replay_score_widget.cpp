@@ -1,5 +1,5 @@
 #include "../../include/audio.hpp"
-#include "../../include/graphics.hpp"
+#include "../../include/graphics/graphics.hpp"
 #include "../../include/ui/widget.hpp"
 
 //
@@ -100,9 +100,9 @@ score_widget::score_widget(tweener<glm::vec2> pos, tr::align alignment, ticks un
 		pos,
 		alignment,
 		unhide_time,
-		string_text_callback{format_score_tooltip(score)},
+		const_text_callback{format_score_tooltip(score)},
 		false,
-		string_text_callback(format_score_text(score, type, rank)),
+		const_text_callback(format_score_text(score, type, rank)),
 		font::LANGUAGE,
 		text_style::NORMAL,
 		48,
@@ -121,7 +121,7 @@ glm::vec2 score_widget::size() const
 
 void score_widget::add_to_renderer()
 {
-	const tr::rgba8 color{m_empty ? "505050A0"_rgba8 : "A0A0A0A0"_rgba8};
+	const tr::rgba8 color{m_empty ? DISABLED_GRAY : GRAY};
 	text_widget::add_to_renderer_raw(color);
 	if (!m_empty) {
 		const glm::vec2 text_size{text_widget::size()};
@@ -147,8 +147,8 @@ replay_widget::replay_widget(tweener<glm::vec2> pos, tr::align alignment, ticks 
 		  pos,
 		  alignment,
 		  unhide_time,
-		  string_text_callback{it.has_value() ? format_score_tooltip((*it)->second) : "-------------------------------------------------"},
-		  string_text_callback{format_replay_text(it)},
+		  const_text_callback{it.has_value() ? format_score_tooltip((*it)->second) : "-------------------------------------------------"},
+		  const_text_callback{format_replay_text(it)},
 		  font::LANGUAGE,
 		  34,
 		  [=, this] { return scb() && m_it.has_value(); },
@@ -177,7 +177,7 @@ glm::vec2 replay_widget::size() const
 void replay_widget::add_to_renderer()
 {
 	if (!m_it.has_value()) {
-		text_widget::add_to_renderer_raw("505050A0"_rgba8);
+		text_widget::add_to_renderer_raw(DISABLED_GRAY);
 	}
 	else {
 		text_button_widget::add_to_renderer();
@@ -186,7 +186,7 @@ void replay_widget::add_to_renderer()
 	if (m_it.has_value()) {
 		const score_flags flags{(*m_it)->second.flags};
 		const glm::vec2 text_size{text_button_widget::size()};
-		const tr::rgba8 color{interactible() ? tr::rgba8{m_interp} : "80808080"_rgba8};
+		const tr::rgba8 color{interactible() ? tr::rgba8{m_interp} : DARK_GRAY};
 		const auto icons{flags.exited_prematurely + flags.modified_game_speed};
 		glm::vec2 offset{text_size.x / 2 - 15 * icons, text_size.y};
 

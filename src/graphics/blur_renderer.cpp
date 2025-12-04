@@ -1,5 +1,5 @@
-#include "../include/blur_renderer.hpp"
-#include "../include/graphics.hpp"
+#include "../../include/graphics/blur_renderer.hpp"
+#include "../../include/graphics/graphics.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 

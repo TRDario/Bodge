@@ -1,9 +1,8 @@
 #include "../../include/game/game.hpp"
 #include "../../include/audio.hpp"
 #include "../../include/fonts.hpp"
-#include "../../include/graphics.hpp"
+#include "../../include/graphics/graphics.hpp"
 #include "../../include/score.hpp"
-#include "../../include/system.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 // clang-format off

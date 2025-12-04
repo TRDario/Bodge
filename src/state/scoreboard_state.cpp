@@ -33,7 +33,7 @@ constexpr selection_tree SELECTION_TREE{
 };
 
 constexpr shortcut_table SHORTCUTS{
-	{"Enter"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT},
 	{"Shift+Left"_kc, T_GAMEMODE_D},
 	{"Shift+Right"_kc, T_GAMEMODE_I},
 	{"Left"_kc, T_PAGE_D},
@@ -155,7 +155,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 	// TEXT CALLBACKS
 
 	const text_callback player_info_tcb{
-		string_text_callback{TR_FMT::format("{} {}: {}", g_loc["total_playtime"], g_scorefile.name, format_playtime(g_scorefile.playtime))},
+		const_text_callback{TR_FMT::format("{} {}: {}", g_loc["total_playtime"], g_scorefile.name, format_playtime(g_scorefile.playtime))},
 	};
 	const text_callback cur_gamemode_tcb{
 		[this] { return std::string{m_selected->gamemode.name_loc()}; },
@@ -174,7 +174,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (g_scorefile.categories.empty()) {
 		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, NO_SCORES_FOUND_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-								   loc_text_callback{T_NO_SCORES_FOUND}, text_style::NORMAL, 64, "80808080"_rgba8);
+								   loc_text_callback{T_NO_SCORES_FOUND}, text_style::NORMAL, 64, DARK_GRAY);
 		return;
 	}
 	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {

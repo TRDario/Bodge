@@ -3,9 +3,6 @@
 #include <tr/sysgfx.hpp>  // IWYU pragma: export
 #include <tr/utility.hpp> // IWYU pragma: export
 
-// Bodge version string.
-constexpr const char* VERSION_STRING{"v1.2.0"};
-
 ////////////////////////////////////////////////////////////////// USING //////////////////////////////////////////////////////////////////
 
 using namespace std::chrono_literals;
@@ -51,13 +48,26 @@ std::string format_timestamp(i64 timestamp);
 
 /////////////////////////////////////////////////////////// GRAPHICAL CONSTANTS ///////////////////////////////////////////////////////////
 
+// Commonly-used yellow.
+inline constexpr tr::rgba8 YELLOW{"FFFF00C0"_rgba8};
+// Commonly-used shade of gray for held widgets.
+inline constexpr tr::rgba8 HELD_GRAY{"202020"_rgba8};
+// Commonly-used shade of gray for disabled widgets.
+inline constexpr tr::rgba8 DISABLED_GRAY{"505050A0"_rgba8};
+// Commonly-used darker shade of gray.
+inline constexpr tr::rgba8 DARK_GRAY{"80808080"_rgba8};
+// Commonly-used shade of gray.
+inline constexpr tr::rgba8 GRAY{"A0A0A0A0"_rgba8};
+// Commonly-used white.
+inline constexpr tr::rgba8 WHITE{"FFFFFF"_rgba8};
+
 // Transformation matrix used by game elements.
 inline const glm::mat4 TRANSFORM{tr::ortho(glm::vec2{1000.0f})};
 
 // Overlay used to dim the game in the main menu.
-constexpr std::array<glm::vec2, 4> OVERLAY_POSITIONS{{{0, 0}, {1000, 0}, {1000, 1000}, {0, 1000}}};
+inline constexpr std::array<glm::vec2, 4> OVERLAY_POSITIONS{{{0, 0}, {1000, 0}, {1000, 1000}, {0, 1000}}};
 // Tint used for the menu game overlay.
-constexpr tr::rgba8 MENU_GAME_OVERLAY_TINT{0, 0, 0, 160};
+inline constexpr tr::rgba8 MENU_GAME_OVERLAY_TINT{0, 0, 0, 160};
 
 ////////////////////////////////////////////////////////////// GAME CONSTANTS /////////////////////////////////////////////////////////////
 
@@ -70,12 +80,12 @@ inline constexpr ticks STYLE_COOLDOWN{0.1_s};
 /////////////////////////////////////////////////////////////// UI CONSTANTS //////////////////////////////////////////////////////////////
 
 // Starting position for elements on the top of the screen.
-constexpr glm::vec2 TOP_START_POS{500, -50};
+inline constexpr glm::vec2 TOP_START_POS{500, -50};
 // Starting position for elements on the bottom of the screen.
-constexpr glm::vec2 BOTTOM_START_POS{500, 1050};
+inline constexpr glm::vec2 BOTTOM_START_POS{500, 1050};
 
 // Final position for screen titles.
-constexpr glm::vec2 TITLE_POS{500, 0};
+inline constexpr glm::vec2 TITLE_POS{500, 0};
 
 /////////////////////////////////////////////////////////////////// TIME //////////////////////////////////////////////////////////////////
 
@@ -101,6 +111,20 @@ inline tr::sys::mouse_button g_held_buttons{};
 // The global RNG.
 inline tr::xorshiftr_128p g_rng;
 
+// Chooses one of three values based on the currently held keymods.
+template <class T> T keymods_choose(T min, T mid, T max)
+{
+	if (g_held_keymods & tr::sys::keymod::CTRL) {
+		return max;
+	}
+	else if (g_held_keymods & tr::sys::keymod::SHIFT) {
+		return mid;
+	}
+	else {
+		return min;
+	}
+}
+
 //
 
 // Fragment used in some animations.
@@ -112,3 +136,7 @@ struct fragment {
 
 	void update();
 };
+
+//
+
+void open_window();

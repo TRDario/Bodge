@@ -62,10 +62,6 @@ struct scorefile {
 
 	void load_from_file();
 	void save_to_file() const;
-
-  private:
-	void load_v0(std::ifstream& file);
-	void load_v1(std::ifstream& file);
 };
 
 inline scorefile g_scorefile;
