@@ -5,8 +5,8 @@ include(FetchContent)
 
 FetchContent_Declare(
 	tr
-	GIT_REPOSITORY	https://TRDario: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@github.com/TRDario/tr.git
-    GIT_TAG origin/main
+	GIT_REPOSITORY	https://github.com/TRDario/tr.git
+    GIT_TAG v1.1.0
 ) 
 FetchContent_MakeAvailable(tr)
 
