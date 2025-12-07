@@ -6,7 +6,7 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings file version identifier.
-constexpr u8 SETTINGS_VERSION{1};
+constexpr u8 SETTINGS_VERSION{2};
 
 //////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
 
@@ -41,6 +41,7 @@ void settings::validate()
 {
 	window_size = std::clamp(window_size, MIN_WINDOW_SIZE, max_window_size());
 	msaa = std::clamp(msaa, NO_MSAA, tr::sys::max_msaa());
+	mouse_sensitivity = std::clamp(mouse_sensitivity, 50_u8, 200_u8);
 	primary_hue = u16(primary_hue % 360);
 	secondary_hue = u16(secondary_hue % 360);
 	sfx_volume = std::min(sfx_volume, 100_u8);
@@ -90,10 +91,10 @@ void settings::apply(const settings& new_settings)
 	*this = new_settings;
 	if (restart_required) {
 		auto temp{std::move(g_state_machine)};
-		g_graphics.reset();
+		g_renderer.reset();
 		tr::sys::close_window();
 		open_window();
-		g_graphics.emplace();
+		g_renderer.emplace();
 		g_state_machine = std::move(temp);
 		tr::sys::show_window();
 	}

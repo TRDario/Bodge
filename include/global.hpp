@@ -1,3 +1,22 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Globals:                                                                                                                              //
+//  - g_audio         = Audio subsystem.                                                                                                 //
+//  - g_cli_settings  = Command-line settings.                                                                                           //
+//  - g_held_buttons  = Currently held mouse buttons.                                                                                    //
+//  - g_held_keymods  = Currently held keyboard modifiers.                                                                               //
+//  - g_languages     = List of available languages.                                                                                     //
+//  - g_loc           = Localization map.                                                                                                //
+//  - g_mouse_pos     = Current mouse position in normalized screen coordinates.                                                         //
+//  - g_renderer      = Rendering subsystem.                                                                                             //
+//  - g_rng           = Global RNG (games use their own RNG for gameplay).                                                               //
+//  - g_scorefile     = Player scorefile.                                                                                                //
+//  - g_settings      = Game settings.                                                                                                   //
+//  - g_state_machine = Container for the current state.                                                                                 //
+//  - g_text_engine   = Text rendering subsystem.                                                                                        //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include <tr/audio.hpp>   // IWYU pragma: export
 #include <tr/sysgfx.hpp>  // IWYU pragma: export
@@ -12,11 +31,12 @@ using namespace tr::integer_literals;
 using namespace tr::integer_aliases;
 using namespace tr::matrix_operators;
 using namespace tr::sys::keyboard_literals;
-using text_style = tr::sys::ttf_style;
 
 ///////////////////////////////////////////////////////////////// TICKRATE ////////////////////////////////////////////////////////////////
 
+// Atomic unit of time used by the game simulation and UI.
 using ticks = u32;
+// Number of ticks in a second.
 inline constexpr ticks SECOND_TICKS{240};
 constexpr ticks operator""_s(unsigned long long seconds)
 {
@@ -71,11 +91,12 @@ inline constexpr tr::rgba8 MENU_GAME_OVERLAY_TINT{0, 0, 0, 160};
 
 ////////////////////////////////////////////////////////////// GAME CONSTANTS /////////////////////////////////////////////////////////////
 
+// Thickness of the field border.
 inline constexpr float FIELD_BORDER_THICKNESS{4};
+// Minimum coordinate of the field.
 inline constexpr float FIELD_MIN{FIELD_BORDER_THICKNESS};
+// Maximum coordinate fo the field.
 inline constexpr float FIELD_MAX{1000 - FIELD_BORDER_THICKNESS};
-inline constexpr float FIELD_CENTER{FIELD_MIN + (FIELD_MAX - FIELD_MIN) / 2};
-inline constexpr ticks STYLE_COOLDOWN{0.1_s};
 
 /////////////////////////////////////////////////////////////// UI CONSTANTS //////////////////////////////////////////////////////////////
 
@@ -87,20 +108,7 @@ inline constexpr glm::vec2 BOTTOM_START_POS{500, 1050};
 // Final position for screen titles.
 inline constexpr glm::vec2 TITLE_POS{500, 0};
 
-/////////////////////////////////////////////////////////////////// TIME //////////////////////////////////////////////////////////////////
-
-i64 current_timestamp();
-
-////////////////////////////////////////////////////////////////// LABEL //////////////////////////////////////////////////////////////////
-
-using tag = const char*;
-
-struct label_info {
-	tag tag;
-	const char* tooltip;
-};
-
-///////////////////////////////////////////////////////////////// GLOBALS //////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////// INPUT //////////////////////////////////////////////////////////////////
 
 // The held keyboard modifiers.
 inline tr::sys::keymod g_held_keymods{tr::sys::keymod::NONE};
@@ -108,8 +116,6 @@ inline tr::sys::keymod g_held_keymods{tr::sys::keymod::NONE};
 inline glm::vec2 g_mouse_pos{500, 500};
 // The held mouse buttons.
 inline tr::sys::mouse_button g_held_buttons{};
-// The global RNG.
-inline tr::xorshiftr_128p g_rng;
 
 // Chooses one of three values based on the currently held keymods.
 template <class T> T keymods_choose(T min, T mid, T max)
@@ -125,18 +131,28 @@ template <class T> T keymods_choose(T min, T mid, T max)
 	}
 }
 
-//
+////////////////////////////////////////////////////////////// MISCELLANEOUS //////////////////////////////////////////////////////////////
 
 // Fragment used in some animations.
 struct fragment {
+	// Position of the fragment.
 	glm::vec2 pos;
+	// Velocity of the fragment.
 	glm::vec2 vel;
+	// Rotation of the fragment.
 	tr::angle rot;
+	// Angular velocity of the fragment.
 	tr::angle rotvel;
 
-	void update();
+	// Updates the fragment.
+	void tick();
 };
 
-//
+// The global RNG.
+inline tr::xorshiftr_128p g_rng;
 
+// Gets the current UNIX timestamp.
+i64 current_timestamp();
+
+// Opens the game window.
 void open_window();

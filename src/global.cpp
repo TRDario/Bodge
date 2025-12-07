@@ -1,6 +1,6 @@
 #include "../include/settings.hpp"
 
-//
+///////////////////////////////////////////////////////////////// TICKRATE ////////////////////////////////////////////////////////////////
 
 std::string format_score(i64 score)
 {
@@ -29,7 +29,7 @@ std::string format_timestamp(i64 timestamp)
 	return TR_FMT::format("{}/{:02}/{:02} {:02}:{:02}", time.tm_year + 1900, time.tm_mon + 1, time.tm_mday, time.tm_hour, time.tm_min);
 }
 
-//
+////////////////////////////////////////////////////////////// MISCELLANEOUS //////////////////////////////////////////////////////////////
 
 i64 current_timestamp()
 {
@@ -38,7 +38,7 @@ i64 current_timestamp()
 
 //
 
-void fragment::update()
+void fragment::tick()
 {
 	pos += vel / 1_sf;
 	rot += rotvel / 1_sf;

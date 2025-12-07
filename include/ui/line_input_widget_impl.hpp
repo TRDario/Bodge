@@ -2,22 +2,21 @@
 #include "widget.hpp"
 
 template <usize S>
-line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_style style, float font_size,
-										status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
+line_input_widget<S>::line_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
+										float font_size, status_callback status_cb, action_callback enter_cb, std::string_view initial_text)
 	: input_buffer<S>{initial_text}
 	, text_widget{pos,
 				  alignment,
 				  unhide_time,
 				  NO_TOOLTIP,
-				  true,
-				  [this] { return this->buffer.empty() ? std::string{g_loc["empty"]} : std::string{this->buffer}; },
+				  buffer_text_callback{this->buffer},
 				  font::LANGUAGE,
 				  style,
 				  font_size,
 				  tr::sys::UNLIMITED_WIDTH}
 	, m_scb{std::move(status_cb)}
 	, m_enter_cb{std::move(enter_cb)}
-	, m_interp{m_scb() ? GRAY : DISABLED_GRAY}
+	, m_tint{m_scb() ? GRAY : DISABLED_GRAY}
 	, m_hovered{false}
 	, m_held{false}
 	, m_selected{false}
@@ -27,36 +26,36 @@ line_input_widget<S>::line_input_widget(tweener<glm::vec2> pos, tr::align alignm
 template <usize S> void line_input_widget<S>::add_to_renderer()
 {
 	if (this->buffer.empty()) {
-		tr::rgba8 color{m_interp};
+		tr::rgba8 color{m_tint};
 		color.r /= 2;
 		color.g /= 2;
 		color.b /= 2;
 		text_widget::add_to_renderer_raw(color);
 	}
 	else {
-		text_widget::add_to_renderer_raw(m_interp);
+		text_widget::add_to_renderer_raw(m_tint);
 	}
 }
 
-template <usize S> void line_input_widget<S>::update()
+template <usize S> void line_input_widget<S>::tick()
 {
-	text_widget::update();
-	m_interp.update();
+	text_widget::tick();
+	m_tint.tick();
 
 	if (interactible()) {
-		if (interactible() && !(m_held || m_hovered || m_selected) && m_interp.done() && m_interp != GRAY) {
-			m_interp.change(tween::LERP, GRAY, 0.1_s);
+		if (interactible() && !(m_held || m_hovered || m_selected) && m_tint.done() && m_tint != GRAY) {
+			m_tint.change(GRAY, 0.1_s);
 		}
-		else if (m_interp.done() && (m_hovered || m_selected) && !m_held) {
-			m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s);
+		else if (m_tint.done() && (m_hovered || m_selected) && !m_held) {
+			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
 		}
 	}
 	else {
 		m_hovered = false;
 		m_held = false;
 		m_selected = false;
-		if ((m_interp.done() && m_interp != DISABLED_GRAY) || m_interp.cycling()) {
-			m_interp.change(tween::LERP, DISABLED_GRAY, 0.1_s);
+		if ((m_tint.done() && m_tint != DISABLED_GRAY) || m_tint.cycling()) {
+			m_tint.change(DISABLED_GRAY, 0.1_s);
 		}
 	}
 }
@@ -66,9 +65,14 @@ template <usize S> bool line_input_widget<S>::interactible() const
 	return m_scb();
 }
 
+template <usize S> bool line_input_widget<S>::writable() const
+{
+	return true;
+}
+
 template <usize S> void line_input_widget<S>::on_action()
 {
-	m_interp.change(tween::LERP, WHITE, 0.1_s);
+	m_tint.change(WHITE, 0.1_s);
 }
 
 template <usize S> void line_input_widget<S>::on_hover()
@@ -76,7 +80,7 @@ template <usize S> void line_input_widget<S>::on_hover()
 	if (interactible()) {
 		m_hovered = true;
 		if (!m_selected) {
-			m_interp.change(tween::LERP, WHITE, 0.1_s);
+			m_tint.change(WHITE, 0.1_s);
 			g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
@@ -87,7 +91,7 @@ template <usize S> void line_input_widget<S>::on_unhover()
 	if (interactible()) {
 		m_hovered = false;
 		if (!m_selected) {
-			m_interp.change(tween::LERP, GRAY, 0.1_s);
+			m_tint.change(GRAY, 0.1_s);
 		}
 	}
 }
@@ -96,7 +100,7 @@ template <usize S> void line_input_widget<S>::on_held()
 {
 	if (interactible()) {
 		m_held = true;
-		m_interp = HELD_GRAY;
+		m_tint = HELD_GRAY;
 	}
 }
 
@@ -112,7 +116,7 @@ template <usize S> void line_input_widget<S>::on_selected()
 	if (interactible()) {
 		m_selected = true;
 		if (!m_hovered) {
-			m_interp.change(tween::LERP, WHITE, 0.1_s);
+			m_tint.change(WHITE, 0.1_s);
 		}
 		else {
 			g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
@@ -125,7 +129,7 @@ template <usize S> void line_input_widget<S>::on_unselected()
 	if (interactible()) {
 		m_selected = false;
 		if (!m_hovered) {
-			m_interp.change(tween::LERP, GRAY, 0.1_s);
+			m_tint.change(GRAY, 0.1_s);
 		}
 	}
 }

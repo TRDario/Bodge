@@ -11,5 +11,6 @@ Scorefile format:
 0: v0.9.0b
 
 Settings format:
+2: v1.2.0
 1: v1.1.1
 0: v0.9.0b

@@ -4,40 +4,55 @@
 // Infinitely-incrementing timer with a special inactive state.
 class startable_timer {
   public:
+	// Gets whether the timer is active.
 	inline bool active() const;
+	// Gets the elapsed time since the timer started.
 	inline ticks elapsed() const;
 
+	// Starts the timer.
 	inline void start();
-	inline void update();
+	// Updates the timer.
+	inline void tick();
 
   private:
+	// Elapsed ticks or max() to denote a stopped timer.
 	ticks m_time{std::numeric_limits<ticks>::max()};
 };
 
 // Fixed-duration timer that counts down.
 template <ticks START> class decrementing_timer {
   public:
+	// Gets whether the timer is active.
 	bool active() const;
+	// Gets the ratio (elapsed time) / (total time).
 	float elapsed_ratio() const;
 
+	// Starts the timer.
 	void start();
-	void update();
+	// Updates the timer.
+	void tick();
 
   private:
+	// Number of ticks left to decrement.
 	ticks m_left{0};
 };
 
 // Timer that can count up or down up to a maximum.
 template <ticks MAX> class accumulating_timer {
   public:
+	// Gets the maximum number of ticks that can be acumulated.
 	static constexpr ticks max();
 
+	// Gets the accumulated number of ticks.
 	ticks accumulated() const;
 
+	// Increments the timer.
 	void increment();
+	// Decrements the timer.
 	void decrement();
 
   private:
+	// Accumulated number of ticks.
 	ticks m_accumulated{0};
 };
 
@@ -60,7 +75,7 @@ void startable_timer::start()
 	m_time = 0;
 }
 
-void startable_timer::update()
+void startable_timer::tick()
 {
 	if (active()) {
 		++m_time;
@@ -84,7 +99,7 @@ template <ticks START> void decrementing_timer<START>::start()
 	m_left = START;
 }
 
-template <ticks START> void decrementing_timer<START>::update()
+template <ticks START> void decrementing_timer<START>::tick()
 {
 	if (active()) {
 		--m_left;

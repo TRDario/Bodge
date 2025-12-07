@@ -5,8 +5,8 @@
 #include "../../include/score.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
-// clang-format off
 
+// clang-format off
 // The pitch of the collection sound for each life fragment.
 constexpr std::array<float, 9> COLLECT_PITCHES{
 	12 / 12.0f,
@@ -19,34 +19,50 @@ constexpr std::array<float, 9> COLLECT_PITCHES{
 	24 / 12.0f,
 	24 / 12.0f,
 };
+// clang-format on
 
+// Center of the playing field.
+constexpr float FIELD_CENTER{FIELD_MIN + (FIELD_MAX - FIELD_MIN) / 2};
 // Size of the central scoring region.
-inline constexpr float CENTER_SIZE{1000 / 3.0f};
+constexpr float CENTER_SIZE{1000 / 3.0f};
 // Size of the edge scoring region.
-inline constexpr ticks EDGE_SIZE{100};
+constexpr ticks EDGE_SIZE{100};
 // The amount of accumulated time needed for a score region to activate.
-inline constexpr ticks MIN_SCORE_REGION_TIME{2_s};
+constexpr ticks MIN_SCORE_REGION_TIME{2_s};
 
 // The size of a life in the UI if there are more than MAX_LARGE_LIVES remaining.
-inline constexpr float SMALL_LIFE_SIZE{10};
+constexpr float SMALL_LIFE_SIZE{10};
 // The size of a life in the UI if there are less than or equal to MAX_LARGE_LIVES remaining.
-inline constexpr float LARGE_LIFE_SIZE{20};
+constexpr float LARGE_LIFE_SIZE{20};
 // Maximum number of lives before the UI switches to a smaller life icon.
-inline constexpr int MAX_LARGE_LIVES{5};
+constexpr int MAX_LARGE_LIVES{5};
 // Maximum number of small lives per line.
-inline constexpr int LIVES_PER_LINE{10};
+constexpr int LIVES_PER_LINE{10};
 
-inline constexpr glm::vec2 TIMER_TEXT_POS{500, 50};
-inline constexpr glm::vec2 SCORE_TEXT_POS{990, -4};
+// Position of the timer text.
+constexpr glm::vec2 TIMER_TEXT_POS{500, 50};
+// Position of the score text.
+constexpr glm::vec2 SCORE_TEXT_POS{990, -4};
 
-// clang-format on
+//////////////////////////////////////////////////////////// INTERNAL HELPERS /////////////////////////////////////////////////////////////
+
+// Creates the number atlas used for the timer and score text.
+static tr::gfx::bitmap_atlas<char> create_number_atlas()
+{
+	std::unordered_map<char, tr::bitmap> glyphs;
+	for (char chr : std::string_view{"0123456789:-"}) {
+		glyphs.emplace(chr, g_text_engine.render_gradient_glyph(chr, font::DEFAULT, tr::sys::ttf_style::NORMAL, 64, 5));
+	}
+	return tr::gfx::build_bitmap_atlas(glyphs);
+}
+
 ///////////////////////////////////////////////////////////// PLAYERLESS GAME /////////////////////////////////////////////////////////////
 
 playerless_game::playerless_game(const ::gamemode& gamemode, u64 rng_seed)
 	: m_gamemode{gamemode}
 	, m_rng{rng_seed}
-	, m_start_timer{0}
-	, m_last_ball_timer{0}
+	, m_elapsed_time{0}
+	, m_time_since_last_ball{0}
 	, m_next_ball_size{gamemode.ball.initial_size}
 	, m_next_ball_velocity{gamemode.ball.initial_velocity}
 {
@@ -55,23 +71,34 @@ playerless_game::playerless_game(const ::gamemode& gamemode, u64 rng_seed)
 	}
 }
 
+//
+
 const gamemode& playerless_game::gamemode() const
 {
 	return m_gamemode;
 }
 
-void playerless_game::update()
-{
-	++m_start_timer;
+//
 
-	++m_last_ball_timer;
-	if (m_last_ball_timer >= m_gamemode.ball.spawn_interval && m_balls.size() < m_gamemode.ball.max_count) {
+void playerless_game::add_new_ball()
+{
+	m_time_since_last_ball = 0;
+	m_balls.emplace_back(m_rng, m_next_ball_size, m_next_ball_velocity);
+	m_next_ball_size = std::min(m_next_ball_size + m_gamemode.ball.size_step, 100.0f);
+	m_next_ball_velocity = std::min(m_next_ball_velocity + m_gamemode.ball.velocity_step, 5000.0f);
+}
+
+void playerless_game::tick()
+{
+	++m_elapsed_time;
+
+	if (++m_time_since_last_ball >= m_gamemode.ball.spawn_interval && m_balls.size() < m_gamemode.ball.max_count) {
 		add_new_ball();
 		g_audio.play_sound(sound::BALL_SPAWN, 0.25f, (m_balls.back().hitbox().c.x - 500) / 500);
 	}
 
 	for (u8 i = 0; i < m_balls.size(); ++i) {
-		m_balls[i].update();
+		m_balls[i].tick();
 		if (m_balls[i].tangible()) {
 			for (u8 j = i + 1; j < m_balls.size(); ++j) {
 				if (m_balls[j].tangible() && colliding(m_balls[i], m_balls[j])) {
@@ -82,46 +109,31 @@ void playerless_game::update()
 	}
 }
 
-void playerless_game::add_to_renderer() const
-{
-	std::ranges::for_each(m_balls, &ball::add_to_renderer);
-	add_overlay_to_renderer();
-	add_border_to_renderer();
-}
+//
 
-void playerless_game::add_new_ball()
-{
-	m_last_ball_timer = 0;
-	m_balls.emplace_back(m_rng, m_next_ball_size, m_next_ball_velocity);
-	m_next_ball_size = std::min(m_next_ball_size + m_gamemode.ball.size_step, 100.0f);
-	m_next_ball_velocity = std::min(m_next_ball_velocity + m_gamemode.ball.velocity_step, 5000.0f);
-}
-
-void playerless_game::add_overlay_to_renderer() const
+void playerless_game::add_ball_trail_overlay_to_renderer() const
 {
 	const tr::gfx::simple_color_mesh_ref overlay{
-		g_graphics->basic_renderer.new_color_fan(layer::BALL_TRAILS, 4, TRANSFORM, tr::gfx::REVERSE_ALPHA_BLENDING)};
+		g_renderer->basic.new_color_fan(layer::BALL_TRAILS, 4, TRANSFORM, tr::gfx::REVERSE_ALPHA_BLENDING)};
 	std::ranges::copy(OVERLAY_POSITIONS, overlay.positions.begin());
 	std::ranges::fill(overlay.colors, "00000000"_rgba8);
 }
 
 void playerless_game::add_border_to_renderer() const
 {
-	const tr::gfx::simple_color_mesh_ref border{g_graphics->basic_renderer.new_color_outline(layer::BORDER, 4)};
+	const tr::gfx::simple_color_mesh_ref border{g_renderer->basic.new_color_outline(layer::BORDER, 4)};
 	tr::fill_rectangle_outline_vertices(border.positions, {{2, 2}, {996, 996}}, 4);
 	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{float(g_settings.secondary_hue), 1, 1}));
 }
 
-////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
-
-tr::gfx::bitmap_atlas<char> create_number_atlas()
+void playerless_game::add_to_renderer() const
 {
-	std::unordered_map<char, tr::bitmap> glyphs;
-	for (char chr : std::string_view{"0123456789:-"}) {
-		glyphs.emplace(chr, g_text_engine.render_gradient_glyph(chr, font::DEFAULT, text_style::NORMAL, 64, 5));
-	}
-	return tr::gfx::build_bitmap_atlas(glyphs);
+	std::ranges::for_each(m_balls, &ball::add_to_renderer);
+	add_ball_trail_overlay_to_renderer();
+	add_border_to_renderer();
 }
+
+////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
 
 game::game(const ::gamemode& gamemode, u64 rng_seed)
 	: playerless_game{gamemode, rng_seed}
@@ -149,23 +161,23 @@ i64 game::final_score() const
 ticks game::final_time() const
 {
 	if (m_game_over_timer.active()) {
-		return m_start_timer - m_game_over_timer.elapsed();
+		return m_elapsed_time - m_game_over_timer.elapsed();
 	}
 	else {
-		return m_start_timer;
+		return m_elapsed_time;
 	}
 }
 
 //
 
-void game::update(const glm::vec2& input)
+void game::tick(const glm::vec2& input)
 {
 	play_tick_sound_if_needed();
-	playerless_game::update();
+	playerless_game::tick();
 	update_timers();
 	update_life_fragments();
 	if (!game_over()) {
-		m_player.update(input);
+		m_player.tick(input);
 		check_if_player_is_hovering_over_timer();
 		check_if_player_is_hovering_over_lives();
 		check_if_player_is_hovering_over_score();
@@ -188,7 +200,7 @@ void game::play_tick_sound_if_needed()
 
 	if (!m_last_life_fragments_timer.active() || m_last_life_fragments_timer.elapsed() >= LIFE_FRAGMENT_DURATION ||
 		m_collected_fragments == 9) {
-		if (m_start_timer % 1_s == 0) {
+		if (m_elapsed_time % 1_s == 0) {
 			g_audio.play_sound(sound::TICK, 0.33f, 0.0f, m_tock ? 0.75f : 1.0f);
 			m_tock = !m_tock;
 		}
@@ -205,17 +217,15 @@ void game::play_tick_sound_if_needed()
 
 void game::update_timers()
 {
-	m_last_life_fragments_timer.update();
-	m_1up_animation_timer.update();
+	m_last_life_fragments_timer.tick();
+	m_1up_animation_timer.tick();
 	if (m_hit_animation_timer.active()) {
-		m_hit_animation_timer.update();
-		for (fragment& fragment : m_shattered_life_fragments) {
-			fragment.update();
-		}
+		m_hit_animation_timer.tick();
+		std::ranges::for_each(m_shattered_life_fragments, &fragment::tick);
 	}
-	m_screen_shake_timer.update();
-	m_game_over_timer.update();
-	m_score_animation_timer.update();
+	m_screen_shake_timer.tick();
+	m_game_over_timer.tick();
+	m_score_animation_timer.tick();
 }
 
 void game::update_life_fragments()
@@ -228,7 +238,7 @@ void game::update_life_fragments()
 		m_life_fragments.clear();
 	}
 
-	if ((!m_last_life_fragments_timer.active() && m_start_timer == m_gamemode.player.life_fragment_spawn_interval) ||
+	if ((!m_last_life_fragments_timer.active() && m_elapsed_time == m_gamemode.player.life_fragment_spawn_interval) ||
 		(m_last_life_fragments_timer.active() && m_last_life_fragments_timer.elapsed() == m_gamemode.player.life_fragment_spawn_interval)) {
 		for (int i = 0; i < 9; ++i) {
 			constexpr float THIRD{1000.0f / 3};
@@ -240,7 +250,7 @@ void game::update_life_fragments()
 	}
 
 	for (auto it = m_life_fragments.begin(); it != m_life_fragments.end();) {
-		it->update(m_last_life_fragments_timer.elapsed());
+		it->tick();
 		if (it->can_despawn()) {
 			it = m_life_fragments.erase(it);
 		}
@@ -252,7 +262,7 @@ void game::update_life_fragments()
 
 void game::check_if_player_is_hovering_over_timer()
 {
-	const glm::vec2 size{text_size(format_time(m_start_timer), 1 / g_graphics->render_scale()) * 0.95f};
+	const glm::vec2 size{text_size(format_time(m_elapsed_time), 1 / g_renderer->scale()) * 0.95f};
 	const tr::frect2 timer_text_bounds{TIMER_TEXT_POS - size / 2.0f - 8.0f, size + 16.0f};
 	if (timer_text_bounds.contains(m_player.hitbox().c)) {
 		m_timer_hover_timer.increment();
@@ -278,7 +288,7 @@ void game::check_if_player_is_hovering_over_lives()
 
 void game::check_if_player_is_hovering_over_score()
 {
-	const glm::vec2 size{text_size(format_score(m_score), 1 / g_graphics->render_scale()) * 0.85f};
+	const glm::vec2 size{text_size(format_score(m_score), 1 / g_renderer->scale()) * 0.85f};
 	const tr::frect2 timer_text_bounds{tl(SCORE_TEXT_POS, size, tr::align::TOP_RIGHT), size};
 	if (timer_text_bounds.contains(m_player.hitbox().c)) {
 		m_score_hover_timer.increment();
@@ -311,10 +321,10 @@ void game::check_if_player_was_hit()
 
 void game::set_up_shattered_life_fragments()
 {
-	const float life_size{m_lives_left > (m_hit_animation_timer.active() ? MAX_LARGE_LIVES - 1 : MAX_LARGE_LIVES) ? SMALL_LIFE_SIZE
-																												  : LARGE_LIFE_SIZE};
-	const glm::ivec2 grid_pos{m_lives_left % LIVES_PER_LINE, m_lives_left / LIVES_PER_LINE};
-	const glm::vec2 pos{(glm::vec2{grid_pos} + 0.5f) * 2.5f * life_size + 8.0f};
+	const int max_large_lives{(m_hit_animation_timer.active() ? MAX_LARGE_LIVES - 1 : MAX_LARGE_LIVES)};
+	const float life_size{m_lives_left > max_large_lives ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
+	const glm::vec2 grid_pos{glm::ivec2{m_lives_left % LIVES_PER_LINE, m_lives_left / LIVES_PER_LINE}};
+	const glm::vec2 pos{(grid_pos + 0.5f) * 2.5f * life_size + 8.0f};
 	for (usize i = 0; i < m_shattered_life_fragments.size(); ++i) {
 		const tr::angle th{60_deg * i + 30_deg};
 		const glm::vec2 vel{tr::magth(g_rng.generate(200.0f, 400.0f), g_rng.generate(th - 30_deg, th + 30_deg))};
@@ -340,6 +350,12 @@ void game::check_if_player_collected_life_fragments()
 			g_audio.play_sound(sound::COLLECT, 0.65f, 0, COLLECT_PITCHES[m_collected_fragments - 1]);
 		}
 	}
+}
+
+void game::add_to_score(i64 change)
+{
+	m_score += change;
+	m_score_animation_timer.start();
 }
 
 void game::check_for_score_ticks()
@@ -375,7 +391,7 @@ void game::check_for_score_ticks()
 		m_edge_timer.decrement();
 	}
 
-	if (m_start_timer % 1_s == 0) {
+	if (m_elapsed_time % 1_s == 0) {
 		if (m_center_timer.accumulated() >= MIN_SCORE_REGION_TIME) {
 			add_to_score(25);
 		}
@@ -391,27 +407,32 @@ void game::check_for_score_ticks()
 	}
 }
 
+bool game::player_in_ball_style_region(const ball& ball, float ball_velocity) const
+{
+	const tr::angle rect_angle{tr::atan2(ball.velocity().y / ball_velocity, ball.velocity().x / ball_velocity)};
+	const glm::vec2 rect_size{ball.hitbox().r + ball_velocity / 3, ball.hitbox().r * 2 + 2 * m_player.hitbox().r};
+	const glm::vec2 rect_center{ball.hitbox().c + ball.velocity() / 6.0f + tr::magth(ball.hitbox().r, rect_angle)};
+	const tr::frect2 unrotated_rect{tr::frect2{rect_center - rect_size / 2.0f, rect_size}};
+	const glm::mat4 inverse_rotation{tr::rotate_around(1.0f, rect_center, -rect_angle)};
+	return unrotated_rect.contains(inverse_rotation * m_player.hitbox().c);
+}
+
 void game::check_for_style_points()
 {
-	m_style_cooldown_timer.update();
+	m_style_cooldown_timer.tick();
 	if (!m_style_cooldown_timer.active()) {
 		i64 max_points{0};
 		for (const ball& ball : std::views::filter(m_balls, &ball::tangible)) {
-			const float velocity{glm::length(ball.velocity())};
-			const tr::angle rect_angle{tr::atan2(ball.velocity().y / velocity, ball.velocity().x / velocity)};
-			const glm::vec2 rect_size{ball.hitbox().r + velocity / 3, ball.hitbox().r * 2 + 2 * m_player.hitbox().r};
-			const glm::vec2 rect_center{ball.hitbox().c + ball.velocity() / 6.0f + tr::magth(ball.hitbox().r, rect_angle)};
-			const tr::frect2 unrotated_rect{tr::frect2{rect_center - rect_size / 2.0f, rect_size}};
-			const glm::mat4 inverse_rotation{tr::rotate_around(1.0f, rect_center, -rect_angle)};
-			if (unrotated_rect.contains(inverse_rotation * m_player.hitbox().c)) {
-				max_points =
-					std::max({1_i64, tr::floor_cast<i64>(std::sqrt(ball.hitbox().r / 10) * std::pow(velocity / 250, 1.5f)), max_points});
+			const float ball_velocity{glm::length(ball.velocity())};
+			if (player_in_ball_style_region(ball, ball_velocity)) {
+				const i64 points{tr::floor_cast<i64>(std::sqrt(ball.hitbox().r / 10) * std::pow(ball_velocity / 250, 1.5f))};
+				max_points = std::max({1_i64, points, max_points});
 			}
 		}
 		if (max_points != 0) {
+			const float pan{(m_player.hitbox().c.x - 500) / 500};
 			add_to_score(max_points);
 			m_style_cooldown_timer.start();
-			const float pan{(m_player.hitbox().c.x - 500) / 500};
 			g_audio.play_sound(sound::STYLE, 0.25f, pan);
 		}
 	}
@@ -422,66 +443,78 @@ void game::set_screen_shake() const
 	if (m_screen_shake_timer.active()) {
 		const glm::vec2 tl{tr::magth(40 * (1 - m_screen_shake_timer.elapsed_ratio()), g_rng.generate_angle())};
 		const glm::mat4 mat{tr::ortho(tr::frect2{tl, glm::vec2{1000}})};
-		g_graphics->basic_renderer.set_default_transform(mat);
+		g_renderer->basic.set_default_transform(mat);
+		g_renderer->circle.set_default_transform(mat);
 	}
 }
 
 //
 
-void game::add_to_renderer() const
+glm::vec2 game::text_size(const std::string& text, float scale) const
 {
-	if (std::holds_alternative<tr::gfx::bitmap_atlas<char>>(m_number_atlas)) {
-		tr::gfx::bitmap_atlas<char> source{tr::get<tr::gfx::bitmap_atlas<char>>(m_number_atlas)};
-		tr::gfx::dyn_atlas<char>& atlas{m_number_atlas.emplace<tr::gfx::dyn_atlas<char>>(std::move(source))};
-		atlas.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
-		g_graphics->basic_renderer.set_default_layer_texture(layer::GAME_OVERLAY, atlas);
-	}
+	const tr::gfx::dyn_atlas<char>& atlas{tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas)};
 
-	playerless_game::add_to_renderer();
-	for (const life_fragment& frag : m_life_fragments) {
-		frag.add_to_renderer(m_last_life_fragments_timer.elapsed());
+	glm::vec2 text_size{};
+	for (char chr : text) {
+		const glm::vec2 char_size{glm::vec2{atlas.unnormalized(chr).size} / g_renderer->scale() * scale};
+		text_size = {text_size.x + char_size.x - 5, std::max<float>(text_size.y, char_size.y)};
 	}
-	add_timer_to_renderer();
+	return text_size;
+}
+
+struct game::timer_render_info game::timer_render_info() const
+{
 	if (game_over()) {
-		m_player.add_to_renderer_dead(m_game_over_timer.elapsed());
+		const ticks time{final_time()};
+		return {time, (time >= g_scorefile.bests(gamemode()).time) ? "00FF00"_rgba8 : "FF0000"_rgba8, 1};
 	}
 	else {
-		m_player.add_to_renderer_alive(m_start_timer, m_style_cooldown_timer);
-		add_lives_to_renderer();
+		const float factor{std::min(m_elapsed_time % 1_s, 0.2_s) / 0.2_sf};
+		const u8 tint_factor{tr::norm_cast<u8>(1 - 0.25f * factor)};
+		const u8 opacity{u8((255 - m_timer_hover_timer.accumulated() * 180 / m_timer_hover_timer.max()) * tint_factor / 255)};
+		return {m_elapsed_time, {tint_factor, tint_factor, tint_factor, opacity}, 1.25f - 0.25f * factor};
 	}
-	add_score_to_renderer();
+}
+
+struct game::score_render_info game::score_render_info() const
+{
+	if (game_over()) {
+		return {(m_score >= g_scorefile.bests(gamemode()).score) ? "00FF00"_rgba8 : "FF0000"_rgba8, 0.85f};
+	}
+	else {
+		constexpr float MAX{decltype(m_center_timer)::max() - MIN_SCORE_REGION_TIME + 0.5_sf};
+		const float factor{m_score_animation_timer.elapsed_ratio()};
+		const u8 tint_factor{tr::norm_cast<u8>(1 - 0.1f * factor)};
+		const u8 opacity{u8((255 - m_score_hover_timer.accumulated() * 180 / m_score_hover_timer.max()) * tint_factor / 255)};
+
+		tr::rgba8 tint{tint_factor, tint_factor, tint_factor, opacity};
+		if (m_center_timer.accumulated() >= MIN_SCORE_REGION_TIME - 0.5_s) {
+			tint.b -= 0.75f * tint.b * (m_center_timer.accumulated() - MIN_SCORE_REGION_TIME + 0.5_s) / MAX;
+		}
+		else if (m_edge_timer.accumulated() >= MIN_SCORE_REGION_TIME - 0.5_s) {
+			tint.g -= 0.5f * tint.g * (m_edge_timer.accumulated() - MIN_SCORE_REGION_TIME + 0.5_s) / MAX;
+			tint.b -= 0.5f * tint.b * (m_edge_timer.accumulated() - MIN_SCORE_REGION_TIME + 0.5_s) / MAX;
+		}
+
+		return {tint, 0.85f - 0.1f * factor};
+	}
 }
 
 void game::add_timer_to_renderer() const
 {
-	ticks time;
-	tr::rgba8 tint;
-	float scale;
-	if (game_over()) {
-		time = final_time();
-		tint = (time >= g_scorefile.bests(gamemode()).time) ? "00FF00"_rgba8 : "FF0000"_rgba8;
-		scale = 1;
-	}
-	else {
-		time = m_start_timer;
-		const float factor{std::min(m_start_timer % 1_s, 0.2_s) / 0.2_sf};
-		const u8 tint_factor{tr::norm_cast<u8>(1 - 0.25f * factor)};
-		const u8 opacity{u8((255 - m_timer_hover_timer.accumulated() * 180 / m_timer_hover_timer.max()) * tint_factor / 255)};
-		tint = {tint_factor, tint_factor, tint_factor, opacity};
-		scale = (1.25f - 0.25f * factor);
-	}
-
+	const tr::gfx::dyn_atlas<char>& atlas{tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas)};
+	const auto [time, tint, scale]{timer_render_info()};
 	const std::string text{format_time(time)};
+
 	glm::vec2 tl{TIMER_TEXT_POS - text_size(text, scale) / 2.0f};
 	for (char chr : text) {
-		const glm::vec2 char_size{glm::vec2{tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas).unnormalized(chr).size} /
-								  g_graphics->render_scale() * scale};
+		const glm::vec2 size{glm::vec2{atlas.unnormalized(chr).size} / g_renderer->scale() * scale};
 
-		tr::gfx::simple_textured_mesh_ref character{g_graphics->basic_renderer.new_textured_fan(layer::GAME_OVERLAY, 4)};
-		tr::fill_rectangle_vertices(character.positions, {tl, char_size});
-		tr::fill_rectangle_vertices(character.uvs, tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas)[chr]);
+		const tr::gfx::simple_textured_mesh_ref character{g_renderer->basic.new_textured_fan(layer::GAME_OVERLAY, 4)};
+		tr::fill_rectangle_vertices(character.positions, {tl, size});
+		tr::fill_rectangle_vertices(character.uvs, atlas[chr]);
 		std::ranges::fill(character.tints, tint);
-		tl.x += char_size.x - 5;
+		tl.x += size.x - 5;
 	}
 }
 
@@ -491,7 +524,7 @@ void game::add_lives_to_renderer() const
 																												  : LARGE_LIFE_SIZE};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
 	const u8 opacity{u8(255 - 180 * m_lives_hover_timer.accumulated() / m_lives_hover_timer.max())};
-	const tr::angle rotation{120_deg * m_start_timer / 1_s};
+	const tr::angle rotation{120_deg * m_elapsed_time / 1_s};
 
 	int normal_lives{m_lives_left};
 	if (m_1up_animation_timer.active() && !m_hit_animation_timer.active()) {
@@ -501,7 +534,7 @@ void game::add_lives_to_renderer() const
 		const glm::ivec2 grid_pos{i % LIVES_PER_LINE, i / LIVES_PER_LINE};
 		const glm::vec2 pos{(glm::vec2{grid_pos} + 0.5f) * 2.5f * life_size + 8.0f};
 
-		const tr::gfx::simple_color_mesh_ref outline{g_graphics->basic_renderer.new_color_outline(layer::GAME_OVERLAY, 6)};
+		const tr::gfx::simple_color_mesh_ref outline{g_renderer->basic.new_color_outline(layer::GAME_OVERLAY, 6)};
 		tr::fill_regular_polygon_outline_vertices(outline.positions, {pos, life_size}, rotation, 2.0f);
 		std::ranges::fill(outline.colors, tr::rgba8{color, opacity});
 	}
@@ -522,10 +555,10 @@ void game::add_appearing_life_to_renderer(tr::rgb8 color, u8 base_opacity) const
 	const float life_size{m_lives_left > MAX_LARGE_LIVES ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
 	const glm::ivec2 grid_pos{(m_lives_left - 1) % LIVES_PER_LINE, (m_lives_left - 1) / LIVES_PER_LINE};
 	const glm::vec2 pos{(glm::vec2{grid_pos} + 0.5f) * 2.5f * life_size + 8.0f};
-	const tr::angle rotation{120_deg * m_start_timer / 1_s};
+	const tr::angle rotation{120_deg * m_elapsed_time / 1_s};
 	const u8 opacity{u8(base_opacity * std::pow(raw_age_factor, 1 / 3.0f))};
 
-	const tr::gfx::simple_color_mesh_ref outline{g_graphics->basic_renderer.new_color_outline(layer::GAME_OVERLAY, 6)};
+	const tr::gfx::simple_color_mesh_ref outline{g_renderer->basic.new_color_outline(layer::GAME_OVERLAY, 6)};
 	tr::fill_regular_polygon_outline_vertices(outline.positions, {pos, life_size * size_factor}, rotation, 2.0f * size_factor);
 	std::ranges::fill(outline.colors, tr::rgba8{color, opacity});
 }
@@ -536,7 +569,7 @@ void game::add_shattering_life_to_renderer(tr::rgb8 color, u8 base_opacity) cons
 	const float length{2 * life_size * (30_deg).tan()};
 	const u8 opacity{u8(base_opacity - base_opacity * m_hit_animation_timer.elapsed_ratio())};
 	for (const fragment& fragment : m_shattered_life_fragments) {
-		const tr::gfx::simple_color_mesh_ref mesh{g_graphics->basic_renderer.new_color_fan(layer::GAME_OVERLAY, 4)};
+		const tr::gfx::simple_color_mesh_ref mesh{g_renderer->basic.new_color_fan(layer::GAME_OVERLAY, 4)};
 		tr::fill_rectangle_vertices(mesh.positions, fragment.pos, {length / 2, 1}, {length, 2}, fragment.rot);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
@@ -544,61 +577,42 @@ void game::add_shattering_life_to_renderer(tr::rgb8 color, u8 base_opacity) cons
 
 void game::add_score_to_renderer() const
 {
+	const tr::gfx::dyn_atlas<char>& atlas{tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas)};
+	const auto [tint, scale]{score_render_info()};
 	const std::string text{format_score(m_score)};
-	tr::rgba8 tint;
-	float scale;
-
-	if (game_over()) {
-		tint = (m_score >= g_scorefile.bests(gamemode()).score) ? "00FF00"_rgba8 : "FF0000"_rgba8;
-		scale = 0.85f;
-	}
-	else {
-		const float factor{m_score_animation_timer.elapsed_ratio()};
-		const u8 tint_factor{tr::norm_cast<u8>(1 - 0.1f * factor)};
-		const u8 opacity{u8((255 - m_score_hover_timer.accumulated() * 180 / m_score_hover_timer.max()) * tint_factor / 255)};
-		tint = {tint_factor, tint_factor, tint_factor, opacity};
-		scale = (0.85f - 0.1f * factor);
-
-		constexpr float MAX{decltype(m_center_timer)::max() - MIN_SCORE_REGION_TIME + 0.5_sf};
-		if (m_center_timer.accumulated() >= MIN_SCORE_REGION_TIME - 0.5_s) {
-			tint.b -= 0.75f * tint.b * (m_center_timer.accumulated() - MIN_SCORE_REGION_TIME + 0.5_s) / MAX;
-		}
-		else if (m_edge_timer.accumulated() >= MIN_SCORE_REGION_TIME - 0.5_s) {
-			tint.g -= 0.5f * tint.g * (m_edge_timer.accumulated() - MIN_SCORE_REGION_TIME + 0.5_s) / MAX;
-			tint.b -= 0.5f * tint.b * (m_edge_timer.accumulated() - MIN_SCORE_REGION_TIME + 0.5_s) / MAX;
-		}
-	}
 
 	glm::vec2 tl{tr::tl(SCORE_TEXT_POS, text_size(text, scale), tr::align::TOP_RIGHT)};
 	for (char chr : text) {
-		const glm::vec2 char_size{glm::vec2{tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas).unnormalized(chr).size} /
-								  g_graphics->render_scale() * scale};
+		const glm::vec2 size{glm::vec2{atlas.unnormalized(chr).size} / g_renderer->scale() * scale};
 
-		tr::gfx::simple_textured_mesh_ref character{g_graphics->basic_renderer.new_textured_fan(layer::GAME_OVERLAY, 4)};
-		tr::fill_rectangle_vertices(character.positions, {tl, char_size});
-		tr::fill_rectangle_vertices(character.uvs, tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas)[chr]);
+		const tr::gfx::simple_textured_mesh_ref character{g_renderer->basic.new_textured_fan(layer::GAME_OVERLAY, 4)};
+		tr::fill_rectangle_vertices(character.positions, {tl, size});
+		tr::fill_rectangle_vertices(character.uvs, atlas[chr]);
 		std::ranges::fill(character.tints, tint);
-		tl.x += char_size.x - 5;
+		tl.x += size.x - 5;
 	}
 }
 
-//
-
-void game::add_to_score(i64 change)
+void game::add_to_renderer() const
 {
-	m_score += change;
-	m_score_animation_timer.start();
-}
-
-glm::vec2 game::text_size(const std::string& text, float scale) const
-{
-	glm::vec2 size{};
-	for (char chr : text) {
-		const glm::vec2 char_size{glm::vec2{tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas).unnormalized(chr).size} /
-								  g_graphics->render_scale() * scale};
-		size = {size.x + char_size.x - 5, std::max<float>(size.y, char_size.y)};
+	if (std::holds_alternative<tr::gfx::bitmap_atlas<char>>(m_number_atlas)) {
+		tr::gfx::bitmap_atlas<char> source{tr::get<tr::gfx::bitmap_atlas<char>>(m_number_atlas)};
+		tr::gfx::dyn_atlas<char>& atlas{m_number_atlas.emplace<tr::gfx::dyn_atlas<char>>(std::move(source))};
+		atlas.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
+		g_renderer->basic.set_default_layer_texture(layer::GAME_OVERLAY, atlas);
 	}
-	return size;
+
+	playerless_game::add_to_renderer();
+	std::ranges::for_each(m_life_fragments, &life_fragment::add_to_renderer);
+	add_timer_to_renderer();
+	if (game_over()) {
+		m_player.add_to_renderer_dead(m_game_over_timer.elapsed());
+	}
+	else {
+		m_player.add_to_renderer_alive(m_elapsed_time, m_style_cooldown_timer);
+		add_lives_to_renderer();
+	}
+	add_score_to_renderer();
 }
 
 /////////////////////////////////////////////////////////////// ACTIVE GAME ///////////////////////////////////////////////////////////////
@@ -610,10 +624,10 @@ active_game::active_game(const ::gamemode& gamemode, u64 seed)
 
 //
 
-void active_game::update()
+void active_game::tick()
 {
 	const bool is_game_over{game_over()};
-	game::update(g_mouse_pos);
+	game::tick(g_mouse_pos);
 	if (!is_game_over) {
 		replay.append(g_mouse_pos);
 	}
@@ -621,13 +635,13 @@ void active_game::update()
 
 ////////////////////////////////////////////////////////////// REPLAY GAME ////////////////////////////////////////////////////////////////
 
-replay_game::replay_game(const ::gamemode& gamemode, replay&& replay)
-	: game{gamemode, replay.header().seed}, m_replay{std::move(replay)}
+replay_game::replay_game(replay&& replay)
+	: game{replay.header().gamemode, replay.header().seed}, m_replay{std::move(replay)}
 {
 }
 
 replay_game::replay_game(const replay_game& r)
-	: replay_game{r.gamemode(), replay{r.m_replay}}
+	: replay_game{replay{r.m_replay}}
 {
 }
 
@@ -645,7 +659,7 @@ glm::vec2 replay_game::cursor_pos() const
 
 //
 
-void replay_game::update()
+void replay_game::tick()
 {
-	game::update(done() ? m_replay.prev_input() : m_replay.next_input());
+	game::tick(done() ? m_replay.prev_input() : m_replay.next_input());
 }

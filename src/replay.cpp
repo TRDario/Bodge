@@ -6,6 +6,18 @@
 // Replay file version identifier.
 constexpr u8 REPLAY_VERSION{1};
 
+///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
+
+// Sanitizes a replay name to something suitable for a filename.
+static std::string to_filename(std::string_view name)
+{
+	std::string filename{name};
+	std::erase_if(filename, [](char chr) { return chr >= 0x7F || (!std::isalnum(chr) && chr != '_' && chr != '-' && chr != ' '); });
+	std::ranges::for_each(filename, [](char& chr) { chr = std::tolower(chr); });
+	std::ranges::replace(filename, ' ', '_');
+	return filename.empty() ? "replay" : filename;
+}
+
 ////////////////////////////////////////////////////////////// REPLAY HEADER //////////////////////////////////////////////////////////////
 
 std::span<const std::byte> tr::binary_reader<replay_header>::read_from_span(std::span<const std::byte> span, replay_header& out)
@@ -72,15 +84,6 @@ void replay::set_header(const score_entry& header, std::string_view name)
 	m_header.name = name;
 }
 
-std::string to_filename(std::string_view name)
-{
-	std::string filename{name};
-	std::erase_if(filename, [](char chr) { return chr >= 0x7F || (!std::isalnum(chr) && chr != '_' && chr != '-' && chr != ' '); });
-	std::ranges::for_each(filename, [](char& chr) { chr = std::tolower(chr); });
-	std::ranges::replace(filename, ' ', '_');
-	return filename.empty() ? "replay" : filename;
-}
-
 void replay::save_to_file() const
 {
 	try {
@@ -139,9 +142,9 @@ glm::vec2 replay::prev_input() const
 	return done() ? *std::prev(m_next_it) : *m_next_it;
 }
 
-std::map<std::string, replay_header> load_replay_headers()
+replay_map load_replay_headers()
 {
-	std::map<std::string, replay_header> replays;
+	replay_map replays;
 	try {
 		const std::filesystem::path replay_dir{g_cli_settings.user_directory / "replays"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{replay_dir}) {
@@ -152,11 +155,10 @@ std::map<std::string, replay_header> load_replay_headers()
 			try {
 				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
 				const u8 version{tr::binary_read<u8>(is)};
-				if (version != REPLAY_VERSION) {
-					continue;
+				if (version == REPLAY_VERSION) {
+					replays.emplace(file.path().filename().string(),
+									tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
 				}
-				replays.emplace(file.path().filename().string(),
-								tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
 			}
 			catch (std::exception&) {
 				continue;

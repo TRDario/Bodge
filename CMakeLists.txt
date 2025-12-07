@@ -53,6 +53,7 @@ add_executable(
     src/ui/replay_playback_indicator_widget.cpp
     src/ui/replay_score_widget.cpp
     src/ui/text_button_widget.cpp
+    src/ui/tweening.cpp
     src/ui/ui_manager.cpp
     src/ui/widget_base.cpp  
 )

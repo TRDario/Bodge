@@ -1,18 +1,10 @@
 #include "../include/audio.hpp"
 #include "../include/settings.hpp"
 
-std::array<const char*, int(sound::COUNT)> SFX_FILENAMES{
-	"hover.ogg",          "hold.ogg",    "confirm.ogg",  "cancel.ogg",     "type.ogg",      "pause.ogg",
-	"unpause.ogg",        "tick.ogg",    "tick_alt.ogg", "ball_spawn.ogg", "bounce.ogg",    "style.ogg",
-	"fragment_spawn.ogg", "collect.ogg", "1up.ogg",      "hit.ogg",        "game_over.ogg",
-};
+///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
 
-std::filesystem::path find_song_path(std::string_view name);
-std::optional<tr::audio::buffer> load_audio_file(const char* filename);
-
-//
-
-std::filesystem::path find_song_path(std::string_view name)
+// Tries to find a path to a song given a filename.
+static std::filesystem::path try_finding_song_path(std::string_view name)
 {
 	std::filesystem::path path{g_cli_settings.data_directory / "music" / TR_FMT::format("{}.ogg", name)};
 	if (!std::filesystem::exists(path)) {
@@ -24,7 +16,8 @@ std::filesystem::path find_song_path(std::string_view name)
 	return path;
 }
 
-std::optional<tr::audio::buffer> load_audio_file(const char* filename)
+// Tries to load an audio file.
+static std::optional<tr::audio::buffer> try_loading_audio_file(const char* filename)
 {
 	try {
 		return tr::audio::load_file(g_cli_settings.data_directory / "sounds" / filename);
@@ -33,6 +26,8 @@ std::optional<tr::audio::buffer> load_audio_file(const char* filename)
 		return std::nullopt;
 	}
 }
+
+////////////////////////////////////////////////////////////////// AUDIO //////////////////////////////////////////////////////////////////
 
 std::vector<std::string> create_available_song_list()
 {
@@ -51,17 +46,21 @@ std::vector<std::string> create_available_song_list()
 	return songs;
 }
 
-//
-
 void audio::initialize()
 {
+	constexpr std::array<const char*, int(sound::COUNT)> SFX_FILENAMES{
+		"hover.ogg",          "hold.ogg",    "confirm.ogg",  "cancel.ogg",     "type.ogg",      "pause.ogg",
+		"unpause.ogg",        "tick.ogg",    "tick_alt.ogg", "ball_spawn.ogg", "bounce.ogg",    "style.ogg",
+		"fragment_spawn.ogg", "collect.ogg", "1up.ogg",      "hit.ogg",        "game_over.ogg",
+	};
+
 	try {
 		tr::audio::initialize();
 		tr::audio::set_master_gain(2);
 		tr::audio::set_class_gain(0, g_settings.sfx_volume / 100.0f);
 		tr::audio::set_class_gain(1, g_settings.music_volume / 100.0f);
 		for (int i = 0; i < int(sound::COUNT); ++i) {
-			m_sounds[i] = load_audio_file(SFX_FILENAMES[i]);
+			m_sounds[i] = try_loading_audio_file(SFX_FILENAMES[i]);
 		}
 		m_current_song.emplace(1000);
 		m_current_song->set_classes(2);
@@ -116,11 +115,12 @@ void audio::play_song(std::string_view name, tr::fsecs fade_in)
 void audio::play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_in)
 {
 	if (m_current_song.has_value()) {
-		const std::filesystem::path& path{find_song_path(name)};
-		if (path.empty()) {
-			return;
-		}
 		try {
+			const std::filesystem::path& path{try_finding_song_path(name)};
+			if (path.empty()) {
+				return;
+			}
+
 			m_current_song->stop();
 			m_current_song->use(tr::audio::open_file(path));
 			m_current_song->set_offset(offset);

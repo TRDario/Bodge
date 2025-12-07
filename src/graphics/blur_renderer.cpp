@@ -3,8 +3,10 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
+// Blur renderer vertex shader source code.
 constexpr const char* VERTEX_SHADER_SRC{"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;out gl_PerVertex{vec4 "
 										"gl_Position;};L(0)out vec2 P;void main(){P=p;gl_Position=vec4(p,0,1);}"};
+// Blur renderer fragment shader source code.
 constexpr const char* FRAGMENT_SHADER_SRC{
 	"#version 450\n#define L(l) layout(location=l)\nL(0)in vec2 p;L(0)out vec4 C;L(0)uniform sampler2D t;L(1)uniform vec2 S;L(2)uniform "
 	"float s;L(3)uniform float r;L(4)uniform int a;vec3 H(vec3 c){vec4 "
@@ -16,10 +18,13 @@ constexpr const char* FRAGMENT_SHADER_SRC{
 	"k=vec4(0);W=0.5135/pow(r,0.96);if(a==0){for(d=1/S.x,x=-r,p.x+=x*d;x<=r;x++,p.x+=d){w=W*exp((-x*x)/"
 	"(2*R));k+=texture(t,p)*w;}C=k;}else{for(d=1/S.y,y=-r,p.y+=y*d;y<=r;y++,p.y+=d){w=W*exp((-y*y)/"
 	"(2*R));k+=texture(t,p)*w;}vec3 g=H(k.rgb);C=vec4(G(vec3(g.x,g.y*s,g.z)),1);}}"};
+// Blur renderer vertex attributes.
 constexpr std::array<tr::gfx::vertex_binding, 1> BLUR_ATTRIBUTES{{{tr::gfx::NOT_INSTANCED, tr::gfx::vertex_attributes<glm::i8vec2>::list}}};
+// Mesh used by the blur renderer to draw to the screen.
 constexpr std::array<glm::i8vec2, 4> MESH{{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}};
 
-const u32 RENDERER_ID{tr::gfx::alloc_renderer_id()};
+// Renderer ID of the blur renderer.
+const u32 BLUR_RENDERER_ID{tr::gfx::alloc_renderer_id()};
 
 ////////////////////////////////////////////////////////////// BLUR RENDERER //////////////////////////////////////////////////////////////
 
@@ -48,11 +53,13 @@ tr::gfx::render_target blur_renderer::input()
 	return m_input_texture;
 }
 
+//
+
 void blur_renderer::draw(float saturation, float strength)
 {
-	strength = std::max(std::round(strength * g_graphics->render_scale()), 2.0f);
+	strength = std::max(std::round(strength * g_renderer->scale()), 2.0f);
 
-	tr::gfx::active_renderer = RENDERER_ID;
+	tr::gfx::active_renderer = BLUR_RENDERER_ID;
 	tr::gfx::set_shader_pipeline(m_pipeline);
 	tr::gfx::set_vertex_format(m_vertex_format);
 	tr::gfx::set_vertex_buffer(m_vertex_buffer, 0, 0);
@@ -66,6 +73,6 @@ void blur_renderer::draw(float saturation, float strength)
 	tr::gfx::draw(tr::gfx::primitive::TRI_FAN, 0, 4);
 	m_pipeline.fragment_shader().set_uniform(0, m_auxiliary_texture);
 	m_pipeline.fragment_shader().set_uniform(4, 1);
-	tr::gfx::set_render_target(g_graphics->screen);
+	tr::gfx::set_render_target(g_renderer->screen);
 	tr::gfx::draw(tr::gfx::primitive::TRI_FAN, 0, 4);
 }

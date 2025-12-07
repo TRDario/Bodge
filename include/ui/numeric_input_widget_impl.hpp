@@ -2,36 +2,37 @@
 #include "ui_manager.hpp"
 #include "widget.hpp"
 
-template <class T, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
-void default_numeric_input_formatter<T, Fmt, BufferFmt>::from_string(std::common_type_t<T, int>& out, std::string_view str)
+template <class T, tr::template_string_literal Format, tr::template_string_literal BufferFormat>
+void default_numeric_input_formatter<T, Format, BufferFormat>::from_string(std::common_type_t<T, int>& out, std::string_view str)
 {
 	std::from_chars(str.data(), str.data() + str.size(), out);
 }
 
-template <class T, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
-std::string default_numeric_input_formatter<T, Fmt, BufferFmt>::to_string(T v)
+template <class T, tr::template_string_literal Format, tr::template_string_literal BufferFormat>
+std::string default_numeric_input_formatter<T, Format, BufferFormat>::to_string(T v)
 {
-	return TR_FMT::format(Fmt, v);
+	return TR_FMT::format(Format, v);
 }
 
-template <class T, tr::template_string_literal Fmt, tr::template_string_literal BufferFmt>
-std::string default_numeric_input_formatter<T, Fmt, BufferFmt>::to_string(std::string_view str)
+template <class T, tr::template_string_literal Format, tr::template_string_literal BufferFormat>
+std::string default_numeric_input_formatter<T, Format, BufferFormat>::to_string(std::string_view str)
 {
-	return TR_FMT::format(BufferFmt, str);
+	return TR_FMT::format(BufferFormat, str);
 }
 
-template <class T, usize S, class Formatter>
-basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time,
-																		float font_size, ui_manager& ui, T& ref, status_callback status_cb,
-																		validation_callback<T> validation_cb)
-	: basic_numeric_input_widget_data<T, S>{ui,    ref,   {},   status_cb, std::move(validation_cb), status_cb() ? GRAY : DISABLED_GRAY,
-											false, false, false}
+template <class T, usize Digits, class Formatter>
+basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time,
+																			 float font_size, ui_manager& ui, T& ref,
+																			 status_callback status_cb,
+																			 validation_callback<T> validation_cb)
+	: basic_numeric_input_widget_data<T,
+									  Digits>{ui,    ref,   {},   status_cb, std::move(validation_cb), status_cb() ? GRAY : DISABLED_GRAY,
+											  false, false, false}
 	, text_widget{
 		  pos,
 		  alignment,
 		  unhide_time,
 		  NO_TOOLTIP,
-		  true,
 		  [this] {
 			  if (this->m_selected) {
 				  if (this->m_buffer.empty()) {
@@ -46,93 +47,98 @@ basic_numeric_input_widget<T, S, Formatter>::basic_numeric_input_widget(tweener<
 			  }
 		  },
 		  font::LANGUAGE,
-		  text_style::NORMAL,
+		  tr::sys::ttf_style::NORMAL,
 		  font_size,
 		  tr::sys::UNLIMITED_WIDTH,
 	  }
 {
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::add_to_renderer()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::add_to_renderer()
 {
-	text_widget::add_to_renderer_raw(this->m_interp);
+	text_widget::add_to_renderer_raw(this->m_tint);
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::update()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::tick()
 {
-	text_widget::update();
-	this->m_interp.update();
+	text_widget::tick();
+	this->m_tint.tick();
 
 	if (interactible()) {
-		if (interactible() && !(this->m_held || this->m_hovered || this->m_selected) && this->m_interp.done() && this->m_interp != GRAY) {
-			this->m_interp.change(tween::LERP, GRAY, 0.1_s);
+		if (interactible() && !(this->m_held || this->m_hovered || this->m_selected) && this->m_tint.done() && this->m_tint != GRAY) {
+			this->m_tint.change(GRAY, 0.1_s);
 		}
-		else if (this->m_interp.done() && (this->m_hovered || this->m_selected) && !this->m_held) {
-			this->m_interp.change(tween::CYCLE, tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s);
+		else if (this->m_tint.done() && (this->m_hovered || this->m_selected) && !this->m_held) {
+			this->m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
 		}
 	}
 	else {
 		this->m_hovered = false;
 		this->m_held = false;
 		this->m_selected = false;
-		if ((this->m_interp.done() && this->m_interp != DISABLED_GRAY) || this->m_interp.cycling()) {
-			this->m_interp.change(tween::LERP, DISABLED_GRAY, 0.1_s);
+		if ((this->m_tint.done() && this->m_tint != DISABLED_GRAY) || this->m_tint.cycling()) {
+			this->m_tint.change(DISABLED_GRAY, 0.1_s);
 		}
 	}
 }
 
-template <class T, usize S, class Formatter> bool basic_numeric_input_widget<T, S, Formatter>::interactible() const
+template <class T, usize Digits, class Formatter> bool basic_numeric_input_widget<T, Digits, Formatter>::interactible() const
 {
 	return this->m_scb();
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_action()
+template <class T, usize Digits, class Formatter> bool basic_numeric_input_widget<T, Digits, Formatter>::writable() const
 {
-	this->m_interp.change(tween::LERP, WHITE, 0.1_s);
+	return true;
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_hover()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_action()
+{
+	this->m_tint.change(WHITE, 0.1_s);
+}
+
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_hover()
 {
 	if (interactible()) {
 		this->m_hovered = true;
 		if (!this->m_selected) {
-			this->m_interp.change(tween::LERP, WHITE, 0.1_s);
+			this->m_tint.change(WHITE, 0.1_s);
 			g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_unhover()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_unhover()
 {
 	if (interactible()) {
 		this->m_hovered = false;
 		if (!this->m_selected) {
-			this->m_interp.change(tween::LERP, GRAY, 0.1_s);
+			this->m_tint.change(GRAY, 0.1_s);
 		}
 	}
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_held()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_held()
 {
 	if (interactible()) {
 		this->m_held = true;
-		this->m_interp = HELD_GRAY;
+		this->m_tint = HELD_GRAY;
 	}
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_unheld()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_unheld()
 {
 	if (interactible()) {
 		this->m_held = false;
 	}
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_selected()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_selected()
 {
 	if (interactible()) {
 		this->m_selected = true;
 		if (!this->m_hovered) {
-			this->m_interp.change(tween::LERP, WHITE, 0.1_s);
+			this->m_tint.change(WHITE, 0.1_s);
 		}
 		else {
 			g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
@@ -142,12 +148,12 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 	}
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_unselected()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_unselected()
 {
 	if (interactible()) {
 		this->m_selected = false;
 		if (!this->m_hovered) {
-			this->m_interp.change(tween::LERP, GRAY, 0.1_s);
+			this->m_tint.change(GRAY, 0.1_s);
 		}
 
 		// Promote small integers to int so writing e.g. '435' clamps nicely to '255' instead of failing.
@@ -157,20 +163,20 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 	}
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_write(std::string_view input)
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_write(std::string_view input)
 {
-	if (input.size() == 1 && (std::isdigit(input.front()) || input.front() == '.') && this->m_buffer.size() < S) {
+	if (input.size() == 1 && (std::isdigit(input.front()) || input.front() == '.') && this->m_buffer.size() < Digits) {
 		this->m_buffer.append(input);
 		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_enter()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_enter()
 {
 	this->m_ui.clear_selection();
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_erase()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_erase()
 {
 	if (!this->m_buffer.empty()) {
 		this->m_buffer.pop_back();
@@ -178,7 +184,7 @@ template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, 
 	}
 }
 
-template <class T, usize S, class Formatter> void basic_numeric_input_widget<T, S, Formatter>::on_clear()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_clear()
 {
 	this->m_buffer.clear();
 	g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));

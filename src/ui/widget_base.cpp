@@ -1,6 +1,14 @@
 #include "../../include/graphics/graphics.hpp"
 #include "../../include/ui/widget.hpp"
 
+//////////////////////////////////////////////////////////// INTERNAL HELPERS /////////////////////////////////////////////////////////////
+
+// Determines whether the cache is too small to fit an image.
+static bool cache_too_small(const tr::gfx::texture& cache, const tr::bitmap& image)
+{
+	return cache.size().x < image.size().x || cache.size().y < image.size().y;
+}
+
 ///////////////////////////////////////////////////////////// TEXT CALLBACKS //////////////////////////////////////////////////////////////
 
 std::string loc_text_callback::operator()() const
@@ -20,8 +28,8 @@ std::string const_text_callback::operator()() const
 
 ///////////////////////////////////////////////////////////////// WIDGET //////////////////////////////////////////////////////////////////
 
-widget::widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable)
-	: alignment{alignment}, pos{pos}, tooltip_cb{std::move(tooltip_cb)}, m_opacity{0}, m_writable{writable}
+widget::widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb)
+	: pos{pos}, tooltip_cb{std::move(tooltip_cb)}, m_alignment{alignment}, m_opacity{0}
 {
 	if (unhide_time != DONT_UNHIDE) {
 		unhide(unhide_time);
@@ -30,7 +38,7 @@ widget::widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, t
 
 glm::vec2 widget::tl() const
 {
-	return tr::tl(glm::vec2{pos}, size(), alignment);
+	return tr::tl(glm::vec2{pos}, size(), m_alignment);
 }
 
 float widget::opacity() const
@@ -45,7 +53,25 @@ void widget::hide()
 
 void widget::hide(ticks time)
 {
-	m_opacity.change(tween::CUBIC, 0, time);
+	m_opacity.change(0, time);
+}
+
+void widget::move_and_hide(glm::vec2 end, ticks time)
+{
+	pos.move(end, time);
+	hide(time);
+}
+
+void widget::move_x_and_hide(float end, ticks time)
+{
+	pos.move_x(end, time);
+	hide(time);
+}
+
+void widget::move_y_and_hide(float end, ticks time)
+{
+	pos.move_y(end, time);
+	hide(time);
 }
 
 void widget::unhide()
@@ -55,7 +81,19 @@ void widget::unhide()
 
 void widget::unhide(ticks time)
 {
-	m_opacity.change(tween::CUBIC, 1, time);
+	m_opacity.change(1, time);
+}
+
+void widget::move_x_and_unhide(float end, ticks time)
+{
+	pos.move_x(end, time);
+	unhide(time);
+}
+
+void widget::move_y_and_unhide(float end, ticks time)
+{
+	pos.move_y(end, time);
+	unhide(time);
 }
 
 bool widget::hidden() const
@@ -70,25 +108,25 @@ bool widget::interactible() const
 
 bool widget::writable() const
 {
-	return m_writable;
+	return false;
 }
 
-void widget::update()
+void widget::tick()
 {
-	pos.update();
-	m_opacity.update();
+	pos.tick();
+	m_opacity.tick();
 }
 
 /////////////////////////////////////////////////////////////// TEXT WIDGET ///////////////////////////////////////////////////////////////
 
-text_widget::text_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, bool writable,
-						 text_callback text_cb, font font, text_style style, float font_size, int max_width)
-	: widget{pos, alignment, unhide_time, tooltip_cb, writable}
-	, text_cb{text_cb}
+text_widget::text_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
+						 font font, tr::sys::ttf_style style, float font_size, int max_width)
+	: widget{pos, alignment, unhide_time, tooltip_cb}
 	, m_font{font}
 	, m_style{style}
 	, m_font_size{font_size}
 	, m_max_width{max_width}
+	, m_text_cb{text_cb}
 	, m_last_text{text_cb()}
 	, m_cache{g_text_engine.render_text(m_last_text, g_text_engine.determine_font(m_last_text, m_font), m_style, m_font_size,
 										m_font_size / 12, m_max_width, tr::halign::CENTER)}
@@ -98,7 +136,7 @@ text_widget::text_widget(tweener<glm::vec2> pos, tr::align alignment, ticks unhi
 
 glm::vec2 text_widget::size() const
 {
-	return m_last_size / g_graphics->render_scale();
+	return m_last_size / g_renderer->scale();
 }
 
 void text_widget::release_graphical_resources()
@@ -113,7 +151,7 @@ void text_widget::add_to_renderer_raw(tr::rgba8 tint)
 	tint.a *= opacity();
 
 	const tr::gfx::texture& texture{tr::get<tr::gfx::texture>(m_cache)};
-	const tr::gfx::simple_textured_mesh_ref quad{g_graphics->basic_renderer.new_textured_fan(layer::UI, 4, texture)};
+	const tr::gfx::simple_textured_mesh_ref quad{g_renderer->basic.new_textured_fan(layer::UI, 4, texture)};
 	tr::fill_rectangle_vertices(quad.positions, {tl(), text_widget::size()});
 	tr::fill_rectangle_vertices(quad.uvs, {{}, m_last_size / glm::vec2{texture.size()}});
 	std::ranges::fill(quad.tints, tint);
@@ -121,11 +159,7 @@ void text_widget::add_to_renderer_raw(tr::rgba8 tint)
 
 void text_widget::update_cache() const
 {
-	const auto cache_too_small{
-		[](const tr::gfx::texture& t, const tr::bitmap& b) { return t.size().x < b.size().x || t.size().y < b.size().y; },
-	};
-
-	std::string text{text_cb()};
+	std::string text{m_text_cb()};
 	if (std::holds_alternative<std::monostate>(m_cache) || m_last_text != text) {
 		const tr::bitmap render{g_text_engine.render_text(text, g_text_engine.determine_font(text, m_font), m_style, m_font_size,
 														  m_font_size / 12, m_max_width, tr::halign::CENTER)};

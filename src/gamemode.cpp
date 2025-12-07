@@ -7,7 +7,7 @@
 // Gamemode file version identifier.
 constexpr u8 GAMEMODE_VERSION{1};
 
-// The gamemodes that can appear in the main menu background.
+// Built-in gamemodes that are always available.
 const std::array<gamemode, 3> BUILTIN_GAMEMODES{{
 	{
 		.builtin = true,
@@ -59,16 +59,6 @@ const std::array<gamemode, 3> BUILTIN_GAMEMODES{{
 }};
 
 // clang-format on
-
-// The gamemodes that can appear in the main menu background.
-constexpr std::array<gamemode, 6> MENU_GAMEMODES{{
-	{.ball{.starting_count = 15, .max_count = 15, .initial_size = 20, .size_step = 0, .initial_velocity = 350, .velocity_step = 0}},
-	{.ball{.starting_count = 12, .max_count = 12, .initial_size = 25, .size_step = 0, .initial_velocity = 400, .velocity_step = 0}},
-	{.ball{.starting_count = 5, .max_count = 5, .initial_size = 25, .size_step = 0, .initial_velocity = 1000, .velocity_step = 0}},
-	{.ball{.starting_count = 8, .max_count = 8, .initial_size = 50, .size_step = 0, .initial_velocity = 350, .velocity_step = 25}},
-	{.ball{.starting_count = 6, .max_count = 6, .initial_size = 75, .size_step = 0, .initial_velocity = 350, .velocity_step = 25}},
-	{.ball{.starting_count = 25, .max_count = 25, .initial_size = 10, .size_step = 0, .initial_velocity = 250, .velocity_step = 10}},
-}};
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
 
 std::string_view gamemode::name_loc() const
@@ -79,6 +69,12 @@ std::string_view gamemode::name_loc() const
 std::string_view gamemode::description_loc() const
 {
 	return builtin ? g_loc[description] : std::string_view{description};
+}
+
+std::string gamemode::description_loc_with_fallback() const
+{
+	std::string_view base{description_loc()};
+	return std::string{base.empty() ? g_loc["no_description"] : base};
 }
 
 void gamemode::save_to_file() const
@@ -130,6 +126,17 @@ void tr::binary_writer<gamemode>::write_to_stream(std::ostream& os, const gamemo
 
 gamemode pick_menu_gamemode()
 {
+	// clang-format off
+	constexpr std::array<gamemode, 6> MENU_GAMEMODES{{
+		{.ball{.starting_count = 15, .max_count = 15, .initial_size = 20, .size_step = 0, .initial_velocity = 350,  .velocity_step = 0}},
+		{.ball{.starting_count = 12, .max_count = 12, .initial_size = 25, .size_step = 0, .initial_velocity = 400,  .velocity_step = 0}},
+		{.ball{.starting_count = 5,  .max_count = 5,  .initial_size = 25, .size_step = 0, .initial_velocity = 1000, .velocity_step = 0}},
+		{.ball{.starting_count = 8,  .max_count = 8,  .initial_size = 50, .size_step = 0, .initial_velocity = 350,  .velocity_step = 25}},
+		{.ball{.starting_count = 6,  .max_count = 6,  .initial_size = 75, .size_step = 0, .initial_velocity = 350,  .velocity_step = 25}},
+		{.ball{.starting_count = 25, .max_count = 25, .initial_size = 10, .size_step = 0, .initial_velocity = 250,  .velocity_step = 10}},
+	}};
+	// clang-format on
+
 	return MENU_GAMEMODES[g_rng.generate(MENU_GAMEMODES.size())];
 }
 
@@ -145,11 +152,11 @@ std::vector<gamemode> load_gamemodes()
 				if (!file.is_regular_file() || path.extension() != ".gmd") {
 					continue;
 				}
+
 				std::ifstream is{tr::open_file_r(path, std::ios::binary)};
-				if (tr::binary_read<u8>(is) != GAMEMODE_VERSION) {
-					continue;
+				if (tr::binary_read<u8>(is) == GAMEMODE_VERSION) {
+					gamemodes.push_back(tr::binary_read<gamemode>(tr::decrypt(tr::flush_binary(is))));
 				}
-				gamemodes.push_back(tr::binary_read<gamemode>(tr::decrypt(tr::flush_binary(is))));
 			}
 			catch (std::exception&) {
 				continue;

@@ -1,7 +1,10 @@
 #include "../include/localization.hpp"
 #include "../include/settings.hpp"
 
-void load_language(const std::filesystem::path& entry)
+///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
+
+// Loads language information from file.
+static void load_language(const std::filesystem::path& entry)
 {
 	const std::string stem{std::filesystem::path{entry}.stem().string()};
 	if (std::filesystem::is_regular_file(entry) && entry.extension() == ".txt" && stem.size() == 2) {
@@ -13,6 +16,8 @@ void load_language(const std::filesystem::path& entry)
 		g_languages.insert({code, {std::move(name), std::move(font)}});
 	}
 }
+
+///////////////////////////////////////////////////////////////// GLOBALS /////////////////////////////////////////////////////////////////
 
 void load_languages()
 {

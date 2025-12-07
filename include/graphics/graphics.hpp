@@ -2,6 +2,9 @@
 #include "blur_renderer.hpp"
 #include "tooltip_manager.hpp"
 
+///////////////////////////////////////////////////////////////// GRAPHICS ////////////////////////////////////////////////////////////////
+
+// Renderer layers.
 enum layer {
 	BALL_TRAILS,
 	BALL_TRAILS_OVERLAY,
@@ -19,24 +22,45 @@ enum layer {
 	CURSOR
 };
 
-struct extra_graphics {
-	tr::gfx::debug_renderer debug_renderer;
+// Extra renderer components.
+struct renderer_extra {
+	// Debug renderer for displaying performance statistics.
+	tr::gfx::debug_renderer debug;
+	// GPU benchmark measuring drawing performance.
 	tr::gfx::gpu_benchmark benchmark;
 };
 
-struct graphics {
+// Rendering subsystem.
+struct renderer {
+	// The screen rendering target.
 	const tr::gfx::render_target screen;
-	tr::gfx::renderer_2d basic_renderer;
-	std::optional<extra_graphics> extra;
-	blur_renderer blur_renderer;
-	tooltip_manager tooltip_renderer;
 
-	graphics();
+	// Basic renderer.
+	tr::gfx::renderer_2d basic;
+	// Circle renderer.
+	tr::gfx::circle_renderer circle;
+	// Optional extra components.
+	std::optional<renderer_extra> extra;
+	// Blur renderer.
+	blur_renderer blur;
+	// Tooltip manager.
+	tooltip_manager tooltip;
 
-	float render_scale() const;
+	// Initializes the renderer.
+	renderer();
 
-	void add_menu_game_overlay_to_renderer();
-	void add_fade_overlay_to_renderer(float opacity);
+	// Gets the scale rendering is done at.
+	float scale() const;
+
+	// Adds the menu game overlay to the renderer.
+	void add_menu_game_overlay();
+	// Adds the fade overlay to the renderer.
+	void add_fade_overlay(float opacity);
+
+	// Draws everything added to the renderer's layers.
+	void draw_layers(const tr::gfx::render_target& target);
+	// Draws the cursor.
 	void draw_cursor();
 };
-inline std::optional<graphics> g_graphics;
+// Global renderer.
+inline std::optional<renderer> g_renderer;

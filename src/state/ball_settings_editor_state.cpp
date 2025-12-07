@@ -2,6 +2,7 @@
 #include "../../include/state/state.hpp"
 #include "../../include/ui/widget.hpp"
 
+//////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 // clang-format off
 
 constexpr tag T_TITLE{"gamemode_designer"};
@@ -36,6 +37,7 @@ constexpr tag T_VELOCITY_STEP_C{"velocity_step_c"};
 constexpr tag T_VELOCITY_STEP_I{"velocity_step_i"};
 constexpr tag T_EXIT{"exit"};
 
+// Left-hand side labels.
 constexpr std::array<label_info, 7> LABELS{{
 	{T_STARTING_COUNT, "starting_count_tt"},
 	{T_MAX_COUNT, "max_count_tt"},
@@ -46,6 +48,7 @@ constexpr std::array<label_info, 7> LABELS{{
 	{T_VELOCITY_STEP, "velocity_step_tt"},
 }};
 
+// Right-hand side interactible widgets.
 constexpr std::array<tag, 21> RIGHT_WIDGETS{
 	T_STARTING_COUNT_D, T_STARTING_COUNT_C, T_STARTING_COUNT_I,
 	T_MAX_COUNT_D, T_MAX_COUNT_C, T_MAX_COUNT_I,
@@ -80,33 +83,32 @@ constexpr glm::vec2 SIZE_STEP_START_POS{1050, INITIAL_SIZE_START_POS.y + 75};
 constexpr glm::vec2 INITIAL_VELOCITY_START_POS{1050, SIZE_STEP_START_POS.y + 75};
 constexpr glm::vec2 VELOCITY_STEP_START_POS{1050, INITIAL_VELOCITY_START_POS.y + 75};
 
-constexpr tweener<glm::vec2> TITLE_MOVE_IN{TITLE_POS};
-constexpr tweener<glm::vec2> SUBTITLE_MOVE_IN{tween::CUBIC, TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
-constexpr tweener<glm::vec2> STARTING_COUNT_D_MOVE_IN{tween::CUBIC, STARTING_COUNT_START_POS, {765, STARTING_COUNT_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> STARTING_COUNT_C_MOVE_IN{tween::CUBIC, STARTING_COUNT_START_POS, {875.5f, STARTING_COUNT_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> STARTING_COUNT_I_MOVE_IN{tween::CUBIC, STARTING_COUNT_START_POS, {985, STARTING_COUNT_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> MAX_COUNT_D_MOVE_IN{tween::CUBIC, MAX_COUNT_START_POS, {765, MAX_COUNT_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> MAX_COUNT_C_MOVE_IN{tween::CUBIC, MAX_COUNT_START_POS, {875.5f, MAX_COUNT_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> MAX_COUNT_I_MOVE_IN{tween::CUBIC, MAX_COUNT_START_POS, {985, MAX_COUNT_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> SPAWN_INTERVAL_D_MOVE_IN{tween::CUBIC, SPAWN_INTERVAL_START_POS, {765, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> SPAWN_INTERVAL_C_MOVE_IN{tween::CUBIC, SPAWN_INTERVAL_START_POS, {875.5f, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> SPAWN_INTERVAL_I_MOVE_IN{tween::CUBIC, SPAWN_INTERVAL_START_POS, {985, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> INITIAL_SIZE_D_MOVE_IN{tween::CUBIC, INITIAL_SIZE_START_POS, {765, INITIAL_SIZE_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> INITIAL_SIZE_C_MOVE_IN{tween::CUBIC, INITIAL_SIZE_START_POS, {875.5f, INITIAL_SIZE_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> INITIAL_SIZE_I_MOVE_IN{tween::CUBIC, INITIAL_SIZE_START_POS, {985, INITIAL_SIZE_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> SIZE_STEP_D_MOVE_IN{tween::CUBIC, SIZE_STEP_START_POS, {765, SIZE_STEP_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> SIZE_STEP_C_MOVE_IN{tween::CUBIC, SIZE_STEP_START_POS, {875.5f, SIZE_STEP_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> SIZE_STEP_I_MOVE_IN{tween::CUBIC, SIZE_STEP_START_POS, {985, SIZE_STEP_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> INITIAL_VELOCITY_D_MOVE_IN{tween::CUBIC, INITIAL_VELOCITY_START_POS, {765, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> INITIAL_VELOCITY_C_MOVE_IN{tween::CUBIC, INITIAL_VELOCITY_START_POS, {875.5f, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> INITIAL_VELOCITY_I_MOVE_IN{tween::CUBIC, INITIAL_VELOCITY_START_POS, {985, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> VELOCITY_STEP_D_MOVE_IN{tween::CUBIC, VELOCITY_STEP_START_POS, {765, VELOCITY_STEP_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> VELOCITY_STEP_C_MOVE_IN{tween::CUBIC, VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> VELOCITY_STEP_I_MOVE_IN{tween::CUBIC, VELOCITY_STEP_START_POS, {985, VELOCITY_STEP_START_POS.y}, 0.5_s};
-constexpr tweener<glm::vec2> EXIT_MOVE_IN{tween::CUBIC, BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr tweened_position TITLE_MOVE_IN{TITLE_POS};
+constexpr tweened_position SUBTITLE_MOVE_IN{TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
+constexpr tweened_position STARTING_COUNT_D_MOVE_IN{STARTING_COUNT_START_POS, {765, STARTING_COUNT_START_POS.y}, 0.5_s};
+constexpr tweened_position STARTING_COUNT_C_MOVE_IN{STARTING_COUNT_START_POS, {875.5f, STARTING_COUNT_START_POS.y}, 0.5_s};
+constexpr tweened_position STARTING_COUNT_I_MOVE_IN{STARTING_COUNT_START_POS, {985, STARTING_COUNT_START_POS.y}, 0.5_s};
+constexpr tweened_position MAX_COUNT_D_MOVE_IN{MAX_COUNT_START_POS, {765, MAX_COUNT_START_POS.y}, 0.5_s};
+constexpr tweened_position MAX_COUNT_C_MOVE_IN{MAX_COUNT_START_POS, {875.5f, MAX_COUNT_START_POS.y}, 0.5_s};
+constexpr tweened_position MAX_COUNT_I_MOVE_IN{MAX_COUNT_START_POS, {985, MAX_COUNT_START_POS.y}, 0.5_s};
+constexpr tweened_position SPAWN_INTERVAL_D_MOVE_IN{SPAWN_INTERVAL_START_POS, {765, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+constexpr tweened_position SPAWN_INTERVAL_C_MOVE_IN{SPAWN_INTERVAL_START_POS, {875.5f, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+constexpr tweened_position SPAWN_INTERVAL_I_MOVE_IN{SPAWN_INTERVAL_START_POS, {985, SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+constexpr tweened_position INITIAL_SIZE_D_MOVE_IN{INITIAL_SIZE_START_POS, {765, INITIAL_SIZE_START_POS.y}, 0.5_s};
+constexpr tweened_position INITIAL_SIZE_C_MOVE_IN{INITIAL_SIZE_START_POS, {875.5f, INITIAL_SIZE_START_POS.y}, 0.5_s};
+constexpr tweened_position INITIAL_SIZE_I_MOVE_IN{INITIAL_SIZE_START_POS, {985, INITIAL_SIZE_START_POS.y}, 0.5_s};
+constexpr tweened_position SIZE_STEP_D_MOVE_IN{SIZE_STEP_START_POS, {765, SIZE_STEP_START_POS.y}, 0.5_s};
+constexpr tweened_position SIZE_STEP_C_MOVE_IN{SIZE_STEP_START_POS, {875.5f, SIZE_STEP_START_POS.y}, 0.5_s};
+constexpr tweened_position SIZE_STEP_I_MOVE_IN{SIZE_STEP_START_POS, {985, SIZE_STEP_START_POS.y}, 0.5_s};
+constexpr tweened_position INITIAL_VELOCITY_D_MOVE_IN{INITIAL_VELOCITY_START_POS, {765, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
+constexpr tweened_position INITIAL_VELOCITY_C_MOVE_IN{INITIAL_VELOCITY_START_POS, {875.5f, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
+constexpr tweened_position INITIAL_VELOCITY_I_MOVE_IN{INITIAL_VELOCITY_START_POS, {985, INITIAL_VELOCITY_START_POS.y}, 0.5_s};
+constexpr tweened_position VELOCITY_STEP_D_MOVE_IN{VELOCITY_STEP_START_POS, {765, VELOCITY_STEP_START_POS.y}, 0.5_s};
+constexpr tweened_position VELOCITY_STEP_C_MOVE_IN{VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s};
+constexpr tweened_position VELOCITY_STEP_I_MOVE_IN{VELOCITY_STEP_START_POS, {985, VELOCITY_STEP_START_POS.y}, 0.5_s};
+constexpr tweened_position EXIT_MOVE_IN{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 // clang-format on
-
 /////////////////////////////////////////////////////// BALL SETTINGS EDITOR STATE ////////////////////////////////////////////////////////
 
 ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode)
@@ -165,16 +167,12 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 	const action_callback starting_count_d_acb{
 		[&sc = m_pending.ball.starting_count] { sc = u8(std::max(sc - keymods_choose(1, 5, 10), 0)); },
 	};
-	const action_callback starting_count_i_acb{
-		[&sc = m_pending.ball.starting_count, &mc = m_pending.ball.max_count] {
-			sc = u8(std::min(sc + keymods_choose(1, 5, 10), int(mc)));
-		},
-	};
-	const action_callback max_count_d_acb{
-		[&sc = m_pending.ball.starting_count, &mc = m_pending.ball.max_count] {
-			mc = u8(std::max({1, int(sc), mc - keymods_choose(1, 5, 10)}));
-		},
-	};
+	const action_callback starting_count_i_acb{[&sc = m_pending.ball.starting_count, &mc = m_pending.ball.max_count] {
+		sc = u8(std::min(sc + keymods_choose(1, 5, 10), int(mc)));
+	}};
+	const action_callback max_count_d_acb{[&sc = m_pending.ball.starting_count, &mc = m_pending.ball.max_count] {
+		mc = u8(std::max({1, int(sc), mc - keymods_choose(1, 5, 10)}));
+	}};
 	const action_callback max_count_i_acb{
 		[&mc = m_pending.ball.max_count] { mc = u8(std::min(mc + keymods_choose(1, 5, 10), 255)); },
 	};
@@ -208,14 +206,12 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 	const action_callback velocity_step_i_acb{
 		[&vs = m_pending.ball.velocity_step] { vs = std::min(vs + keymods_choose(1, 10, 100), 1000.0f); },
 	};
-	const action_callback exit_acb{
-		[this] {
-			m_substate = substate::EXITING;
-			m_timer = 0;
-			set_up_exit_animation();
-			m_next_state = make_async<gamemode_designer_state>(m_game, m_pending, true);
-		},
-	};
+	const action_callback exit_acb{[this] {
+		m_substate = substate::EXITING;
+		m_elapsed = 0;
+		set_up_exit_animation();
+		m_next_state = make_async<gamemode_designer_state>(m_game, m_pending, returning_from_subscreen::YES);
+	}};
 
 	// VALIDATION CALLBACKS
 
@@ -244,51 +240,55 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   text_style::NORMAL, 64);
+							   tr::sys::ttf_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SUBTITLE},
-							   text_style::NORMAL, 32);
-	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_D, STARTING_COUNT_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, starting_count_d_scb,
-							   starting_count_d_acb);
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}", "{}">>(T_STARTING_COUNT_C, STARTING_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-														  m_pending.ball.starting_count, scb, starting_count_c_vcb);
-	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_I, STARTING_COUNT_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, starting_count_i_scb,
-							   starting_count_i_acb);
-	m_ui.emplace<arrow_widget>(T_MAX_COUNT_D, MAX_COUNT_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, max_count_d_scb, max_count_d_acb);
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}", "{}">>(T_MAX_COUNT_C, MAX_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-														  m_pending.ball.max_count, scb, max_count_c_vcb);
-	m_ui.emplace<arrow_widget>(T_MAX_COUNT_I, MAX_COUNT_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, max_count_i_scb, max_count_i_acb);
-	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_D, SPAWN_INTERVAL_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, spawn_interval_d_scb,
-							   spawn_interval_d_acb);
+							   tr::sys::ttf_style::NORMAL, 32);
+	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_D, STARTING_COUNT_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
+							   starting_count_d_scb, starting_count_d_acb);
+	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_COUNT_C, STARTING_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+											  m_pending.ball.starting_count, scb, starting_count_c_vcb);
+	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_I, STARTING_COUNT_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
+							   starting_count_i_scb, starting_count_i_acb);
+	m_ui.emplace<arrow_widget>(T_MAX_COUNT_D, MAX_COUNT_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, max_count_d_scb,
+							   max_count_d_acb);
+	m_ui.emplace<numeric_input_widget<u8, 3>>(T_MAX_COUNT_C, MAX_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+											  m_pending.ball.max_count, scb, max_count_c_vcb);
+	m_ui.emplace<arrow_widget>(T_MAX_COUNT_I, MAX_COUNT_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, max_count_i_scb,
+							   max_count_i_acb);
+	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_D, SPAWN_INTERVAL_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
+							   spawn_interval_d_scb, spawn_interval_d_acb);
 	m_ui.emplace<interval_input_widget<4>>(T_SPAWN_INTERVAL_C, SPAWN_INTERVAL_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
 										   m_pending.ball.spawn_interval, scb, spawn_interval_c_vcb);
-	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_I, SPAWN_INTERVAL_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, spawn_interval_i_scb,
-							   spawn_interval_i_acb);
-	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_D, INITIAL_SIZE_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, initial_size_d_scb,
+	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_I, SPAWN_INTERVAL_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
+							   spawn_interval_i_scb, spawn_interval_i_acb);
+	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_D, INITIAL_SIZE_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, initial_size_d_scb,
 							   initial_size_d_acb);
-	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}", "{}">>(T_INITIAL_SIZE_C, INITIAL_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
-																 m_ui, m_pending.ball.initial_size, scb, initial_size_c_vcb);
-	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_I, INITIAL_SIZE_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, initial_size_i_scb,
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_SIZE_C, INITIAL_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														   m_pending.ball.initial_size, scb, initial_size_c_vcb);
+	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_I, INITIAL_SIZE_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, initial_size_i_scb,
 							   initial_size_i_acb);
-	m_ui.emplace<arrow_widget>(T_SIZE_STEP_D, SIZE_STEP_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, size_step_d_scb, size_step_d_acb);
-	m_ui.emplace<numeric_input_widget<float, 4, "{:.1f}", "{}">>(T_SIZE_STEP_C, SIZE_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-																 m_pending.ball.size_step, scb, size_step_c_vcb);
-	m_ui.emplace<arrow_widget>(T_SIZE_STEP_I, SIZE_STEP_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, size_step_i_scb, size_step_i_acb);
-	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_D, INITIAL_VELOCITY_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false,
+	m_ui.emplace<arrow_widget>(T_SIZE_STEP_D, SIZE_STEP_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, size_step_d_scb,
+							   size_step_d_acb);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.1f}">>(T_SIZE_STEP_C, SIZE_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														   m_pending.ball.size_step, scb, size_step_c_vcb);
+	m_ui.emplace<arrow_widget>(T_SIZE_STEP_I, SIZE_STEP_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, size_step_i_scb,
+							   size_step_i_acb);
+	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_D, INITIAL_VELOCITY_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
 							   initial_velocity_d_scb, initial_velocity_d_acb);
-	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}", "{}">>(T_INITIAL_VELOCITY_C, INITIAL_VELOCITY_C_MOVE_IN, tr::align::CENTER, 0.5_s,
-																 48, m_ui, m_pending.ball.initial_velocity, scb, initial_velocity_c_vcb);
-	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_I, INITIAL_VELOCITY_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true,
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_VELOCITY_C, INITIAL_VELOCITY_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
+														   m_ui, m_pending.ball.initial_velocity, scb, initial_velocity_c_vcb);
+	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_I, INITIAL_VELOCITY_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   initial_velocity_i_scb, initial_velocity_i_acb);
-	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_D, VELOCITY_STEP_D_MOVE_IN, tr::align::CENTER_LEFT, 0.5_s, false, velocity_step_d_scb,
+	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_D, VELOCITY_STEP_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, velocity_step_d_scb,
 							   velocity_step_d_acb);
-	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}", "{}">>(T_VELOCITY_STEP_C, VELOCITY_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
-																 m_ui, m_pending.ball.velocity_step, scb, velocity_step_c_vcb);
-	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_I, VELOCITY_STEP_I_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, true, velocity_step_i_scb,
-							   velocity_step_i_acb);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_VELOCITY_STEP_C, VELOCITY_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+														   m_pending.ball.velocity_step, scb, velocity_step_c_vcb);
+	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_I, VELOCITY_STEP_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
+							   velocity_step_i_scb, velocity_step_i_acb);
 	for (usize i = 0; i < LABELS.size(); ++i) {
-		const tweener<glm::vec2> move_in{tween::CUBIC, {-50, 298 + i * 75}, {15, 298 + i * 75}, 0.5_s};
+		const tweened_position move_in{{-50, 298 + i * 75}, {15, 298 + i * 75}, 0.5_s};
 		m_ui.emplace<label_widget>(LABELS[i].tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
-								   loc_text_callback{LABELS[i].tag}, text_style::NORMAL, 48);
+								   loc_text_callback{LABELS[i].tag}, tr::sys::ttf_style::NORMAL, 48);
 	}
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
@@ -311,20 +311,12 @@ tr::next_state ball_settings_editor_state::tick()
 
 void ball_settings_editor_state::set_up_exit_animation()
 {
-	widget& subtitle{m_ui[T_SUBTITLE]};
-	widget& exit{m_ui[T_EXIT]};
-	subtitle.pos.change(tween::CUBIC, TOP_START_POS, 0.5_s);
-	subtitle.hide(0.5_s);
-	for (tag tag : tr::project(LABELS, &label_info::tag)) {
-		widget& widget{m_ui[tag]};
-		widget.pos.change(tween::CUBIC, {-50, glm::vec2{widget.pos}.y}, 0.5_s);
-		widget.hide(0.5_s);
+	m_ui[T_SUBTITLE].move_and_hide(TOP_START_POS, 0.5_s);
+	for (const label_info& label : LABELS) {
+		m_ui[label.tag].move_x_and_hide(-50, 0.5_s);
 	}
 	for (tag tag : RIGHT_WIDGETS) {
-		widget& widget{m_ui[tag]};
-		widget.pos.change(tween::CUBIC, {1050, glm::vec2{widget.pos}.y}, 0.5_s);
-		widget.hide(0.5_s);
+		m_ui[tag].move_x_and_hide(1050, 0.5_s);
 	}
-	exit.pos.change(tween::CUBIC, BOTTOM_START_POS, 0.5_s);
-	exit.hide(0.5_s);
+	m_ui[T_EXIT].move_and_hide(BOTTOM_START_POS, 0.5_s);
 }

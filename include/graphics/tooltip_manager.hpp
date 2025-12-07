@@ -1,16 +1,25 @@
 #pragma once
 #include "../global.hpp"
 
+///////////////////////////////////////////////////////////// TOOLTIP MANAGER /////////////////////////////////////////////////////////////
+
+// User interface tooltip rendering manager.
 class tooltip_manager {
   public:
+	// Creates a tooltip manager.
 	tooltip_manager(tr::gfx::renderer_2d& basic);
 
-	void add_to_renderer(std::string_view text);
+	// Adds the tooltip to the renderer.
+	void add(std::string_view text);
 
   private:
+	// Cached text texture.
 	tr::gfx::texture m_texture{{128, 64}};
+	// Cached text string.
 	std::string m_last_text;
+	// Cached text size.
 	glm::vec2 m_last_size{};
 
-	void render(std::string_view text);
+	// Renders the tooltip text.
+	void render_text(std::string_view text);
 };

@@ -1,7 +1,3 @@
-#if defined _MSC_VER and not defined TR_ENABLE_ASSERTS
-#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
-#endif
-
 #include "../include/audio.hpp"
 #include "../include/fonts.hpp"
 #include "../include/graphics/graphics.hpp"
@@ -28,7 +24,7 @@ tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 			g_cli_settings.show_perf = true;
 		}
 		else if (*it == "--help") {
-			std::cout << "Bodge v1.2.0 by TRDario, 2025.\n"
+			std::cout << "Bodge " VERSION_STRING " by TRDario, 2025.\n"
 						 "Supported arguments:\n"
 						 "--datadir <path>       - Overrides the data directory.\n"
 						 "--userdir <path>       - Overrides the user directory.\n"
@@ -69,7 +65,7 @@ tr::sys::signal initialize()
 	g_text_engine.load_fonts();
 	g_audio.initialize();
 	open_window();
-	g_graphics.emplace();
+	g_renderer.emplace();
 	g_state_machine.emplace<title_state>();
 	g_audio.play_song("menu", 1.0s);
 	tr::sys::show_window();
@@ -78,23 +74,33 @@ tr::sys::signal initialize()
 
 tr::sys::signal handle_event(tr::sys::event& event)
 {
-	event | tr::match{
-				[](tr::sys::quit_event) { g_state_machine.clear(); },
-				[](tr::sys::window_gain_focus_event) { tr::sys::set_mouse_relative_mode(true); },
-				[](tr::sys::window_lose_focus_event) { tr::sys::set_mouse_relative_mode(false); },
-				[](tr::sys::key_down_event event) { g_held_keymods = event.mods; },
-				[](tr::sys::key_up_event event) { g_held_keymods = event.mods; },
-				[](tr::sys::mouse_motion_event event) {
-					if (!tr::sys::window_has_focus()) {
-						return;
-					}
-					const glm::vec2 delta{event.delta / g_graphics->render_scale() * tr::sys::window_pixel_density()};
-					g_mouse_pos = glm::clamp(g_mouse_pos + delta, 0.0f, 1000.0f);
-				},
-				[](tr::sys::mouse_down_event event) { g_held_buttons |= event.button; },
-				[](tr::sys::mouse_up_event event) { g_held_buttons &= ~event.button; },
-				[](auto) {},
-			};
+	if (event.is<tr::sys::quit_event>()) {
+		g_state_machine.clear();
+	}
+	else if (event.is<tr::sys::window_gain_focus_event>()) {
+		tr::sys::set_mouse_relative_mode(true);
+	}
+	else if (event.is<tr::sys::window_lose_focus_event>()) {
+		tr::sys::set_mouse_relative_mode(false);
+	}
+	else if (event.is<tr::sys::key_down_event>()) {
+		g_held_keymods = event.as<tr::sys::key_down_event>().mods;
+	}
+	else if (event.is<tr::sys::key_up_event>()) {
+		g_held_keymods = event.as<tr::sys::key_up_event>().mods;
+	}
+	else if (event.is<tr::sys::mouse_motion_event>() && tr::sys::window_has_focus()) {
+		const float multiplier{g_settings.mouse_sensitivity / 100.0f / g_renderer->scale() * tr::sys::window_pixel_density()};
+		const glm::vec2 delta{event.as<tr::sys::mouse_motion_event>().delta * multiplier};
+		g_mouse_pos = glm::clamp(g_mouse_pos + delta, 0.0f, 1000.0f);
+	}
+	else if (event.is<tr::sys::mouse_down_event>()) {
+		g_held_buttons |= event.as<tr::sys::mouse_down_event>().button;
+	}
+	else if (event.is<tr::sys::mouse_up_event>()) {
+		g_held_buttons &= ~event.as<tr::sys::mouse_up_event>().button;
+	}
+
 	g_state_machine.handle_event(event);
 	return !g_state_machine.empty() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
 }
@@ -108,34 +114,32 @@ tr::sys::signal tick()
 tr::sys::signal draw()
 {
 	if (g_cli_settings.show_perf) {
-		g_graphics->extra->benchmark.start();
+		g_renderer->extra->benchmark.start();
 	}
 	g_state_machine.draw();
-	g_graphics->draw_cursor();
+	g_renderer->draw_cursor();
 	if (g_cli_settings.show_perf) {
-		tr::gfx::debug_renderer& debug{g_graphics->extra->debug_renderer};
-
-		debug.write_right(g_state_machine.tick_benchmark(), "Tick:", 1.0s / 1_s);
-		debug.newline_right();
-		debug.write_right(g_state_machine.draw_benchmark(), "Render (CPU):", 1.0s / g_cli_settings.refresh_rate);
-		debug.newline_right();
-		debug.write_right(g_graphics->extra->benchmark, "Render (GPU):", 1.0s / g_cli_settings.refresh_rate);
-		debug.draw();
+		g_renderer->extra->debug.write_right(g_state_machine.tick_benchmark(), "Tick:", 1.0s / 1_s);
+		g_renderer->extra->debug.newline_right();
+		g_renderer->extra->debug.write_right(g_state_machine.draw_benchmark(), "Render (CPU):", 1.0s / g_cli_settings.refresh_rate);
+		g_renderer->extra->debug.newline_right();
+		g_renderer->extra->debug.write_right(g_renderer->extra->benchmark, "Render (GPU):", 1.0s / g_cli_settings.refresh_rate);
+		g_renderer->extra->debug.draw();
 	}
 	if (g_cli_settings.show_perf) {
-		g_graphics->extra->benchmark.stop();
+		g_renderer->extra->benchmark.stop();
 	}
 	tr::gfx::flip_backbuffer();
 	tr::gfx::clear_backbuffer();
 	if (g_cli_settings.show_perf) {
-		g_graphics->extra->benchmark.fetch();
+		g_renderer->extra->benchmark.fetch();
 	}
 	return tr::sys::signal::CONTINUE;
 }
 
 void shut_down()
 {
-	g_graphics.reset();
+	g_renderer.reset();
 	tr::sys::close_window();
 	g_audio.shut_down();
 	g_text_engine.unload_fonts();
