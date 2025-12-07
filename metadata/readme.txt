@@ -49,14 +49,15 @@
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
 | v1.2.0 (07 Dec 2025)                                                                                                |
-| * Added mouse sensitivity to settings.                                                                              |
-| * Dropped support for v1.0 scorefiles. If you still have one, launch it with Bodge v1.1 to convert it first.        |
-| * Clarified the effect of Shift and Ctrl on the various settings and gamemode parameters.                           |
 | * Rewrote state changes to be multithreaded, reducing lag between screen transitions.                               |
 | * Introduced a new circle renderer, improving quality at lower resolutions and improving big ball performance.      |
+| * Added mouse sensitivity to settings.                                                                              |
 | * Tried to make frame times more stable when playing on higher framerates on Windows.                               |
+| * Dropped support for v1.0 scorefiles. If you still have one, launch it with Bodge v1.1 to convert it first.        |
+| * Clarified the effect of Shift and Ctrl on the various settings and gamemode parameters.                           |
 | * Fixed the system cursor getting stuck in the middle of the screen on Windows.                                     |
 | * Fixed hovering over the score text not hiding it.                                                                 |
+| * Fixed the score being able to go negative.                                                                        |
 | * Fixed a localization problem in the pause screens.                                                                |
 | v1.1.1 (06 Sep 2025)                                                                                                |
 | * Added vertical synchronization to settings.                                                                       |
