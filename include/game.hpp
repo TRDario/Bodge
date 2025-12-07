@@ -1,9 +1,9 @@
 #pragma once
-#include "../gamemode.hpp"
-#include "../replay.hpp"
-#include "ball.hpp"
-#include "life_fragment.hpp"
-#include "player.hpp"
+#include "gamemode.hpp"
+#include "replay.hpp"
+#include "game/ball.hpp"
+#include "game/life_fragment.hpp"
+#include "game/player.hpp"
 
 /////////////////////////////////////////////////////////////////// GAME //////////////////////////////////////////////////////////////////
 

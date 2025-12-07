@@ -1,6 +1,5 @@
-#include "../../include/graphics/tooltip_manager.hpp"
-#include "../../include/fonts.hpp"
-#include "../../include/graphics/graphics.hpp"
+#include "../../include/text_engine.hpp"
+#include "../../include/renderer.hpp"
 
 ///////////////////////////////////////////////////////////// TOOLTIP MANAGER /////////////////////////////////////////////////////////////
 

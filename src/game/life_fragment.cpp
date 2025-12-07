@@ -1,5 +1,5 @@
 #include "../../include/game/life_fragment.hpp"
-#include "../../include/graphics/graphics.hpp"
+#include "../../include/renderer.hpp"
 #include "../../include/settings.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////

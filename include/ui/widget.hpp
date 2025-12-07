@@ -1,6 +1,6 @@
 #pragma once
 #include "../audio.hpp"
-#include "../fonts.hpp"
+#include "../text_engine.hpp"
 #include "../replay.hpp"
 #include "../timer.hpp"
 #include "widget_base.hpp"

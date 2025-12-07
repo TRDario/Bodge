@@ -1,5 +1,5 @@
 #pragma once
-#include "../graphics/graphics.hpp"
+#include "../renderer.hpp"
 #include "widget.hpp"
 
 template <usize S>

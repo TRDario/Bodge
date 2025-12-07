@@ -1,5 +1,5 @@
 #pragma once
-#include "ui_manager.hpp"
+#include "../ui.hpp"
 #include "widget.hpp"
 
 template <class T, tr::template_string_literal Format, tr::template_string_literal BufferFormat>

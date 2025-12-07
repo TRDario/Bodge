@@ -1,5 +1,5 @@
 #include "../../include/game/player.hpp"
-#include "../../include/graphics/graphics.hpp"
+#include "../../include/renderer.hpp"
 #include "../../include/settings.hpp"
 
 ////////////////////////////////////////////////////////////////// PLAYER /////////////////////////////////////////////////////////////////

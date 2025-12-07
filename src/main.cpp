@@ -1,9 +1,9 @@
 #include "../include/audio.hpp"
-#include "../include/fonts.hpp"
-#include "../include/graphics/graphics.hpp"
+#include "../include/text_engine.hpp"
+#include "../include/renderer.hpp"
 #include "../include/score.hpp"
 #include "../include/settings.hpp"
-#include "../include/state/state.hpp"
+#include "../include/state.hpp"
 
 tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 {

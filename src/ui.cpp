@@ -1,6 +1,6 @@
-#include "../../include/ui/ui_manager.hpp"
-#include "../../include/audio.hpp"
-#include "../../include/graphics/graphics.hpp"
+#include "../include/ui.hpp"
+#include "../include/audio.hpp"
+#include "../include/renderer.hpp"
 
 /////////////////////////////////////////////////////////////// UI MANAGER ////////////////////////////////////////////////////////////////
 

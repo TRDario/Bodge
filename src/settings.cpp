@@ -1,7 +1,7 @@
 #include "../include/settings.hpp"
 #include "../include/audio.hpp"
-#include "../include/graphics/graphics.hpp"
-#include "../include/state/state_base.hpp"
+#include "../include/renderer.hpp"
+#include "../include/state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 

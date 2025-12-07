@@ -13,19 +13,18 @@ FetchContent_MakeAvailable(tr)
 add_executable(
     Bodge
     src/audio.cpp
-    src/fonts.cpp
+    src/game.cpp
     src/game/ball.cpp
-    src/game/game.cpp
     src/game/life_fragment.cpp
     src/game/player.cpp
     src/game/trail.cpp
     src/gamemode.cpp
     src/global.cpp
-    src/graphics/blur_renderer.cpp
-    src/graphics/graphics.cpp
-    src/graphics/tooltip_manager.cpp
     src/localization.cpp
     src/main.cpp
+    src/renderer.cpp
+    src/renderer/blur_renderer.cpp
+    src/renderer/tooltip_manager.cpp
     src/replay.cpp
     src/score.cpp
     src/settings.cpp
@@ -46,6 +45,8 @@ add_executable(
     src/state/state_base.cpp
     src/state/start_game_state.cpp
     src/state/title_state.cpp
+    src/text_engine.cpp
+    src/ui.cpp
     src/ui/arrow_widget.cpp
     src/ui/color_preview_widget.cpp
     src/ui/image_widget.cpp
@@ -54,7 +55,6 @@ add_executable(
     src/ui/replay_score_widget.cpp
     src/ui/text_button_widget.cpp
     src/ui/tweening.cpp
-    src/ui/ui_manager.cpp
     src/ui/widget_base.cpp  
 )
 target_compile_definitions(Bodge PRIVATE VERSION_STRING="v${Bodge_VERSION}")

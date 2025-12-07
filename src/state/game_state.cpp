@@ -1,5 +1,5 @@
-#include "../../include/graphics/graphics.hpp"
-#include "../../include/state/state.hpp"
+#include "../../include/renderer.hpp"
+#include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////

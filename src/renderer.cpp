@@ -1,5 +1,5 @@
-#include "../../include/graphics/graphics.hpp"
-#include "../../include/settings.hpp"
+#include "../include/renderer.hpp"
+#include "../include/settings.hpp"
 
 //////////////////////////////////////////////////////////// INTERNAL HELPERS /////////////////////////////////////////////////////////////
 

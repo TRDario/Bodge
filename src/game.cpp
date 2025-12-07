@@ -1,8 +1,8 @@
-#include "../../include/game/game.hpp"
-#include "../../include/audio.hpp"
-#include "../../include/fonts.hpp"
-#include "../../include/graphics/graphics.hpp"
-#include "../../include/score.hpp"
+#include "../include/game.hpp"
+#include "../include/audio.hpp"
+#include "../include/text_engine.hpp"
+#include "../include/renderer.hpp"
+#include "../include/score.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 

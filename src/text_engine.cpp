@@ -1,5 +1,5 @@
-#include "../include/fonts.hpp"
-#include "../include/graphics/graphics.hpp"
+#include "../include/text_engine.hpp"
+#include "../include/renderer.hpp"
 
 ///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
 
