@@ -354,7 +354,7 @@ void game::check_if_player_collected_life_fragments()
 
 void game::add_to_score(i64 change)
 {
-	m_score += change;
+	m_score = std::max(m_score + change, 0_i64);
 	m_score_animation_timer.start();
 }
 
