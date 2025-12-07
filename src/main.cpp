@@ -4,7 +4,6 @@
 #include "../include/settings.hpp"
 #include "../include/state.hpp"
 #include "../include/text_engine.hpp"
-#include <charconv>
 
 tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 {
