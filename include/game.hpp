@@ -1,11 +1,21 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Game hierarchy:                                                                                                                       //
+// • playerless_game     - No player object or most mechanics, only the balls, used for menu backgrounds.                                //
+//     • game            - Implements the player and mechanics, undefined input method.                                                  //
+//         • active_game - Input is taken from the mouse.                                                                                //
+//         • replay_game - Input is taken from a replay file.                                                                            //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
-#include "gamemode.hpp"
-#include "replay.hpp"
 #include "game/ball.hpp"
 #include "game/life_fragment.hpp"
 #include "game/player.hpp"
+#include "gamemode.hpp"
+#include "replay.hpp"
 
-/////////////////////////////////////////////////////////////////// GAME //////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////// PLAYERLESS_GAME /////////////////////////////////////////////////////////////
 
 // Base game state (no player).
 class playerless_game {
@@ -49,7 +59,7 @@ class playerless_game {
 	void add_border_to_renderer() const;
 };
 
-/////////////////////////////////////////////////////////////// PLAYER GAME ///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
 
 // Game types.
 enum class game_type {

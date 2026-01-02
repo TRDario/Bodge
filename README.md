@@ -12,3 +12,9 @@ Requires a C++20-compatible compiler and standard library (though a fallback for
 Tested on and guaranteed to build with Clang(-cl) on Linux and Windows. Probably works with MSVC and GCC too, but I haven't tested them.
 
 A docker setup for a Linux build environment and instructions to run it are provided in /linux.
+
+## Documentation
+
+The source code provides basic documentation for all types, functions, constants and globals in the program.
+
+Additional information about the structure of the program is provided in some of the headers (more may be added in the future).

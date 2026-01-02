@@ -20,6 +20,8 @@ std::string default_numeric_input_formatter<T, Format, BufferFormat>::to_string(
 	return TR_FMT::format(BufferFormat, str);
 }
 
+//
+
 template <class T, usize Digits, class Formatter>
 basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time,
 																			 float font_size, ui_manager& ui, T& ref,

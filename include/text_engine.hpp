@@ -1,6 +1,8 @@
 #pragma once
 #include "settings.hpp"
 
+/////////////////////////////////////////////////////////////// TEXT ENGINE ///////////////////////////////////////////////////////////////
+
 // Font slots. Multiple may actually point to the same font.
 enum class font : u8 {
 	// The default font (Charge Vector Bold).

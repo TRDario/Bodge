@@ -1,3 +1,28 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// State hierarchy:                                                                                                                      //
+// • state                                - Base state interface.                                                                        //
+//     • main_menu_state                  - Base main menu state interface.                                                              //
+//         • name_entry_state             - Name entry screen shown on first launch.                                                     //
+//         • title_state                  - Title/main menu screen.                                                                      //
+//         • start_game_state             - Gamemode selection screen.                                                                   //
+//         • gamemode_designer_state      - Gamemode designer screen.                                                                    //
+//         • ball_settings_editor_state   - Ball settings subscreen of the gamemode designer.                                            //
+//         • player_settings_editor_state - Player settings subscreen of the gamemode designer.                                          //
+//         • scoreboard_selection_state   - Scoreboard type selection screen.                                                            //
+//         • scoreboard_state             - Scoreboard screen.                                                                           //
+//         • replays_state                - Replay selection screen.                                                                     //
+//         • settings_state               - Settings screen.                                                                             //
+//         • credits_state                - Credits screen.                                                                              //
+//     • game_menu_state                  - Base game menu state interface.                                                              //
+//         • pause_state                  - Pause screen.                                                                                //
+//         • game_over_state              - Game over screen.                                                                            //
+//         • save_score_state             - Save score subscreen of the pause/game over screen.                                          //
+//         • save_replay_state            - Save replay subscreen of the pause/game over screen.                                         //
+//     • game_state                       - Game state (regular, test, or replay).                                                       //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include "state/state_base.hpp"
 

@@ -1,19 +1,19 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                                       //
 // Globals:                                                                                                                              //
-//  - g_audio         = Audio subsystem.                                                                                                 //
-//  - g_cli_settings  = Command-line settings.                                                                                           //
-//  - g_held_buttons  = Currently held mouse buttons.                                                                                    //
-//  - g_held_keymods  = Currently held keyboard modifiers.                                                                               //
-//  - g_languages     = List of available languages.                                                                                     //
-//  - g_loc           = Localization map.                                                                                                //
-//  - g_mouse_pos     = Current mouse position in normalized screen coordinates.                                                         //
-//  - g_renderer      = Rendering subsystem.                                                                                             //
-//  - g_rng           = Global RNG (games use their own RNG for gameplay).                                                               //
-//  - g_scorefile     = Player scorefile.                                                                                                //
-//  - g_settings      = Game settings.                                                                                                   //
-//  - g_state_machine = Container for the current state.                                                                                 //
-//  - g_text_engine   = Text rendering subsystem.                                                                                        //
+//  • g_audio         - Audio subsystem.                                                                                                 //
+//  • g_cli_settings  - Command-line settings.                                                                                           //
+//  • g_held_buttons  - Currently held mouse buttons.                                                                                    //
+//  • g_held_keymods  - Currently held keyboard modifiers.                                                                               //
+//  • g_languages     - List of available languages.                                                                                     //
+//  • g_loc           - Localization map.                                                                                                //
+//  • g_mouse_pos     - Current mouse position in normalized screen coordinates.                                                         //
+//  • g_renderer      - Rendering subsystem.                                                                                             //
+//  • g_rng           - Global RNG (games use their own RNG for gameplay).                                                               //
+//  • g_scorefile     - Player scorefile.                                                                                                //
+//  • g_settings      - Game settings.                                                                                                   //
+//  • g_state_machine - Container for the current state.                                                                                 //
+//  • g_text_engine   - Text rendering subsystem.                                                                                        //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

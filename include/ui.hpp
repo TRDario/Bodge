@@ -1,3 +1,22 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Widget hierarchy:                                                                                                                     //
+// • widget                               - Base widget interface.                                                                       //
+//     • text_widget                      - Base text widget interface.                                                                  //
+//         • label_widget                 - Displays text.                                                                               //
+//         • text_button_widget           - Interactive labeled button.                                                                  //
+//             • replay_widget            - Displays replay information, interactive.                                                    //
+//         • basic_numeric_input_widget   - Takes numeric input.                                                                         //
+//         • line_input_widget            - Takes text input on a single line.                                                           //
+//         • multiline_input_widget       - Takes text input across multiple lines.                                                      //
+//         • score_widget                 - Displays score information.                                                                  //
+//     • image_widget                     - Displays an image.                                                                           //
+//     • color_preview_widget             - Displays a hue.                                                                              //
+//     • arrow_widget                     - Interactive left or right arrow button.                                                      //
+//     • replay_playback_indicator_widget - Displays a playback speed indicator (<, >, >>).                                              //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include "ui/widget_base.hpp"
 
