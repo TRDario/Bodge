@@ -65,8 +65,6 @@ bool startable_timer::active() const
 
 ticks startable_timer::elapsed() const
 {
-	TR_ASSERT(active(), "Tried to get value of inactive timer.");
-
 	return m_time;
 }
 

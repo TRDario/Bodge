@@ -1,6 +1,6 @@
-#include "../include/ui.hpp"
 #include "../include/audio.hpp"
 #include "../include/renderer.hpp"
+#include "../include/ui.hpp"
 
 /////////////////////////////////////////////////////////////// UI MANAGER ////////////////////////////////////////////////////////////////
 
@@ -13,8 +13,6 @@ ui_manager::ui_manager(selection_tree selection_tree, shortcut_table shortcuts)
 
 widget& ui_manager::operator[](tag tag)
 {
-	TR_ASSERT(m_widgets.contains(tag), "Tried to get widget with nonexistant tag \"{}\".", tag);
-
 	return *m_widgets.find(tag)->second;
 }
 
@@ -36,9 +34,6 @@ void ui_manager::clear_selection()
 
 void ui_manager::select_widget(tag tag)
 {
-	TR_ASSERT(m_widgets.contains(tag), "Tried to select nonexistant widget '{}'.", tag);
-	TR_ASSERT(m_widgets[tag]->interactible(), "Tried to select non-interactible widget '{}'.", tag);
-
 	return change_selection(*m_widgets.find(tag));
 }
 
@@ -71,9 +66,7 @@ ui_manager::selection_node ui_manager::find_in_selection_tree(tag tag) const
 			}
 		}
 	}
-
-	TR_ASSERT(false, "Failed to find tag '{}' in the selection tree.", tag);
-	return {};
+	tr::unreachable();
 }
 
 void ui_manager::select_first_widget()
