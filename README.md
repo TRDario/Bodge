@@ -1,7 +1,7 @@
 # Bodge
 
 [![Itch.io](https://img.shields.io/badge/itch.io-%23FF0B34.svg?logo=Itch.io&logoColor=white)](https://trdario.itch.io/bodge)
-[![GitHub tag](https://img.shields.io/github/tag/TRDario/Bodge.svg)](https://github.com/TRDario/Bodge/tags/latest)
+[![GitHub tag](https://img.shields.io/github/tag/TRDario/Bodge.svg?color=red)](https://github.com/TRDario/Bodge/tags/latest)
 
 Source code repository for Bodge.
 
@@ -20,8 +20,8 @@ The source code provides basic documentation for all types, functions, constants
 Additional information about the structure of the program is provided in some of the headers (more may be added in the future).
 
 Bodge uses [tr](https://github.com/TRDario/tr/tree/fc6aaceee275443aa1223a50563664127d90ff84) as the underlying framework.
-The version of tr used for Bodge (1.1) is not as extensively documented as the current version, but should have at least rudimentary notes about almost everything.
+The version of tr used for Bodge (1.1) is not as extensively documented as the current version, but should have at least rudimentary notes about almost everything API-wise.
 
 ## Licence
 
-All assets and code are under the [![license](https://img.shields.io/github/license/TRDario/Bodge.svg?)](https://github.com/TRDario/Bodge/blob/master/LICENSE.md)
+All assets and code are under the [Apache License 2.0](https://github.com/TRDario/Bodge/blob/master/LICENSE.md).
