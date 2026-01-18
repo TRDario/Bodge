@@ -1,7 +1,7 @@
 # Bodge
 
 [![Itch.io](https://img.shields.io/badge/itch.io-%23FF0B34.svg?logo=Itch.io&logoColor=white)](https://trdario.itch.io/bodge)
-[![GitHub tag](https://img.shields.io/github/tag/TRDario/Bodge.svg?color=red)](https://github.com/TRDario/Bodge/tags/latest)
+[![GitHub tag](https://img.shields.io/github/tag/TRDario/Bodge.svg?color=red)](https://github.com/TRDario/Bodge/tags)
 
 Source code repository for Bodge.
 
