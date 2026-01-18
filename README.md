@@ -24,4 +24,4 @@ The version of tr used for Bodge (1.1) is not as extensively documented as the c
 
 ## Licence
 
-All assets and code are under the [![license](https://img.shields.io/github/license/TRDario/Bodge.svg)](https://github.com/TRDario/Bodge/blob/master/LICENSE)
+All assets and code are under the [![license](https://img.shields.io/github/license/TRDario/Bodge.svg?)](https://github.com/TRDario/Bodge/blob/master/LICENSE.md)
