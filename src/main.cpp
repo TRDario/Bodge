@@ -12,7 +12,11 @@ tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 			g_cli_settings.data_directory = std::filesystem::canonical(std::filesystem::path{*it});
 		}
 		else if (*it == "--userdir" && ++it < args.end()) {
-			g_cli_settings.user_directory = std::filesystem::canonical(std::filesystem::path{*it});
+			const std::filesystem::path userdir_path{std::filesystem::path{*it}};
+			if (!std::filesystem::exists(userdir_path)) {
+				std::filesystem::create_directory(userdir_path);
+			}
+			g_cli_settings.user_directory = std::filesystem::canonical(userdir_path);
 		}
 		else if (*it == "--refreshrate" && ++it < args.end()) {
 			std::from_chars(*it, *it + std::strlen(*it), g_cli_settings.refresh_rate);
@@ -66,8 +70,7 @@ tr::sys::signal initialize()
 	g_audio.initialize();
 	open_window();
 	g_renderer.emplace();
-	g_state_machine.emplace<title_state>();
-	g_audio.play_song("menu", 1.0s);
+	g_scorefile.name.empty() ? g_state_machine.emplace<name_entry_state>() : g_state_machine.emplace<title_state>();
 	tr::sys::show_window();
 	return tr::sys::signal::CONTINUE;
 }
