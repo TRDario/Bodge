@@ -145,6 +145,7 @@ template <usize S> void line_input_widget<S>::on_write(std::string_view input)
 template <usize S> void line_input_widget<S>::on_enter()
 {
 	m_enter_cb();
+	g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 
 template <usize S> void line_input_widget<S>::on_erase()

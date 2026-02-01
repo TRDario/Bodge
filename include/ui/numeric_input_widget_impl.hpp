@@ -176,6 +176,7 @@ template <class T, usize Digits, class Formatter> void basic_numeric_input_widge
 template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_enter()
 {
 	this->m_ui.clear_selection();
+	g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 
 template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_erase()
