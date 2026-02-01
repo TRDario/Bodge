@@ -16,7 +16,7 @@
 |        +###############++++++++++#########++++++###############++    ++###############+###################+         |
 |         ++++++++++++++++++++++++++++++++++++   +++++++++++++++         +++++++++++++++++++++++++++++++++++          |
 |            +++++++++++++++++++++++++++++++                                                                          |
-|            ++++++++++++++++++++++++++++++                                                           v1.2.0          |
+|            ++++++++++++++++++++++++++++++                                                           v1.2.1          |
 |            ++++++++++++++++++++++++++++                                                                             |
 |             ++++++++++++++++++++++++++                                                                              |
 |             ++++++++++++++++++++++++                                                                                |
@@ -48,6 +48,12 @@
 |                                                                                                           - TRDario |
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
+| v1.2.1 (01 Feb 2026)                                                                                                |
+| * Fixed the name entry screen not appearing at first startup.                                                       |
+| * Fixed menu music not playing after exiting a game in some cases.                                                  |
+| * Fixed missing sound when pressing enter for some input widgets.                                                   |
+| * Fixed a crash when trying to use a custom user directory that doesn't exist.                                      |
+| * Fixed missing Wayland support in Linux builds.                                                                    |
 | v1.2.0 (07 Dec 2025)                                                                                                |
 | * Rewrote state changes to be multithreaded, reducing lag between screen transitions.                               |
 | * Introduced a new circle renderer, improving quality at lower resolutions and improving big ball performance.      |
@@ -151,5 +157,5 @@
 | These comments can be set when exporting in software like Audacity.                                                 |
 |                                                                                                                     |
 |---------------------------------------------------------------------------------------------------------------------|
-|                                         © 2025 TRDario, all rights reserved                                         |
+|                                       © 2025-2026 TRDario, all rights reserved                                      |
 -----------------------------------------------------------------------------------------------------------------------

@@ -28,7 +28,7 @@ tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 			g_cli_settings.show_perf = true;
 		}
 		else if (*it == "--help") {
-			std::cout << "Bodge " VERSION_STRING " by TRDario, 2025.\n"
+			std::cout << "Bodge " VERSION_STRING " by TRDario, 2025-2026.\n"
 						 "Supported arguments:\n"
 						 "--datadir <path>       - Overrides the data directory.\n"
 						 "--userdir <path>       - Overrides the user directory.\n"
