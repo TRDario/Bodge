@@ -76,7 +76,10 @@ tr::next_state replays_state::tick()
 	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::RETURNING_FROM_REPLAY:
-		if (m_elapsed >= 0.5_s) {
+		if (m_elapsed == 1) {
+			g_audio.play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 1.0s);
+		}
+		else if (m_elapsed >= 0.5_s) {
 			m_elapsed = 0;
 			m_substate = substate::IN_REPLAYS;
 		}

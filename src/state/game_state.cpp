@@ -121,7 +121,6 @@ tr::next_state game_state::tick()
 	case substate_base::EXITING:
 		if (m_elapsed >= 1_s) {
 			g_renderer->basic.set_default_transform(TRANSFORM);
-			g_audio.play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
 			return m_next_state.get();
 		}
 		return tr::KEEP_STATE;

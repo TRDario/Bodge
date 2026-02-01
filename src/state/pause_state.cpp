@@ -111,15 +111,6 @@ tr::next_state pause_state::tick()
 			return tr::KEEP_STATE;
 		}
 		g_renderer->basic.set_default_transform(TRANSFORM);
-		switch (to_type(m_substate)) {
-		case game_type::REGULAR:
-			g_audio.play_song("menu", 1.0s);
-			break;
-		case game_type::GAMEMODE_DESIGNER_TEST:
-		case game_type::REPLAY:
-			g_audio.play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 0.5s);
-			break;
-		}
 		return m_next_state.get();
 	}
 }

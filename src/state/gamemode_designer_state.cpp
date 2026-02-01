@@ -85,6 +85,9 @@ tr::next_state gamemode_designer_state::tick()
 	main_menu_state::tick();
 	switch (m_substate) {
 	case substate::RETURNING_FROM_TEST_GAME:
+		if (m_elapsed == 1) {
+			g_audio.play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 1.0s);
+		}
 		if (m_elapsed >= 0.5_s) {
 			m_substate = substate::IN_GAMEMODE_DESIGNER;
 			m_elapsed = 0;

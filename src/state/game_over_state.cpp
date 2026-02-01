@@ -163,7 +163,6 @@ tr::next_state game_over_state::tick()
 		return next_state_if_after(0.5_s);
 	case substate::QUITTING:
 		if (m_elapsed >= 0.5_s) {
-			g_audio.play_song("menu", 1.0s);
 			return m_next_state.get();
 		}
 		else {
