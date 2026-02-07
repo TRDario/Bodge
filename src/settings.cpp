@@ -86,7 +86,7 @@ bool settings::releasing_graphical_resources_required_to_apply(const settings& n
 void settings::apply(const settings& new_settings)
 {
 	const bool restart_required{restart_required_to_apply(new_settings)};
-	const settings& previous{*this};
+	const settings previous{*this};
 
 	*this = new_settings;
 	if (restart_required) {
