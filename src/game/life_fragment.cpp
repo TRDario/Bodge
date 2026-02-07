@@ -4,8 +4,6 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-// The size of a life fragment.
-constexpr float LIFE_FRAGMENT_LENGTH{20};
 // Minimum coordinate that a life fragment can spawn at.
 constexpr float LIFE_FRAGMENT_MIN_POS{FIELD_MIN + LIFE_FRAGMENT_LENGTH};
 // Maximum coordinate that a life fragment can spawn at.
@@ -18,23 +16,14 @@ constexpr ticks LIFE_FRAGMENT_COLLECTION_ANIMATION_TIME{0.5_s};
 
 ////////////////////////////////////////////////////////////// LIFE FRAGMENT //////////////////////////////////////////////////////////////
 
-life_fragment::life_fragment(tr::xorshiftr_128p& rng, const tr::frect2& region)
-	: m_pos{rng.generate(std::max(region.tl.x, LIFE_FRAGMENT_MIN_POS), std::min(region.tl.x + region.size.x, LIFE_FRAGMENT_MAX_POS)),
-			rng.generate(std::max(region.tl.y, LIFE_FRAGMENT_MIN_POS), std::min(region.tl.y + region.size.y, LIFE_FRAGMENT_MAX_POS))}
-	, m_rot{rng.generate_angle()}
-	, m_rotvel{rng.generate(0.4_deg, 0.75_deg) * rng.generate_sign()}
-	, m_age{0}
+bool life_fragment::collectible() const
 {
+	return m_state == state::COLLECTIBLE;
 }
 
 bool life_fragment::collected() const
 {
-	return m_collected_timer.active();
-}
-
-bool life_fragment::can_despawn() const
-{
-	return collected() && m_collected_timer.elapsed() >= LIFE_FRAGMENT_COLLECTION_ANIMATION_TIME;
+	return m_state == state::COLLECTED || m_state == state::INACTIVE_COLLECTED;
 }
 
 const tr::circle life_fragment::hitbox() const
@@ -44,48 +33,75 @@ const tr::circle life_fragment::hitbox() const
 
 void life_fragment::set_collected()
 {
-	m_collected_timer.start();
+	m_state = state::COLLECTED;
+	m_elapsed = 0;
+}
+
+void life_fragment::respawn(tr::xorshiftr_128p& rng, const tr::frect2& region)
+{
+	m_pos = {rng.generate(std::max(region.tl.x, LIFE_FRAGMENT_MIN_POS), std::min(region.tl.x + region.size.x, LIFE_FRAGMENT_MAX_POS)),
+			 rng.generate(std::max(region.tl.y, LIFE_FRAGMENT_MIN_POS), std::min(region.tl.y + region.size.y, LIFE_FRAGMENT_MAX_POS))};
+	m_rot = rng.generate_angle();
+	m_rotvel = rng.generate(0.4_deg, 0.75_deg) * rng.generate_sign();
+	m_state = state::COLLECTIBLE;
+	m_elapsed = 0;
 }
 
 void life_fragment::tick()
 {
-	++m_age;
-	if (m_collected_timer.active()) {
-		m_collected_timer.tick();
-		m_rot += m_rotvel * std::clamp(1.0f / m_collected_timer.elapsed() * LIFE_FRAGMENT_SPAWN_ANIMATION_TIME, 1.0f, 2.5f);
-	}
-	else {
-		m_rot += m_rotvel * std::clamp(1.0f / (m_age / float(LIFE_FRAGMENT_SPAWN_ANIMATION_TIME)), 1.0f, 5.0f);
+	m_elapsed++;
+	switch (m_state) {
+	case state::INACTIVE:
+	case state::INACTIVE_COLLECTED:
+		break;
+	case state::COLLECTIBLE:
+		m_rot += m_rotvel * std::clamp(1.0f / (m_elapsed / float(LIFE_FRAGMENT_SPAWN_ANIMATION_TIME)), 1.0f, 5.0f);
+		if (m_elapsed >= LIFE_FRAGMENT_DURATION) {
+			m_state = state::INACTIVE;
+			m_elapsed = 0;
+		}
+		break;
+	case state::COLLECTED:
+		m_rot += m_rotvel * std::clamp(1.0f / m_elapsed * LIFE_FRAGMENT_SPAWN_ANIMATION_TIME, 1.0f, 2.5f);
+		if (m_elapsed >= LIFE_FRAGMENT_COLLECTION_ANIMATION_TIME) {
+			m_state = state::INACTIVE_COLLECTED;
+			m_elapsed = 0;
+		}
+		break;
 	}
 }
 
 void life_fragment::add_to_renderer() const
 {
+	if (m_state == state::INACTIVE || m_state == state::INACTIVE_COLLECTED) {
+		return;
+	}
+
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
 
-	float raw_age_factor;
-	float eased_age_factor;
+	float raw_factor;
+	float eased_factor;
 	glm::vec2 size;
 	u8 opacity;
-	if (collected()) {
-		raw_age_factor = std::min(m_collected_timer.elapsed() / float(LIFE_FRAGMENT_COLLECTION_ANIMATION_TIME), 1.0f);
-		eased_age_factor = raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor);
-		size = {4 * (1 + 4 * eased_age_factor), LIFE_FRAGMENT_LENGTH * (1 + 4 * eased_age_factor)};
-		opacity = tr::norm_cast<u8>(0.75f - 0.75f * raw_age_factor);
+	if (m_state == state::COLLECTED) {
+		raw_factor = std::min(m_elapsed / float(LIFE_FRAGMENT_COLLECTION_ANIMATION_TIME), 1.0f);
+		eased_factor = raw_factor == 1.0f ? raw_factor : 1.0f - std::pow(2.0f, -10.0f * raw_factor);
+		size = {4 * (1 + 4 * eased_factor), LIFE_FRAGMENT_LENGTH * (1 + 4 * eased_factor)};
+		opacity = tr::norm_cast<u8>(0.75f - 0.75f * raw_factor);
 	}
 	else {
-		raw_age_factor = std::min(m_age / float(LIFE_FRAGMENT_SPAWN_ANIMATION_TIME), 1.0f);
-		eased_age_factor = raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor);
-		size = {4 * (11 - 10 * eased_age_factor), LIFE_FRAGMENT_LENGTH * (11 - 10 * eased_age_factor)};
-		opacity = tr::norm_cast<u8>(std::pow(raw_age_factor, 1 / 1.5f));
-		if (m_age >= LIFE_FRAGMENT_FAST_FLASH_START) {
-			opacity = opacity * (tr::turns(m_age / 0.2_sf).cos() + 1) / 2;
+		raw_factor = std::min(m_elapsed / float(LIFE_FRAGMENT_SPAWN_ANIMATION_TIME), 1.0f);
+		eased_factor = raw_factor == 1.0f ? raw_factor : 1.0f - std::pow(2.0f, -10.0f * raw_factor);
+		size = {4 * (11 - 10 * eased_factor), LIFE_FRAGMENT_LENGTH * (11 - 10 * eased_factor)};
+		opacity = tr::norm_cast<u8>(std::pow(raw_factor, 1 / 1.5f));
+		if (m_elapsed >= LIFE_FRAGMENT_FAST_FLASH_START) {
+			opacity = opacity * (tr::turns(m_elapsed / 0.2_sf).cos() + 1) / 2;
 		}
-		else if (m_age >= LIFE_FRAGMENT_SLOW_FLASH_START) {
-			opacity = opacity * (tr::turns(m_age / 0.5_sf).cos() + 1) / 2;
+		else if (m_elapsed >= LIFE_FRAGMENT_SLOW_FLASH_START) {
+			opacity = opacity * (tr::turns(m_elapsed / 0.5_sf).cos() + 1) / 2;
 		}
 
-		if (m_age >= LIFE_FRAGMENT_SPAWN_ANIMATION_TIME) {
+		if (m_elapsed >= LIFE_FRAGMENT_SPAWN_ANIMATION_TIME) {
 			add_pulse_to_renderer(color);
 		}
 		else {
@@ -100,7 +116,7 @@ void life_fragment::add_to_renderer() const
 
 void life_fragment::add_pulse_to_renderer(tr::rgb8 color) const
 {
-	const float t{(m_age - LIFE_FRAGMENT_SPAWN_ANIMATION_TIME + 1) % 1_s / float(1_s)};
+	const float t{(m_elapsed - LIFE_FRAGMENT_SPAWN_ANIMATION_TIME + 1) % 1_s / float(1_s)};
 	const float scale{std::pow(t, 1 / 2.5f) * 75};
 	const u8 opacity{tr::norm_cast<u8>(std::max(0.75f - std::sqrt(0.75f * t), 0.0f))};
 
@@ -111,7 +127,7 @@ void life_fragment::add_pulse_to_renderer(tr::rgb8 color) const
 
 void life_fragment::add_spawn_wave_to_renderer(tr::rgb8 color) const
 {
-	const float t{m_age / float(LIFE_FRAGMENT_SPAWN_ANIMATION_TIME)};
+	const float t{m_elapsed / float(LIFE_FRAGMENT_SPAWN_ANIMATION_TIME)};
 	const float scale{std::pow(t, 2.0f) * 200};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t))};
 

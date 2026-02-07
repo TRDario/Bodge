@@ -121,17 +121,13 @@ class game : private playerless_game {
 	// Player state.
 	player m_player;
 	// List of collectible life fragments.
-	tr::static_vector<life_fragment, 9> m_life_fragments;
+	std::array<life_fragment, 9> m_life_fragments{};
 	// Fragments used to draw the animation of a life shattering after getting hit.
 	std::array<fragment, 6> m_shattered_life_fragments;
 	// Number of remaining lives.
 	int m_lives_left;
-	// Number of collected life fragments.
-	int m_collected_fragments;
 	// Current achieved score.
 	i64 m_score;
-	// Timer measuring the elapsed time since the last life fragment spawn event.
-	startable_timer m_last_life_fragments_timer;
 	// Timer measuring the elapsed time since game over.
 	startable_timer m_game_over_timer;
 	// Timer controlling the 1-UP animation.
@@ -173,11 +169,11 @@ class game : private playerless_game {
 	// Updates the collectible life fragments.
 	void update_life_fragments();
 	// Checks if the player is hovering over the timer display and increments or decrements the related timer based on the result.
-	void check_if_player_is_hovering_over_timer();
+	void check_if_timer_obstructed();
 	// Checks if the player is hovering over the lives display and increments or decrements the related timer based on the result.
-	void check_if_player_is_hovering_over_lives();
+	void check_if_lives_obstructed();
 	// Checks if the player is hovering over the score display and increments or decrements the related timer based on the result.
-	void check_if_player_is_hovering_over_score();
+	void check_if_score_obstructed();
 	// Checks for and handles the player getting hit.
 	void check_if_player_was_hit();
 	// Sets up the fragments used for the shattered life animation.

@@ -1,8 +1,8 @@
 #include "../include/game.hpp"
 #include "../include/audio.hpp"
-#include "../include/text_engine.hpp"
 #include "../include/renderer.hpp"
 #include "../include/score.hpp"
+#include "../include/text_engine.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -140,7 +140,6 @@ game::game(const ::gamemode& gamemode, u64 rng_seed)
 	, m_number_atlas{create_number_atlas()}
 	, m_player{gamemode.player}
 	, m_lives_left{int(gamemode.player.starting_lives)}
-	, m_collected_fragments{0}
 	, m_score{0}
 	, m_tock{false}
 {
@@ -178,9 +177,9 @@ void game::tick(const glm::vec2& input)
 	update_life_fragments();
 	if (!game_over()) {
 		m_player.tick(input);
-		check_if_player_is_hovering_over_timer();
-		check_if_player_is_hovering_over_lives();
-		check_if_player_is_hovering_over_score();
+		check_if_timer_obstructed();
+		check_if_lives_obstructed();
+		check_if_score_obstructed();
 		check_if_player_was_hit();
 		check_if_player_collected_life_fragments();
 		check_for_score_ticks();
@@ -198,26 +197,25 @@ void game::play_tick_sound_if_needed()
 		return;
 	}
 
-	if (!m_last_life_fragments_timer.active() || m_last_life_fragments_timer.elapsed() >= LIFE_FRAGMENT_DURATION ||
-		m_collected_fragments == 9) {
+	if (std::ranges::none_of(m_life_fragments, &life_fragment::collectible)) {
 		if (m_elapsed_time % 1_s == 0) {
 			g_audio.play_sound(sound::TICK, 0.33f, 0.0f, m_tock ? 0.75f : 1.0f);
 			m_tock = !m_tock;
 		}
+		return;
 	}
-	else {
-		const ticks time{m_last_life_fragments_timer.elapsed()};
-		if ((time >= LIFE_FRAGMENT_FAST_FLASH_START && time % 0.1_s == 0) ||
-			(time < LIFE_FRAGMENT_FAST_FLASH_START && time >= LIFE_FRAGMENT_SLOW_FLASH_START && time % 0.25_s == 0) ||
-			(time < LIFE_FRAGMENT_SLOW_FLASH_START && time % 0.5_s == 0)) {
-			g_audio.play_sound(sound::TICK_ALT, 0.75f, 0.0f, 1.0f);
-		}
+
+	const ticks life_fragment_timer{m_elapsed_time % m_gamemode.player.life_fragment_spawn_interval};
+	const ticks interval{life_fragment_timer >= LIFE_FRAGMENT_FAST_FLASH_START   ? 0.1_s
+						 : life_fragment_timer >= LIFE_FRAGMENT_SLOW_FLASH_START ? 0.2_s
+																				 : 0.5_s};
+	if (life_fragment_timer % interval == 0) {
+		g_audio.play_sound(sound::TICK_ALT, 0.75f, 0.0f, 1.0f);
 	}
 }
 
 void game::update_timers()
 {
-	m_last_life_fragments_timer.tick();
 	m_1up_animation_timer.tick();
 	if (m_hit_animation_timer.active()) {
 		m_hit_animation_timer.tick();
@@ -234,68 +232,100 @@ void game::update_life_fragments()
 		return;
 	}
 
-	if (m_last_life_fragments_timer.active() && m_last_life_fragments_timer.elapsed() == LIFE_FRAGMENT_DURATION) {
-		m_life_fragments.clear();
-	}
+	std::ranges::for_each(m_life_fragments, &life_fragment::tick);
 
-	if ((!m_last_life_fragments_timer.active() && m_elapsed_time == m_gamemode.player.life_fragment_spawn_interval) ||
-		(m_last_life_fragments_timer.active() && m_last_life_fragments_timer.elapsed() == m_gamemode.player.life_fragment_spawn_interval)) {
+	if (m_elapsed_time % m_gamemode.player.life_fragment_spawn_interval == 0) {
+		constexpr float THIRD{1000.0f / 3};
+
+		// Respawn remaining fragments if there are any left.
+		bool no_remaining_fragments{true};
 		for (int i = 0; i < 9; ++i) {
-			constexpr float THIRD{1000.0f / 3};
-			m_life_fragments.emplace_back(m_rng, tr::frect2{{(i % 3) * THIRD, int(i / 3) * THIRD}, {THIRD, THIRD}});
+			if (!m_life_fragments[i].collected()) {
+				m_life_fragments[i].respawn(m_rng, tr::frect2{{(i % 3) * THIRD, int(i / 3) * THIRD}, {THIRD, THIRD}});
+				no_remaining_fragments = false;
+			}
 		}
-		m_last_life_fragments_timer.start();
-		m_collected_fragments = 0;
+
+		// Respawn all fragments if none were left.
+		if (no_remaining_fragments) {
+			for (int i = 0; i < 9; ++i) {
+				m_life_fragments[i].respawn(m_rng, tr::frect2{{(i % 3) * THIRD, int(i / 3) * THIRD}, {THIRD, THIRD}});
+			}
+		}
+
 		g_audio.play_sound(sound::FRAGMENT_SPAWN, 1, 0);
 	}
-
-	for (auto it = m_life_fragments.begin(); it != m_life_fragments.end();) {
-		it->tick();
-		if (it->can_despawn()) {
-			it = m_life_fragments.erase(it);
-		}
-		else {
-			++it;
-		}
-	}
 }
 
-void game::check_if_player_is_hovering_over_timer()
+void game::check_if_timer_obstructed()
 {
 	const glm::vec2 size{text_size(format_time(m_elapsed_time), 1 / g_renderer->scale()) * 0.95f};
-	const tr::frect2 timer_text_bounds{TIMER_TEXT_POS - size / 2.0f - 8.0f, size + 16.0f};
-	if (timer_text_bounds.contains(m_player.hitbox().c)) {
+	const tr::frect2 base_bounds{TIMER_TEXT_POS - size / 2.0f - 8.0f, size + 16.0f};
+
+	const tr::circle player_hitbox{m_player.hitbox()};
+	const tr::frect2 player_bounds{base_bounds.tl - player_hitbox.r, base_bounds.size + 2.0f * player_hitbox.r};
+	if (player_bounds.contains(player_hitbox.c)) {
 		m_timer_hover_timer.increment();
+		return;
 	}
-	else {
-		m_timer_hover_timer.decrement();
+
+	const tr::frect2 fragment_bounds{base_bounds.tl - LIFE_FRAGMENT_LENGTH / 2.0f, base_bounds.size + LIFE_FRAGMENT_LENGTH};
+	for (const life_fragment& fragment : std::views::filter(m_life_fragments, &life_fragment::collectible)) {
+		if (fragment_bounds.contains(fragment.hitbox().c)) {
+			m_timer_hover_timer.increment();
+			return;
+		}
 	}
+
+	m_timer_hover_timer.decrement();
 }
 
-void game::check_if_player_is_hovering_over_lives()
+void game::check_if_lives_obstructed()
 {
 	const float life_size{m_lives_left > MAX_LARGE_LIVES ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
 	const int lives_in_line{std::min(m_lives_left, LIVES_PER_LINE)};
-	const int lines{m_lives_left / LIVES_PER_LINE + 1};
-	tr::frect2 lives_ui_bounds{{}, {2.5f * life_size * (lives_in_line + 0.5f) + 16, 2.5f * life_size * lines + 16}};
-	if (lives_ui_bounds.contains(m_player.hitbox().c)) {
+	const int lines{(m_lives_left + LIVES_PER_LINE - 1) / LIVES_PER_LINE};
+	const tr::frect2 base_bounds{{8, 8}, {2.5f * life_size * lives_in_line, 2.5f * life_size * lines}};
+
+	const tr::circle player_hitbox{m_player.hitbox()};
+	const tr::frect2 player_bounds{{}, base_bounds.size + std::max(8.0f + player_hitbox.r, 2.0f * player_hitbox.r)};
+	if (player_bounds.contains(player_hitbox.c)) {
 		m_lives_hover_timer.increment();
+		return;
 	}
-	else {
-		m_lives_hover_timer.decrement();
+
+	const tr::frect2 fragment_bounds{{}, base_bounds.size + std::max(8.0f + LIFE_FRAGMENT_LENGTH / 2, LIFE_FRAGMENT_LENGTH)};
+	for (const life_fragment& fragment : std::views::filter(m_life_fragments, &life_fragment::collectible)) {
+		if (fragment_bounds.contains(fragment.hitbox().c)) {
+			m_lives_hover_timer.increment();
+			return;
+		}
 	}
+
+	m_lives_hover_timer.decrement();
 }
 
-void game::check_if_player_is_hovering_over_score()
+void game::check_if_score_obstructed()
 {
-	const glm::vec2 size{text_size(format_score(m_score), 1 / g_renderer->scale()) * 0.85f};
-	const tr::frect2 timer_text_bounds{tl(SCORE_TEXT_POS, size, tr::align::TOP_RIGHT), size};
-	if (timer_text_bounds.contains(m_player.hitbox().c)) {
+	const glm::vec2 size{text_size(format_score(m_score), 1 / g_renderer->scale()) * 0.75f};
+	const tr::frect2 base_bounds{tl(SCORE_TEXT_POS, size, tr::align::TOP_RIGHT), size};
+
+	const tr::circle player_hitbox{m_player.hitbox()};
+	const tr::frect2 player_bounds{base_bounds.tl - player_hitbox.r, base_bounds.size + 2.0f * player_hitbox.r};
+	if (player_bounds.contains(player_hitbox.c)) {
 		m_score_hover_timer.increment();
+		return;
 	}
-	else {
-		m_score_hover_timer.decrement();
+
+	const tr::frect2 fragment_bounds{base_bounds.tl - LIFE_FRAGMENT_LENGTH / 2.0f, base_bounds.size + LIFE_FRAGMENT_LENGTH};
+	for (const life_fragment& fragment : std::views::filter(m_life_fragments, &life_fragment::collectible)) {
+		if (fragment_bounds.contains(fragment.hitbox().c)) {
+			m_score_hover_timer.increment();
+			return;
+		}
 	}
+
+	m_score_hover_timer.decrement();
 }
 
 void game::check_if_player_was_hit()
@@ -336,9 +366,10 @@ void game::set_up_shattered_life_fragments()
 void game::check_if_player_collected_life_fragments()
 {
 	for (life_fragment& fragment : m_life_fragments) {
-		if (!fragment.collected() && tr::intersecting(fragment.hitbox(), m_player.hitbox())) {
+		if (fragment.collectible() && tr::intersecting(fragment.hitbox(), m_player.hitbox())) {
 			fragment.set_collected();
-			if (++m_collected_fragments < 9) {
+			const ssize collected_fragments{std::ranges::count_if(m_life_fragments, &life_fragment::collected)};
+			if (collected_fragments < 9) {
 				add_to_score(25);
 			}
 			else if (m_lives_left < 255) {
@@ -347,7 +378,7 @@ void game::check_if_player_collected_life_fragments()
 				add_to_score(150);
 				g_audio.play_sound(sound::ONE_UP, 1.25f, 0);
 			}
-			g_audio.play_sound(sound::COLLECT, 0.65f, 0, COLLECT_PITCHES[m_collected_fragments - 1]);
+			g_audio.play_sound(sound::COLLECT, 0.65f, 0, COLLECT_PITCHES[collected_fragments - 1]);
 		}
 	}
 }
@@ -471,7 +502,7 @@ struct game::timer_render_info game::timer_render_info() const
 	else {
 		const float factor{std::min(m_elapsed_time % 1_s, 0.2_s) / 0.2_sf};
 		const u8 tint_factor{tr::norm_cast<u8>(1 - 0.25f * factor)};
-		const u8 opacity{u8((255 - m_timer_hover_timer.accumulated() * 180 / m_timer_hover_timer.max()) * tint_factor / 255)};
+		const u8 opacity{u8((192 - 128 * m_timer_hover_timer.accumulated() / m_timer_hover_timer.max()) * tint_factor / 255)};
 		return {m_elapsed_time, {tint_factor, tint_factor, tint_factor, opacity}, 1.25f - 0.25f * factor};
 	}
 }
@@ -485,7 +516,7 @@ struct game::score_render_info game::score_render_info() const
 		constexpr float MAX{decltype(m_center_timer)::max() - MIN_SCORE_REGION_TIME + 0.5_sf};
 		const float factor{m_score_animation_timer.elapsed_ratio()};
 		const u8 tint_factor{tr::norm_cast<u8>(1 - 0.1f * factor)};
-		const u8 opacity{u8((255 - m_score_hover_timer.accumulated() * 180 / m_score_hover_timer.max()) * tint_factor / 255)};
+		const u8 opacity{u8((192 - 128 * m_score_hover_timer.accumulated() / m_score_hover_timer.max()) * tint_factor / 255)};
 
 		tr::rgba8 tint{tint_factor, tint_factor, tint_factor, opacity};
 		if (m_center_timer.accumulated() >= MIN_SCORE_REGION_TIME - 0.5_s) {
@@ -523,7 +554,7 @@ void game::add_lives_to_renderer() const
 	const float life_size{m_lives_left > (m_hit_animation_timer.active() ? MAX_LARGE_LIVES - 1 : MAX_LARGE_LIVES) ? SMALL_LIFE_SIZE
 																												  : LARGE_LIFE_SIZE};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
-	const u8 opacity{u8(255 - 180 * m_lives_hover_timer.accumulated() / m_lives_hover_timer.max())};
+	const u8 opacity{u8(192 - 148 * m_lives_hover_timer.accumulated() / m_lives_hover_timer.max())};
 	const tr::angle rotation{120_deg * m_elapsed_time / 1_s};
 
 	int normal_lives{m_lives_left};
