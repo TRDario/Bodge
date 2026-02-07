@@ -52,6 +52,9 @@ struct renderer {
 	// Gets the scale rendering is done at.
 	float scale() const;
 
+	// Sets the default transformation matrix.
+	void set_default_transform(const glm::mat4& mat);
+
 	// Adds the menu game overlay to the renderer.
 	void add_menu_game_overlay();
 	// Adds the fade overlay to the renderer.

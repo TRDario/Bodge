@@ -100,7 +100,7 @@ tr::next_state game_state::tick()
 	case substate_base::GAME_OVER:
 		m_game->tick();
 		if (m_elapsed >= 0.75_s) {
-			g_renderer->basic.set_default_transform(TRANSFORM);
+			g_renderer->set_default_transform(TRANSFORM);
 			switch (to_type(m_substate)) {
 			case game_type::REGULAR: {
 				return m_next_state.get();
@@ -120,7 +120,7 @@ tr::next_state game_state::tick()
 		return tr::KEEP_STATE;
 	case substate_base::EXITING:
 		if (m_elapsed >= 1_s) {
-			g_renderer->basic.set_default_transform(TRANSFORM);
+			g_renderer->set_default_transform(TRANSFORM);
 			return m_next_state.get();
 		}
 		return tr::KEEP_STATE;

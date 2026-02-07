@@ -102,7 +102,7 @@ tr::next_state pause_state::tick()
 		if (m_elapsed < 0.5_s) {
 			return tr::KEEP_STATE;
 		}
-		g_renderer->basic.set_default_transform(TRANSFORM);
+		g_renderer->set_default_transform(TRANSFORM);
 		return m_next_state.get();
 	case substate_base::SAVING:
 		return next_state_if_after(0.5_s);
@@ -110,7 +110,7 @@ tr::next_state pause_state::tick()
 		if (m_elapsed < 0.5_s) {
 			return tr::KEEP_STATE;
 		}
-		g_renderer->basic.set_default_transform(TRANSFORM);
+		g_renderer->set_default_transform(TRANSFORM);
 		return m_next_state.get();
 	}
 }

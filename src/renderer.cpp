@@ -49,6 +49,14 @@ float renderer::scale() const
 
 //
 
+void renderer::set_default_transform(const glm::mat4& mat)
+{
+	basic.set_default_transform(mat);
+	circle.set_default_transform(mat);
+}
+
+//
+
 void renderer::add_menu_game_overlay()
 {
 	const tr::gfx::simple_color_mesh_ref fade_overlay{basic.new_color_fan(layer::GAME_OVERLAY, 4)};

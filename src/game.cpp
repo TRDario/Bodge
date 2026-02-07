@@ -473,9 +473,7 @@ void game::set_screen_shake() const
 {
 	if (m_screen_shake_timer.active()) {
 		const glm::vec2 tl{tr::magth(40 * (1 - m_screen_shake_timer.elapsed_ratio()), g_rng.generate_angle())};
-		const glm::mat4 mat{tr::ortho(tr::frect2{tl, glm::vec2{1000}})};
-		g_renderer->basic.set_default_transform(mat);
-		g_renderer->circle.set_default_transform(mat);
+		g_renderer->set_default_transform(tr::ortho(tr::frect2{tl, glm::vec2{1000}}));
 	}
 }
 
