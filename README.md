@@ -25,8 +25,8 @@ but should have at least rudimentary notes about almost everything API-wise.
 
 ## Licence
 
-[Charge Vector Bold](https://github.com/TRDario/Bodge/blob/main/data/fonts/charge_vector_b.otf)
-is property of Chequered Ink and is free for personal, non-profit use.
+[Charge Vector](https://github.com/TRDario/Bodge/blob/main/data/fonts/charge_vector_b.otf)
+is licensed under a non-commercial license.
 
 [Linux Biolinum](https://github.com/TRDario/Bodge/blob/main/data/fonts/linux_biolinum_rb.ttf)
 is licensed under the SIL Open Font License (OFL).
