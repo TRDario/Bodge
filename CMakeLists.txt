@@ -74,3 +74,5 @@ add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAK
                    -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/data" "${CMAKE_CURRENT_BINARY_DIR}/final/data")
 add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},${TR_DO_NOTHING}>
                    -E copy "${CMAKE_CURRENT_SOURCE_DIR}/metadata/readme.txt" "${CMAKE_CURRENT_BINARY_DIR}/final/readme.txt")
+                   add_custom_command(TARGET Bodge POST_BUILD COMMAND $<IF:$<CONFIG:Release>,${CMAKE_COMMAND},${TR_DO_NOTHING}>
+                   -E copy "${CMAKE_CURRENT_SOURCE_DIR}/metadata/copyright.txt" "${CMAKE_CURRENT_BINARY_DIR}/final/copyright.txt")
