@@ -63,7 +63,7 @@ void ball::tick()
 		const glm::vec2 target{m_hitbox.c + m_velocity / 1_sf};
 		const glm::vec2 clamped{tr::mirror_repeat(target, glm::vec2{FIELD_MIN + m_hitbox.r}, glm::vec2{FIELD_MAX - m_hitbox.r})};
 
-		if (target == clamped) {
+		if (std::abs(clamped.x - target.x) < 1e-3f && std::abs(clamped.y - target.y) < 1e-3f) {
 			m_hitbox.c = target;
 			return;
 		}
