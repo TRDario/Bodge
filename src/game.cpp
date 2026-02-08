@@ -97,12 +97,12 @@ void playerless_game::tick()
 		g_audio.play_sound(sound::BALL_SPAWN, 0.25f, (m_balls.back().hitbox().c.x - 500) / 500);
 	}
 
-	for (u8 i = 0; i < m_balls.size(); ++i) {
-		m_balls[i].tick();
-		if (m_balls[i].tangible()) {
-			for (u8 j = i + 1; j < m_balls.size(); ++j) {
-				if (m_balls[j].tangible() && colliding(m_balls[i], m_balls[j])) {
-					handle_collision(m_balls[i], m_balls[j]);
+	for (auto ball_it = m_balls.begin(); ball_it != m_balls.end(); ++ball_it) {
+		ball_it->tick();
+		if (ball_it->tangible()) {
+			for (auto ball_jt = std::next(ball_it); ball_jt != m_balls.end(); ++ball_jt) {
+				if (ball_jt->tangible() && colliding(*ball_it, *ball_jt)) {
+					handle_collision(*ball_it, *ball_jt);
 				}
 			}
 		}

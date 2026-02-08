@@ -1,6 +1,6 @@
+#include "../include/ui.hpp"
 #include "../include/audio.hpp"
 #include "../include/renderer.hpp"
-#include "../include/ui.hpp"
 
 /////////////////////////////////////////////////////////////// UI MANAGER ////////////////////////////////////////////////////////////////
 
@@ -59,10 +59,10 @@ void ui_manager::change_selection(tr::opt_ref<kv_pair> new_selection)
 
 ui_manager::selection_node ui_manager::find_in_selection_tree(tag tag) const
 {
-	for (const selection_tree_row* row = m_selection_tree.begin(); row != m_selection_tree.end(); ++row) {
-		for (const ::tag* it = row->begin(); it != row->end(); ++it) {
-			if (*it == tag) {
-				return {row, it};
+	for (const selection_tree_row* row_it = m_selection_tree.begin(); row_it != m_selection_tree.end(); ++row_it) {
+		for (const ::tag* tag_it = row_it->begin(); tag_it != row_it->end(); ++tag_it) {
+			if (*tag_it == tag) {
+				return {row_it, tag_it};
 			}
 		}
 	}
@@ -73,9 +73,9 @@ void ui_manager::select_first_widget()
 {
 	for (const selection_tree_row& row : m_selection_tree) {
 		for (tag tag : row) {
-			auto it{m_widgets.find(tag)};
-			if (it != m_widgets.end() && it->second->interactible()) {
-				select_widget(it->first);
+			auto widget_it{m_widgets.find(tag)};
+			if (widget_it != m_widgets.end() && widget_it->second->interactible()) {
+				select_widget(widget_it->first);
 				return;
 			}
 		}
@@ -86,9 +86,9 @@ void ui_manager::select_last_widget()
 {
 	for (const selection_tree_row& row : std::views::reverse(m_selection_tree)) {
 		for (tag tag : std::views::reverse(row)) {
-			auto it{m_widgets.find(tag)};
-			if (it != m_widgets.end() && it->second->interactible()) {
-				select_widget(it->first);
+			auto widget_it{m_widgets.find(tag)};
+			if (widget_it != m_widgets.end() && widget_it->second->interactible()) {
+				select_widget(widget_it->first);
 				return;
 			}
 		}
@@ -105,9 +105,9 @@ void ui_manager::select_next_widget()
 		++tag_it;
 		while (row_it != m_selection_tree.end()) {
 			while (tag_it != row_it->end()) {
-				auto it{m_widgets.find(*tag_it)};
-				if (it->second->interactible()) {
-					select_widget(it->first);
+				auto widget_it{m_widgets.find(*tag_it)};
+				if (widget_it->second->interactible()) {
+					select_widget(widget_it->first);
 					return;
 				}
 				++tag_it;
@@ -129,9 +129,9 @@ void ui_manager::select_prev_widget()
 		--tag_it;
 		while (row_it >= m_selection_tree.begin()) {
 			while (tag_it >= row_it->begin()) {
-				auto it{m_widgets.find(*tag_it)};
-				if (it->second->interactible()) {
-					select_widget(it->first);
+				auto widget_it{m_widgets.find(*tag_it)};
+				if (widget_it->second->interactible()) {
+					select_widget(widget_it->first);
 					return;
 				}
 				--tag_it;
@@ -153,9 +153,9 @@ void ui_manager::select_widget_above()
 		const usize offset{usize(tag_it - row_it->begin())};
 		--row_it;
 		while (row_it >= m_selection_tree.begin()) {
-			auto it{m_widgets.find(row_it->begin()[std::min(offset, row_it->size() - 1)])};
-			if (it->second->interactible()) {
-				select_widget(it->first);
+			auto widget_it{m_widgets.find(row_it->begin()[std::min(offset, row_it->size() - 1)])};
+			if (widget_it->second->interactible()) {
+				select_widget(widget_it->first);
 				return;
 			}
 
@@ -182,9 +182,9 @@ void ui_manager::select_widget_below()
 		const usize offset{usize(tag_it - row_it->begin())};
 		++row_it;
 		while (row_it != m_selection_tree.end()) {
-			auto it{m_widgets.find(row_it->begin()[std::min(offset, row_it->size() - 1)])};
-			if (it->second->interactible()) {
-				select_widget(it->first);
+			auto widget_it{m_widgets.find(row_it->begin()[std::min(offset, row_it->size() - 1)])};
+			if (widget_it->second->interactible()) {
+				select_widget(widget_it->first);
 				return;
 			}
 
@@ -210,9 +210,9 @@ void ui_manager::select_widget_to_the_left()
 				tag_it = row_it->end();
 			}
 
-			auto it{m_widgets.find(tag_it[-1])};
-			if (it->second->interactible()) {
-				select_widget(it->first);
+			auto widget_it{m_widgets.find(tag_it[-1])};
+			if (widget_it->second->interactible()) {
+				select_widget(widget_it->first);
 				return;
 			}
 		}
@@ -229,9 +229,9 @@ void ui_manager::select_widget_to_the_right()
 				tag_it = row_it->begin();
 			}
 
-			auto it{m_widgets.find(*tag_it)};
-			if (it->second->interactible()) {
-				select_widget(it->first);
+			auto widget_it{m_widgets.find(*tag_it)};
+			if (widget_it->second->interactible()) {
+				select_widget(widget_it->first);
 				return;
 			}
 		}
@@ -387,9 +387,9 @@ void ui_manager::handle_key_down_event(const tr::sys::key_down_event& event)
 		}
 	}
 	else {
-		auto it{m_shortcuts.find({event.mods, event.key})};
-		if (it != m_shortcuts.end()) {
-			widget& widget{(*this)[it->second]};
+		auto shortcut_it{m_shortcuts.find({event.mods, event.key})};
+		if (shortcut_it != m_shortcuts.end()) {
+			widget& widget{(*this)[shortcut_it->second]};
 			if (widget.interactible()) {
 				widget.on_action();
 				clear_selection();

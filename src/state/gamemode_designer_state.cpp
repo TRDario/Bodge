@@ -159,11 +159,11 @@ void gamemode_designer_state::set_up_ui(returning_from_subscreen returning_from_
 	};
 	const action_callback song_c_acb{
 		[this] {
-			std::vector<std::string>::iterator it{std::ranges::find(m_available_songs, m_pending.song)};
-			if (it == m_available_songs.end() || ++it == m_available_songs.end()) {
-				it = m_available_songs.begin();
+			std::vector<std::string>::iterator song_it{std::ranges::find(m_available_songs, m_pending.song)};
+			if (song_it == m_available_songs.end() || ++song_it == m_available_songs.end()) {
+				song_it = m_available_songs.begin();
 			}
-			m_pending.song = *it;
+			m_pending.song = *song_it;
 		},
 	};
 	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_acbs{

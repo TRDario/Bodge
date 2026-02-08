@@ -99,8 +99,8 @@ void scorefile::save_to_file() const
 
 bests scorefile::bests(const gamemode& gm) const
 {
-	std::vector<score_category>::const_iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
-	return it != categories.end() ? ::bests{it->best_score, it->best_time} : ::bests{0, 0};
+	std::vector<score_category>::const_iterator category_it{std::ranges::find(categories, gm, &score_category::gamemode)};
+	return category_it != categories.end() ? ::bests{category_it->best_score, category_it->best_time} : ::bests{0, 0};
 }
 
 std::string scorefile::format_player_info() const
@@ -112,14 +112,14 @@ std::string scorefile::format_player_info() const
 
 void scorefile::add_score(const gamemode& gm, const score_entry& s)
 {
-	std::vector<score_category>::iterator it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
-	if (it == categories.end()) {
-		it = categories.insert(it, {gm, s.score, s.time, {}});
+	std::vector<score_category>::iterator category_it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
+	if (category_it == categories.end()) {
+		category_it = categories.insert(category_it, {gm, s.score, s.time, {}});
 	}
 	else {
-		it->best_score = std::max(it->best_score, s.score);
-		it->best_time = std::max(it->best_time, s.time);
+		category_it->best_score = std::max(category_it->best_score, s.score);
+		category_it->best_time = std::max(category_it->best_time, s.time);
 	}
-	it->entries.emplace_back(s);
+	category_it->entries.emplace_back(s);
 	playtime += s.time;
 }

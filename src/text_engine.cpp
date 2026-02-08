@@ -249,10 +249,10 @@ tr::bitmap text_engine::render_gradient_glyph(u32 glyph, font font, tr::sys::ttf
 	tr::bitmap render{font_ref.render(glyph, "00000080"_rgba8)};
 	font_ref.set_outline(0);
 	tr::bitmap fill{font_ref.render(glyph, WHITE)};
-	for (tr::bitmap::mut_it it = fill.begin(); it != fill.end(); ++it) {
-		const tr::rgba8 value{*it};
-		u8 shade{u8(value.r / 4 + value.r * 3 / 4 * (fill.size().y - it.pos().y) / fill.size().y)};
-		*it = tr::rgba8{shade, shade, shade, value.a};
+	for (tr::bitmap::mut_it pixel_it = fill.begin(); pixel_it != fill.end(); ++pixel_it) {
+		const tr::rgba8 value{*pixel_it};
+		u8 shade{u8(value.r / 4 + value.r * 3 / 4 * (fill.size().y - pixel_it.pos().y) / fill.size().y)};
+		*pixel_it = tr::rgba8{shade, shade, shade, value.a};
 	}
 	render.blit(glm::ivec2{scaled_outline}, fill.sub({{}, render.size() - 2 * scaled_outline}));
 	return render;

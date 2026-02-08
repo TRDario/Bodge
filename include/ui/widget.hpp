@@ -1,7 +1,7 @@
 #pragma once
 #include "../audio.hpp"
-#include "../text_engine.hpp"
 #include "../replay.hpp"
+#include "../text_engine.hpp"
 #include "../timer.hpp"
 #include "widget_base.hpp"
 
@@ -358,17 +358,17 @@ struct score_widget : public text_widget {
 
 // Must be initialized before text_button_widget, so is separated out into its own struct.
 struct replay_widget_data {
-	// Reference to the replays state.
-	replays_state& m_state;
+	// Reference to the parent replays state.
+	replays_state& m_parent_state;
 	// Iterator to the entry in the replay map corresponding to this widget.
-	std::optional<replay_map::const_iterator> m_it;
+	std::optional<replay_map::const_iterator> m_replay_it;
 };
 
 // Button widget used to display replay information and select a replay to be played.
 struct replay_widget : private replay_widget_data, public text_button_widget {
 	// Creates a replay widget.
 	replay_widget(tweened_position pos, tr::align alignment, ticks unhide_time, replays_state& state,
-				  std::optional<replay_map::const_iterator> it);
+				  std::optional<replay_map::const_iterator> replay_it);
 
 	glm::vec2 size() const override;
 	void add_to_renderer() override;

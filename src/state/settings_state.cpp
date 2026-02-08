@@ -214,11 +214,11 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	const action_callback music_volume_d_acb{[&mv = m_pending.music_volume] { mv = u8(std::max(mv - keymods_choose(1, 10, 25), 0)); }};
 	const action_callback music_volume_i_acb{[&mv = m_pending.music_volume] { mv = u8(std::min(mv + keymods_choose(1, 10, 25), 100)); }};
 	const action_callback language_c_acb{[this] {
-		std::map<language_code, language_info>::iterator it{g_languages.find(m_pending.language)};
-		if (it == g_languages.end() || ++it == g_languages.end()) {
-			it = g_languages.begin();
+		std::map<language_code, language_info>::iterator language_it{g_languages.find(m_pending.language)};
+		if (language_it == g_languages.end() || ++language_it == g_languages.end()) {
+			language_it = g_languages.begin();
 		}
-		m_pending.language = it->first;
+		m_pending.language = language_it->first;
 		g_text_engine.reload_language_preview_font(m_pending);
 	}};
 	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_acbs{

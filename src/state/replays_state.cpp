@@ -120,9 +120,9 @@ float replays_state::fade_overlay_opacity()
 std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_widgets()
 {
 	std::unordered_map<tag, std::unique_ptr<widget>> map;
-	replay_map::const_iterator it{std::next(m_replays.begin(), REPLAYS_PER_PAGE * m_page)};
+	replay_map::const_iterator replay_it{std::next(m_replays.begin(), REPLAYS_PER_PAGE * m_page)};
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
-		const std::optional<replay_map::const_iterator> opt_it{it != m_replays.end() ? std::optional{it++} : std::nullopt};
+		const std::optional<replay_map::const_iterator> opt_it{replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt};
 		const tweened_position move_in{{i % 2 == 0 ? 600 : 400, 183 + 125 * i}, {500, 183 + 125 * i}, 0.25_s};
 		map.emplace(REPLAY_TAGS[i], std::make_unique<replay_widget>(move_in, tr::align::CENTER, 0.25_s, *this, opt_it));
 	}
@@ -179,9 +179,9 @@ void replays_state::set_up_ui()
 								   loc_text_callback{T_NO_REPLAYS_FOUND}, tr::sys::ttf_style::NORMAL, 64, DARK_GRAY);
 		return;
 	}
-	replay_map::iterator it{m_replays.begin()};
+	replay_map::iterator replay_it{m_replays.begin()};
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
-		const std::optional<replay_map::iterator> opt_it{it != m_replays.end() ? std::optional{it++} : std::nullopt};
+		const std::optional<replay_map::iterator> opt_it{replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt};
 		const tweened_position move_in{{i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s};
 		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], move_in, tr::align::CENTER, 0.5_s, *this, opt_it);
 	}

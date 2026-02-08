@@ -7,27 +7,27 @@
 
 tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 {
-	for (auto it = args.begin(); it != args.end(); ++it) {
-		if (*it == "--datadir" && ++it < args.end()) {
-			g_cli_settings.data_directory = std::filesystem::canonical(std::filesystem::path{*it});
+	for (auto arg_it = args.begin(); arg_it != args.end(); ++arg_it) {
+		if (*arg_it == "--datadir" && ++arg_it < args.end()) {
+			g_cli_settings.data_directory = std::filesystem::canonical(std::filesystem::path{*arg_it});
 		}
-		else if (*it == "--userdir" && ++it < args.end()) {
-			const std::filesystem::path userdir_path{std::filesystem::path{*it}};
+		else if (*arg_it == "--userdir" && ++arg_it < args.end()) {
+			const std::filesystem::path userdir_path{std::filesystem::path{*arg_it}};
 			if (!std::filesystem::exists(userdir_path)) {
 				std::filesystem::create_directory(userdir_path);
 			}
 			g_cli_settings.user_directory = std::filesystem::canonical(userdir_path);
 		}
-		else if (*it == "--refreshrate" && ++it < args.end()) {
-			std::from_chars(*it, *it + std::strlen(*it), g_cli_settings.refresh_rate);
+		else if (*arg_it == "--refreshrate" && ++arg_it < args.end()) {
+			std::from_chars(*arg_it, *arg_it + std::strlen(*arg_it), g_cli_settings.refresh_rate);
 		}
-		else if (*it == "--gamespeed" && ++it < args.end()) {
-			std::from_chars(*it, *it + std::strlen(*it), g_cli_settings.game_speed);
+		else if (*arg_it == "--gamespeed" && ++arg_it < args.end()) {
+			std::from_chars(*arg_it, *arg_it + std::strlen(*arg_it), g_cli_settings.game_speed);
 		}
-		else if (*it == "--showperf") {
+		else if (*arg_it == "--showperf") {
 			g_cli_settings.show_perf = true;
 		}
-		else if (*it == "--help") {
+		else if (*arg_it == "--help") {
 			std::cout << "Bodge " VERSION_STRING " by TRDario, 2025-2026.\n"
 						 "Supported arguments:\n"
 						 "--datadir <path>       - Overrides the data directory.\n"
