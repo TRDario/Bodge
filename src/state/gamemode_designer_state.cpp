@@ -197,6 +197,10 @@ void gamemode_designer_state::set_up_ui(returning_from_subscreen returning_from_
 
 	text_callback song_c_tcb{[&] { return std::string{m_pending.song}; }};
 
+	// TOOLTIP CALLBACKS
+
+	text_callback save_ttcb{[&] { return m_ui.as<line_input_widget<12>>(T_NAME).buffer.empty() ? std::string{g_loc["save_tt"]} : ""; }};
+
 	//
 
 	if (returning_from_subscreen == returning_from_subscreen::YES) {
@@ -225,8 +229,9 @@ void gamemode_designer_state::set_up_ui(returning_from_subscreen returning_from_
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
 		const tweened_position move_in{BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s};
-		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
-										 loc_text_callback{BOTTOM_BUTTONS[i]}, font::LANGUAGE, 48, bottom_scbs[i], bottom_acbs[i], sound);
+		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s,
+										 BOTTOM_BUTTONS[i] == T_SAVE ? save_ttcb : NO_TOOLTIP, loc_text_callback{BOTTOM_BUTTONS[i]},
+										 font::LANGUAGE, 48, bottom_scbs[i], bottom_acbs[i], sound);
 	}
 }
 
