@@ -56,6 +56,7 @@
 | * Fixed balls occasionally reflecting in mid-air due to floating-point imprecision.                                 |
 | * Fixed balls rendering incorrectly when pausing and exiting a game while the screen is shaking after getting hit.  |
 | * Fixed some settings not applying immediately.                                                                     |
+| * Fixed the scorefile and settings getting wiped under certain circumstances.                                       |
 | v1.2.1 (01 Feb 2026)                                                                                                |
 | * Fixed the name entry screen not appearing at first startup.                                                       |
 | * Fixed menu music not playing after exiting a game in some cases.                                                  |

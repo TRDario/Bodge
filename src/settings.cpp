@@ -56,6 +56,11 @@ void settings::load_from_file()
 
 void settings::save_to_file() const
 {
+	// Don't save default settings.
+	if (*this == settings{}) {
+		return;
+	}
+
 	try {
 		std::ofstream file{tr::open_file_w(g_cli_settings.user_directory / "settings.dat", std::ios::binary)};
 		std::ostringstream buffer;

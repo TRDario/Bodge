@@ -84,6 +84,11 @@ void scorefile::load_from_file()
 
 void scorefile::save_to_file() const
 {
+	// Don't save default scorefile.
+	if (name.empty()) {
+		return;
+	}
+
 	const std::filesystem::path path{g_cli_settings.user_directory / "scorefile.dat"};
 	try {
 		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
