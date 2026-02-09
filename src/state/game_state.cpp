@@ -108,7 +108,7 @@ tr::next_state game_state::tick()
 			case game_type::GAMEMODE_DESIGNER_TEST:
 				m_substate = substate_base::EXITING | game_type::GAMEMODE_DESIGNER_TEST;
 				m_elapsed = 0;
-				m_next_state = make_async<gamemode_designer_state>(m_game->gamemode());
+				m_next_state = make_async<gamemode_designer_state>();
 				break;
 			case game_type::REPLAY:
 				m_substate = substate_base::EXITING | game_type::REPLAY;

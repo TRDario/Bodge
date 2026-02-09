@@ -122,8 +122,7 @@ void title_state::set_up_ui()
 			m_substate = substate::EXITING_TO_SUBMENU;
 			m_elapsed = 0;
 			set_up_exit_animation();
-			m_next_state = make_async<gamemode_designer_state>(m_game, gamemode{.author = g_scorefile.name, .song = "classic"},
-															   returning_from_subscreen::NO);
+			m_next_state = make_async<gamemode_designer_state>(m_game, returning_from_subscreen::NO);
 		},
 		[this] {
 			m_substate = substate::EXITING_TO_SUBMENU;

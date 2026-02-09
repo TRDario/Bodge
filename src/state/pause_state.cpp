@@ -266,7 +266,7 @@ void pause_state::set_up_limited_ui()
 			m_substate = substate_base::QUITTING | to_type(m_substate);
 			set_up_exit_animation();
 			if (to_type(m_substate) == game_type::GAMEMODE_DESIGNER_TEST) {
-				m_next_state = make_async<gamemode_designer_state>(m_game->gamemode());
+				m_next_state = make_async<gamemode_designer_state>();
 			}
 			else {
 				m_next_state = make_async<replays_state>();

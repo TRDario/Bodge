@@ -14,10 +14,10 @@ constexpr tag T_SONG{"song"};
 constexpr tag T_SONG_C{"song_c"};
 constexpr tag T_TEST{"test"};
 constexpr tag T_SAVE{"save"};
-constexpr tag T_DISCARD{"discard"};
+constexpr tag T_EXIT{"exit"};
 
 // Buttons on the bottom of the screen.
-constexpr std::array<tag, 3> BOTTOM_BUTTONS{T_TEST, T_SAVE, T_DISCARD};
+constexpr std::array<tag, 3> BOTTOM_BUTTONS{T_TEST, T_SAVE, T_EXIT};
 
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_NAME},
@@ -27,7 +27,7 @@ constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_SONG_C},
 	selection_tree_row{T_TEST},
 	selection_tree_row{T_SAVE},
-	selection_tree_row{T_DISCARD},
+	selection_tree_row{T_EXIT},
 };
 
 constexpr shortcut_table SHORTCUTS{
@@ -40,11 +40,11 @@ constexpr shortcut_table SHORTCUTS{
 	{"S"_kc, T_SAVE},
 	{"Enter"_kc, T_SAVE},
 	{"4"_kc, T_SAVE},
-	{"C"_kc, T_DISCARD},
-	{"Q"_kc, T_DISCARD},
-	{"E"_kc, T_DISCARD},
-	{"Escape"_kc, T_DISCARD},
-	{"5"_kc, T_DISCARD},
+	{"C"_kc, T_EXIT},
+	{"Q"_kc, T_EXIT},
+	{"E"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT},
+	{"5"_kc, T_EXIT},
 };
 
 constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
@@ -59,23 +59,20 @@ constexpr tweened_position SONG_C_MOVE_IN{glm::vec2{400, 700}, glm::vec2{500, 70
 // clang-format on
 ///////////////////////////////////////////////////////// GAMEMODE DESIGNER STATE /////////////////////////////////////////////////////////
 
-gamemode_designer_state::gamemode_designer_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode,
-												 returning_from_subscreen returning_from_subscreen)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
-	, m_substate{substate::IN_GAMEMODE_DESIGNER}
-	, m_pending{gamemode}
-	, m_available_songs{create_available_song_list()}
-{
-	set_up_ui(returning_from_subscreen);
-}
-
-gamemode_designer_state::gamemode_designer_state(const gamemode& gamemode)
+gamemode_designer_state::gamemode_designer_state()
 	: main_menu_state{SELECTION_TREE, SHORTCUTS}
 	, m_substate{substate::RETURNING_FROM_TEST_GAME}
-	, m_pending{gamemode}
 	, m_available_songs{create_available_song_list()}
 {
 	set_up_ui(returning_from_subscreen::NO);
+}
+
+gamemode_designer_state::gamemode_designer_state(std::shared_ptr<playerless_game> game, returning_from_subscreen returning_from_subscreen)
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+	, m_substate{substate::IN_GAMEMODE_DESIGNER}
+	, m_available_songs{create_available_song_list()}
+{
+	set_up_ui(returning_from_subscreen);
 }
 
 //
@@ -141,53 +138,55 @@ void gamemode_designer_state::set_up_ui(returning_from_subscreen returning_from_
 		[this] {
 			m_substate = substate::EXITING;
 			m_elapsed = 0;
-			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			g_scorefile.last_designed.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
+			g_scorefile.last_designed.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 			set_up_subscreen_animation();
-			m_next_state = make_async<ball_settings_editor_state>(m_game, m_pending);
+			m_next_state = make_async<ball_settings_editor_state>(m_game);
 		},
 	};
 	const action_callback player_settings_acb{
 		[this] {
 			m_substate = substate::EXITING;
 			m_elapsed = 0;
-			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			g_scorefile.last_designed.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
+			g_scorefile.last_designed.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 			set_up_subscreen_animation();
-			m_next_state = make_async<player_settings_editor_state>(m_game, m_pending);
+			m_next_state = make_async<player_settings_editor_state>(m_game);
 		},
 	};
 	const action_callback song_c_acb{
 		[this] {
-			std::vector<std::string>::iterator song_it{std::ranges::find(m_available_songs, m_pending.song)};
+			std::vector<std::string>::iterator song_it{std::ranges::find(m_available_songs, g_scorefile.last_designed.song)};
 			if (song_it == m_available_songs.end() || ++song_it == m_available_songs.end()) {
 				song_it = m_available_songs.begin();
 			}
-			m_pending.song = *song_it;
+			g_scorefile.last_designed.song = *song_it;
 		},
 	};
 	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_acbs{
 		[this] {
 			m_substate = substate::ENTERING_TEST_GAME;
 			m_elapsed = 0;
-			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			g_scorefile.last_designed.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
+			g_scorefile.last_designed.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 			set_up_exit_animation();
 			g_audio.fade_song_out(0.5s);
-			m_next_state = make_game_state_async<active_game>(game_type::GAMEMODE_DESIGNER_TEST, fade_in::YES, m_pending);
+			m_next_state = make_game_state_async<active_game>(game_type::GAMEMODE_DESIGNER_TEST, fade_in::YES, g_scorefile.last_designed);
 		},
 		[this] {
 			m_substate = substate::EXITING;
 			m_elapsed = 0;
-			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
-			m_pending.save_to_file();
+			g_scorefile.last_designed.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
+			g_scorefile.last_designed.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			g_scorefile.last_designed.save_to_file();
 			set_up_exit_animation();
 			m_next_state = make_async<title_state>(m_game);
 		},
 		[this] {
 			m_substate = substate::EXITING;
 			m_elapsed = 0;
+			g_scorefile.last_designed.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
+			g_scorefile.last_designed.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
 			set_up_exit_animation();
 			m_next_state = make_async<title_state>(m_game);
 		},
@@ -195,7 +194,7 @@ void gamemode_designer_state::set_up_ui(returning_from_subscreen returning_from_
 
 	// TEXT CALLBACKS
 
-	text_callback song_c_tcb{[&] { return std::string{m_pending.song}; }};
+	text_callback song_c_tcb{[] { return std::string{g_scorefile.last_designed.song}; }};
 
 	// TOOLTIP CALLBACKS
 
@@ -212,12 +211,12 @@ void gamemode_designer_state::set_up_ui(returning_from_subscreen returning_from_
 								   tr::sys::ttf_style::NORMAL, 64);
 	}
 	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, tr::sys::ttf_style::NORMAL, 120, scb, name_enter_cb,
-										m_pending.name);
+										g_scorefile.last_designed.name);
 	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 							   const_text_callback{TR_FMT::format("{}: {}", g_loc["by"], g_scorefile.name)}, tr::sys::ttf_style::NORMAL,
 							   32);
 	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, tr::sys::ttf_style::ITALIC, 32, scb,
-										description_enter_cb, m_pending.description);
+										description_enter_cb, g_scorefile.last_designed.description);
 	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, BALL_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 									 loc_text_callback{T_BALL_SETTINGS}, font::LANGUAGE, 64, scb, ball_settings_acb, sound::CONFIRM);
 	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, PLAYER_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,

@@ -42,6 +42,7 @@ name_entry_state::name_entry_state()
 			m_ui[T_CONFIRM].pos.move(BOTTOM_START_POS, 1.0_s);
 			m_ui.hide_all_widgets(1.0_s);
 			g_scorefile.name = name;
+			g_scorefile.last_designed.author = name;
 			m_next_state = make_async<title_state>(m_game);
 		}
 	}};

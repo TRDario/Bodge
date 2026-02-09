@@ -145,11 +145,10 @@ enum class returning_from_subscreen : bool {
 // Gamemode designer screen of the main menu.
 class gamemode_designer_state : public main_menu_state {
   public:
-	// Creates a gamemode designer state coming from another menu state.
-	gamemode_designer_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode,
-							returning_from_subscreen returning_from_subscreen);
 	// Creates a gamemode designer state coming from a test game.
-	gamemode_designer_state(const gamemode& gamemode);
+	gamemode_designer_state();
+	// Creates a gamemode designer state coming from another menu state.
+	gamemode_designer_state(std::shared_ptr<playerless_game> game, returning_from_subscreen returning_from_subscreen);
 
 	tr::next_state tick() override;
 
@@ -168,8 +167,6 @@ class gamemode_designer_state : public main_menu_state {
 
 	// The current substate.
 	substate m_substate;
-	// The pending gamemode.
-	gamemode m_pending;
 	// List of names of available songs.
 	std::vector<std::string> m_available_songs;
 
@@ -189,7 +186,7 @@ class gamemode_designer_state : public main_menu_state {
 class ball_settings_editor_state : public main_menu_state {
   public:
 	// Creates a ball settings editor state.
-	ball_settings_editor_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode);
+	ball_settings_editor_state(std::shared_ptr<playerless_game> game);
 
 	tr::next_state tick() override;
 
@@ -204,8 +201,6 @@ class ball_settings_editor_state : public main_menu_state {
 
 	// The current substate.
 	substate m_substate;
-	// The pending gamemode.
-	gamemode m_pending;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
@@ -217,7 +212,7 @@ class ball_settings_editor_state : public main_menu_state {
 class player_settings_editor_state : public main_menu_state {
   public:
 	// Creates a player settings editor state.
-	player_settings_editor_state(std::shared_ptr<playerless_game> game, const gamemode& gamemode);
+	player_settings_editor_state(std::shared_ptr<playerless_game> game);
 
 	tr::next_state tick() override;
 
@@ -232,8 +227,6 @@ class player_settings_editor_state : public main_menu_state {
 
 	// The current substate.
 	substate m_substate;
-	// The pending gamemode.
-	gamemode m_pending;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
