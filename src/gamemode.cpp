@@ -8,7 +8,7 @@
 constexpr u8 GAMEMODE_VERSION{1};
 
 // Built-in gamemodes that are always available.
-const std::array<gamemode, 3> BUILTIN_GAMEMODES{{
+const std::array<gamemode, 4> BUILTIN_GAMEMODES{{
 	{
 		.builtin = true,
 		.name = "gm_classic",
@@ -55,6 +55,22 @@ const std::array<gamemode, 3> BUILTIN_GAMEMODES{{
 			  .size_step = 0,
 			  .initial_velocity = 250,
 			  .velocity_step = 10},
+	},
+	{
+		.builtin = true,
+		.name = "gm_variety",
+		.author = "TRDario",
+		.description = "gm_variety_d",
+		.song = "variety",
+		.player{.starting_lives = 0,
+			    .life_fragment_spawn_interval = 15.36_s},
+		.ball{.starting_count = 1,
+			  .max_count = 25,
+			  .spawn_interval = 3.84_s,
+			  .initial_size = 10,
+			  .size_step = 1.5f,
+			  .initial_velocity = 300,
+			  .velocity_step = 0},
 	},
 }};
 

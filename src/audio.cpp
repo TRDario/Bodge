@@ -31,7 +31,7 @@ static std::optional<tr::audio::buffer> try_loading_audio_file(const char* filen
 
 std::vector<std::string> create_available_song_list()
 {
-	std::vector<std::string> songs{"classic", "chonk", "swarm"};
+	std::vector<std::string> songs{"classic", "chonk", "swarm", "variety"};
 	try {
 		const std::filesystem::path userdir{g_cli_settings.user_directory / "music"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{userdir}) {
