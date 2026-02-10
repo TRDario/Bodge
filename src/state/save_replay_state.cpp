@@ -84,6 +84,12 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 		}
 	}};
 
+	// TOOLTIP CALLBACKS
+
+	const text_callback save_ttcb{[this] {
+		return m_ui.as<line_input_widget<20>>(T_NAME_INPUT).buffer.empty() ? std::string{g_loc["save_replay_tt"]} : std::string{};
+	}};
+
 	//
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
@@ -96,7 +102,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 							   tr::sys::ttf_style::NORMAL, 48);
 	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24,
 											  scb);
-	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
+	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, save_ttcb, loc_text_callback{T_SAVE},
 									 font::LANGUAGE, 48, save_scb, save_acb, sound::CONFIRM);
 	m_ui.emplace<text_button_widget>(T_DISCARD, DISCARD_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DISCARD},
 									 font::LANGUAGE, 48, scb, discard_acb, sound::CONFIRM);

@@ -194,11 +194,13 @@ void gamemode_designer_state::set_up_ui(returning_from_subscreen returning_from_
 
 	// TEXT CALLBACKS
 
-	text_callback song_c_tcb{[] { return std::string{g_scorefile.last_designed.song}; }};
+	const text_callback song_c_tcb{[] { return std::string{g_scorefile.last_designed.song}; }};
 
 	// TOOLTIP CALLBACKS
 
-	text_callback save_ttcb{[&] { return m_ui.as<line_input_widget<12>>(T_NAME).buffer.empty() ? std::string{g_loc["save_tt"]} : ""; }};
+	const text_callback save_ttcb{
+		[this] { return m_ui.as<line_input_widget<12>>(T_NAME).buffer.empty() ? std::string{g_loc["save_gamemode_tt"]} : std::string{}; },
+	};
 
 	//
 
