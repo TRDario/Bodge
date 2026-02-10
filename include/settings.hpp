@@ -41,7 +41,7 @@ constexpr u8 NO_MSAA{0};
 // Program settings.
 inline struct settings {
 	// Size of the window (only used if display_mode == WINDOWED).
-	u16 window_size{1000};
+	u16 window_size{800};
 	// Active display mode.
 	display_mode display_mode{display_mode::WINDOWED};
 	// Whether V-sync is enabled.

@@ -64,6 +64,7 @@ tr::sys::signal initialize()
 
 	g_settings.load_from_file();
 	g_scorefile.load_from_file();
+	g_loaded_userdata = true;
 	load_languages();
 	load_localization();
 	g_text_engine.load_fonts();
@@ -146,6 +147,8 @@ void shut_down()
 	tr::sys::close_window();
 	g_audio.shut_down();
 	g_text_engine.unload_fonts();
-	g_scorefile.save_to_file();
-	g_settings.save_to_file();
+	if (g_loaded_userdata) {
+		g_scorefile.save_to_file();
+		g_settings.save_to_file();
+	}
 }
