@@ -52,7 +52,8 @@
 | * Made it easier to earn lives: after failing to collect fragments, only the ones missed will spawn next time.      |
 | * Adjusted the opacity of the lives, timer and score and made them fade out if a life fragment is behind them.      |
 | * Adjusted ball collisions to make small balls less prone to supersonic speeds after hitting much larger balls.     |
-| * Made a few quality-of-life adjustments to the gamemode designer.                                                  |
+| * Made the gamemode designer remember the last designed gamemode.                                                   |
+| * Added explanatory tooltips when unable to save a gamemode or replay.                                              |
 | * Fixed balls occasionally reflecting in mid-air due to floating-point imprecision.                                 |
 | * Fixed balls rendering incorrectly when pausing and exiting a game while the screen is shaking after getting hit.  |
 | * Fixed some settings not applying immediately.                                                                     |
