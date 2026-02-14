@@ -3,7 +3,7 @@ project(Bodge VERSION 1.3.0 LANGUAGES C CXX)
 
 include(FetchContent)
 
-FetchContent_Declare(tr GIT_REPOSITORY https://github.com/TRDario/tr.git GIT_TAG v1.1.0 GIT_SHALLOW true)
+FetchContent_Declare(tr GIT_REPOSITORY https://github.com/TRDario/tr.git GIT_TAG origin/bodge GIT_SHALLOW true)
 FetchContent_MakeAvailable(tr)
 
 add_executable(

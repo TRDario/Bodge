@@ -19,7 +19,7 @@ The source code provides basic documentation for all types, functions, constants
 
 Additional information about the structure of the program is provided in some of the headers (more may be added in the future).
 
-Bodge uses [tr](https://github.com/TRDario/tr/tree/fc6aaceee275443aa1223a50563664127d90ff84) as the underlying framework.
+Bodge uses [tr](https://github.com/TRDario/tr/tree/bodge) as the underlying framework.
 The version of tr used for Bodge (1.1) is not as extensively documented as the current version,
 but should have at least rudimentary notes about almost everything API-wise.
 
