@@ -452,6 +452,8 @@ class game_state : public state {
 
 	// The current substate.
 	substate m_substate;
+	// The speed multiplier of the playing song.
+	float m_song_speed;
 	// Pointer to the game being played.
 	std::shared_ptr<game> m_game;
 
@@ -464,6 +466,9 @@ class game_state : public state {
 
 	// Calculates the opacity of the fade overlay.
 	float fade_overlay_opacity() const;
+
+	// Sets the song of the playing speed if needed.
+	void set_song_speed_if_needed(float speed);
 
 	// Adds a visual of the cursor position of the player in the replay to the renderer.
 	void add_replay_cursor_to_renderer(glm::vec2 pos) const;

@@ -47,6 +47,8 @@ inline class audio {
 	void play_song(std::string_view name, tr::fsecs fade_in);
 	// Plays a song starting at an offset.
 	void play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_in);
+	// Sets the speed of the playing song.
+	void set_song_speed(float multiplier);
 	// Pauses the current song.
 	void pause_song();
 	// Unpauses the current song.

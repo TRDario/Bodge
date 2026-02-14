@@ -12,6 +12,7 @@ constexpr tag T_INDICATOR{"indicator"};
 game_state::game_state(std::shared_ptr<game> game, game_type type, fade_in fade_in)
 	: state{{}, {}}
 	, m_substate{(fade_in == fade_in::YES ? substate_base::FADING_IN : substate_base::ONGOING) | type}
+	, m_song_speed{1}
 	, m_game{std::move(game)}
 {
 	if (type == game_type::REPLAY) {
@@ -54,6 +55,7 @@ tr::next_state game_state::tick()
 				if (m_elapsed % 4 == 0) {
 					m_game->tick();
 				}
+				set_song_speed_if_needed(0.25f);
 			}
 			else if (g_held_keymods & tr::sys::keymod::CTRL) {
 				for (int i = 0; i < 4; ++i) {
@@ -62,9 +64,11 @@ tr::next_state game_state::tick()
 						break;
 					}
 				}
+				set_song_speed_if_needed(4.0f);
 			}
 			else {
 				m_game->tick();
+				set_song_speed_if_needed(1.0f);
 			}
 
 			if (((replay_game&)*m_game).done()) {
@@ -165,6 +169,14 @@ float game_state::fade_overlay_opacity() const
 		return 0;
 	case substate_base::EXITING:
 		return std::max(int(m_elapsed - 0.5_s), 0) / 0.5_sf;
+	}
+}
+
+void game_state::set_song_speed_if_needed(float speed)
+{
+	if (m_song_speed != speed) {
+		g_audio.set_song_speed(speed);
+		m_song_speed = speed;
 	}
 }
 

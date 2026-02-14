@@ -124,6 +124,7 @@ void audio::play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_in
 			m_current_song->stop();
 			m_current_song->use(tr::audio::open_file(path));
 			m_current_song->set_offset(offset);
+			m_current_song->set_pitch(1.0f);
 			m_current_song->set_gain(0.25f);
 			m_current_song->set_gain(0.6f, fade_in);
 			m_current_song->play();
@@ -134,10 +135,18 @@ void audio::play_song(std::string_view name, tr::fsecs offset, tr::fsecs fade_in
 	}
 }
 
+void audio::set_song_speed(float multiplier)
+{
+	if (m_current_song.has_value()) {
+		m_current_song->set_pitch(multiplier);
+	}
+}
+
 void audio::pause_song()
 {
 	if (m_current_song.has_value()) {
 		m_current_song->pause();
+		m_current_song->set_gain(0);
 	}
 }
 
@@ -145,7 +154,6 @@ void audio::unpause_song()
 {
 	if (m_current_song.has_value()) {
 		m_current_song->play();
-		m_current_song->set_gain(0);
 		m_current_song->set_gain(0.75f, 0.5s);
 	}
 }
