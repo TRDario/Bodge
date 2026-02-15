@@ -72,7 +72,8 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(enu
 
 scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreboard scoreboard)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
-	, m_substate{substate_base::IN_SCOREBOARD | scoreboard}
+	, m_substate{substate::IN_SCOREBOARD}
+	, m_scoreboard{scoreboard}
 	, m_page{0}
 	, m_selected{g_scorefile.categories.begin()}
 {
@@ -87,26 +88,26 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 
 	// STATUS CALLBACKS
 
-	const status_callback scb{[this] { return to_base(m_substate) == substate_base::IN_SCOREBOARD; }};
+	const status_callback scb{[this] { return m_substate == substate::IN_SCOREBOARD; }};
 	const status_callback gamemode_change_scb{
-		[this] { return to_base(m_substate) == substate_base::IN_SCOREBOARD && g_scorefile.categories.size() > 1; },
+		[this] { return m_substate == substate::IN_SCOREBOARD && g_scorefile.categories.size() > 1; },
 	};
-	const status_callback page_d_scb{[this] { return to_base(m_substate) == substate_base::IN_SCOREBOARD && m_page > 0; }};
+	const status_callback page_d_scb{[this] { return m_substate == substate::IN_SCOREBOARD && m_page > 0; }};
 	const status_callback page_i_scb{[this] {
 		const int last_page{std::max(int(m_selected->entries.size()) - 1, 0) / SCORES_PER_PAGE};
-		return to_base(m_substate) == substate_base::IN_SCOREBOARD && m_page < last_page;
+		return m_substate == substate::IN_SCOREBOARD && m_page < last_page;
 	}};
 
 	// ACTION CALLBACKS
 
 	const action_callback exit_acb{[this] {
-		m_substate = substate_base::EXITING | to_scoreboard(m_substate);
+		m_substate = substate::EXITING;
 		m_elapsed = 0;
 		set_up_exit_animation();
 		m_next_state = make_async<scoreboard_selection_state>(m_game, animate_title::NO);
 	}};
 	const action_callback gamemode_d_acb{[this] {
-		m_substate = substate_base::SWITCHING_PAGE | to_scoreboard(m_substate);
+		m_substate = substate::SWITCHING_PAGE;
 		m_elapsed = 0;
 		m_page = 0;
 		if (m_selected == g_scorefile.categories.begin()) {
@@ -116,7 +117,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		set_up_page_switch_animation();
 	}};
 	const action_callback gamemode_i_acb{[this] {
-		m_substate = substate_base::SWITCHING_PAGE | to_scoreboard(m_substate);
+		m_substate = substate::SWITCHING_PAGE;
 		m_elapsed = 0;
 		m_page = 0;
 		if (++m_selected == g_scorefile.categories.end()) {
@@ -125,13 +126,13 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		set_up_page_switch_animation();
 	}};
 	const action_callback page_d_acb{[this] {
-		m_substate = substate_base::SWITCHING_PAGE | to_scoreboard(m_substate);
+		m_substate = substate::SWITCHING_PAGE;
 		m_elapsed = 0;
 		--m_page;
 		set_up_page_switch_animation();
 	}};
 	const action_callback page_i_acb{[this] {
-		m_substate = substate_base::SWITCHING_PAGE | to_scoreboard(m_substate);
+		m_substate = substate::SWITCHING_PAGE;
 		m_elapsed = 0;
 		++m_page;
 		set_up_page_switch_animation();
@@ -162,8 +163,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		const tweened_position move_in{{i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s};
 		const usize rank{m_page * SCORES_PER_PAGE + i + 1};
 		const tr::opt_ref<score_entry> score{m_sorted_scores.size() > i ? tr::opt_ref{m_sorted_scores[i]} : std::nullopt};
-		m_ui.emplace<score_widget>(SCORE_TAGS[i], move_in, tr::align::CENTER, 0.5_s, (enum score_widget::type)(to_scoreboard(m_substate)),
-								   rank, score);
+		m_ui.emplace<score_widget>(SCORE_TAGS[i], move_in, tr::align::CENTER, 0.5_s, (enum score_widget::type)(m_scoreboard), rank, score);
 	}
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_D, GAMEMODE_D_MOVE_IN, tr::valign::BOTTOM, 0.5_s, arrow_type::LEFT, gamemode_change_scb,
 							   gamemode_d_acb);
@@ -182,50 +182,33 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 tr::next_state scoreboard_state::tick()
 {
 	main_menu_state::tick();
-	switch (to_base(m_substate)) {
-	case substate_base::IN_SCOREBOARD:
+	switch (m_substate) {
+	case substate::IN_SCOREBOARD:
 		return tr::KEEP_STATE;
-	case substate_base::SWITCHING_PAGE:
+	case substate::SWITCHING_PAGE:
 		if (m_elapsed >= 0.5_s) {
 			m_elapsed = 0;
-			m_substate = substate_base::IN_SCOREBOARD | to_scoreboard(m_substate);
+			m_substate = substate::IN_SCOREBOARD;
 		}
 		else if (m_elapsed == 0.25_s) {
 			m_ui.replace(m_next_widgets.get());
 		}
 		return tr::KEEP_STATE;
-	case substate_base::EXITING:
+	case substate::EXITING:
 		return next_state_if_after(0.5_s);
 	}
 }
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////
 
-scoreboard_state::substate operator|(const scoreboard_state::substate_base& l, const scoreboard& r)
-{
-	return scoreboard_state::substate(int(l) | int(r));
-}
-
-scoreboard_state::substate_base to_base(scoreboard_state::substate state)
-{
-	return scoreboard_state::substate_base(int(state) & 0x3);
-}
-
-scoreboard to_scoreboard(scoreboard_state::substate state)
-{
-	return scoreboard(int(state) & 0x4);
-}
-
 void scoreboard_state::set_up_page_switch_animation()
 {
-	const scoreboard scoreboard{to_scoreboard(m_substate)};
-
 	for (usize i = 0; i < SCORES_PER_PAGE; i++) {
 		m_ui[SCORE_TAGS[i]].move_x_and_hide(i % 2 == 0 ? 600 : 400, 0.25_s);
 	}
 	m_sorted_scores = m_selected->entries;
-	std::ranges::sort(m_sorted_scores, scoreboard == scoreboard::SCORE ? compare_scores : compare_times);
-	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, (enum score_widget::type)(scoreboard), m_sorted_scores, m_page);
+	std::ranges::sort(m_sorted_scores, m_scoreboard == scoreboard::SCORE ? compare_scores : compare_times);
+	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, (enum score_widget::type)(m_scoreboard), m_sorted_scores, m_page);
 }
 
 void scoreboard_state::set_up_exit_animation()

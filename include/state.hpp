@@ -372,8 +372,8 @@ class scoreboard_state : public main_menu_state {
 	tr::next_state tick() override;
 
   private:
-	// Base substates of the scoreboard state.
-	enum class substate_base {
+	// Substates of the scoreboard state.
+	enum class substate {
 		// In the scoreboard screen or entering it.
 		IN_SCOREBOARD,
 		// Switching a gamemode or pages.
@@ -381,12 +381,11 @@ class scoreboard_state : public main_menu_state {
 		// Exiting to the scoreboard selection screen.
 		EXITING
 	};
-	// Substates of the scoreboard state (substate_base + scoreboard).
-	enum class substate {
-	};
 
 	// The current substate.
 	substate m_substate;
+	// The scoreboard type.
+	scoreboard m_scoreboard;
 	// The currently open page.
 	int m_page;
 	// The currently selected gamemode.
@@ -395,13 +394,6 @@ class scoreboard_state : public main_menu_state {
 	std::vector<score_entry> m_sorted_scores;
 	// Holds the result of an asynchronously loaded new set of widgets.
 	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
-
-	// Combines substate components.
-	friend substate operator|(const substate_base& l, const scoreboard& r);
-	// Gets the base from a substate value.
-	friend substate_base to_base(substate state);
-	// Gets the scoreboard type from a substate value.
-	friend scoreboard to_scoreboard(substate state);
 
 	// Sets up the UI page switching animation.
 	void set_up_page_switch_animation();
@@ -601,7 +593,7 @@ class pause_state : public game_menu_state {
 	tr::next_state tick() override;
 
   private:
-	// Base substates of the pause state.
+	// Substates of the pause state.
 	enum class substate {
 		// Pausing the game.
 		PAUSING,
