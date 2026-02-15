@@ -58,7 +58,7 @@ struct gamemode {
 	// The description of the gamemode.
 	tr::static_string<40 * 4> description{};
 	// The name of the song used for the gamemode.
-	tr::static_string<12 * 4> song{};
+	tr::static_string<12 * 4> song{"classic"};
 	// The player settings.
 	player_settings player{};
 	// The ball settings.
@@ -85,5 +85,16 @@ template <> struct tr::binary_writer<gamemode> {
 
 // Randomly picks a menu gamemode.
 gamemode pick_menu_gamemode();
+
+// Container for a gamemode and its path.
+struct gamemode_with_path {
+	// The path of the gamemode.
+	std::string path;
+	// The gamemode.
+	gamemode gamemode;
+};
 // Loads all available gamemodes.
-std::vector<gamemode> load_gamemodes();
+std::vector<gamemode_with_path> load_gamemodes();
+
+// Saved draft of an unfinished new gamemode.
+inline gamemode g_new_gamemode_draft{};

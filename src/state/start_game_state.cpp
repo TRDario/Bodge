@@ -106,7 +106,9 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	, m_gamemodes{load_gamemodes()}
 	, m_selected{m_gamemodes.begin()}
 {
-	std::vector<gamemode>::iterator last_selected_it{std::ranges::find(m_gamemodes, g_scorefile.last_selected)};
+	std::vector<gamemode_with_path>::iterator last_selected_it{
+		std::ranges::find(m_gamemodes, g_scorefile.last_selected, &gamemode_with_path::gamemode),
+	};
 	if (last_selected_it != m_gamemodes.end()) {
 		m_selected = last_selected_it;
 	}
@@ -131,7 +133,7 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 		for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
 			m_ui[GAMEMODE_WIDGETS[i]].move_x_and_hide(GAMEMODE_WIDGETS_BASE_X[i] + 250, 0.25_s);
 		}
-		m_next_widgets = std::async(std::launch::async, prepare_next_widgets, *m_selected, starting_side::LEFT);
+		m_next_widgets = std::async(std::launch::async, prepare_next_widgets, m_selected->gamemode, starting_side::LEFT);
 	}};
 	const action_callback next_acb{[this] {
 		if (++m_selected == m_gamemodes.end()) {
@@ -142,45 +144,46 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 		for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
 			m_ui[GAMEMODE_WIDGETS[i]].move_x_and_hide(GAMEMODE_WIDGETS_BASE_X[i] - 250, 0.25_s);
 		}
-		m_next_widgets = std::async(std::launch::async, prepare_next_widgets, *m_selected, starting_side::RIGHT);
+		m_next_widgets = std::async(std::launch::async, prepare_next_widgets, m_selected->gamemode, starting_side::RIGHT);
 	}};
 	const action_callback start_acb{[this] {
 		m_substate = substate::STARTING_GAME;
 		m_elapsed = 0;
 		set_up_exit_animation();
-		g_scorefile.last_selected = *m_selected;
+		g_scorefile.last_selected = m_selected->gamemode;
 		g_audio.fade_song_out(0.5s);
-		m_next_state = make_game_state_async<active_game>(game_type::REGULAR, fade_in::YES, *m_selected);
+		m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_selected->gamemode);
 	}};
 	const action_callback exit_acb{[this] {
 		m_substate = substate::EXITING_TO_TITLE;
 		m_elapsed = 0;
 		set_up_exit_animation();
-		g_scorefile.last_selected = *m_selected;
+		g_scorefile.last_selected = m_selected->gamemode;
 		m_next_state = make_async<title_state>(m_game);
 	}};
 
 	//
 
+	const bests bests{g_scorefile.bests(m_selected->gamemode)};
+
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::sys::ttf_style::NORMAL, 64);
 	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   const_text_callback{std::string{m_selected->name_loc()}}, tr::sys::ttf_style::NORMAL, 120);
+							   const_text_callback{std::string{m_selected->gamemode.name_loc()}}, tr::sys::ttf_style::NORMAL, 120);
 	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   const_text_callback{TR_FMT::format("{}: {}", g_loc["by"], m_selected->author)}, tr::sys::ttf_style::NORMAL,
-							   32);
+							   const_text_callback{TR_FMT::format("{}: {}", g_loc["by"], m_selected->gamemode.author)},
+							   tr::sys::ttf_style::NORMAL, 32);
 	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   const_text_callback{m_selected->description_loc_with_fallback()}, tr::sys::ttf_style::ITALIC, 32, DARK_GRAY);
+							   const_text_callback{m_selected->gamemode.description_loc_with_fallback()}, tr::sys::ttf_style::ITALIC, 32,
+							   DARK_GRAY);
 	m_ui.emplace<label_widget>(T_BEST_TIME_LABEL, best_time_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 							   loc_text_callback{T_BEST_TIME_LABEL}, tr::sys::ttf_style::NORMAL, 32, YELLOW);
 	m_ui.emplace<label_widget>(T_BEST_TIME, BEST_TIME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   const_text_callback{format_time(g_scorefile.bests(*m_selected).time)}, tr::sys::ttf_style::NORMAL, 64,
-							   YELLOW);
+							   const_text_callback{format_time(bests.time)}, tr::sys::ttf_style::NORMAL, 64, YELLOW);
 	m_ui.emplace<label_widget>(T_BEST_SCORE_LABEL, best_score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 							   loc_text_callback{T_BEST_SCORE_LABEL}, tr::sys::ttf_style::NORMAL, 32, YELLOW);
 	m_ui.emplace<label_widget>(T_BEST_SCORE, BEST_SCORE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   const_text_callback{format_score(g_scorefile.bests(*m_selected).score)}, tr::sys::ttf_style::NORMAL, 64,
-							   YELLOW);
+							   const_text_callback{format_score(bests.score)}, tr::sys::ttf_style::NORMAL, 64, YELLOW);
 	m_ui.emplace<arrow_widget>(T_PREV, PREV_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, arrow_scb, prev_acb);
 	m_ui.emplace<arrow_widget>(T_NEXT, NEXT_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, arrow_scb, next_acb);
 	m_ui.emplace<text_button_widget>(T_START, START_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_START},

@@ -80,8 +80,6 @@ inline struct scorefile {
 	ticks playtime{0};
 	// Copy of the last gamemode selected in the "start game" menu.
 	gamemode last_selected;
-	// Copy of the last gamemode designed in the "gamemode designer" menu.
-	gamemode last_designed{.song = "classic"};
 
 	// Loads the scorefile.
 	void load_from_file();

@@ -156,11 +156,13 @@ gamemode pick_menu_gamemode()
 	return MENU_GAMEMODES[g_rng.generate(MENU_GAMEMODES.size())];
 }
 
-std::vector<gamemode> load_gamemodes()
+std::vector<gamemode_with_path> load_gamemodes()
 {
-	std::vector<gamemode> gamemodes;
+	std::vector<gamemode_with_path> gamemodes;
 	try {
-		gamemodes.insert(gamemodes.end(), BUILTIN_GAMEMODES.begin(), BUILTIN_GAMEMODES.end());
+		for (const gamemode& builtin : BUILTIN_GAMEMODES) {
+			gamemodes.emplace_back(std::string{}, builtin);
+		}
 		const std::filesystem::path gamemode_dir{g_cli_settings.user_directory / "gamemodes"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{gamemode_dir}) {
 			const std::filesystem::path path{file};
@@ -171,7 +173,7 @@ std::vector<gamemode> load_gamemodes()
 
 				std::ifstream is{tr::open_file_r(path, std::ios::binary)};
 				if (tr::binary_read<u8>(is) == GAMEMODE_VERSION) {
-					gamemodes.push_back(tr::binary_read<gamemode>(tr::decrypt(tr::flush_binary(is))));
+					gamemodes.emplace_back(path.string(), tr::binary_read<gamemode>(tr::decrypt(tr::flush_binary(is))));
 				}
 			}
 			catch (std::exception&) {

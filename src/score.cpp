@@ -5,9 +5,7 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Previous scorefile version identifier.
-constexpr u8 SCOREFILE_PREV_VERSION{1};
-// Scorefile version identifier.
-constexpr u8 SCOREFILE_VERSION{2};
+constexpr u8 SCOREFILE_VERSION{1};
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
 
@@ -65,16 +63,13 @@ void scorefile::load_from_file()
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const u8 version{tr::binary_read<u8>(file)};
-		if (version == SCOREFILE_PREV_VERSION || version == SCOREFILE_VERSION) {
+		if (version == SCOREFILE_VERSION || version == 2) {
 			const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 			std::span<const std::byte> data{raw};
 			data = tr::binary_read(data, name);
 			data = tr::binary_read(data, categories);
 			data = tr::binary_read(data, playtime);
 			data = tr::binary_read(data, last_selected);
-			if (version == SCOREFILE_VERSION) {
-				data = tr::binary_read(data, last_designed);
-			}
 		}
 	}
 	catch (std::exception&) {
@@ -97,7 +92,6 @@ void scorefile::save_to_file() const
 		tr::binary_write(buffer, categories);
 		tr::binary_write(buffer, playtime);
 		tr::binary_write(buffer, last_selected);
-		tr::binary_write(buffer, last_designed);
 		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), g_rng.generate<u8>())};
 		tr::binary_write(file, SCOREFILE_VERSION);
 		tr::binary_write(file, std::span{encrypted});
