@@ -63,7 +63,7 @@ void scorefile::load_from_file()
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const u8 version{tr::binary_read<u8>(file)};
-		if (version == SCOREFILE_VERSION || version == 2) {
+		if (version == SCOREFILE_VERSION) {
 			const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 			std::span<const std::byte> data{raw};
 			data = tr::binary_read(data, name);
