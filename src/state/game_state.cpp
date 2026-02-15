@@ -27,6 +27,7 @@ game_state::game_state(std::shared_ptr<game> game, game_state_data data, fade_in
 
 tr::next_state game_state::handle_event(const tr::sys::event& event)
 {
+	m_ui.handle_event(event);
 	if (m_substate != substate::FADING_IN && event.is<tr::sys::key_down_event>() && event.as<tr::sys::key_down_event>().key == "Escape"_k) {
 		g_audio.play_sound(sound::PAUSE, 0.8f, 0.0f);
 		g_audio.pause_song();
