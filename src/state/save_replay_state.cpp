@@ -69,7 +69,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 			m_next_state = make_async<title_state>();
 		}
 		else {
-			m_next_state = make_game_state_async<active_game>(game_type::REGULAR, fade_in::YES, m_game->gamemode());
+			m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
 		}
 	}};
 	const action_callback discard_acb{[this] {
@@ -80,7 +80,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 			m_next_state = make_async<title_state>();
 		}
 		else {
-			m_next_state = make_game_state_async<active_game>(game_type::REGULAR, fade_in::YES, m_game->gamemode());
+			m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
 		}
 	}};
 

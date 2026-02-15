@@ -167,7 +167,7 @@ replay_widget::replay_widget(tweened_position pos, tr::align alignment, ticks un
 								 m_parent_state.set_up_exit_animation();
 								 g_audio.fade_song_out(0.5s);
 								 m_parent_state.m_next_state =
-									 make_game_state_async<replay_game>(game_type::REPLAY, fade_in::YES, replay{(*m_replay_it)->first});
+									 make_game_state_async<replay_game>(replay_game_data{}, replay{(*m_replay_it)->first});
 							 }
 						 },
 						 sound::CONFIRM}

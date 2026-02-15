@@ -29,8 +29,7 @@ constexpr tweened_position EXIT_MOVE_IN{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 //////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////
 
-scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerless_game> game,
-													   returning_from_subscreen returning_from_subscreen)
+scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerless_game> game, animate_title animate_title)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SCOREBOARD_SELECTION}
 {
 	// STATUS CALLBACKS
@@ -42,38 +41,38 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 	const action_callback view_times_acb{[this] {
 		m_substate = substate::EXITING;
 		m_elapsed = 0;
-		set_up_subscreen_animation();
+		set_up_exit_animation(animate_title::NO);
 		m_next_state = make_async<scoreboard_state>(m_game, scoreboard::TIME);
 	}};
 	const action_callback view_scores_acb{[this] {
 		m_substate = substate::EXITING;
 		m_elapsed = 0;
-		set_up_subscreen_animation();
+		set_up_exit_animation(animate_title::NO);
 		m_next_state = make_async<scoreboard_state>(m_game, scoreboard::SCORE);
 	}};
 	const action_callback exit_acb{[this] {
 		m_substate = substate::EXITING;
 		m_elapsed = 0;
-		set_up_exit_animation();
+		set_up_exit_animation(animate_title::YES);
 		m_next_state = make_async<title_state>(m_game);
 	}};
 
 	//
 
-	if (returning_from_subscreen == returning_from_subscreen::YES) {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::sys::ttf_style::NORMAL, 64);
-		m_ui.emplace<label_widget>(T_PLAYER_INFO, glm::vec2{500, 64}, tr::align::TOP_CENTER, 0, NO_TOOLTIP,
-								   const_text_callback{g_scorefile.format_player_info()}, tr::sys::ttf_style::NORMAL, 32);
-		m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
-										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
-	}
-	else {
+	if (bool(animate_title)) {
 		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 								   tr::sys::ttf_style::NORMAL, 64);
 		m_ui.emplace<label_widget>(T_PLAYER_INFO, PLAYER_INFO_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
 								   const_text_callback{g_scorefile.format_player_info()}, tr::sys::ttf_style::NORMAL, 32);
 		m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
+										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
+	}
+	else {
+		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
+								   tr::sys::ttf_style::NORMAL, 64);
+		m_ui.emplace<label_widget>(T_PLAYER_INFO, glm::vec2{500, 64}, tr::align::TOP_CENTER, 0, NO_TOOLTIP,
+								   const_text_callback{g_scorefile.format_player_info()}, tr::sys::ttf_style::NORMAL, 32);
+		m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
 										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	}
 	m_ui.emplace<text_button_widget>(T_VIEW_TIMES, VIEW_TIMES_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
@@ -95,18 +94,13 @@ tr::next_state scoreboard_selection_state::tick()
 
 //
 
-void scoreboard_selection_state::set_up_subscreen_animation()
+void scoreboard_selection_state::set_up_exit_animation(animate_title animate_title)
 {
+	if (bool(animate_title)) {
+		m_ui[T_TITLE].move_and_hide(TOP_START_POS, 0.5_s);
+		m_ui[T_PLAYER_INFO].move_and_hide(TOP_START_POS, 0.5_s);
+		m_ui[T_EXIT].move_and_hide(BOTTOM_START_POS, 0.5_s);
+	}
 	m_ui[T_VIEW_TIMES].move_x_and_hide(600, 0.5_s);
 	m_ui[T_VIEW_SCORES].move_x_and_hide(400, 0.5_s);
-}
-
-void scoreboard_selection_state::set_up_exit_animation()
-{
-	m_ui[T_TITLE].pos.move(TOP_START_POS, 0.5_s);
-	m_ui[T_PLAYER_INFO].pos.move(TOP_START_POS, 0.5_s);
-	m_ui[T_VIEW_TIMES].pos.move_x(600, 0.5_s);
-	m_ui[T_VIEW_SCORES].pos.move_x(400, 0.5_s);
-	m_ui[T_EXIT].pos.move(BOTTOM_START_POS, 0.5_s);
-	m_ui.hide_all_widgets(0.5_s);
 }

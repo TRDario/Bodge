@@ -103,7 +103,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		m_substate = substate_base::EXITING | to_scoreboard(m_substate);
 		m_elapsed = 0;
 		set_up_exit_animation();
-		m_next_state = make_async<scoreboard_selection_state>(m_game, returning_from_subscreen::YES);
+		m_next_state = make_async<scoreboard_selection_state>(m_game, animate_title::NO);
 	}};
 	const action_callback gamemode_d_acb{[this] {
 		m_substate = substate_base::SWITCHING_PAGE | to_scoreboard(m_substate);

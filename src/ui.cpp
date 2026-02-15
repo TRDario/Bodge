@@ -11,6 +11,11 @@ ui_manager::ui_manager(selection_tree selection_tree, shortcut_table shortcuts)
 
 //
 
+bool ui_manager::contains(tag tag) const
+{
+	return m_widgets.find(tag) != m_widgets.end();
+}
+
 widget& ui_manager::operator[](tag tag)
 {
 	return *m_widgets.find(tag)->second;

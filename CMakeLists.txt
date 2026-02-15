@@ -28,7 +28,9 @@ add_executable(
     src/state/credits_state.cpp
     src/state/game_over_state.cpp
     src/state/game_state.cpp
-    src/state/gamemode_designer_state.cpp
+    src/state/gamemode_editor_state.cpp
+    src/state/gamemode_manager_state.cpp
+    src/state/gamemode_selector_state.cpp
     src/state/name_entry_state.cpp
     src/state/pause_state.cpp
     src/state/player_settings_editor_state.cpp
@@ -45,6 +47,7 @@ add_executable(
     src/ui.cpp
     src/ui/arrow_widget.cpp
     src/ui/color_preview_widget.cpp
+    src/ui/gamemode_widget.cpp
     src/ui/image_widget.cpp
     src/ui/label_widget.cpp
     src/ui/replay_playback_indicator_widget.cpp

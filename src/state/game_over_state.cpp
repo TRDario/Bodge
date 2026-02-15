@@ -83,7 +83,7 @@ game_over_state::game_over_state(std::shared_ptr<game> game, blur_in blur_in)
 			m_substate = substate::RESTARTING;
 			g_scorefile.add_score(m_game->gamemode(), score);
 			set_up_exit_animation();
-			m_next_state = make_game_state_async<active_game>(game_type::REGULAR, fade_in::YES, m_game->gamemode());
+			m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
 		},
 		[this] {
 			m_elapsed = 0;

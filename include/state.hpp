@@ -26,6 +26,8 @@
 #pragma once
 #include "state/state_base.hpp"
 
+using gamemode_widget_action_callback = std::function<void(const gamemode_with_path&)>;
+
 ////////////////////////////////////////////////////////////// STATE MACHINE //////////////////////////////////////////////////////////////
 
 // The global state machine.
@@ -122,9 +124,9 @@ class start_game_state : public main_menu_state {
 	// The current substate.
 	substate m_substate;
 	// List of available gamemodes.
-	std::vector<gamemode> m_gamemodes;
+	std::vector<gamemode_with_path> m_gamemodes;
 	// The currently selected gamemode.
-	std::vector<gamemode>::iterator m_selected;
+	std::vector<gamemode_with_path>::iterator m_selected;
 	// Holds the result of an asynchronously loaded new set of widgets.
 	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
 
@@ -134,50 +136,85 @@ class start_game_state : public main_menu_state {
 	void set_up_exit_animation();
 };
 
-///////////////////////////////////////////////////////// GAMEMODE DESIGNER STATE /////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////// GAMEMODE MANAGER STATE /////////////////////////////////////////////////////////
 
-// Whether a state is being entered from a subscreen.
-enum class returning_from_subscreen : bool {
-	NO,
-	YES
-};
-
-// Gamemode designer screen of the main menu.
-class gamemode_designer_state : public main_menu_state {
+// Gamemode manager screen of the main menu.
+class gamemode_manager_state : public main_menu_state {
   public:
-	// Creates a gamemode designer state coming from a test game.
-	gamemode_designer_state();
-	// Creates a gamemode designer state coming from another menu state.
-	gamemode_designer_state(std::shared_ptr<playerless_game> game, returning_from_subscreen returning_from_subscreen);
+	// Creates a gamemode manager state.
+	gamemode_manager_state(std::shared_ptr<playerless_game> game, animate_title animate_title);
 
 	tr::next_state tick() override;
 
   private:
-	// Substates of the gamemode designer state.
+	// Substates of the gamemode manager state.
 	enum class substate {
-		// Fading in and returning to the gamemode designer screen from a test game.
-		RETURNING_FROM_TEST_GAME,
-		// In the gamemode designer screen.
-		IN_GAMEMODE_DESIGNER,
-		// Fading out and entering a test game.
-		ENTERING_TEST_GAME,
+		// In the gamemode manager screen.
+		IN_GAMEMODE_MANAGER,
 		// Exiting to either a subscreen or the title screen.
 		EXITING,
 	};
 
 	// The current substate.
 	substate m_substate;
+
+	// Sets up the UI exit animation.
+	void set_up_exit_animation(animate_title animate_title);
+};
+
+////////////////////////////////////////////////////////// GAMEMODE EDITOR STATE //////////////////////////////////////////////////////////
+
+// Data specific to a new gamemode editor.
+struct new_gamemode_editor_data {};
+// Data specific to a cloned gamemode editor.
+struct cloned_gamemode_editor_data {};
+// Data specific to an edited gamemode editor.
+struct edited_gamemode_editor_data {
+	// Path to the edited gamemode.
+	std::filesystem::path path;
+};
+// Gamemode editor data.
+using gamemode_editor_data = std::variant<new_gamemode_editor_data, cloned_gamemode_editor_data, edited_gamemode_editor_data>;
+
+// Gamemode editor screens of the main menu.
+class gamemode_editor_state : public main_menu_state {
+  public:
+	// Creates a gamemode editor state coming from a test game.
+	gamemode_editor_state(gamemode_editor_data data, gamemode gamemode);
+	// Creates a gamemode editor state coming from another menu state.
+	gamemode_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode,
+						  animate_subtitle animate_subtitle);
+
+	tr::next_state tick() override;
+
+  private:
+	// Substates of the gamemode editor state.
+	enum class substate {
+		// Fading in and returning to the gamemode editor screen from a test game.
+		RETURNING_FROM_TEST_GAME,
+		// In the gamemode editor screen.
+		IN_GAMEMODE_EDITOR,
+		// Fading out and entering a test game.
+		ENTERING_TEST_GAME,
+		// Exiting to either a subscreen or the previous screen.
+		EXITING,
+	};
+
+	// The current substate.
+	substate m_substate;
+	// Type-dependent editor data.
+	gamemode_editor_data m_data;
 	// List of names of available songs.
 	std::vector<std::string> m_available_songs;
+	// The pending gamemode.
+	gamemode m_pending;
 
 	float fade_overlay_opacity() override;
 
 	// Sets up the UI when entering.
-	void set_up_ui(returning_from_subscreen returning_from_subscreen);
-	// Sets up the UI exit animation when entering a subscreen.
-	void set_up_subscreen_animation();
+	void set_up_ui(animate_title animate_title, animate_subtitle animate_subtitle);
 	// Sets up the UI exit animation.
-	void set_up_exit_animation();
+	void set_up_exit_animation(animate_title animate_title, animate_subtitle animate_subtitle);
 };
 
 //////////////////////////////////////////////////////// BALL SETTINGS EDITOR STATE ///////////////////////////////////////////////////////
@@ -186,7 +223,7 @@ class gamemode_designer_state : public main_menu_state {
 class ball_settings_editor_state : public main_menu_state {
   public:
 	// Creates a ball settings editor state.
-	ball_settings_editor_state(std::shared_ptr<playerless_game> game);
+	ball_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode);
 
 	tr::next_state tick() override;
 
@@ -201,6 +238,10 @@ class ball_settings_editor_state : public main_menu_state {
 
 	// The current substate.
 	substate m_substate;
+	// Type-dependent editor data.
+	gamemode_editor_data m_data;
+	// The pending gamemode.
+	gamemode m_pending;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
@@ -212,7 +253,7 @@ class ball_settings_editor_state : public main_menu_state {
 class player_settings_editor_state : public main_menu_state {
   public:
 	// Creates a player settings editor state.
-	player_settings_editor_state(std::shared_ptr<playerless_game> game);
+	player_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode);
 
 	tr::next_state tick() override;
 
@@ -227,18 +268,74 @@ class player_settings_editor_state : public main_menu_state {
 
 	// The current substate.
 	substate m_substate;
+	// Type-dependent editor data.
+	gamemode_editor_data m_data;
+	// The pending gamemode.
+	gamemode m_pending;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
 };
 
-//
+///////////////////////////////////////////////////////// GAMEMODE SELECTOR STATE /////////////////////////////////////////////////////////
+
+// Types of gamemode selectors.
+enum class gamemode_selector_type {
+	// Selector for gamemode cloning.
+	CLONE,
+	// Selector for gamemode editing.
+	EDIT,
+	// Selector for gamemode deleting.
+	DELETE
+};
+
+// Gamemode selector screens of the main menu.
+class gamemode_selector_state : public main_menu_state {
+  public:
+	// Creates a gamemode selector state.
+	gamemode_selector_state(std::shared_ptr<playerless_game> game, gamemode_selector_type type, animate_subtitle move_subtitle);
+
+	tr::next_state tick() override;
+
+  private:
+	// Substates of the gamemode selector state.
+	enum class substate {
+		// In the gamemode selector screen or entering it.
+		IN_GAMEMODE_SELECTOR,
+		// Switching pages.
+		SWITCHING_PAGE,
+		// Exiting to the gamemode manager screen or a gamemode editor screen.
+		EXITING
+	};
+
+	// The current substate.
+	substate m_substate;
+	// The type of selector.
+	gamemode_selector_type m_type;
+	// List of available gamemodes.
+	std::vector<gamemode_with_path> m_gamemodes;
+	// The currently open page.
+	int m_page;
+	// Holds the result of an asynchronously loaded new set of widgets.
+	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
+
+	// Gets a gamemode action callback fitting for the current gamemode selector type.
+	gamemode_widget_action_callback gamemode_acb();
+	// Prepares the widgets for the next page.
+	std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets();
+	// Sets up the UI page switching animation.
+	void set_up_page_switch_animation();
+	// Sets up the UI exit animation.
+	void set_up_exit_animation(animate_subtitle move_subtitle);
+};
+
+//////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////
 
 // Scoreboard selection screen of the main menu.
 class scoreboard_selection_state : public main_menu_state {
   public:
 	// Creates a scoreboard selection state.
-	scoreboard_selection_state(std::shared_ptr<playerless_game> game, returning_from_subscreen returning_from_subscreen);
+	scoreboard_selection_state(std::shared_ptr<playerless_game> game, animate_title animate_title);
 
 	tr::next_state tick() override;
 
@@ -254,10 +351,8 @@ class scoreboard_selection_state : public main_menu_state {
 	// The current substate.
 	substate m_substate;
 
-	// Sets up the UI exit animation when entering a subscreen.
-	void set_up_subscreen_animation();
 	// Sets up the UI exit animation.
-	void set_up_exit_animation();
+	void set_up_exit_animation(animate_title animate_title);
 };
 
 //////////////////////////////////////////////////////////// SCOREBOARDS STATE ////////////////////////////////////////////////////////////
@@ -418,6 +513,18 @@ class credits_state : public main_menu_state {
 
 /////////////////////////////////////////////////////////////// GAME STATE ////////////////////////////////////////////////////////////////
 
+// Data specific to a regular game state.
+struct regular_game_data {};
+// Data specific to a replay game state.
+struct replay_game_data {};
+// Data specific to a test game state.
+struct test_game_data {
+	// Properties of the gamemode editor.
+	gamemode_editor_data editor_data;
+};
+// Game state data.
+using game_state_data = std::variant<regular_game_data, replay_game_data, test_game_data>;
+
 // Whether a fade in should be done for the game state.
 enum class fade_in : bool {
 	NO,
@@ -428,15 +535,15 @@ enum class fade_in : bool {
 class game_state : public state {
   public:
 	// Creates a new game state.
-	game_state(std::shared_ptr<game> game, game_type type, fade_in fade_in);
+	game_state(std::shared_ptr<game> game, game_state_data data, fade_in fade_in);
 
 	tr::next_state handle_event(const tr::sys::event& event) override;
 	tr::next_state tick() override;
 	void draw() override;
 
   private:
-	// Base substates of the game state.
-	enum class substate_base {
+	// Substates of the game state.
+	enum class substate {
 		// Fading into the game state.
 		FADING_IN,
 		// The game is ongoing.
@@ -446,23 +553,15 @@ class game_state : public state {
 		// Fading out and exiting to menu.
 		EXITING
 	};
-	// Substates of the game state (substate_base + game_type).
-	enum class substate {
-	};
 
 	// The current substate.
 	substate m_substate;
+	// Type-specific state data.
+	game_state_data m_data;
 	// The speed multiplier of the playing song.
 	float m_song_speed;
 	// Pointer to the game being played.
 	std::shared_ptr<game> m_game;
-
-	// Combines substate components.
-	friend substate operator|(const substate_base& l, const game_type& r);
-	// Gets the base from a substate value.
-	friend substate_base to_base(substate state);
-	// Gets the game type from a substate value.
-	friend game_type to_type(substate state);
 
 	// Calculates the opacity of the fade overlay.
 	float fade_overlay_opacity() const;
@@ -476,15 +575,13 @@ class game_state : public state {
 
 // Asynchronously creates a game state.
 template <class T, class... Ts>
-std::future<tr::next_state> make_game_state_async(game_type type, fade_in fade_in, Ts&&... gargs)
+std::future<tr::next_state> make_game_state_async(game_state_data data, Ts... gargs)
 	requires(std::constructible_from<T, Ts...>)
 {
-	return std::async(
-		std::launch::async,
-		[]<class... Us>(game_type type, ::fade_in fade_in, Us&&... gargs) {
-			return (tr::next_state)std::make_unique<game_state>(std::make_shared<T>(std::forward<Us>(gargs)...), type, fade_in);
-		},
-		type, fade_in, std::forward<Ts>(gargs)...);
+	constexpr auto ctor{[](game_state_data data, auto... gargs) {
+		return (tr::next_state)std::make_unique<game_state>(std::make_shared<T>(std::move(gargs)...), data, fade_in::YES);
+	}};
+	return std::async(std::launch::async, ctor, std::move(data), std::move(gargs)...);
 }
 
 /////////////////////////////////////////////////////////////// PAUSE STATE ///////////////////////////////////////////////////////////////
@@ -498,14 +595,14 @@ enum class blur_in : bool {
 // Pause screen state.
 class pause_state : public game_menu_state {
   public:
-	// Creates a pause state.
-	pause_state(std::shared_ptr<game> game, game_type type, glm::vec2 mouse_pos, blur_in blur_in);
+	// Creates a test game pause state.
+	pause_state(std::shared_ptr<game> game, game_state_data data, glm::vec2 mouse_pos, blur_in blur_in);
 
 	tr::next_state tick() override;
 
   private:
 	// Base substates of the pause state.
-	enum class substate_base {
+	enum class substate {
 		// Pausing the game.
 		PAUSING,
 		// In the pause screen.
@@ -519,23 +616,15 @@ class pause_state : public game_menu_state {
 		// Quitting to the main menu.
 		QUITTING
 	};
-	// Substates of the pause state (substate_base + game_type).
-	enum class substate {
-	};
 
 	// The current substate.
 	substate m_substate;
+	// Type-specific state data.
+	game_state_data m_data;
 	// The mouse position to restore when unpausing.
 	glm::vec2 m_start_mouse_pos;
 	// The mouse position right before unpausing.
 	glm::vec2 m_end_mouse_pos;
-
-	// Combines substate components.
-	friend substate operator|(const substate_base& l, const game_type& r);
-	// Gets the base from a substate value.
-	friend substate_base to_base(substate state);
-	// Gets the game type from a substate value.
-	friend game_type to_type(substate state);
 
 	float fade_overlay_opacity() override;
 	float saturation_factor() override;

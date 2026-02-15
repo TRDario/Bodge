@@ -328,6 +328,25 @@ struct replay_playback_indicator_widget : public widget {
 	void add_to_renderer() override;
 };
 
+///////////////////////////////////////////////////////////// GAMEMODE WIDGET /////////////////////////////////////////////////////////////
+
+// Action callback type used by the gamemode widget.
+using gamemode_widget_action_callback = std::function<void(const gamemode_with_path&)>;
+
+// Must be initialized before text_button_widget, so is separated out into its own struct.
+struct gamemode_widget_data {
+	// The gamemode associated with the widget.
+	std::optional<gamemode_with_path> gp;
+};
+
+// Button widget used to display replay information and select a replay to be played.
+struct gamemode_widget : gamemode_widget_data, text_button_widget {
+  public:
+	// Creates a gamemode widget.
+	gamemode_widget(tweened_position pos, tr::align alignment, ticks unhide_time, status_callback status_cb,
+					gamemode_widget_action_callback action_cb, std::optional<gamemode_with_path> gamemode);
+};
+
 /////////////////////////////////////////////////////////////// SCORE WIDGET //////////////////////////////////////////////////////////////
 
 // Widget used to display a time or score result.

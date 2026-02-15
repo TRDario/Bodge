@@ -123,7 +123,7 @@ void save_score_state::set_up_ui()
 			m_next_state = make_async<game_over_state>(m_game, blur_in::NO);
 		}
 		else {
-			m_next_state = make_async<pause_state>(m_game, game_type::REGULAR, m_start_mouse_pos, blur_in::NO);
+			m_next_state = make_async<pause_state>(m_game, regular_game_data{}, m_start_mouse_pos, blur_in::NO);
 		}
 	}};
 

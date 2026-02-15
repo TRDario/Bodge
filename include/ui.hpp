@@ -28,6 +28,8 @@ class ui_manager {
 	// Creates an empty interface.
 	ui_manager(selection_tree selection_tree, shortcut_table shortcuts);
 
+	// Gets whether the UI contains a widget with a certain tag.
+	bool contains(tag tag) const;
 	// Gets access to a widget in the interface.
 	widget& operator[](tag tag);
 	// Gets access to a widget in the interface.

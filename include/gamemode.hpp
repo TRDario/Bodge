@@ -92,6 +92,8 @@ struct gamemode_with_path {
 	std::string path;
 	// The gamemode.
 	gamemode gamemode;
+
+	bool operator==(const gamemode_with_path&) const = default;
 };
 // Loads all available gamemodes.
 std::vector<gamemode_with_path> load_gamemodes();

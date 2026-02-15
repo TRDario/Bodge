@@ -15,7 +15,7 @@ language_name = "English"
 # Title screen
     enter_your_name   = "ENTER YOUR NAME"
     start_game        = "START GAME"
-    gamemode_designer = "GAMEMODE DESIGNER"
+    gamemode_manager  = "GAMEMODE MANAGER"
     replays           = "REPLAYS"
     scoreboards       = "SCOREBOARDS"
     settings          = "SETTINGS"
@@ -27,6 +27,17 @@ language_name = "English"
     best_time      = "BEST TIME:"
     best_score     = "BEST SCORE:"
     start          = "START"
+
+# Gamemode manager
+    new_gamemode        = "NEW GAMEMODE"
+    new_gamemode_tt     = "CREATE A NEW CUSTOM GAMEMODE FROM STRATCH."
+    clone_gamemode      = "CLONE GAMEMODE"
+    clone_gamemode_tt   = "CREATE A NEW CUSTOM GAMEMODE USING AN EXISTING ONE AS A BASIS."
+    edit_gamemode       = "EDIT GAMEMODE"
+    edit_gamemode_tt    = "EDIT ONE OF YOUR EXISTING CUSTOM GAMEMODES."
+    delete_gamemodes    = "DELETE GAMEMODES"
+    delete_gamemodes_tt = "DELETE EXISTING CUSTOM GAMEMODES."
+    no_gamemodes_found  = "(NO GAMEMODES FOUND...)"
 
 # Gamemode editor
     ball_settings                   = "BALL SETTINGS"

@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 // clang-format off
 
-constexpr tag T_TITLE{"gamemode_designer"};
+constexpr tag T_TITLE{"gamemode_manager"};
 constexpr tag T_SUBTITLE{"player_settings"};
 constexpr tag T_STARTING_LIVES{"starting_lives"};
 constexpr tag T_STARTING_LIVES_D{"starting_lives_d"};
@@ -84,13 +84,17 @@ constexpr tweened_position EXIT_MOVE_IN{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 // clang-format on
 /////////////////////////////////////////////////////// PLAYER SETTINGS EDITOR STATE //////////////////////////////////////////////////////
 
-player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playerless_game> game)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_EDITOR}
+player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data,
+														   gamemode gamemode)
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+	, m_substate{substate::IN_EDITOR}
+	, m_data{std::move(data)}
+	, m_pending{std::move(gamemode)}
 {
 	// TEXT CALLBACKS
 
 	const text_callback spawn_life_fragments_c_tcb{
-		[] { return std::string{g_loc[g_scorefile.last_designed.player.spawn_life_fragments ? "on" : "off"]}; },
+		[&slf = m_pending.player.spawn_life_fragments] { return std::string{g_loc[slf ? "on" : "off"]}; },
 	};
 
 	// STATUS CALLBACKS
@@ -99,83 +103,75 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		[this] { return m_substate == substate::IN_EDITOR; },
 	};
 	const status_callback starting_lives_d_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.player.starting_lives > 0; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives > 0; },
 	};
 	const status_callback starting_lives_i_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.player.starting_lives < 255; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives < 255; },
 	};
 	const status_callback life_fragment_spawn_interval_d_scb{[this] {
-		return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.player.spawn_life_fragments &&
-			   g_scorefile.last_designed.player.life_fragment_spawn_interval > 15_s;
+		return m_substate == substate::IN_EDITOR && m_pending.player.spawn_life_fragments &&
+			   m_pending.player.life_fragment_spawn_interval > 15_s;
 	}};
 	const status_callback life_fragment_spawn_interval_c_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.player.spawn_life_fragments; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.spawn_life_fragments; },
 	};
 	const status_callback life_fragment_spawn_interval_i_scb{[this] {
-		return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.player.spawn_life_fragments &&
-			   g_scorefile.last_designed.player.life_fragment_spawn_interval < 90_s;
+		return m_substate == substate::IN_EDITOR && m_pending.player.spawn_life_fragments &&
+			   m_pending.player.life_fragment_spawn_interval < 90_s;
 	}};
 	const status_callback hitbox_radius_d_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.player.hitbox_radius > 1.0f; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius > 1.0f; },
 	};
 	const status_callback hitbox_radius_i_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.player.hitbox_radius < 100.0f; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius < 100.0f; },
 	};
 	const status_callback inertia_factor_d_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.player.inertia_factor > 0.0f; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.inertia_factor > 0.0f; },
 	};
 	const status_callback inertia_factor_i_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.player.inertia_factor < 0.99f; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.inertia_factor < 0.99f; },
 	};
 
 	// ACTION CALLBACKS
 
-	const action_callback starting_lives_d_acb{[] {
-		u8& sl{g_scorefile.last_designed.player.starting_lives};
-		sl = u8(std::max(int(sl - keymods_choose(1, 5, 10)), 0));
-	}};
-	const action_callback starting_lives_i_acb{[] {
-		u8& sl{g_scorefile.last_designed.player.starting_lives};
-		sl = u8(std::min(sl + keymods_choose(1, 5, 10), 255));
-	}};
+	const action_callback starting_lives_d_acb{
+		[&sl = m_pending.player.starting_lives] { sl = u8(std::max(int(sl - keymods_choose(1, 5, 10)), 0)); },
+	};
+	const action_callback starting_lives_i_acb{
+		[&sl = m_pending.player.starting_lives] { sl = u8(std::min(sl + keymods_choose(1, 5, 10), 255)); },
+	};
 	const action_callback spawn_life_fragments_c_acb{[this] {
-		g_scorefile.last_designed.player.spawn_life_fragments = !g_scorefile.last_designed.player.spawn_life_fragments;
-		if (g_scorefile.last_designed.player.spawn_life_fragments) {
+		m_pending.player.spawn_life_fragments = !m_pending.player.spawn_life_fragments;
+		if (m_pending.player.spawn_life_fragments) {
 			m_ui.as<label_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL).tint.change(GRAY, 0.1_s);
 		}
 		else {
 			m_ui.as<label_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL).tint.change(DISABLED_GRAY, 0.1_s);
 		}
 	}};
-	const action_callback life_fragment_spawn_interval_d_acb{[] {
-		ticks& lfsi{g_scorefile.last_designed.player.life_fragment_spawn_interval};
-		lfsi = std::max(lfsi - keymods_choose(0.1_s, 1_s, 10_s), 15_s);
-	}};
-	const action_callback life_fragment_spawn_interval_i_acb{[] {
-		ticks& lfsi{g_scorefile.last_designed.player.life_fragment_spawn_interval};
-		lfsi = std::min(lfsi + keymods_choose(0.1_s, 1_s, 10_s), 90_s);
-	}};
-	const action_callback hitbox_radius_d_acb{[] {
-		float& hr{g_scorefile.last_designed.player.hitbox_radius};
-		hr = std::max(hr - keymods_choose(1, 5, 10), 1.0f);
-	}};
-	const action_callback hitbox_radius_i_acb{[] {
-		float& hr{g_scorefile.last_designed.player.hitbox_radius};
-		hr = std::min(hr + keymods_choose(1, 5, 10), 100.0f);
-	}};
-	const action_callback inertia_factor_d_acb{[] {
-		float& in{g_scorefile.last_designed.player.inertia_factor};
-		in = std::max(in - keymods_choose(0.01f, 0.05f, 0.1f), 0.0f);
-	}};
-	const action_callback inertia_factor_i_acb{[] {
-		float& in{g_scorefile.last_designed.player.inertia_factor};
-		in = std::min(in + keymods_choose(0.01f, 0.05f, 0.1f), 0.99f);
-	}};
+	const action_callback life_fragment_spawn_interval_d_acb{
+		[&lfsi = m_pending.player.life_fragment_spawn_interval] { lfsi = std::max(lfsi - keymods_choose(0.1_s, 1_s, 10_s), 15_s); },
+	};
+	const action_callback life_fragment_spawn_interval_i_acb{
+		[&lfsi = m_pending.player.life_fragment_spawn_interval] { lfsi = std::min(lfsi + keymods_choose(0.1_s, 1_s, 10_s), 90_s); },
+	};
+	const action_callback hitbox_radius_d_acb{
+		[&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - keymods_choose(1, 5, 10), 1.0f); },
+	};
+	const action_callback hitbox_radius_i_acb{
+		[&hr = m_pending.player.hitbox_radius] { hr = std::min(hr + keymods_choose(1, 5, 10), 100.0f); },
+	};
+	const action_callback inertia_factor_d_acb{
+		[&in = m_pending.player.inertia_factor] { in = std::max(in - keymods_choose(0.01f, 0.05f, 0.1f), 0.0f); },
+	};
+	const action_callback inertia_factor_i_acb{
+		[&in = m_pending.player.inertia_factor] { in = std::min(in + keymods_choose(0.01f, 0.05f, 0.1f), 0.99f); },
+	};
 	const action_callback exit_acb{[this] {
 		m_substate = substate::EXITING;
 		m_elapsed = 0;
 		set_up_exit_animation();
-		m_next_state = make_async<gamemode_designer_state>(m_game, returning_from_subscreen::YES);
+		m_next_state = make_async<gamemode_editor_state>(m_game, m_data, m_pending, animate_subtitle::YES);
 	}};
 
 	// VALIDATION CALLBACKS
@@ -194,7 +190,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, STARTING_LIVES_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
 							   starting_lives_d_scb, starting_lives_d_acb);
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-											  g_scorefile.last_designed.player.starting_lives, scb, starting_lives_c_vcb);
+											  m_pending.player.starting_lives, scb, starting_lives_c_vcb);
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, STARTING_LIVES_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   starting_lives_i_scb, starting_lives_i_acb);
 	m_ui.emplace<text_button_widget>(T_SPAWN_LIFE_FRAGMENTS_C, SPAWN_LIFE_FRAGMENTS_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
@@ -202,20 +198,20 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 	m_ui.emplace<arrow_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_D, LIFE_FRAGMENT_SPAWN_INTERVAL_D_MOVE_IN, tr::valign::CENTER, 0.5_s,
 							   arrow_type::LEFT, life_fragment_spawn_interval_d_scb, life_fragment_spawn_interval_d_acb);
 	m_ui.emplace<interval_input_widget<4>>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_C, LIFE_FRAGMENT_SPAWN_INTERVAL_C_MOVE_IN, tr::align::CENTER,
-										   0.5_s, 48, m_ui, g_scorefile.last_designed.player.life_fragment_spawn_interval,
+										   0.5_s, 48, m_ui, m_pending.player.life_fragment_spawn_interval,
 										   life_fragment_spawn_interval_c_scb, life_fragment_spawn_interval_c_vcb);
 	m_ui.emplace<arrow_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_I, LIFE_FRAGMENT_SPAWN_INTERVAL_I_MOVE_IN, tr::valign::CENTER, 0.5_s,
 							   arrow_type::RIGHT, life_fragment_spawn_interval_i_scb, life_fragment_spawn_interval_i_acb);
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, HITBOX_RADIUS_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, hitbox_radius_d_scb,
 							   hitbox_radius_d_acb);
 	m_ui.emplace<numeric_input_widget<float, 3, "{:.0f}">>(T_HITBOX_RADIUS_C, HITBOX_RADIUS_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-														   g_scorefile.last_designed.player.hitbox_radius, scb, hitbox_radius_c_vcb);
+														   m_pending.player.hitbox_radius, scb, hitbox_radius_c_vcb);
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_I, HITBOX_RADIUS_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   hitbox_radius_i_scb, hitbox_radius_i_acb);
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_D, INERTIA_FACTOR_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
 							   inertia_factor_d_scb, inertia_factor_d_acb);
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.2f}">>(T_INERTIA_FACTOR_C, INERTIA_FACTOR_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-														   g_scorefile.last_designed.player.inertia_factor, scb, inertia_factor_c_vcb);
+														   m_pending.player.inertia_factor, scb, inertia_factor_c_vcb);
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_I, INERTIA_FACTOR_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   inertia_factor_i_scb, inertia_factor_i_acb);
 	for (usize i = 0; i < LABELS.size(); ++i) {

@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 // clang-format off
 
-constexpr tag T_TITLE{"gamemode_designer"};
+constexpr tag T_TITLE{"gamemode_manager"};
 constexpr tag T_SUBTITLE{"ball_settings"};
 constexpr tag T_STARTING_COUNT{"starting_count"};
 constexpr tag T_STARTING_COUNT_D{"starting_count_d"};
@@ -111,8 +111,11 @@ constexpr tweened_position EXIT_MOVE_IN{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 // clang-format on
 /////////////////////////////////////////////////////// BALL SETTINGS EDITOR STATE ////////////////////////////////////////////////////////
 
-ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerless_game> game)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_EDITOR}
+ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode)
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+	, m_substate{substate::IN_EDITOR}
+	, m_data{std::move(data)}
+	, m_pending{std::move(gamemode)}
 {
 	// STATUS CALLBACKS
 
@@ -120,126 +123,106 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		[this] { return m_substate == substate::IN_EDITOR; },
 	};
 	const status_callback starting_count_d_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.starting_count > 0; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.starting_count > 0; },
 	};
 	const status_callback starting_count_i_scb{
-		[this] {
-			return m_substate == substate::IN_EDITOR &&
-				   g_scorefile.last_designed.ball.starting_count < g_scorefile.last_designed.ball.max_count;
-		},
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.starting_count < m_pending.ball.max_count; },
 	};
 	const status_callback max_count_d_scb{
-		[this] {
-			return m_substate == substate::IN_EDITOR &&
-				   g_scorefile.last_designed.ball.max_count > std::max(1_u8, g_scorefile.last_designed.ball.starting_count);
-		},
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.max_count > std::max(1_u8, m_pending.ball.starting_count); },
 	};
 	const status_callback max_count_i_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.max_count < 255; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.max_count < 255; },
 	};
 	const status_callback spawn_interval_d_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.spawn_interval > 1.0_s; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.spawn_interval > 1.0_s; },
 	};
 	const status_callback spawn_interval_i_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.spawn_interval < 60_s; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.spawn_interval < 60_s; },
 	};
 	const status_callback initial_size_d_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.initial_size > 10; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size > 10; },
 	};
 	const status_callback initial_size_i_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.initial_size < 100.0f; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size < 100.0f; },
 	};
 	const status_callback size_step_d_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.size_step > 0; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.size_step > 0; },
 	};
 	const status_callback size_step_i_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.size_step < 10.0f; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.size_step < 10.0f; },
 	};
 	const status_callback initial_velocity_d_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.initial_velocity > 100; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_velocity > 100; },
 	};
 	const status_callback initial_velocity_i_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.initial_velocity < 5000.0f; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_velocity < 5000.0f; },
 	};
 	const status_callback velocity_step_d_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.velocity_step > 0; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.velocity_step > 0; },
 	};
 	const status_callback velocity_step_i_scb{
-		[this] { return m_substate == substate::IN_EDITOR && g_scorefile.last_designed.ball.velocity_step < 1000.0f; },
+		[this] { return m_substate == substate::IN_EDITOR && m_pending.ball.velocity_step < 1000.0f; },
 	};
 
 	// ACTION CALLBACKS
 
-	const action_callback starting_count_d_acb{[] {
-		u8& sc{g_scorefile.last_designed.ball.starting_count};
-		sc = u8(std::max(sc - keymods_choose(1, 5, 10), 1));
+	const action_callback starting_count_d_acb{
+		[&sc = m_pending.ball.starting_count] { sc = u8(std::max(sc - keymods_choose(1, 5, 10), 1)); },
+	};
+	const action_callback starting_count_i_acb{[&settings = m_pending.ball] {
+		settings.starting_count = u8(std::min(settings.starting_count + keymods_choose(1, 5, 10), int(settings.max_count)));
 	}};
-	const action_callback starting_count_i_acb{[] {
-		u8& sc{g_scorefile.last_designed.ball.starting_count};
-		sc = u8(std::min(sc + keymods_choose(1, 5, 10), int(g_scorefile.last_designed.ball.max_count)));
+	const action_callback max_count_d_acb{[&settings = m_pending.ball] {
+		settings.max_count = u8(std::max({1, int(settings.starting_count), settings.max_count - keymods_choose(1, 5, 10)}));
 	}};
-	const action_callback max_count_d_acb{[] {
-		u8& mc{g_scorefile.last_designed.ball.max_count};
-		mc = u8(std::max({1, int(g_scorefile.last_designed.ball.starting_count), mc - keymods_choose(1, 5, 10)}));
-	}};
-	const action_callback max_count_i_acb{[] {
-		u8& mc{g_scorefile.last_designed.ball.max_count};
-		mc = u8(std::min(mc + keymods_choose(1, 5, 10), 255));
-	}};
-	const action_callback spawn_interval_d_acb{[] {
-		ticks& si{g_scorefile.last_designed.ball.spawn_interval};
-		si = ticks(std::max(int(si - keymods_choose(0.1_s, 1_s, 10_s)), int(1_s)));
-	}};
-	const action_callback spawn_interval_i_acb{[] {
-		ticks& si{g_scorefile.last_designed.ball.spawn_interval};
-		si = std::min(si + keymods_choose(0.1_s, 1_s, 10_s), 60_s);
-	}};
-	const action_callback initial_size_d_acb{[] {
-		float& is{g_scorefile.last_designed.ball.initial_size};
-		is = std::max(is - keymods_choose(1, 5, 10), 10.0f);
-	}};
-	const action_callback initial_size_i_acb{[] {
-		float& is{g_scorefile.last_designed.ball.initial_size};
-		is = std::min(is + keymods_choose(1, 5, 10), 100.0f);
-	}};
-	const action_callback size_step_d_acb{[] {
-		float& ss{g_scorefile.last_designed.ball.size_step};
-		ss = std::max(ss - keymods_choose(0.1f, 1.0f, 2.5f), 0.0f);
-	}};
-	const action_callback size_step_i_acb{[] {
-		float& ss{g_scorefile.last_designed.ball.size_step};
-		ss = std::min(ss + keymods_choose(0.1f, 1.0f, 2.5f), 10.0f);
-	}};
-	const action_callback initial_velocity_d_acb{[] {
-		float& iv{g_scorefile.last_designed.ball.initial_velocity};
-		iv = std::max(iv - keymods_choose(1, 10, 100), 100.0f);
-	}};
-	const action_callback initial_velocity_i_acb{[] {
-		float& iv{g_scorefile.last_designed.ball.initial_velocity};
-		iv = std::min(iv + keymods_choose(1, 10, 100), 5000.0f);
-	}};
-	const action_callback velocity_step_d_acb{[] {
-		float& vs{g_scorefile.last_designed.ball.velocity_step};
-		vs = std::max(vs - keymods_choose(1, 10, 100), 0.0f);
-	}};
-	const action_callback velocity_step_i_acb{[] {
-		float& vs{g_scorefile.last_designed.ball.velocity_step};
-		vs = std::min(vs + keymods_choose(1, 10, 100), 1000.0f);
-	}};
+	const action_callback max_count_i_acb{
+		[&mc = m_pending.ball.max_count] { mc = u8(std::min(mc + keymods_choose(1, 5, 10), 255)); },
+	};
+	const action_callback spawn_interval_d_acb{
+		[&si = m_pending.ball.spawn_interval] { si = ticks(std::max(int(si - keymods_choose(0.1_s, 1_s, 10_s)), int(1_s))); },
+	};
+	const action_callback spawn_interval_i_acb{
+		[&si = m_pending.ball.spawn_interval] { si = std::min(si + keymods_choose(0.1_s, 1_s, 10_s), 60_s); },
+	};
+	const action_callback initial_size_d_acb{
+		[&is = m_pending.ball.initial_size] { is = std::max(is - keymods_choose(1, 5, 10), 10.0f); },
+	};
+	const action_callback initial_size_i_acb{
+		[&is = m_pending.ball.initial_size] { is = std::min(is + keymods_choose(1, 5, 10), 100.0f); },
+	};
+	const action_callback size_step_d_acb{
+		[&ss = m_pending.ball.size_step] { ss = std::max(ss - keymods_choose(0.1f, 1.0f, 2.5f), 0.0f); },
+	};
+	const action_callback size_step_i_acb{
+		[&ss = m_pending.ball.size_step] { ss = std::min(ss + keymods_choose(0.1f, 1.0f, 2.5f), 10.0f); },
+	};
+	const action_callback initial_velocity_d_acb{
+		[&iv = m_pending.ball.initial_velocity] { iv = std::max(iv - keymods_choose(1, 10, 100), 100.0f); },
+	};
+	const action_callback initial_velocity_i_acb{
+		[&iv = m_pending.ball.initial_velocity] { iv = std::min(iv + keymods_choose(1, 10, 100), 5000.0f); },
+	};
+	const action_callback velocity_step_d_acb{
+		[&vs = m_pending.ball.velocity_step] { vs = std::max(vs - keymods_choose(1, 10, 100), 0.0f); },
+	};
+	const action_callback velocity_step_i_acb{
+		[&vs = m_pending.ball.velocity_step] { vs = std::min(vs + keymods_choose(1, 10, 100), 1000.0f); },
+	};
 	const action_callback exit_acb{[this] {
 		m_substate = substate::EXITING;
 		m_elapsed = 0;
 		set_up_exit_animation();
-		m_next_state = make_async<gamemode_designer_state>(m_game, returning_from_subscreen::YES);
+		m_next_state = make_async<gamemode_editor_state>(m_game, m_data, m_pending, animate_subtitle::YES);
 	}};
 
 	// VALIDATION CALLBACKS
 
 	const validation_callback<u8> starting_count_c_vcb{
-		[](int v) { return u8(std::clamp(v, 0, int(g_scorefile.last_designed.ball.max_count))); },
+		[&mc = m_pending.ball.max_count](int v) { return u8(std::clamp(v, 0, int(mc))); },
 	};
 	const validation_callback<u8> max_count_c_vcb{
-		[](int v) { return u8(std::clamp(v, std::max(int(g_scorefile.last_designed.ball.starting_count), 1), 255)); },
+		[&sc = m_pending.ball.starting_count](int v) { return u8(std::clamp(v, std::max(int(sc), 1), 255)); },
 	};
 	const validation_callback<ticks> spawn_interval_c_vcb{
 		[](ticks v) { return std::clamp(v, 1_s, 60_s); },
@@ -266,44 +249,43 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_D, STARTING_COUNT_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
 							   starting_count_d_scb, starting_count_d_acb);
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_COUNT_C, STARTING_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-											  g_scorefile.last_designed.ball.starting_count, scb, starting_count_c_vcb);
+											  m_pending.ball.starting_count, scb, starting_count_c_vcb);
 	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_I, STARTING_COUNT_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   starting_count_i_scb, starting_count_i_acb);
 	m_ui.emplace<arrow_widget>(T_MAX_COUNT_D, MAX_COUNT_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, max_count_d_scb,
 							   max_count_d_acb);
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_MAX_COUNT_C, MAX_COUNT_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-											  g_scorefile.last_designed.ball.max_count, scb, max_count_c_vcb);
+											  m_pending.ball.max_count, scb, max_count_c_vcb);
 	m_ui.emplace<arrow_widget>(T_MAX_COUNT_I, MAX_COUNT_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, max_count_i_scb,
 							   max_count_i_acb);
 	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_D, SPAWN_INTERVAL_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
 							   spawn_interval_d_scb, spawn_interval_d_acb);
 	m_ui.emplace<interval_input_widget<4>>(T_SPAWN_INTERVAL_C, SPAWN_INTERVAL_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-										   g_scorefile.last_designed.ball.spawn_interval, scb, spawn_interval_c_vcb);
+										   m_pending.ball.spawn_interval, scb, spawn_interval_c_vcb);
 	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_I, SPAWN_INTERVAL_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   spawn_interval_i_scb, spawn_interval_i_acb);
 	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_D, INITIAL_SIZE_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, initial_size_d_scb,
 							   initial_size_d_acb);
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_SIZE_C, INITIAL_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-														   g_scorefile.last_designed.ball.initial_size, scb, initial_size_c_vcb);
+														   m_pending.ball.initial_size, scb, initial_size_c_vcb);
 	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_I, INITIAL_SIZE_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, initial_size_i_scb,
 							   initial_size_i_acb);
 	m_ui.emplace<arrow_widget>(T_SIZE_STEP_D, SIZE_STEP_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, size_step_d_scb,
 							   size_step_d_acb);
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.1f}">>(T_SIZE_STEP_C, SIZE_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-														   g_scorefile.last_designed.ball.size_step, scb, size_step_c_vcb);
+														   m_pending.ball.size_step, scb, size_step_c_vcb);
 	m_ui.emplace<arrow_widget>(T_SIZE_STEP_I, SIZE_STEP_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, size_step_i_scb,
 							   size_step_i_acb);
 	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_D, INITIAL_VELOCITY_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
 							   initial_velocity_d_scb, initial_velocity_d_acb);
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_VELOCITY_C, INITIAL_VELOCITY_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48,
-														   m_ui, g_scorefile.last_designed.ball.initial_velocity, scb,
-														   initial_velocity_c_vcb);
+														   m_ui, m_pending.ball.initial_velocity, scb, initial_velocity_c_vcb);
 	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_I, INITIAL_VELOCITY_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   initial_velocity_i_scb, initial_velocity_i_acb);
 	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_D, VELOCITY_STEP_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, velocity_step_d_scb,
 							   velocity_step_d_acb);
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_VELOCITY_STEP_C, VELOCITY_STEP_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-														   g_scorefile.last_designed.ball.velocity_step, scb, velocity_step_c_vcb);
+														   m_pending.ball.velocity_step, scb, velocity_step_c_vcb);
 	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_I, VELOCITY_STEP_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   velocity_step_i_scb, velocity_step_i_acb);
 	for (usize i = 0; i < LABELS.size(); ++i) {

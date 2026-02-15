@@ -50,12 +50,11 @@
 |                                                                                                                     |
 | v1.3.0 (?? Feb 2026)                                                                                                |
 | * Made it easier to earn lives: after failing to collect fragments, only the ones missed will spawn next time.      |
+| * Greatly expanded gamemode management options: gamemodes can now be cloned, edited, and deleted.                   |
 | * Adjusted the opacity of the lives, timer and score and made them fade out if a life fragment is behind them.      |
 | * Adjusted ball collisions to make small balls less prone to supersonic speeds after hitting much larger balls.     |
-| * Made the gamemode designer remember the last designed gamemode.                                                   |
 | * Added explanatory tooltips when unable to save a gamemode or replay.                                              |
-| * Made a few quality-of-life adjustments to the gamemode designer.                                                  |
-| * Made music in replays speed up or slow down to match the gameplay.
+| * Made music in replays speed up or slow down to match the gameplay.                                                |
 | * Fixed balls occasionally reflecting in mid-air due to floating-point imprecision.                                 |
 | * Fixed balls rendering incorrectly when pausing and exiting a game while the screen is shaking after getting hit.  |
 | * Fixed some settings not applying immediately.                                                                     |

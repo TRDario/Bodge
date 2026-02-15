@@ -11,7 +11,7 @@ constexpr tag T_LOGO_BALL{"logo_ball"};
 constexpr tag T_COPYRIGHT{"© 2025-2026 TRDario"};
 constexpr tag T_VERSION{VERSION_STRING};
 constexpr tag T_START_GAME{"start_game"};
-constexpr tag T_GAMEMODE_DESIGNER{"gamemode_designer"};
+constexpr tag T_GAMEMODE_MANAGER{"gamemode_manager"};
 constexpr tag T_SCOREBOARDS{"scoreboards"};
 constexpr tag T_REPLAYS{"replays"};
 constexpr tag T_SETTINGS{"settings"};
@@ -19,11 +19,11 @@ constexpr tag T_CREDITS{"credits"};
 constexpr tag T_EXIT{"exit"};
 
 // Title screen buttons.
-constexpr std::array<tag, 7> BUTTONS{T_START_GAME, T_GAMEMODE_DESIGNER, T_SCOREBOARDS, T_REPLAYS, T_SETTINGS, T_CREDITS, T_EXIT};
+constexpr std::array<tag, 7> BUTTONS{T_START_GAME, T_GAMEMODE_MANAGER, T_SCOREBOARDS, T_REPLAYS, T_SETTINGS, T_CREDITS, T_EXIT};
 
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_START_GAME},
-	selection_tree_row{T_GAMEMODE_DESIGNER},
+	selection_tree_row{T_GAMEMODE_MANAGER},
 	selection_tree_row{T_SCOREBOARDS},
 	selection_tree_row{T_REPLAYS},
 	selection_tree_row{T_SETTINGS},
@@ -33,7 +33,7 @@ constexpr selection_tree SELECTION_TREE{
 
 constexpr shortcut_table SHORTCUTS{
 	{"Enter"_kc, T_START_GAME},	   {"1"_kc, T_START_GAME},
-	{"G"_kc, T_GAMEMODE_DESIGNER}, {"2"_kc, T_GAMEMODE_DESIGNER},
+	{"G"_kc, T_GAMEMODE_MANAGER},  {"2"_kc, T_GAMEMODE_MANAGER},
 	{"B"_kc, T_SCOREBOARDS},	   {"3"_kc, T_SCOREBOARDS},
 	{"R"_kc, T_REPLAYS},		   {"4"_kc, T_REPLAYS},
 	{"S"_kc, T_SETTINGS},		   {"5"_kc, T_SETTINGS},
@@ -122,13 +122,13 @@ void title_state::set_up_ui()
 			m_substate = substate::EXITING_TO_SUBMENU;
 			m_elapsed = 0;
 			set_up_exit_animation();
-			m_next_state = make_async<gamemode_designer_state>(m_game, returning_from_subscreen::NO);
+			m_next_state = make_async<gamemode_manager_state>(m_game, animate_title::YES);
 		},
 		[this] {
 			m_substate = substate::EXITING_TO_SUBMENU;
 			m_elapsed = 0;
 			set_up_exit_animation();
-			m_next_state = make_async<scoreboard_selection_state>(m_game, returning_from_subscreen::NO);
+			m_next_state = make_async<scoreboard_selection_state>(m_game, animate_title::YES);
 		},
 		[this] {
 			m_substate = substate::EXITING_TO_SUBMENU;

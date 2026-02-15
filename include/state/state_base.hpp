@@ -28,6 +28,18 @@ class state : public tr::state {
 
 ///////////////////////////////////////////////////////////// MAIN MENU STATE /////////////////////////////////////////////////////////////
 
+// Whether a screen's title should be animated.
+enum class animate_title : bool {
+	NO,
+	YES
+};
+
+// Whether a screen's subtitle should be animated.
+enum class animate_subtitle : bool {
+	NO,
+	YES
+};
+
 // Base class for main menu states.
 class main_menu_state : public state {
   public:
@@ -85,10 +97,9 @@ class game_menu_state : public state {
 
 // Asynchronously creates a new state.
 template <class T, class... Ts>
-std::future<tr::next_state> make_async(Ts&&... args)
+std::future<tr::next_state> make_async(Ts... args)
 	requires(std::constructible_from<T, Ts...>)
 {
-	return std::async(
-		std::launch::async, []<class... Us>(Us&&... args) { return (tr::next_state)std::make_unique<T>(std::forward<Us>(args)...); },
-		std::forward<Ts>(args)...);
+	constexpr auto ctor{[](auto... args) { return (tr::next_state)std::make_unique<T>(std::move(args)...); }};
+	return std::async(std::launch::async, ctor, std::move(args)...);
 }
