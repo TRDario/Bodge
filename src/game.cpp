@@ -58,8 +58,8 @@ static tr::gfx::bitmap_atlas<char> create_number_atlas()
 
 ///////////////////////////////////////////////////////////// PLAYERLESS GAME /////////////////////////////////////////////////////////////
 
-playerless_game::playerless_game(const ::gamemode& gamemode, u64 rng_seed)
-	: m_gamemode{gamemode}
+playerless_game::playerless_game(::gamemode gamemode, u64 rng_seed)
+	: m_gamemode{std::move(gamemode)}
 	, m_rng{rng_seed}
 	, m_elapsed_time{0}
 	, m_time_since_last_ball{0}
@@ -135,11 +135,11 @@ void playerless_game::add_to_renderer() const
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
 
-game::game(const ::gamemode& gamemode, u64 rng_seed)
-	: playerless_game{gamemode, rng_seed}
+game::game(::gamemode gamemode, u64 rng_seed)
+	: playerless_game{std::move(gamemode), rng_seed}
 	, m_number_atlas{create_number_atlas()}
-	, m_player{gamemode.player}
-	, m_lives_left{int(gamemode.player.starting_lives)}
+	, m_player{m_gamemode.player}
+	, m_lives_left{int(m_gamemode.player.starting_lives)}
 	, m_score{0}
 	, m_tock{false}
 {
@@ -646,8 +646,8 @@ void game::add_to_renderer() const
 
 /////////////////////////////////////////////////////////////// ACTIVE GAME ///////////////////////////////////////////////////////////////
 
-active_game::active_game(const ::gamemode& gamemode, u64 seed)
-	: game{gamemode, seed}, replay{gamemode, seed}
+active_game::active_game(::gamemode gamemode, u64 seed)
+	: game{std::move(gamemode), seed}, replay{this->gamemode(), seed}
 {
 }
 

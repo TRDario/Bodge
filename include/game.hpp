@@ -21,7 +21,7 @@
 class playerless_game {
   public:
 	// Creates a new game.
-	playerless_game(const gamemode& gamemode, u64 rng_seed);
+	playerless_game(gamemode gamemode, u64 rng_seed);
 
 	// Gets the gamemode of the game.
 	const gamemode& gamemode() const;
@@ -61,21 +61,11 @@ class playerless_game {
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
 
-// Game types.
-enum class game_type {
-	// Regular game.
-	REGULAR = 0x0,
-	// Test game.
-	GAMEMODE_DESIGNER_TEST = 0x8,
-	// Game being played back through a replay.
-	REPLAY = 0x10
-};
-
 // Base game state (with a player).
 class game : private playerless_game {
   public:
 	// Creates a new game.
-	game(const ::gamemode& gamemode, u64 rng_seed);
+	game(::gamemode gamemode, u64 rng_seed);
 	// Virtual destructor.
 	virtual ~game() = default;
 
@@ -209,7 +199,7 @@ class game : private playerless_game {
 class active_game : public game {
   public:
 	// Creates a new active game.
-	active_game(const ::gamemode& gamemode, u64 seed = g_rng.generate<u64>());
+	active_game(::gamemode gamemode, u64 seed = g_rng.generate<u64>());
 
 	// Updates the game state.
 	void tick() override;
