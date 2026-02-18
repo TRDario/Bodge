@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Provides type definitions relating to UI widgets, several generic text callbacks, and base widget classes.                            //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include "../text_engine.hpp"
 #include "tweening.hpp"
@@ -71,6 +77,7 @@ class widget {
   public:
 	// Creates a widget.
 	widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb);
+	// Destroys the widget.
 	virtual ~widget() = default;
 
 	// The position of the widget.
@@ -78,7 +85,7 @@ class widget {
 	// Callback that returns tooltip strings.
 	text_callback tooltip_cb;
 
-	// The size of the widget.
+	// Gets the size of the widget.
 	virtual glm::vec2 size() const = 0;
 	// The top-left corner of the widget.
 	glm::vec2 tl() const;
@@ -161,7 +168,9 @@ class text_widget : public widget {
 	text_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb, font font,
 				tr::sys::ttf_style style, float font_size, int max_width);
 
+	// Gets the size of the widget.
 	glm::vec2 size() const override;
+	// Releases the widget's graphical resources.
 	void release_graphical_resources() override;
 
   protected:

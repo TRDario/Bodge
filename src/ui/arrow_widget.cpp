@@ -1,7 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements arrow_widget from ui/widget.hpp.                                                                                           //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
+// Left arrow mesh positions.
 constexpr std::array<glm::vec2, 15> LEFT_ARROW_POSITIONS{{
 	{30, 0},
 	{16, 0},
@@ -20,6 +27,7 @@ constexpr std::array<glm::vec2, 15> LEFT_ARROW_POSITIONS{{
 	{26, 44},
 }};
 
+// Right arrow mesh positions.
 constexpr std::array<glm::vec2, 15> RIGHT_ARROW_POSITIONS{{
 	{0, 0},
 	{14, 0},
@@ -38,6 +46,7 @@ constexpr std::array<glm::vec2, 15> RIGHT_ARROW_POSITIONS{{
 	{4, 44},
 }};
 
+// Arrow mesh colors.
 constexpr std::array<tr::rgba8, 15> ARROW_COLORS{{
 	{127, 127, 127, 127},
 	{127, 127, 127, 127},

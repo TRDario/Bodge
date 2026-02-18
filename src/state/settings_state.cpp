@@ -345,15 +345,14 @@ tr::next_state settings_state::tick()
 
 void settings_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.move(TOP_START_POS, 0.5_s);
+	m_ui[T_TITLE].move_and_hide(TOP_START_POS, 0.5_s);
 	for (const label_info& label : LABELS) {
-		m_ui[label.tag].pos.move_x(-50, 0.5_s);
+		m_ui[label.tag].move_x_and_hide(-50, 0.5_s);
 	}
 	for (tag tag : RIGHT_WIDGETS) {
-		m_ui[tag].pos.move_x(1050, 0.5_s);
+		m_ui[tag].move_x_and_hide(1050, 0.5_s);
 	}
 	for (tag tag : BOTTOM_BUTTONS) {
-		m_ui[tag].pos.move(BOTTOM_START_POS, 0.5_s);
+		m_ui[tag].move_and_hide(BOTTOM_START_POS, 0.5_s);
 	}
-	m_ui.hide_all_widgets(0.5_s);
 }

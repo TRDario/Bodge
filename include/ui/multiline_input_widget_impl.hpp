@@ -1,6 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements multiline_input_widget from ui/widget.hpp.                                                                                 //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include "../renderer.hpp"
 #include "widget.hpp"
+
+////////////////////////////////////////////////////////// MULTILINE INPUT WIDGET /////////////////////////////////////////////////////////
 
 template <usize S>
 multiline_input_widget<S>::multiline_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float width, u8 max_lines,

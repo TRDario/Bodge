@@ -1,5 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                                       //
+// Provides game simulation classes.                                                                                                     //
+//                                                                                                                                       //
 // Game hierarchy:                                                                                                                       //
 // • playerless_game     - No player object or most mechanics, only the balls, used for menu backgrounds.                                //
 //     • game            - Implements the player and mechanics, undefined input method.                                                  //

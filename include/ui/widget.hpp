@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Provides concrete UI widget classes.                                                                                                  //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include "../audio.hpp"
 #include "../replay.hpp"
@@ -5,15 +11,14 @@
 #include "../timer.hpp"
 #include "widget_base.hpp"
 
-/////////////////////////////////////////////////////////// FORWARD DECLARATIONS //////////////////////////////////////////////////////////
-
 class ui_manager;
 class replays_state;
 
 /////////////////////////////////////////////////////////////// LABEL WIDGET //////////////////////////////////////////////////////////////
 
 // Static text label widget.
-struct label_widget : public text_widget {
+class label_widget : public text_widget {
+  public:
 	// Creates a label widget.
 	label_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
 				 tr::sys::ttf_style style, float font_size, tr::rgba8 color = GRAY);
@@ -21,7 +26,9 @@ struct label_widget : public text_widget {
 	// The tint of the widget.
 	tweened_color tint;
 
+	// Updates the widget.
 	void tick() override;
+	// Adds the widget to the renderer.
 	void add_to_renderer() override;
 };
 
@@ -34,17 +41,28 @@ class text_button_widget : public text_widget {
 	text_button_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
 					   font font, float font_size, status_callback status_cb, action_callback action_cb, sound action_sound);
 
-	void tick() override;
-	void add_to_renderer() override;
-
+	// Gets whether the widget is interactible (delegates to the status callback).
 	bool interactible() const override;
+
+	// Function executed when the widget is clicked or activated with enter (delegates to the action callback).
 	void on_action() override;
+	// Function executed when the widget is hovered.
 	void on_hover() override;
+	// Function executed when the widget is unhovered.
 	void on_unhover() override;
+	// Function executed when the widget is held.
 	void on_held() override;
+	// Function executed when the widget is unheld.
 	void on_unheld() override;
+	// Function executed when the widget is selected.
 	void on_selected() override;
+	// Function executed when the widget is unselected.
 	void on_unselected() override;
+
+	// Updates the widget.
+	void tick() override;
+	// Adds the widget to the renderer.
+	void add_to_renderer() override;
 
   private:
 	// Callback used to determine whether the button is interactible.
@@ -96,33 +114,53 @@ template <class T, usize S> struct basic_numeric_input_widget_data {
 // Widget used to input a numeric value.
 // Formatter is a class with static members from_string() (string -> value) and to_string() (value/string_view -> string).
 template <class T, usize Digits, class Formatter>
-struct basic_numeric_input_widget : private basic_numeric_input_widget_data<T, Digits>, public text_widget {
+class basic_numeric_input_widget : private basic_numeric_input_widget_data<T, Digits>, public text_widget {
+  public:
 	// Creates a numeric input widget.
 	basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
 							   status_callback status_cb, validation_callback<T> validation_cb);
-
-	void add_to_renderer() override;
-	void tick() override;
+	
+	// Gets whether the widget is interactible (delegates to the status callback).
 	bool interactible() const override;
+	// Gets whether the widget is writable (always true).
 	bool writable() const override;
 
+	// Function executed when the widget is clicked or activated with enter.
 	void on_action() override;
+	// Function executed when the widget is hovered.
 	void on_hover() override;
+	// Function executed when the widget is unhovered.
 	void on_unhover() override;
+	// Function executed when the widget is held.
 	void on_held() override;
+	// Function executed when the widget is unheld.
 	void on_unheld() override;
+	// Function executed when the widget is selected.
 	void on_selected() override;
+	// Function executed when the widget is unselected.
 	void on_unselected() override;
+	// Function executed when writing to the widget.
 	void on_write(std::string_view input) override;
+	// Function executed when pressing enter on the widget.
 	void on_enter() override;
+	// Function executed when erasing from the widget.
 	void on_erase() override;
+	// Function executed when clearing the widget.
 	void on_clear() override;
+
+	// Updates the widget.
+	void tick() override;
+	// Adds the widget to the renderer.
+	void add_to_renderer() override;
 };
 
 // Default numeric input widget formatter (uses std::from_chars and std::format).
 template <class T, tr::template_string_literal Format, tr::template_string_literal BufferFormat> struct default_numeric_input_formatter {
+	// Converts a string to a value.
 	static void from_string(std::common_type_t<T, int>& out, std::string_view str);
+	// Formats a value.
 	static std::string to_string(T v);
+	// Formats a string (used during input).
 	static std::string to_string(std::string_view str);
 };
 // Input widget for most numeric variables.
@@ -131,8 +169,11 @@ using numeric_input_widget = basic_numeric_input_widget<T, Digits, default_numer
 
 // Special interval formatter for a numeric input widget.
 struct interval_formatter {
+	// Converts a string to a value.
 	static void from_string(ticks& out, std::string_view str);
+	// Formats an interval.
 	static std::string to_string(ticks v);
+	// Formats an interval string (used during input).
 	static std::string to_string(std::string_view str);
 };
 // Input widget for interval variables.
@@ -153,24 +194,42 @@ template <usize S> class line_input_widget : public input_buffer<S>, public text
 	line_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size,
 					  status_callback status_cb, action_callback enter_cb, std::string_view initial_text = {});
 
-	void add_to_renderer() override;
-	void tick() override;
+	// Gets whether the widget is interactible (delegates to the status callback).
 	bool interactible() const override;
+	// Gets whether the widget is writable (always true).
 	bool writable() const override;
 
+	// Function executed when the widget is clicked or activated with enter.
 	void on_action() override;
+	// Function executed when the widget is hovered.
 	void on_hover() override;
+	// Function executed when the widget is unhovered.
 	void on_unhover() override;
+	// Function executed when the widget is held.
 	void on_held() override;
+	// Function executed when the widget is unheld.
 	void on_unheld() override;
+	// Function executed when the widget is selected.
 	void on_selected() override;
+	// Function executed when the widget is unselected.
 	void on_unselected() override;
+	// Function executed when writing to the widget.
 	void on_write(std::string_view input) override;
+	// Function executed when pressing enter on the widget.
 	void on_enter() override;
+	// Function executed when erasing from the widget.
 	void on_erase() override;
+	// Function executed when clearing the widget.
 	void on_clear() override;
+	// Function executed when copying from the widget.
 	void on_copy() override;
+	// Function executed when pasting to the widget.
 	void on_paste() override;
+
+	// Updates the widget.
+	void tick() override;
+	// Adds the widget to the renderer.
+	void add_to_renderer() override;
 
   private:
 	// Callback used to determine whether the input is interactible.
@@ -196,25 +255,45 @@ template <usize S> class multiline_input_widget : public input_buffer<S>, public
 	multiline_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float width, u8 max_lines, float font_size,
 						   status_callback status_cb);
 
+	// Gets the size of the widget.
 	glm::vec2 size() const override;
-	void add_to_renderer() override;
-	void tick() override;
+	
+	// Gets whether the widget is interactible (delegates to the status callback).
 	bool interactible() const override;
+	// Gets whether the widget is writable (always true).
 	bool writable() const override;
 
+	// Function executed when the widget is clicked or activated with enter.
 	void on_action() override;
+	// Function executed when the widget is hovered.
 	void on_hover() override;
+	// Function executed when the widget is unhovered.
 	void on_unhover() override;
+	// Function executed when the widget is held.
 	void on_held() override;
+	// Function executed when the widget is unheld.
 	void on_unheld() override;
+	// Function executed when the widget is selected.
 	void on_selected() override;
+	// Function executed when the widget is unselected.
 	void on_unselected() override;
+	// Function executed when writing to the widget.
 	void on_write(std::string_view input) override;
+	// Function executed when pressing enter on the widget.
 	void on_enter() override;
+	// Function executed when erasing from the widget.
 	void on_erase() override;
+	// Function executed when clearing the widget.
 	void on_clear() override;
+	// Function executed when copying from the widget.
 	void on_copy() override;
+	// Function executed when pasting to the widget.
 	void on_paste() override;
+
+	// Updates the widget.
+	void tick() override;
+	// Adds the widget to the renderer.
+	void add_to_renderer() override;
 
   private:
 	// Callback used to determine whether the input is interactible.
@@ -242,7 +321,10 @@ class image_widget : public widget {
 	image_widget(tweened_position pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
 				 tr::opt_ref<u16> hue = std::nullopt);
 
+	// Gets the size of the widget.
 	glm::vec2 size() const override;
+
+	// Adds the widget to the renderer.
 	void add_to_renderer() override;
 
   private:
@@ -262,7 +344,10 @@ class color_preview_widget : public widget {
 	// Creates a color preview widget.
 	color_preview_widget(tweened_position pos, tr::align alignment, ticks unhide_time, u16& hue);
 
+	// Gets the size of the widget.
 	glm::vec2 size() const override;
+
+	// Adds the widget to the renderer.
 	void add_to_renderer() override;
 
   private:
@@ -285,18 +370,31 @@ class arrow_widget : public widget {
 	arrow_widget(tweened_position pos, tr::valign alignment, ticks unhide_time, arrow_type type, status_callback status_cb,
 				 action_callback action_cb);
 
+	// Gets the size of the widget.
 	glm::vec2 size() const override;
-	void add_to_renderer() override;
-	void tick() override;
 
+	// Gets whether the widget is interactible (delegates to the status callback).
 	bool interactible() const override;
+
+	// Function executed when the widget is clicked or activated with enter (delegates to the action callback).
 	void on_action() override;
+	// Function executed when the widget is hovered.
 	void on_hover() override;
+	// Function executed when the widget is unhovered.
 	void on_unhover() override;
+	// Function executed when the widget is held.
 	void on_held() override;
+	// Function executed when the widget is unheld.
 	void on_unheld() override;
+	// Function executed when the widget is selected.
 	void on_selected() override;
+	// Function executed when the widget is unselected.
 	void on_unselected() override;
+
+	// Updates the widget.
+	void tick() override;
+	// Adds the widget to the renderer.
+	void add_to_renderer() override;
 
   protected:
 	// Callback used to determine whether the arrow is interactible.
@@ -320,11 +418,15 @@ class arrow_widget : public widget {
 /////////////////////////////////////////////////////////////// ARROW WIDGET //////////////////////////////////////////////////////////////
 
 // Widget used to display the replay playback speed.
-struct replay_playback_indicator_widget : public widget {
+class replay_playback_indicator_widget : public widget {
+  public:
 	// Creates a replay playback indicator widget.
 	replay_playback_indicator_widget(tweened_position pos, tr::align alignment, ticks unhide_time);
 
+	// Gets the size of the widget.
 	glm::vec2 size() const override;
+
+	// Adds the widget to the renderer.
 	void add_to_renderer() override;
 };
 
@@ -340,7 +442,7 @@ struct gamemode_widget_data {
 };
 
 // Button widget used to display replay information and select a replay to be played.
-struct gamemode_widget : gamemode_widget_data, text_button_widget {
+class gamemode_widget : public gamemode_widget_data, public text_button_widget {
   public:
 	// Creates a gamemode widget.
 	gamemode_widget(tweened_position pos, tr::align alignment, ticks unhide_time, status_callback status_cb,
@@ -350,7 +452,8 @@ struct gamemode_widget : gamemode_widget_data, text_button_widget {
 /////////////////////////////////////////////////////////////// SCORE WIDGET //////////////////////////////////////////////////////////////
 
 // Widget used to display a time or score result.
-struct score_widget : public text_widget {
+class score_widget : public text_widget {
+  public:
 	// Score widget types.
 	enum class type {
 		// Showing a time.
@@ -363,7 +466,10 @@ struct score_widget : public text_widget {
 	score_widget(tweened_position pos, tr::align alignment, ticks unhide_time, enum type type, usize rank,
 				 tr::opt_ref<const score_entry> score);
 
+	// Gets the size of the widget.
 	glm::vec2 size() const override;
+
+	// Adds the widget to the renderer.
 	void add_to_renderer() override;
 
   private:
@@ -384,12 +490,16 @@ struct replay_widget_data {
 };
 
 // Button widget used to display replay information and select a replay to be played.
-struct replay_widget : private replay_widget_data, public text_button_widget {
+class replay_widget : private replay_widget_data, public text_button_widget {
+  public:
 	// Creates a replay widget.
 	replay_widget(tweened_position pos, tr::align alignment, ticks unhide_time, replays_state& state,
 				  std::optional<replay_map::const_iterator> replay_it);
 
+	// Gets the size of the widget.
 	glm::vec2 size() const override;
+
+	// Adds the widget to the renderer.
 	void add_to_renderer() override;
 };
 

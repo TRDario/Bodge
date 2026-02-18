@@ -36,7 +36,7 @@ constexpr shortcut_table SHORTCUTS{
 };
 
 constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr tweened_position EXIT_MOVE_IN{BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 // clang-format on
 ////////////////////////////////////////////////////////// GAMEMODE MANAGER STATE /////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ gamemode_manager_state::gamemode_manager_state(std::shared_ptr<playerless_game> 
 										 loc_text_callback{CENTER_BUTTONS[i].tooltip}, loc_text_callback{CENTER_BUTTONS[i].tag},
 										 font::LANGUAGE, 64, scb, center_acbs[i], sound::CONFIRM);
 	}
-	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
+	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 }
 

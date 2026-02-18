@@ -106,7 +106,7 @@ constexpr tweened_position INITIAL_VELOCITY_I_MOVE_IN{INITIAL_VELOCITY_START_POS
 constexpr tweened_position VELOCITY_STEP_D_MOVE_IN{VELOCITY_STEP_START_POS, {765, VELOCITY_STEP_START_POS.y}, 0.5_s};
 constexpr tweened_position VELOCITY_STEP_C_MOVE_IN{VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s};
 constexpr tweened_position VELOCITY_STEP_I_MOVE_IN{VELOCITY_STEP_START_POS, {985, VELOCITY_STEP_START_POS.y}, 0.5_s};
-constexpr tweened_position EXIT_MOVE_IN{BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 // clang-format on
 /////////////////////////////////////////////////////// BALL SETTINGS EDITOR STATE ////////////////////////////////////////////////////////
@@ -293,7 +293,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		m_ui.emplace<label_widget>(LABELS[i].tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
 								   loc_text_callback{LABELS[i].tag}, tr::sys::ttf_style::NORMAL, 48);
 	}
-	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
+	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 }
 

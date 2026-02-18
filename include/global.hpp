@@ -1,5 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                                       //
+// Provides various functionality used throughout the codebase.                                                                          //
+//                                                                                                                                       //
 // Globals:                                                                                                                              //
 //  • g_audio              - Audio subsystem.                                                                                            //
 //  • g_cli_settings       - Command-line settings.                                                                                      //

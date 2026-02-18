@@ -449,7 +449,7 @@ class replays_state : public main_menu_state {
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
 
-	friend struct replay_widget;
+	friend class replay_widget;
 };
 
 ////////////////////////////////////////////////////////////// SETTINGS STATE /////////////////////////////////////////////////////////////

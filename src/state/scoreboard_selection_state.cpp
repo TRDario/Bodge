@@ -25,7 +25,7 @@ constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
 constexpr tweened_position VIEW_TIMES_MOVE_IN{{400, 450}, {500, 450}, 0.5_s};
 constexpr tweened_position VIEW_SCORES_MOVE_IN{{600, 550}, {500, 550}, 0.5_s};
 constexpr tweened_position PLAYER_INFO_MOVE_IN{TOP_START_POS, {500, 64}, 0.5_s};
-constexpr tweened_position EXIT_MOVE_IN{BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 //////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////
 
@@ -64,7 +64,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 								   tr::sys::ttf_style::NORMAL, 64);
 		m_ui.emplace<label_widget>(T_PLAYER_INFO, PLAYER_INFO_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
 								   const_text_callback{g_scorefile.format_player_info()}, tr::sys::ttf_style::NORMAL, 32);
-		m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
+		m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	}
 	else {

@@ -49,7 +49,7 @@ constexpr tweened_position NO_REPLAYS_FOUND_MOVE_IN{{600, 467}, {500, 467}, 0.5_
 constexpr tweened_position PAGE_D_MOVE_IN{{-50, 942.5}, {10, 942.5}, 0.5_s};
 constexpr tweened_position PAGE_C_MOVE_IN{BOTTOM_START_POS, {500, 950}, 0.5_s};
 constexpr tweened_position PAGE_I_MOVE_IN{{1050, 942.5}, {990, 942.5}, 0.5_s};
-constexpr tweened_position EXIT_MOVE_IN{BOTTOM_START_POS, {500, 1000}, 0.5_s};
+constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 // clang-format on
 ////////////////////////////////////////////////////////////// REPLAYS STATE //////////////////////////////////////////////////////////////
@@ -172,7 +172,7 @@ void replays_state::set_up_ui()
 
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
+	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (m_replays.empty()) {
 		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, NO_REPLAYS_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,

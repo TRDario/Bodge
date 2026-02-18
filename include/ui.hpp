@@ -5,6 +5,7 @@
 //     • text_widget                      - Base text widget interface.                                                                  //
 //         • label_widget                 - Displays text.                                                                               //
 //         • text_button_widget           - Interactive labeled button.                                                                  //
+//             • gamemode_widget          - Displays a gamemode's name, interactive.                                                     //
 //             • replay_widget            - Displays replay information, interactive.                                                    //
 //         • basic_numeric_input_widget   - Takes numeric input.                                                                         //
 //         • line_input_widget            - Takes text input on a single line.                                                           //

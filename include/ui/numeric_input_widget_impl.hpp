@@ -1,6 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements numeric_input_widget from ui/widget.hpp.                                                                                   //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include "../ui.hpp"
 #include "widget.hpp"
+
+///////////////////////////////////////////////////// DEFAULT NUMERIC INPUT FORMATTER /////////////////////////////////////////////////////
 
 template <class T, tr::template_string_literal Format, tr::template_string_literal BufferFormat>
 void default_numeric_input_formatter<T, Format, BufferFormat>::from_string(std::common_type_t<T, int>& out, std::string_view str)
@@ -20,7 +28,7 @@ std::string default_numeric_input_formatter<T, Format, BufferFormat>::to_string(
 	return TR_FMT::format(BufferFormat, str);
 }
 
-//
+/////////////////////////////////////////////////////////// NUMERIC INPUT WIDGET //////////////////////////////////////////////////////////
 
 template <class T, usize Digits, class Formatter>
 basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time,
