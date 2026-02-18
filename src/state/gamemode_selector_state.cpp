@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements gamemode_selector_state from state.hpp.                                                                                    //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -26,7 +32,7 @@ constexpr tag T_PAGE_I{"page_i"};
 constexpr tag T_EXIT{"exit"};
 
 // Replay widget tags.
-constexpr std::array<tag, GAMEMODES_PER_PAGE> GAMEMODE_TAGS{
+constexpr std::array GAMEMODE_TAGS{
     T_GAMEMODE_0,
     T_GAMEMODE_1,
     T_GAMEMODE_2,
@@ -39,6 +45,7 @@ constexpr std::array<tag, GAMEMODES_PER_PAGE> GAMEMODE_TAGS{
     T_GAMEMODE_9,
 };
 
+// Selection tree for the gamemode selector menu.
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_GAMEMODE_0},
 	selection_tree_row{T_GAMEMODE_1},
@@ -53,22 +60,34 @@ constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_EXIT},
 };
 
+// Shortcut table for the gamemode selector menu.
 constexpr shortcut_table SHORTCUTS{
 	{"1"_kc, T_GAMEMODE_0},
 	{"2"_kc, T_GAMEMODE_1},
 	{"3"_kc, T_GAMEMODE_2},
 	{"4"_kc, T_GAMEMODE_3},
 	{"5"_kc, T_GAMEMODE_4},
-	{"Escape"_kc, T_EXIT},
+	{"6"_kc, T_GAMEMODE_5},
+	{"7"_kc, T_GAMEMODE_6},
+	{"8"_kc, T_GAMEMODE_7},
+	{"9"_kc, T_GAMEMODE_8},
+	{"0"_kc, T_GAMEMODE_9},
 	{"Left"_kc, T_PAGE_D},
 	{"Right"_kc, T_PAGE_I},
+	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT},
 };
 
-constexpr tweened_position SUBTITLE_MOVE_IN{TOP_START_POS, {500, 64}, 0.5_s};
-constexpr tweened_position NO_GAMEMODES_FOUND_MOVE_IN{{600, 467}, {500, 467}, 0.5_s};
-constexpr tweened_position PAGE_D_MOVE_IN{{-50, 942.5}, {10, 942.5}, 0.5_s};
-constexpr tweened_position PAGE_C_MOVE_IN{BOTTOM_START_POS, {500, 950}, 0.5_s};
-constexpr tweened_position PAGE_I_MOVE_IN{{1050, 942.5}, {990, 942.5}, 0.5_s};
+// Entry animation for the subtitle widget.
+constexpr tweened_position SUBTITLE_ANIMATION{TOP_START_POS, {500, 64}, 0.5_s};
+// Entry animation for the "no gamemodes found" widget.
+constexpr tweened_position NO_GAMEMODES_FOUND_ANIMATION{{600, 467}, {500, 467}, 0.5_s};
+// Entry animation for the previous page button widget.
+constexpr tweened_position PAGE_D_ANIMATION{{-50, 942.5}, {10, 942.5}, 0.5_s};
+// Entry animation for the current page widget.
+constexpr tweened_position PAGE_C_ANIMATION{BOTTOM_START_POS, {500, 950}, 0.5_s};
+// Entry animation for the next page button widget.
+constexpr tweened_position PAGE_I_ANIMATION{{1050, 942.5}, {990, 942.5}, 0.5_s};
+// Entry animation for the exit button widget.
 constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 // clang-format on
@@ -140,7 +159,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<playerless_game
 	m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::sys::ttf_style::NORMAL, 64);
 	if (bool(animate_subtitle)) {
-		m_ui.emplace<label_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, std::move(subtitle_tcb),
+		m_ui.emplace<label_widget>(T_SUBTITLE, SUBTITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, std::move(subtitle_tcb),
 								   tr::sys::ttf_style::NORMAL, 32);
 	}
 	else {
@@ -150,19 +169,19 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<playerless_game
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (m_gamemodes.empty()) {
-		m_ui.emplace<label_widget>(T_NO_GAMEMODES_FOUND, NO_GAMEMODES_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
+		m_ui.emplace<label_widget>(T_NO_GAMEMODES_FOUND, NO_GAMEMODES_FOUND_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
 								   loc_text_callback{T_NO_GAMEMODES_FOUND}, tr::sys::ttf_style::NORMAL, 64, DARK_GRAY);
 		return;
 	}
 	for (usize i = 0; i < GAMEMODES_PER_PAGE; ++i) {
 		std::optional<gamemode_with_path> opt_gp{i < m_gamemodes.size() ? std::optional{m_gamemodes[i]} : std::nullopt};
-		const tweened_position move_in{{i % 2 == 0 ? 400 : 600, 160 + 75 * i}, {500, 160 + 75 * i}, 0.5_s};
-		m_ui.emplace<gamemode_widget>(GAMEMODE_TAGS[i], move_in, tr::align::CENTER, 0.5_s, scb, gamemode_acb, std::move(opt_gp));
+		const tweened_position animation{{i % 2 == 0 ? 400 : 600, 160 + 75 * i}, {500, 160 + 75 * i}, 0.5_s};
+		m_ui.emplace<gamemode_widget>(GAMEMODE_TAGS[i], animation, tr::align::CENTER, 0.5_s, scb, gamemode_acb, std::move(opt_gp));
 	}
-	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::valign::BOTTOM, 0.5_s, arrow_type::LEFT, page_d_scb, page_d_acb);
-	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, page_c_tcb,
+	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_ANIMATION, tr::valign::BOTTOM, 0.5_s, arrow_type::LEFT, page_d_scb, page_d_acb);
+	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, page_c_tcb,
 							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_MOVE_IN, tr::valign::BOTTOM, 0.5_s, arrow_type::RIGHT, page_i_scb, page_i_acb);
+	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_ANIMATION, tr::valign::BOTTOM, 0.5_s, arrow_type::RIGHT, page_i_scb, page_i_acb);
 }
 
 tr::next_state gamemode_selector_state::tick()
@@ -238,8 +257,8 @@ std::unordered_map<tag, std::unique_ptr<widget>> gamemode_selector_state::prepar
 	std::vector<gamemode_with_path>::iterator gamemode_it{std::next(m_gamemodes.begin(), GAMEMODES_PER_PAGE * m_page)};
 	for (usize i = 0; i < GAMEMODES_PER_PAGE; ++i) {
 		std::optional<gamemode_with_path> opt_gp{gamemode_it != m_gamemodes.end() ? std::optional{*gamemode_it++} : std::nullopt};
-		const tweened_position move_in{{i % 2 == 0 ? 600 : 400, 160 + 75 * i}, {500, 160 + 75 * i}, 0.25_s};
-		map.emplace(GAMEMODE_TAGS[i], std::make_unique<gamemode_widget>(move_in, tr::align::CENTER, 0.25_s, scb, acb, opt_gp));
+		const tweened_position animation{{i % 2 == 0 ? 600 : 400, 160 + 75 * i}, {500, 160 + 75 * i}, 0.25_s};
+		map.emplace(GAMEMODE_TAGS[i], std::make_unique<gamemode_widget>(animation, tr::align::CENTER, 0.25_s, scb, acb, opt_gp));
 	}
 	return map;
 }

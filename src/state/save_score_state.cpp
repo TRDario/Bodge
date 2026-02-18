@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements save_score_state from state.hpp.                                                                                           //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -15,29 +21,35 @@ constexpr tag T_INPUT{"input"};
 constexpr tag T_SAVE{"save"};
 constexpr tag T_CANCEL{"cancel"};
 
+// Selection tree for the save score screen.
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_INPUT},
 	selection_tree_row{T_SAVE},
 	selection_tree_row{T_CANCEL},
 };
 
+// Shortcut table for the save score screen.
 constexpr shortcut_table SHORTCUTS{
-	{"Enter"_kc, T_SAVE},
-	{"S"_kc, T_SAVE},
-	{"1"_kc, T_SAVE},
-	{"Escape"_kc, T_CANCEL},
-	{"C"_kc, T_CANCEL},
-	{"2"_kc, T_CANCEL},
+	{"Enter"_kc, T_SAVE}, {"Ctrl+S"_kc, T_SAVE}, {"1"_kc, T_SAVE},
+	{"Escape"_kc, T_CANCEL}, {"Q"_kc, T_CANCEL}, {"2"_kc, T_CANCEL},
 };
 
-constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr tweened_position RESULTS_MOVE_IN{{500, 100}, {500, 200}, 0.5_s};
-constexpr tweened_position TIME_MOVE_IN{{225, 300}, {325, 300}, 0.5_s};
-constexpr tweened_position SCORE_MOVE_IN{{775, 300}, {675, 300}, 0.5_s};
-constexpr tweened_position DESCRIPTION_MOVE_IN{{600, 440}, {500, 440}, 0.5_s};
-constexpr tweened_position DESCRIPTION_INPUT_MOVE_IN{{600, 475}, {500, 475}, 0.5_s};
-constexpr tweened_position SAVE_MOVE_IN{BOTTOM_START_POS, {500, 950}, 0.5_s};
-constexpr tweened_position CANCEL_MOVE_IN{BOTTOM_START_POS, {500, 1000}, 0.5_s};
+// Entry animation used for the title widget.
+constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
+// Entry animation used for the results widget.
+constexpr tweened_position RESULTS_ANIMATION{{500, 100}, {500, 200}, 0.5_s};
+// Entry animation used for the time widget.
+constexpr tweened_position TIME_ANIMATION{{225, 300}, {325, 300}, 0.5_s};
+// Entry animation used for the score widget.
+constexpr tweened_position SCORE_ANIMATION{{775, 300}, {675, 300}, 0.5_s};
+// Entry animation used for the description label widget.
+constexpr tweened_position DESCRIPTION_ANIMATION{{600, 440}, {500, 440}, 0.5_s};
+// Entry animation used for the description input widget.
+constexpr tweened_position DESCRIPTION_INPUT_ANIMATION{{600, 475}, {500, 475}, 0.5_s};
+// Entry animation used for the save button widget.
+constexpr tweened_position SAVE_ANIMATION{BOTTOM_START_POS, {500, 950}, 0.5_s};
+// Entry animation used for the cancel button widget.
+constexpr tweened_position CANCEL_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 // clang-format on
 //////////////////////////////////////////////////////////// SAVE SCORE STATE /////////////////////////////////////////////////////////////
@@ -96,11 +108,11 @@ save_screen_flags to_flags(save_score_state::substate state)
 
 void save_score_state::set_up_ui()
 {
-	// MOVE-INS
+	// ANIMATIONS
 
 	const float label_h{296 - g_text_engine.line_skip(font::LANGUAGE, 32)};
-	const tweened_position best_time_label_move_in{{225, label_h}, {325, label_h}, 0.5_s};
-	const tweened_position best_score_label_move_in{{775, label_h}, {675, label_h}, 0.5_s};
+	const tweened_position best_time_label_animation{{225, label_h}, {325, label_h}, 0.5_s};
+	const tweened_position best_score_label_animation{{775, label_h}, {675, label_h}, 0.5_s};
 
 	// STATUS CALLBACKS
 
@@ -129,38 +141,37 @@ void save_score_state::set_up_ui()
 
 	//
 
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_RESULTS, RESULTS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_RESULTS},
+	m_ui.emplace<label_widget>(T_RESULTS, RESULTS_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_RESULTS},
 							   tr::sys::ttf_style::NORMAL, 48, YELLOW);
-	m_ui.emplace<label_widget>(T_TIME_LABEL, best_time_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TIME_LABEL},
-							   tr::sys::ttf_style::NORMAL, 32, YELLOW);
-	m_ui.emplace<label_widget>(T_TIME, TIME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, const_text_callback{format_time(m_score.time)},
+	m_ui.emplace<label_widget>(T_TIME_LABEL, best_time_label_animation, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+							   loc_text_callback{T_TIME_LABEL}, tr::sys::ttf_style::NORMAL, 32, YELLOW);
+	m_ui.emplace<label_widget>(T_TIME, TIME_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, const_text_callback{format_time(m_score.time)},
 							   tr::sys::ttf_style::NORMAL, 64, YELLOW);
-	m_ui.emplace<label_widget>(T_SCORE_LABEL, best_score_label_move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+	m_ui.emplace<label_widget>(T_SCORE_LABEL, best_score_label_animation, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 							   loc_text_callback{T_SCORE_LABEL}, tr::sys::ttf_style::NORMAL, 32, YELLOW);
-	m_ui.emplace<label_widget>(T_SCORE, SCORE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+	m_ui.emplace<label_widget>(T_SCORE, SCORE_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 							   const_text_callback{format_score(m_score.score)}, tr::sys::ttf_style::NORMAL, 64, YELLOW);
-	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
+	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
 							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24, scb);
-	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
+	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, DESCRIPTION_INPUT_ANIMATION, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24, scb);
+	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SAVE},
 									 font::LANGUAGE, 48, scb, save_acb, sound::CONFIRM);
-	m_ui.emplace<text_button_widget>(T_CANCEL, CANCEL_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_CANCEL},
+	m_ui.emplace<text_button_widget>(T_CANCEL, CANCEL_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_CANCEL},
 									 font::LANGUAGE, 48, scb, cancel_acb, sound::CANCEL);
 }
 
 void save_score_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.move(TOP_START_POS, 0.5_s);
-	m_ui[T_RESULTS].pos.move_y(100, 0.5_s);
-	m_ui[T_TIME_LABEL].pos.move_x(225, 0.5_s);
-	m_ui[T_TIME].pos.move_x(225, 0.5_s);
-	m_ui[T_SCORE_LABEL].pos.move_x(775, 0.5_s);
-	m_ui[T_SCORE].pos.move_x(775, 0.5_s);
-	m_ui[T_DESCRIPTION].pos.move_x(400, 0.5_s);
-	m_ui[T_INPUT].pos.move_x(400, 0.5_s);
-	m_ui[T_SAVE].pos.move(BOTTOM_START_POS, 0.5_s);
-	m_ui[T_CANCEL].pos.move(BOTTOM_START_POS, 0.5_s);
-	m_ui.hide_all_widgets(0.5_s);
+	m_ui[T_TITLE].move_and_hide(TOP_START_POS, 0.5_s);
+	m_ui[T_RESULTS].move_y_and_hide(100, 0.5_s);
+	m_ui[T_TIME_LABEL].move_x_and_hide(225, 0.5_s);
+	m_ui[T_TIME].move_x_and_hide(225, 0.5_s);
+	m_ui[T_SCORE_LABEL].move_x_and_hide(775, 0.5_s);
+	m_ui[T_SCORE].move_x_and_hide(775, 0.5_s);
+	m_ui[T_DESCRIPTION].move_x_and_hide(400, 0.5_s);
+	m_ui[T_INPUT].move_x_and_hide(400, 0.5_s);
+	m_ui[T_SAVE].move_and_hide(BOTTOM_START_POS, 0.5_s);
+	m_ui[T_CANCEL].move_and_hide(BOTTOM_START_POS, 0.5_s);
 }

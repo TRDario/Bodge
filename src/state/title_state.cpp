@@ -40,12 +40,12 @@ constexpr selection_tree SELECTION_TREE{
 
 // Shortcut table for the title screen.
 constexpr shortcut_table SHORTCUTS{
-	{"Enter"_kc, T_START_GAME},	   {"1"_kc, T_START_GAME},
-	{"G"_kc, T_GAMEMODE_MANAGER},  {"2"_kc, T_GAMEMODE_MANAGER},
-	{"B"_kc, T_SCOREBOARDS},	   {"3"_kc, T_SCOREBOARDS},
-	{"R"_kc, T_REPLAYS},		   {"4"_kc, T_REPLAYS},
-	{"S"_kc, T_SETTINGS},		   {"5"_kc, T_SETTINGS},
-	{"Escape"_kc, T_EXIT},		   {"6"_kc, T_EXIT},
+	{"Enter"_kc, T_START_GAME}, {"1"_kc, T_START_GAME},
+	{"G"_kc, T_GAMEMODE_MANAGER}, {"2"_kc, T_GAMEMODE_MANAGER},
+	{"B"_kc, T_SCOREBOARDS}, {"3"_kc, T_SCOREBOARDS},
+	{"R"_kc, T_REPLAYS}, {"4"_kc, T_REPLAYS},
+	{"S"_kc, T_SETTINGS}, {"5"_kc, T_SETTINGS},
+	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT}, {"6"_kc, T_EXIT},
 };
 
 // Entry animation for logo text widgets.

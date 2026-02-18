@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements settings_state from state.hpp.                                                                                             //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/audio.hpp"
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
@@ -47,21 +53,21 @@ constexpr tag T_APPLY{"apply"};
 constexpr tag T_EXIT{"exit"};
 
 // Left-hand side labels.
-constexpr std::array<label_info, 10> LABELS{{
-	{T_DISPLAY_MODE, "display_mode_tt"},
-	{T_WINDOW_SIZE, "window_size_tt"},
-	{T_VSYNC, "vsync_tt"},
-	{T_MSAA, "msaa_tt"},
-	{T_MOUSE_SENSITIVITY, "mouse_sensitivity_tt"},
-	{T_PRIMARY_HUE, "primary_hue_tt"},
-	{T_SECONDARY_HUE, "secondary_hue_tt"},
-	{T_SFX_VOLUME, "sfx_volume_tt"},
-	{T_MUSIC_VOLUME, "music_volume_tt"},
-	{T_LANGUAGE, nullptr},
-}};
+constexpr std::array LABELS{
+	label_info{T_DISPLAY_MODE, "display_mode_tt"},
+	label_info{T_WINDOW_SIZE, "window_size_tt"},
+	label_info{T_VSYNC, "vsync_tt"},
+	label_info{T_MSAA, "msaa_tt"},
+	label_info{T_MOUSE_SENSITIVITY, "mouse_sensitivity_tt"},
+	label_info{T_PRIMARY_HUE, "primary_hue_tt"},
+	label_info{T_SECONDARY_HUE, "secondary_hue_tt"},
+	label_info{T_SFX_VOLUME, "sfx_volume_tt"},
+	label_info{T_MUSIC_VOLUME, "music_volume_tt"},
+	label_info{T_LANGUAGE, nullptr},
+};
 
 // Right-hand side interactible widgets.
-constexpr std::array<tag, 26> RIGHT_WIDGETS{
+constexpr std::array RIGHT_WIDGETS{
 	T_DISPLAY_MODE_C,
 	T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I,
 	T_VSYNC_C,
@@ -75,8 +81,9 @@ constexpr std::array<tag, 26> RIGHT_WIDGETS{
 };
 
 // Buttons on the bottom of the screen.
-constexpr std::array<tag, 3> BOTTOM_BUTTONS{T_REVERT, T_APPLY, T_EXIT};
+constexpr std::array BOTTOM_BUTTONS{T_REVERT, T_APPLY, T_EXIT};
 
+// Selection tree used for the settings menu.
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_DISPLAY_MODE_C},
 	selection_tree_row{T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I},
@@ -93,51 +100,89 @@ constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_EXIT},
 };
 
+// Shortcut table used for the settings menu.
 constexpr shortcut_table SHORTCUTS{
 	{"Ctrl+Z"_kc, T_REVERT},
 	{"Ctrl+S"_kc, T_APPLY},
 	{"Enter"_kc, T_APPLY},
-	{"Escape"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT},
 };
 
+// Starting position for display mode right widgets.
 constexpr glm::vec2 DISPLAY_MODE_START_POS{1050, 121};
-constexpr glm::vec2 WINDOW_SIZE_START_POS{1050, 197};
-constexpr glm::vec2 VSYNC_START_POS{1050, 271};
-constexpr glm::vec2 MSAA_START_POS{1050, 346};
-constexpr glm::vec2 MOUSE_SENSITIVITY_START_POS{1050, 421};
-constexpr glm::vec2 PRIMARY_HUE_START_POS{1050, 496};
-constexpr glm::vec2 SECONDARY_HUE_START_POS{1050, 571};
-constexpr glm::vec2 SFX_VOLUME_START_POS{1050, 646};
-constexpr glm::vec2 MUSIC_VOLUME_START_POS{1050, 721};
-constexpr glm::vec2 LANGUAGE_START_POS{1050, 796};
+// Starting position for window size right widgets.
+constexpr glm::vec2 WINDOW_SIZE_START_POS{1050, DISPLAY_MODE_START_POS.y + 75};
+// Starting position for V-sync right widgets.
+constexpr glm::vec2 VSYNC_START_POS{1050, WINDOW_SIZE_START_POS.y + 75};
+// Starting position for MSAAA right widgets.
+constexpr glm::vec2 MSAA_START_POS{1050, VSYNC_START_POS.y + 75};
+// Starting position for mouse sensitivity right widgets.
+constexpr glm::vec2 MOUSE_SENSITIVITY_START_POS{1050, MSAA_START_POS.y + 75};
+// Starting position for primary hue right widgets.
+constexpr glm::vec2 PRIMARY_HUE_START_POS{1050, MOUSE_SENSITIVITY_START_POS.y + 75};
+// Starting position for secondary hue right widgets.
+constexpr glm::vec2 SECONDARY_HUE_START_POS{1050, PRIMARY_HUE_START_POS.y + 75};
+// Starting position for SFX volume right widgets.
+constexpr glm::vec2 SFX_VOLUME_START_POS{1050, SECONDARY_HUE_START_POS.y + 75};
+// Starting position for music volume right widgets.
+constexpr glm::vec2 MUSIC_VOLUME_START_POS{1050, SFX_VOLUME_START_POS.y + 75};
+// Starting position for language right widgets.
+constexpr glm::vec2 LANGUAGE_START_POS{1050, MUSIC_VOLUME_START_POS.y + 75};
 
-constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr tweened_position DISPLAY_MODE_C_MOVE_IN{DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s};
-constexpr tweened_position WINDOW_SIZE_D_MOVE_IN{WINDOW_SIZE_START_POS, {765, WINDOW_SIZE_START_POS.y}, 0.5_s};
-constexpr tweened_position WINDOW_SIZE_C_MOVE_IN{WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s};
-constexpr tweened_position WINDOW_SIZE_I_MOVE_IN{WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s};
-constexpr tweened_position VSYNC_C_MOVE_IN{VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s};
-constexpr tweened_position MSAA_D_MOVE_IN{MSAA_START_POS, {830, MSAA_START_POS.y}, 0.5_s};
-constexpr tweened_position MSAA_C_MOVE_IN{MSAA_START_POS, {907.5, MSAA_START_POS.y}, 0.5_s};
-constexpr tweened_position MSAA_I_MOVE_IN{MSAA_START_POS, {985, MSAA_START_POS.y}, 0.5_s};
-constexpr tweened_position MOUSE_SENSITIVITY_D_MOVE_IN{MOUSE_SENSITIVITY_START_POS, {765, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
-constexpr tweened_position MOUSE_SENSITIVITY_C_MOVE_IN{MOUSE_SENSITIVITY_START_POS, {875, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
-constexpr tweened_position MOUSE_SENSITIVITY_I_MOVE_IN{MOUSE_SENSITIVITY_START_POS, {985, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
-constexpr tweened_position PRIMARY_HUE_D_MOVE_IN{PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s};
-constexpr tweened_position PRIMARY_HUE_C_MOVE_IN{PRIMARY_HUE_START_POS, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s};
-constexpr tweened_position PRIMARY_HUE_I_MOVE_IN{PRIMARY_HUE_START_POS, {930, PRIMARY_HUE_START_POS.y}, 0.5_s};
-constexpr tweened_position PRIMARY_HUE_PREVIEW_MOVE_IN{PRIMARY_HUE_START_POS, {985, PRIMARY_HUE_START_POS.y}, 0.5_s};
-constexpr tweened_position SECONDARY_HUE_D_MOVE_IN{SECONDARY_HUE_START_POS, {745, SECONDARY_HUE_START_POS.y}, 0.5_s};
-constexpr tweened_position SECONDARY_HUE_C_MOVE_IN{SECONDARY_HUE_START_POS, {837.5, SECONDARY_HUE_START_POS.y}, 0.5_s};
-constexpr tweened_position SECONDARY_HUE_I_MOVE_IN{SECONDARY_HUE_START_POS, {930, SECONDARY_HUE_START_POS.y}, 0.5_s};
-constexpr tweened_position SECONDARY_HUE_PREVIEW_MOVE_IN{SECONDARY_HUE_START_POS, {985, SECONDARY_HUE_START_POS.y}, 0.5_s};
-constexpr tweened_position SFX_VOLUME_D_MOVE_IN{SFX_VOLUME_START_POS, {765, SFX_VOLUME_START_POS.y}, 0.5_s};
-constexpr tweened_position SFX_VOLUME_C_MOVE_IN{SFX_VOLUME_START_POS, {875, SFX_VOLUME_START_POS.y}, 0.5_s};
-constexpr tweened_position SFX_VOLUME_I_MOVE_IN{SFX_VOLUME_START_POS, {985, SFX_VOLUME_START_POS.y}, 0.5_s};
-constexpr tweened_position MUSIC_VOLUME_D_MOVE_IN{MUSIC_VOLUME_START_POS, {765, MUSIC_VOLUME_START_POS.y}, 0.5_s};
-constexpr tweened_position MUSIC_VOLUME_C_MOVE_IN{MUSIC_VOLUME_START_POS, {875, MUSIC_VOLUME_START_POS.y}, 0.5_s};
-constexpr tweened_position MUSIC_VOLUME_I_MOVE_IN{MUSIC_VOLUME_START_POS, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s};
-constexpr tweened_position LANGUAGE_C_MOVE_IN{LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s};
+// Entry animation used for the title widget.
+constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
+// Entry animation used for the current display mode widget.
+constexpr tweened_position DISPLAY_MODE_C_ANIMATION{DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s};
+// Entry animation used for the window size decrease button widget.
+constexpr tweened_position WINDOW_SIZE_D_ANIMATION{WINDOW_SIZE_START_POS, {765, WINDOW_SIZE_START_POS.y}, 0.5_s};
+// Entry animation used for the current window size widget.
+constexpr tweened_position WINDOW_SIZE_C_ANIMATION{WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s};
+// Entry animation used for the window size increase button widget.
+constexpr tweened_position WINDOW_SIZE_I_ANIMATION{WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s};
+// Entry animation used for the current V-sync mode widget.
+constexpr tweened_position VSYNC_C_ANIMATION{VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s};
+// Entry animation used for the MSAA decrease button widget.
+constexpr tweened_position MSAA_D_ANIMATION{MSAA_START_POS, {830, MSAA_START_POS.y}, 0.5_s};
+// Entry animation used for the current MSAA widget.
+constexpr tweened_position MSAA_C_ANIMATION{MSAA_START_POS, {907.5, MSAA_START_POS.y}, 0.5_s};
+// Entry animation used for the MSAA increase button widget.
+constexpr tweened_position MSAA_I_ANIMATION{MSAA_START_POS, {985, MSAA_START_POS.y}, 0.5_s};
+// Entry animation used for the mouse sensitivity decrease button widget.
+constexpr tweened_position MOUSE_SENSITIVITY_D_ANIMATION{MOUSE_SENSITIVITY_START_POS, {765, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
+// Entry animation used for the current mouse sensitivity widget.
+constexpr tweened_position MOUSE_SENSITIVITY_C_ANIMATION{MOUSE_SENSITIVITY_START_POS, {875, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
+// Entry animation used for the mouse sensitivity increase button widget.
+constexpr tweened_position MOUSE_SENSITIVITY_I_ANIMATION{MOUSE_SENSITIVITY_START_POS, {985, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
+// Entry animation used for the primary hue decrease button widget.
+constexpr tweened_position PRIMARY_HUE_D_ANIMATION{PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s};
+// Entry animation used for the current primary hue widget.
+constexpr tweened_position PRIMARY_HUE_C_ANIMATION{PRIMARY_HUE_START_POS, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s};
+// Entry animation used for the primary hue increase button widget.
+constexpr tweened_position PRIMARY_HUE_I_ANIMATION{PRIMARY_HUE_START_POS, {930, PRIMARY_HUE_START_POS.y}, 0.5_s};
+// Entry animation used for the primary hue preview widget.
+constexpr tweened_position PRIMARY_HUE_PREVIEW_ANIMATION{PRIMARY_HUE_START_POS, {985, PRIMARY_HUE_START_POS.y}, 0.5_s};
+// Entry animation used for the secondary hue decrease button widget.
+constexpr tweened_position SECONDARY_HUE_D_ANIMATION{SECONDARY_HUE_START_POS, {745, SECONDARY_HUE_START_POS.y}, 0.5_s};
+// Entry animation used for the current secondary hue widget.
+constexpr tweened_position SECONDARY_HUE_C_ANIMATION{SECONDARY_HUE_START_POS, {837.5, SECONDARY_HUE_START_POS.y}, 0.5_s};
+// Entry animation used for the secondary hue increase button widget.
+constexpr tweened_position SECONDARY_HUE_I_ANIMATION{SECONDARY_HUE_START_POS, {930, SECONDARY_HUE_START_POS.y}, 0.5_s};
+// Entry animation used for the secondary hue preview widget.
+constexpr tweened_position SECONDARY_HUE_PREVIEW_ANIMATION{SECONDARY_HUE_START_POS, {985, SECONDARY_HUE_START_POS.y}, 0.5_s};
+// Entry animation used for the SFX volume decrease button widget.
+constexpr tweened_position SFX_VOLUME_D_ANIMATION{SFX_VOLUME_START_POS, {765, SFX_VOLUME_START_POS.y}, 0.5_s};
+// Entry animation used for the current SFX volume widget.
+constexpr tweened_position SFX_VOLUME_C_ANIMATION{SFX_VOLUME_START_POS, {875, SFX_VOLUME_START_POS.y}, 0.5_s};
+// Entry animation used for the SFX volume increase button widget.
+constexpr tweened_position SFX_VOLUME_I_ANIMATION{SFX_VOLUME_START_POS, {985, SFX_VOLUME_START_POS.y}, 0.5_s};
+// Entry animation used for the music volume decrease button widget.
+constexpr tweened_position MUSIC_VOLUME_D_ANIMATION{MUSIC_VOLUME_START_POS, {765, MUSIC_VOLUME_START_POS.y}, 0.5_s};
+// Entry animation used for the current music volume widget.
+constexpr tweened_position MUSIC_VOLUME_C_ANIMATION{MUSIC_VOLUME_START_POS, {875, MUSIC_VOLUME_START_POS.y}, 0.5_s};
+// Entry animation used for the music volume increase button widget.
+constexpr tweened_position MUSIC_VOLUME_I_ANIMATION{MUSIC_VOLUME_START_POS, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s};
+// Entry animation used for the current language widget.
+constexpr tweened_position LANGUAGE_C_ANIMATION{LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s};
 
 // clang-format on
 ////////////////////////////////////////////////////////////// SETTINGS STATE /////////////////////////////////////////////////////////////
@@ -262,68 +307,70 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 
 	//
 
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::sys::ttf_style::NORMAL, 64);
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		const label_info& label{LABELS[i]};
-		const tweened_position move_in{{-50, 121 + i * 75}, {15, 121 + i * 75}, 0.5_s};
+		const tweened_position animation{{-50, 121 + i * 75}, {15, 121 + i * 75}, 0.5_s};
 		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? DISABLED_GRAY : GRAY};
-		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
+		m_ui.emplace<label_widget>(label.tag, animation, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
 								   loc_text_callback{label.tag}, tr::sys::ttf_style::NORMAL, 48, color);
 	}
 
-	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, DISPLAY_MODE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP,
+	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, DISPLAY_MODE_C_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP,
 									 display_mode_c_tcb, font::LANGUAGE, 48, scb, display_mode_c_acb, sound::CONFIRM);
-	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, WINDOW_SIZE_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, window_size_d_scb,
+	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, WINDOW_SIZE_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, window_size_d_scb,
 							   window_size_d_acb);
-	m_ui.emplace<numeric_input_widget<u16, 4>>(T_WINDOW_SIZE_C, WINDOW_SIZE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+	m_ui.emplace<numeric_input_widget<u16, 4>>(T_WINDOW_SIZE_C, WINDOW_SIZE_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
 											   m_pending.window_size, window_size_c_scb, window_size_c_vcb);
-	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, WINDOW_SIZE_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, window_size_i_scb,
+	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, WINDOW_SIZE_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, window_size_i_scb,
 							   window_size_i_acb);
-	m_ui.emplace<text_button_widget>(T_VSYNC_C, VSYNC_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, vsync_c_tcb,
+	m_ui.emplace<text_button_widget>(T_VSYNC_C, VSYNC_C_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, vsync_c_tcb,
 									 font::LANGUAGE_PREVIEW, 48, scb, vsync_c_acb, sound::CONFIRM);
-	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, msaa_d_scb, msaa_d_acb);
-	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, msaa_c_tcb, tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<arrow_widget>(T_MSAA_I, MSAA_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, msaa_i_scb, msaa_i_acb);
-	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_D, MOUSE_SENSITIVITY_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
+	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, msaa_d_scb, msaa_d_acb);
+	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, msaa_c_tcb, tr::sys::ttf_style::NORMAL,
+							   48);
+	m_ui.emplace<arrow_widget>(T_MSAA_I, MSAA_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, msaa_i_scb, msaa_i_acb);
+	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_D, MOUSE_SENSITIVITY_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
 							   mouse_sensitivity_d_scb, mouse_sensitivity_d_acb);
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C, MOUSE_SENSITIVITY_C_MOVE_IN, tr::align::CENTER, 0.5_s,
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C, MOUSE_SENSITIVITY_C_ANIMATION, tr::align::CENTER, 0.5_s,
 															48, m_ui, m_pending.mouse_sensitivity, scb, mouse_sensitivity_c_vcb);
-	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_I, MOUSE_SENSITIVITY_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
+	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_I, MOUSE_SENSITIVITY_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   mouse_sensitivity_i_scb, mouse_sensitivity_i_acb);
-	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, scb, primary_hue_d_acb);
-	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, scb,
+							   primary_hue_d_acb);
+	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
 											   m_pending.primary_hue, scb, hue_c_vcb);
-	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, PRIMARY_HUE_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, scb,
+	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, PRIMARY_HUE_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, scb,
 							   primary_hue_i_acb);
-	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, PRIMARY_HUE_PREVIEW_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s,
+	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, PRIMARY_HUE_PREVIEW_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s,
 									   m_pending.primary_hue);
-	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, SECONDARY_HUE_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, scb,
+	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, SECONDARY_HUE_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, scb,
 							   secondary_hue_d_acb);
-	m_ui.emplace<numeric_input_widget<u16, 3>>(T_SECONDARY_HUE_C, SECONDARY_HUE_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+	m_ui.emplace<numeric_input_widget<u16, 3>>(T_SECONDARY_HUE_C, SECONDARY_HUE_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
 											   m_pending.secondary_hue, scb, hue_c_vcb);
-	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, SECONDARY_HUE_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, scb,
+	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, SECONDARY_HUE_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, scb,
 							   secondary_hue_i_acb);
-	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, SECONDARY_HUE_PREVIEW_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s,
+	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, SECONDARY_HUE_PREVIEW_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s,
 									   m_pending.secondary_hue);
-	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_D, SFX_VOLUME_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, sfx_volume_d_scb,
+	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_D, SFX_VOLUME_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, sfx_volume_d_scb,
 							   sfx_volume_d_acb);
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, SFX_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, SFX_VOLUME_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
 															m_pending.sfx_volume, scb, volume_c_vcb);
-	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_I, SFX_VOLUME_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, sfx_volume_i_scb,
+	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_I, SFX_VOLUME_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, sfx_volume_i_scb,
 							   sfx_volume_i_acb);
-	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_D, MUSIC_VOLUME_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, music_volume_d_scb,
+	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_D, MUSIC_VOLUME_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, music_volume_d_scb,
 							   music_volume_d_acb);
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, MUSIC_VOLUME_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, MUSIC_VOLUME_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
 															m_pending.music_volume, scb, volume_c_vcb);
-	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_I, MUSIC_VOLUME_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, music_volume_i_scb,
+	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_I, MUSIC_VOLUME_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, music_volume_i_scb,
 							   music_volume_i_acb);
-	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, LANGUAGE_C_MOVE_IN, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, language_c_tcb,
+	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, LANGUAGE_C_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, language_c_tcb,
 									 font::LANGUAGE_PREVIEW, 48, language_c_scb, language_c_acb, sound::CONFIRM);
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
-		const tweened_position move_in{BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s};
+		const tweened_position animation{BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s};
 		const sound sound{i == 1 ? sound::CONFIRM : sound::CANCEL};
-		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
+		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], animation, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
 										 loc_text_callback{BOTTOM_BUTTONS[i]}, font::LANGUAGE, 48, bottom_scbs[i], bottom_acbs[i], sound);
 	}
 }

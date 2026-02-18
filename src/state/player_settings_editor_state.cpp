@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements player_settings_editor_state from state.hpp.                                                                               //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -44,6 +50,7 @@ constexpr std::array<tag, 13> RIGHT_WIDGETS{
 	T_INERTIA_FACTOR_D, T_INERTIA_FACTOR_C, T_INERTIA_FACTOR_I,
 };
 
+// Selection tree for the player settings editor menu.
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_STARTING_LIVES_D, T_STARTING_LIVES_C, T_STARTING_LIVES_I},
 	selection_tree_row{T_SPAWN_LIFE_FRAGMENTS_C},
@@ -53,32 +60,53 @@ constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_EXIT},
 };
 
+// Shortcut table for the player settings editor menu.
 constexpr shortcut_table SHORTCUTS{
-	{"Escape"_kc, T_EXIT},
-	{"1"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT}, {"1"_kc, T_EXIT},
 };
 
+// Starting position for the starting lives right widgets.
 constexpr glm::vec2 STARTING_LIVES_START_POS{1050, 375};
-constexpr glm::vec2 SPAWN_LIFE_FRAGMENTS_START_POS{1050, 450};
-constexpr glm::vec2 LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS{1050, 525};
-constexpr glm::vec2 HITBOX_RADIUS_START_POS{1050, 600};
-constexpr glm::vec2 INERTIA_FACTOR_START_POS{1050, 675};
+// Starting position for the spawn life fragments right widgets.
+constexpr glm::vec2 SPAWN_LIFE_FRAGMENTS_START_POS{1050, STARTING_LIVES_START_POS.y + 75};
+// Starting position for the life fragment spawn interval right widgets.
+constexpr glm::vec2 LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS{1050, SPAWN_LIFE_FRAGMENTS_START_POS.y + 75};
+// Starting position for the hitbox radius right widgets.
+constexpr glm::vec2 HITBOX_RADIUS_START_POS{1050, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y + 75};
+// Starting position for the inertia factor right widgets.
+constexpr glm::vec2 INERTIA_FACTOR_START_POS{1050, HITBOX_RADIUS_START_POS.y + 75};
 
-constexpr tweened_position TITLE_MOVE_IN{TITLE_POS};
-constexpr tweened_position SUBTITLE_MOVE_IN{TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
-constexpr tweened_position STARTING_LIVES_D_MOVE_IN{STARTING_LIVES_START_POS, {765, STARTING_LIVES_START_POS.y}, 0.5_s};
-constexpr tweened_position STARTING_LIVES_C_MOVE_IN{STARTING_LIVES_START_POS, {875.5f, STARTING_LIVES_START_POS.y}, 0.5_s};
-constexpr tweened_position STARTING_LIVES_I_MOVE_IN{STARTING_LIVES_START_POS, {985, STARTING_LIVES_START_POS.y}, 0.5_s};
-constexpr tweened_position SPAWN_LIFE_FRAGMENTS_C_MOVE_IN{SPAWN_LIFE_FRAGMENTS_START_POS, {875.5f, SPAWN_LIFE_FRAGMENTS_START_POS.y}, 0.5_s};
-constexpr tweened_position LIFE_FRAGMENT_SPAWN_INTERVAL_D_MOVE_IN{LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {765, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s};
-constexpr tweened_position LIFE_FRAGMENT_SPAWN_INTERVAL_C_MOVE_IN{LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {875.5f, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s};
-constexpr tweened_position LIFE_FRAGMENT_SPAWN_INTERVAL_I_MOVE_IN{LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {985, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s};
-constexpr tweened_position HITBOX_RADIUS_D_MOVE_IN{HITBOX_RADIUS_START_POS, {765, HITBOX_RADIUS_START_POS.y}, 0.5_s};
-constexpr tweened_position HITBOX_RADIUS_C_MOVE_IN{HITBOX_RADIUS_START_POS, {875.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s};
-constexpr tweened_position HITBOX_RADIUS_I_MOVE_IN{HITBOX_RADIUS_START_POS, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s};
-constexpr tweened_position INERTIA_FACTOR_D_MOVE_IN{INERTIA_FACTOR_START_POS, {765, INERTIA_FACTOR_START_POS.y}, 0.5_s};
-constexpr tweened_position INERTIA_FACTOR_C_MOVE_IN{INERTIA_FACTOR_START_POS, {875.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s};
-constexpr tweened_position INERTIA_FACTOR_I_MOVE_IN{INERTIA_FACTOR_START_POS, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s};
+// Entry animation used for the title widget.
+constexpr tweened_position TITLE_ANIMATION{TITLE_POS};
+// Entry animation used for the subtitle widget.
+constexpr tweened_position SUBTITLE_ANIMATION{TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s};
+// Entry animation used for the starting lives decrease button widget.
+constexpr tweened_position STARTING_LIVES_D_ANIMATION{STARTING_LIVES_START_POS, {765, STARTING_LIVES_START_POS.y}, 0.5_s};
+// Entry animation used for the current starting lives widget.
+constexpr tweened_position STARTING_LIVES_C_ANIMATION{STARTING_LIVES_START_POS, {875.5f, STARTING_LIVES_START_POS.y}, 0.5_s};
+// Entry animation used for the starting lives increase button widget.
+constexpr tweened_position STARTING_LIVES_I_ANIMATION{STARTING_LIVES_START_POS, {985, STARTING_LIVES_START_POS.y}, 0.5_s};
+// Entry animation used for the spawn life fragments toggle widget.
+constexpr tweened_position SPAWN_LIFE_FRAGMENTS_C_ANIMATION{SPAWN_LIFE_FRAGMENTS_START_POS, {875.5f, SPAWN_LIFE_FRAGMENTS_START_POS.y}, 0.5_s};
+// Entry animation used for the life fragment spawn interval decrease button widget.
+constexpr tweened_position LIFE_FRAGMENT_SPAWN_INTERVAL_D_ANIMATION{LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {765, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+// Entry animation used for the current life fragment spawn interval widget.
+constexpr tweened_position LIFE_FRAGMENT_SPAWN_INTERVAL_C_ANIMATION{LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {875.5f, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+// Entry animation used for the life fragment spawn interval increase button widget.
+constexpr tweened_position LIFE_FRAGMENT_SPAWN_INTERVAL_I_ANIMATION{LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {985, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s};
+// Entry animation used for the hitbox radius decrease button widget.
+constexpr tweened_position HITBOX_RADIUS_D_ANIMATION{HITBOX_RADIUS_START_POS, {765, HITBOX_RADIUS_START_POS.y}, 0.5_s};
+// Entry animation used for the current hitbox radius widget.
+constexpr tweened_position HITBOX_RADIUS_C_ANIMATION{HITBOX_RADIUS_START_POS, {875.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s};
+// Entry animation used for the hitbox radius increase button widget.
+constexpr tweened_position HITBOX_RADIUS_I_ANIMATION{HITBOX_RADIUS_START_POS, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s};
+// Entry animation used for the inertia factor decrease button widget.
+constexpr tweened_position INERTIA_FACTOR_D_ANIMATION{INERTIA_FACTOR_START_POS, {765, INERTIA_FACTOR_START_POS.y}, 0.5_s};
+// Entry animation used for the current inertia factor widget.
+constexpr tweened_position INERTIA_FACTOR_C_ANIMATION{INERTIA_FACTOR_START_POS, {875.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s};
+// Entry animation used for the inertia factor increase button widget.
+constexpr tweened_position INERTIA_FACTOR_I_ANIMATION{INERTIA_FACTOR_START_POS, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s};
+// Entry animation used for the exit button widget.
 constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 // clang-format on
@@ -183,41 +211,41 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 
 	//
 
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SUBTITLE},
+	m_ui.emplace<label_widget>(T_SUBTITLE, SUBTITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SUBTITLE},
 							   tr::sys::ttf_style::NORMAL, 32);
-	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, STARTING_LIVES_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
+	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, STARTING_LIVES_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
 							   starting_lives_d_scb, starting_lives_d_acb);
-	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_LIVES_C, STARTING_LIVES_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_LIVES_C, STARTING_LIVES_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
 											  m_pending.player.starting_lives, scb, starting_lives_c_vcb);
-	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, STARTING_LIVES_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
+	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, STARTING_LIVES_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   starting_lives_i_scb, starting_lives_i_acb);
-	m_ui.emplace<text_button_widget>(T_SPAWN_LIFE_FRAGMENTS_C, SPAWN_LIFE_FRAGMENTS_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+	m_ui.emplace<text_button_widget>(T_SPAWN_LIFE_FRAGMENTS_C, SPAWN_LIFE_FRAGMENTS_C_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 									 spawn_life_fragments_c_tcb, font::LANGUAGE, 48, scb, spawn_life_fragments_c_acb, sound::CONFIRM);
-	m_ui.emplace<arrow_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_D, LIFE_FRAGMENT_SPAWN_INTERVAL_D_MOVE_IN, tr::valign::CENTER, 0.5_s,
+	m_ui.emplace<arrow_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_D, LIFE_FRAGMENT_SPAWN_INTERVAL_D_ANIMATION, tr::valign::CENTER, 0.5_s,
 							   arrow_type::LEFT, life_fragment_spawn_interval_d_scb, life_fragment_spawn_interval_d_acb);
-	m_ui.emplace<interval_input_widget<4>>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_C, LIFE_FRAGMENT_SPAWN_INTERVAL_C_MOVE_IN, tr::align::CENTER,
+	m_ui.emplace<interval_input_widget<4>>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_C, LIFE_FRAGMENT_SPAWN_INTERVAL_C_ANIMATION, tr::align::CENTER,
 										   0.5_s, 48, m_ui, m_pending.player.life_fragment_spawn_interval,
 										   life_fragment_spawn_interval_c_scb, life_fragment_spawn_interval_c_vcb);
-	m_ui.emplace<arrow_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_I, LIFE_FRAGMENT_SPAWN_INTERVAL_I_MOVE_IN, tr::valign::CENTER, 0.5_s,
+	m_ui.emplace<arrow_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_I, LIFE_FRAGMENT_SPAWN_INTERVAL_I_ANIMATION, tr::valign::CENTER, 0.5_s,
 							   arrow_type::RIGHT, life_fragment_spawn_interval_i_scb, life_fragment_spawn_interval_i_acb);
-	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, HITBOX_RADIUS_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, hitbox_radius_d_scb,
-							   hitbox_radius_d_acb);
-	m_ui.emplace<numeric_input_widget<float, 3, "{:.0f}">>(T_HITBOX_RADIUS_C, HITBOX_RADIUS_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
+	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, HITBOX_RADIUS_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
+							   hitbox_radius_d_scb, hitbox_radius_d_acb);
+	m_ui.emplace<numeric_input_widget<float, 3, "{:.0f}">>(T_HITBOX_RADIUS_C, HITBOX_RADIUS_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
 														   m_pending.player.hitbox_radius, scb, hitbox_radius_c_vcb);
-	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_I, HITBOX_RADIUS_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
+	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_I, HITBOX_RADIUS_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   hitbox_radius_i_scb, hitbox_radius_i_acb);
-	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_D, INERTIA_FACTOR_D_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
+	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_D, INERTIA_FACTOR_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
 							   inertia_factor_d_scb, inertia_factor_d_acb);
-	m_ui.emplace<numeric_input_widget<float, 4, "{:.2f}">>(T_INERTIA_FACTOR_C, INERTIA_FACTOR_C_MOVE_IN, tr::align::CENTER, 0.5_s, 48, m_ui,
-														   m_pending.player.inertia_factor, scb, inertia_factor_c_vcb);
-	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_I, INERTIA_FACTOR_I_MOVE_IN, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.2f}">>(T_INERTIA_FACTOR_C, INERTIA_FACTOR_C_ANIMATION, tr::align::CENTER, 0.5_s, 48,
+														   m_ui, m_pending.player.inertia_factor, scb, inertia_factor_c_vcb);
+	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_I, INERTIA_FACTOR_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   inertia_factor_i_scb, inertia_factor_i_acb);
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		const label_info& label{LABELS[i]};
-		const tweened_position move_in{{-50, 375 + i * 75}, {15, 375 + i * 75}, 0.5_s};
-		m_ui.emplace<label_widget>(label.tag, move_in, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
+		const tweened_position animation{{-50, 375 + i * 75}, {15, 375 + i * 75}, 0.5_s};
+		m_ui.emplace<label_widget>(label.tag, animation, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
 								   loc_text_callback{label.tag}, tr::sys::ttf_style::NORMAL, 48);
 	}
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},

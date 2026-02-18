@@ -1,7 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements scoreboard_selection_state from state.hpp.                                                                                 //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+// clang-format off
 
 constexpr tag T_TITLE{"scoreboards"};
 constexpr tag T_PLAYER_INFO{"player_info"};
@@ -9,24 +16,32 @@ constexpr tag T_VIEW_TIMES{"view_times"};
 constexpr tag T_VIEW_SCORES{"view_scores"};
 constexpr tag T_EXIT{"exit"};
 
+// Selection tree used for the scoreboard selection menu.
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_VIEW_TIMES},
 	selection_tree_row{T_VIEW_SCORES},
 	selection_tree_row{T_EXIT},
 };
 
+// Shorcut table used for the scoreboard selection menu.
 constexpr shortcut_table SHORTCUTS{
 	{"1"_kc, T_VIEW_TIMES},
 	{"2"_kc, T_VIEW_SCORES},
-	{"Escape"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT},
 };
 
-constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr tweened_position VIEW_TIMES_MOVE_IN{{400, 450}, {500, 450}, 0.5_s};
-constexpr tweened_position VIEW_SCORES_MOVE_IN{{600, 550}, {500, 550}, 0.5_s};
-constexpr tweened_position PLAYER_INFO_MOVE_IN{TOP_START_POS, {500, 64}, 0.5_s};
+// Entry animation used for the title widget.
+constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
+// Entry animation used for the player info widget.
+constexpr tweened_position PLAYER_INFO_ANIMATION{TOP_START_POS, {500, 64}, 0.5_s};
+// Entry animation used for the view times button widget.
+constexpr tweened_position VIEW_TIMES_ANIMATION{{400, 450}, {500, 450}, 0.5_s};
+// Entry animation used for the view scores button widget.
+constexpr tweened_position VIEW_SCORES_ANIMATION{{600, 550}, {500, 550}, 0.5_s};
+// Entry animation used for the exit button widget.
 constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
+// clang-format on
 //////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////
 
 scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerless_game> game, animate_title animate_title)
@@ -60,9 +75,9 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 	//
 
 	if (bool(animate_title)) {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+		m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 								   tr::sys::ttf_style::NORMAL, 64);
-		m_ui.emplace<label_widget>(T_PLAYER_INFO, PLAYER_INFO_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
+		m_ui.emplace<label_widget>(T_PLAYER_INFO, PLAYER_INFO_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
 								   const_text_callback{g_scorefile.format_player_info()}, tr::sys::ttf_style::NORMAL, 32);
 		m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
@@ -75,9 +90,9 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 		m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
 										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	}
-	m_ui.emplace<text_button_widget>(T_VIEW_TIMES, VIEW_TIMES_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+	m_ui.emplace<text_button_widget>(T_VIEW_TIMES, VIEW_TIMES_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 									 loc_text_callback{T_VIEW_TIMES}, font::LANGUAGE, 64, scb, view_times_acb, sound::CONFIRM);
-	m_ui.emplace<text_button_widget>(T_VIEW_SCORES, VIEW_SCORES_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+	m_ui.emplace<text_button_widget>(T_VIEW_SCORES, VIEW_SCORES_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 									 loc_text_callback{T_VIEW_SCORES}, font::LANGUAGE, 64, scb, view_scores_acb, sound::CONFIRM);
 }
 

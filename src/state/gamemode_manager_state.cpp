@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements gamemode_manager_state from state.hpp.                                                                                     //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -12,13 +18,14 @@ constexpr tag T_DELETE_GAMEMODES{"delete_gamemodes"};
 constexpr tag T_EXIT{"exit"};
 
 // Buttons in the center of the screen.
-constexpr std::array<label_info, 4> CENTER_BUTTONS{{
-	{T_NEW_GAMEMODE, "new_gamemode_tt"},
-	{T_CLONE_GAMEMODE, "clone_gamemode_tt"},
-	{T_EDIT_GAMEMODE, "edit_gamemode_tt"},
-	{T_DELETE_GAMEMODES, "delete_gamemodes_tt"},
-}};
+constexpr std::array CENTER_BUTTONS{
+	label_info{T_NEW_GAMEMODE, "new_gamemode_tt"},
+	label_info{T_CLONE_GAMEMODE, "clone_gamemode_tt"},
+	label_info{T_EDIT_GAMEMODE, "edit_gamemode_tt"},
+	label_info{T_DELETE_GAMEMODES, "delete_gamemodes_tt"},
+};
 
+// Selection tree for the gamemode manager menu.
 constexpr selection_tree SELECTION_TREE{
     selection_tree_row{T_NEW_GAMEMODE},
     selection_tree_row{T_CLONE_GAMEMODE},
@@ -27,15 +34,18 @@ constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_EXIT},
 };
 
+// Shortcut table for the gamemode manager menu.
 constexpr shortcut_table SHORTCUTS{
-    {"N"_kc, T_NEW_GAMEMODE},    {"1"_kc, T_NEW_GAMEMODE},
-    {"C"_kc, T_CLONE_GAMEMODE},  {"2"_kc, T_CLONE_GAMEMODE},
-    {"E"_kc, T_EDIT_GAMEMODE},   {"3"_kc, T_EDIT_GAMEMODE},
+    {"N"_kc, T_NEW_GAMEMODE}, {"1"_kc, T_NEW_GAMEMODE},
+    {"C"_kc, T_CLONE_GAMEMODE}, {"2"_kc, T_CLONE_GAMEMODE},
+    {"E"_kc, T_EDIT_GAMEMODE}, {"3"_kc, T_EDIT_GAMEMODE},
     {"D"_kc, T_DELETE_GAMEMODES}, {"4"_kc, T_DELETE_GAMEMODES},
-	{"Escape"_kc, T_EXIT},       {"5"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT}, {"5"_kc, T_EXIT},
 };
 
-constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
+// Entry animation for the title widget.
+constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
+// Entry animation for the exit button widget.
 constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 // clang-format on
@@ -89,7 +99,7 @@ gamemode_manager_state::gamemode_manager_state(std::shared_ptr<playerless_game> 
 	//
 
 	if (bool(animate_title)) {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+		m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 								   tr::sys::ttf_style::NORMAL, 64);
 	}
 	else {
@@ -99,8 +109,8 @@ gamemode_manager_state::gamemode_manager_state(std::shared_ptr<playerless_game> 
 
 	for (usize i = 0; i < CENTER_BUTTONS.size(); ++i) {
 		const float y{500.0f - ((CENTER_BUTTONS.size() - 1) * 50.0f) + i * 100};
-		const tweened_position move_in{glm::vec2{i % 2 == 0 ? 600 : 400, y}, glm::vec2{500, y}, 0.5_s};
-		m_ui.emplace<text_button_widget>(CENTER_BUTTONS[i].tag, move_in, tr::align::CENTER, 0.5_s,
+		const tweened_position animation{glm::vec2{i % 2 == 0 ? 600 : 400, y}, glm::vec2{500, y}, 0.5_s};
+		m_ui.emplace<text_button_widget>(CENTER_BUTTONS[i].tag, animation, tr::align::CENTER, 0.5_s,
 										 loc_text_callback{CENTER_BUTTONS[i].tooltip}, loc_text_callback{CENTER_BUTTONS[i].tag},
 										 font::LANGUAGE, 64, scb, center_acbs[i], sound::CONFIRM);
 	}

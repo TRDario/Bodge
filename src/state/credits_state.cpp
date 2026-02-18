@@ -1,7 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements credits_state from state.hpp.                                                                                              //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
+// clang-format off
 
 constexpr tag T_TITLE{"credits"};
 constexpr tag T_BODGE{"Bodge"};
@@ -12,19 +19,25 @@ constexpr tag T_ART{"art"};
 constexpr tag T_PLAYTESTERS{"playtesters"};
 constexpr tag T_STARSURGE{"starsurge"};
 constexpr tag T_TOWELI{"toweli"};
+constexpr tag T_ZER0{"Zer0"};
 constexpr tag T_EXIT{"exit"};
 
+// Selection tree for the credits screen.
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_EXIT},
 };
 
+// Shortcut table for the credits screen.
 constexpr shortcut_table SHORTCUTS{
-	{"Escape"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT}, {"1"_kc, T_EXIT}
 };
 
-constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
+// Entry animation for the title widget.
+constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
+// Entry animation for the exit button widget.
 constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
+// clang-format on
 ////////////////////////////////////////////////////////////// CREDITS STATE //////////////////////////////////////////////////////////////
 
 credits_state::credits_state(std::shared_ptr<playerless_game> game)
@@ -39,30 +52,40 @@ credits_state::credits_state(std::shared_ptr<playerless_game> game)
 	const action_callback exit_acb{[this] {
 		m_substate = substate::EXITING;
 		m_elapsed = 0;
-		m_ui[T_TITLE].pos.move(TOP_START_POS, 0.5_s);
-		m_ui[T_EXIT].pos.move(BOTTOM_START_POS, 0.5_s);
-		m_ui.hide_all_widgets(0.5_s);
+		m_ui[T_TITLE].move_and_hide(TOP_START_POS, 0.5_s);
+		m_ui[T_BODGE].hide(0.5_s);
+		m_ui[T_VERSION].hide(0.5_s);
+		m_ui[T_DEVELOPED_BY].hide(0.5_s);
+		m_ui[T_TRDARIO].hide(0.5_s);
+		m_ui[T_ART].hide(0.5_s);
+		m_ui[T_PLAYTESTERS].hide(0.5_s);
+		m_ui[T_STARSURGE].hide(0.5_s);
+		m_ui[T_TOWELI].hide(0.5_s);
+		m_ui[T_ZER0].hide(0.5_s);
+		m_ui[T_EXIT].move_and_hide(BOTTOM_START_POS, 0.5_s);
 		m_next_state = make_async<title_state>(m_game);
 	}};
 
 	//
 
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_BODGE, glm::vec2{400, 210}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_BODGE},
+	m_ui.emplace<label_widget>(T_BODGE, glm::vec2{400, 185}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_BODGE},
 							   tr::sys::ttf_style::NORMAL, 128);
-	m_ui.emplace<label_widget>(T_VERSION, glm::vec2{600, 290}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_VERSION},
+	m_ui.emplace<label_widget>(T_VERSION, glm::vec2{600, 265}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_VERSION},
 							   tr::sys::ttf_style::NORMAL, 32);
-	m_ui.emplace<label_widget>(T_DEVELOPED_BY, glm::vec2{400, 410}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
+	m_ui.emplace<label_widget>(T_DEVELOPED_BY, glm::vec2{400, 385}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
 							   loc_text_callback{T_DEVELOPED_BY}, tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_TRDARIO, glm::vec2{600, 470}, tr::align::CENTER, DONT_UNHIDE, loc_text_callback{"trdario_tt"},
+	m_ui.emplace<label_widget>(T_TRDARIO, glm::vec2{600, 445}, tr::align::CENTER, DONT_UNHIDE, loc_text_callback{"trdario_tt"},
 							   const_text_callback{T_TRDARIO}, tr::sys::ttf_style::NORMAL, 48, "FF8080A0"_rgba8);
-	m_ui.emplace<image_widget>(T_ART, glm::vec2{500, 550}, tr::align::TOP_CENTER, DONT_UNHIDE, 0, "credits_art");
-	m_ui.emplace<label_widget>(T_PLAYTESTERS, glm::vec2{400, 710}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
+	m_ui.emplace<image_widget>(T_ART, glm::vec2{500, 525}, tr::align::TOP_CENTER, DONT_UNHIDE, 0, "credits_art");
+	m_ui.emplace<label_widget>(T_PLAYTESTERS, glm::vec2{400, 685}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
 							   loc_text_callback{T_PLAYTESTERS}, tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_STARSURGE, glm::vec2{600, 770}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
+	m_ui.emplace<label_widget>(T_STARSURGE, glm::vec2{600, 745}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
 							   const_text_callback{T_STARSURGE}, tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<label_widget>(T_TOWELI, glm::vec2{400, 820}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_TOWELI},
+	m_ui.emplace<label_widget>(T_TOWELI, glm::vec2{400, 795}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_TOWELI},
+							   tr::sys::ttf_style::NORMAL, 48);
+	m_ui.emplace<label_widget>(T_ZER0, glm::vec2{600, 845}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_ZER0},
 							   tr::sys::ttf_style::NORMAL, 48);
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
@@ -87,7 +110,7 @@ tr::next_state credits_state::tick()
 			m_ui[T_TRDARIO].move_x_and_unhide(500, 4_s);
 			break;
 		case 3_s:
-			m_ui[T_ART].move_y_and_unhide(500, 4_s);
+			m_ui[T_ART].move_y_and_unhide(475, 4_s);
 			break;
 		case 4_s:
 			m_ui[T_PLAYTESTERS].move_x_and_unhide(500, 4_s);
@@ -97,6 +120,9 @@ tr::next_state credits_state::tick()
 			break;
 		case 6_s:
 			m_ui[T_TOWELI].move_x_and_unhide(500, 4_s);
+			break;
+		case 7_s:
+			m_ui[T_ZER0].move_x_and_unhide(500, 4_s);
 			break;
 		}
 		return tr::KEEP_STATE;

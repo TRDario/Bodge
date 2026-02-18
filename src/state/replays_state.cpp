@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements replays_state from state.hpp.                                                                                              //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -21,8 +27,9 @@ constexpr tag T_PAGE_I{"page_i"};
 constexpr tag T_EXIT{"exit"};
 
 // Replay widget tags.
-constexpr std::array<tag, REPLAYS_PER_PAGE> REPLAY_TAGS{T_REPLAY_0, T_REPLAY_1, T_REPLAY_2, T_REPLAY_3, T_REPLAY_4, T_REPLAY_5};
+constexpr std::array REPLAY_TAGS{T_REPLAY_0, T_REPLAY_1, T_REPLAY_2, T_REPLAY_3, T_REPLAY_4, T_REPLAY_5};
 
+// Selection tree used for the replays menu.
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_REPLAY_0},
 	selection_tree_row{T_REPLAY_1},
@@ -33,22 +40,29 @@ constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_EXIT},
 };
 
+// Shortcut table used for the replays menu.
 constexpr shortcut_table SHORTCUTS{
 	{"1"_kc, T_REPLAY_0},
 	{"2"_kc, T_REPLAY_1},
 	{"3"_kc, T_REPLAY_2},
 	{"4"_kc, T_REPLAY_3},
 	{"5"_kc, T_REPLAY_4},
-	{"Escape"_kc, T_EXIT},
 	{"Left"_kc, T_PAGE_D},
 	{"Right"_kc, T_PAGE_I},
+	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT},
 };
 
-constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr tweened_position NO_REPLAYS_FOUND_MOVE_IN{{600, 467}, {500, 467}, 0.5_s};
-constexpr tweened_position PAGE_D_MOVE_IN{{-50, 942.5}, {10, 942.5}, 0.5_s};
-constexpr tweened_position PAGE_C_MOVE_IN{BOTTOM_START_POS, {500, 950}, 0.5_s};
-constexpr tweened_position PAGE_I_MOVE_IN{{1050, 942.5}, {990, 942.5}, 0.5_s};
+// Entry animation for the title widget.
+constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
+// Entry animation for the "no replays found" widget.
+constexpr tweened_position NO_REPLAYS_FOUND_ANIMATION{{600, 467}, {500, 467}, 0.5_s};
+// Entry animation for the previous page button widget.
+constexpr tweened_position PAGE_D_ANIMATION{{-50, 942.5}, {10, 942.5}, 0.5_s};
+// Entry animation for the current page widget.
+constexpr tweened_position PAGE_C_ANIMATION{BOTTOM_START_POS, {500, 950}, 0.5_s};
+// Entry animation for the next page button widget.
+constexpr tweened_position PAGE_I_ANIMATION{{1050, 942.5}, {990, 942.5}, 0.5_s};
+// Entry animation for the exit button widget.
 constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 // clang-format on
@@ -123,8 +137,8 @@ std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_wid
 	replay_map::const_iterator replay_it{std::next(m_replays.begin(), REPLAYS_PER_PAGE * m_page)};
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		const std::optional<replay_map::const_iterator> opt_it{replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt};
-		const tweened_position move_in{{i % 2 == 0 ? 600 : 400, 183 + 125 * i}, {500, 183 + 125 * i}, 0.25_s};
-		map.emplace(REPLAY_TAGS[i], std::make_unique<replay_widget>(move_in, tr::align::CENTER, 0.25_s, *this, opt_it));
+		const tweened_position animation{{i % 2 == 0 ? 600 : 400, 183 + 125 * i}, {500, 183 + 125 * i}, 0.25_s};
+		map.emplace(REPLAY_TAGS[i], std::make_unique<replay_widget>(animation, tr::align::CENTER, 0.25_s, *this, opt_it));
 	}
 	return map;
 }
@@ -170,25 +184,25 @@ void replays_state::set_up_ui()
 
 	//
 
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::sys::ttf_style::NORMAL, 64);
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (m_replays.empty()) {
-		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, NO_REPLAYS_FOUND_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
+		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, NO_REPLAYS_FOUND_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
 								   loc_text_callback{T_NO_REPLAYS_FOUND}, tr::sys::ttf_style::NORMAL, 64, DARK_GRAY);
 		return;
 	}
 	replay_map::iterator replay_it{m_replays.begin()};
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		const std::optional<replay_map::iterator> opt_it{replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt};
-		const tweened_position move_in{{i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s};
-		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], move_in, tr::align::CENTER, 0.5_s, *this, opt_it);
+		const tweened_position animation{{i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s};
+		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], animation, tr::align::CENTER, 0.5_s, *this, opt_it);
 	}
-	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_MOVE_IN, tr::valign::BOTTOM, 0.5_s, arrow_type::LEFT, page_d_scb, page_d_acb);
-	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, page_c_tcb,
+	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_ANIMATION, tr::valign::BOTTOM, 0.5_s, arrow_type::LEFT, page_d_scb, page_d_acb);
+	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, page_c_tcb,
 							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_MOVE_IN, tr::valign::BOTTOM, 0.5_s, arrow_type::RIGHT, page_i_scb, page_i_acb);
+	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_ANIMATION, tr::valign::BOTTOM, 0.5_s, arrow_type::RIGHT, page_i_scb, page_i_acb);
 }
 
 void replays_state::set_up_page_switch_animation()
@@ -201,18 +215,17 @@ void replays_state::set_up_page_switch_animation()
 
 void replays_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.move(TOP_START_POS, 0.5_s);
-	m_ui[T_EXIT].pos.move(BOTTOM_START_POS, 0.5_s);
+	m_ui[T_TITLE].move_and_hide(TOP_START_POS, 0.5_s);
+	m_ui[T_EXIT].move_and_hide(BOTTOM_START_POS, 0.5_s);
 	if (m_replays.empty()) {
-		m_ui[T_NO_REPLAYS_FOUND].pos.move_x(400, 0.5_s);
+		m_ui[T_NO_REPLAYS_FOUND].move_x_and_hide(400, 0.5_s);
 	}
 	else {
 		for (usize i = 0; i < REPLAYS_PER_PAGE; i++) {
-			m_ui[REPLAY_TAGS[i]].pos.move_x(i % 2 == 0 ? 600 : 400, 0.5_s);
+			m_ui[REPLAY_TAGS[i]].move_x_and_hide(i % 2 == 0 ? 600 : 400, 0.5_s);
 		}
-		m_ui[T_PAGE_C].pos.move(BOTTOM_START_POS, 0.5_s);
-		m_ui[T_PAGE_D].pos.move_x(-50, 0.5_s);
-		m_ui[T_PAGE_I].pos.move_x(1050, 0.5_s);
+		m_ui[T_PAGE_C].move_and_hide(BOTTOM_START_POS, 0.5_s);
+		m_ui[T_PAGE_D].move_x_and_hide(-50, 0.5_s);
+		m_ui[T_PAGE_I].move_x_and_hide(1050, 0.5_s);
 	}
-	m_ui.hide_all_widgets(0.5_s);
 }

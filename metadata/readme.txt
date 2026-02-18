@@ -38,8 +38,8 @@
 |                 though it's not like the concept is particularly earthshatteringly original anyway.                 |
 |                         So, shoutout to Matteo Guarnieri of Rag Doll Software for that one.                         |
 |                                                                                                                     |
-| I'd also like to thank my playtesters, toweli and starsurge, for helping me figure out bugs, both mine and Intel's. |
-|                                      (why is their OpenGL driver so buggy man)                                      |
+| I'd also like to thank my playtesters: toweli, starsurge, and Zer0, for helping me balance the game and figure out  |
+|                       bugs, both mine and Intel's (why is their OpenGL driver so buggy man).                        |
 |                                                                                                                     |
 |                                      I hope you enjoy your time dodging balls.                                      |
 |          Feel free to contact me at therealdario123@gmail.com, or @trdario on Discord if you find any bugs.         |
@@ -55,6 +55,7 @@
 | * Adjusted ball collisions to make small balls less prone to supersonic speeds after hitting much larger balls.     |
 | * Added various additional explanatory tooltips.                                                                    |
 | * Made music in replays speed up or slow down to match the gameplay.                                                |
+| * Made keyboard shortcuts more standardized (Ctrl+S for saving, Q for quitting...).                                 |
 | * Fixed balls occasionally reflecting in mid-air due to floating-point imprecision.                                 |
 | * Fixed balls rendering incorrectly when pausing and exiting a game while the screen is shaking after getting hit.  |
 | * Fixed some settings not applying immediately.                                                                     |

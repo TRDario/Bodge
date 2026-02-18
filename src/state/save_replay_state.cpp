@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements save_replay_state from state.hpp.                                                                                          //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -12,6 +18,7 @@ constexpr tag T_DESCRIPTION_INPUT{"description_input"};
 constexpr tag T_SAVE{"save"};
 constexpr tag T_DISCARD{"discard"};
 
+// Selection tree used for the save replay screen.
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_NAME_INPUT},
 	selection_tree_row{T_DESCRIPTION_INPUT},
@@ -19,22 +26,26 @@ constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_DISCARD},
 };
 
+// Shortcut table used for the save replay screen.
 constexpr shortcut_table SHORTCUTS{
-	{"Enter"_kc, T_SAVE},
-	{"S"_kc, T_SAVE},
-	{"1"_kc, T_SAVE},
-	{"Escape"_kc, T_DISCARD},
-	{"C"_kc, T_DISCARD},
-	{"2"_kc, T_DISCARD},
+	{"Enter"_kc, T_SAVE}, {"Ctrl+S"_kc, T_SAVE}, {"1"_kc, T_SAVE},
+	{"Escape"_kc, T_DISCARD}, {"Q"_kc, T_DISCARD}, {"2"_kc, T_DISCARD},
 };
 
-constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr tweened_position NAME_MOVE_IN{{400, 200}, {500, 200}, 0.5_s};
-constexpr tweened_position NAME_INPUT_MOVE_IN{{400, 235}, {500, 235}, 0.5_s};
-constexpr tweened_position DESCRIPTION_MOVE_IN{{600, 440}, {500, 440}, 0.5_s};
-constexpr tweened_position DESCRIPTION_INPUT_MOVE_IN{{600, 475}, {500, 475}, 0.5_s};
-constexpr tweened_position SAVE_MOVE_IN{BOTTOM_START_POS, {500, 950}, 0.5_s};
-constexpr tweened_position DISCARD_MOVE_IN{BOTTOM_START_POS, {500, 1000}, 0.5_s};
+// Entry animation used for the title widget.
+constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
+// Entry animation used for the name label widget.
+constexpr tweened_position NAME_ANIMATION{{400, 200}, {500, 200}, 0.5_s};
+// Entry animation used for the name input widget.
+constexpr tweened_position NAME_INPUT_ANIMATION{{400, 235}, {500, 235}, 0.5_s};
+// Entry animation used for the description label widget.
+constexpr tweened_position DESCRIPTION_ANIMATION{{600, 440}, {500, 440}, 0.5_s};
+// Entry animation used for the description input widget.
+constexpr tweened_position DESCRIPTION_INPUT_ANIMATION{{600, 475}, {500, 475}, 0.5_s};
+// Entry animation used for the save button widget.
+constexpr tweened_position SAVE_ANIMATION{BOTTOM_START_POS, {500, 950}, 0.5_s};
+// Entry animation used for the discard button widget.
+constexpr tweened_position DISCARD_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
 
 // clang-format on
 //////////////////////////////////////////////////////////// SAVE REPLAY STATE ////////////////////////////////////////////////////////////
@@ -92,20 +103,20 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 
 	//
 
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
+	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
 							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_NAME},
+	m_ui.emplace<label_widget>(T_NAME, NAME_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_NAME},
 							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, NAME_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, tr::sys::ttf_style::NORMAL, 64, scb,
-										name_acb);
-	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
+	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, NAME_INPUT_ANIMATION, tr::align::TOP_CENTER, 0.5_s, tr::sys::ttf_style::NORMAL, 64,
+										scb, name_acb);
+	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
 							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24,
+	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_ANIMATION, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24,
 											  scb);
-	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, save_ttcb, loc_text_callback{T_SAVE},
+	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, save_ttcb, loc_text_callback{T_SAVE},
 									 font::LANGUAGE, 48, save_scb, save_acb, sound::CONFIRM);
-	m_ui.emplace<text_button_widget>(T_DISCARD, DISCARD_MOVE_IN, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DISCARD},
-									 font::LANGUAGE, 48, scb, discard_acb, sound::CONFIRM);
+	m_ui.emplace<text_button_widget>(T_DISCARD, DISCARD_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
+									 loc_text_callback{T_DISCARD}, font::LANGUAGE, 48, scb, discard_acb, sound::CONFIRM);
 }
 
 //
@@ -151,12 +162,11 @@ float save_replay_state::fade_overlay_opacity()
 
 void save_replay_state::set_up_exit_animation()
 {
-	m_ui[T_TITLE].pos.move(TOP_START_POS, 0.5_s);
-	m_ui[T_NAME].pos.move_x(600, 0.5_s);
-	m_ui[T_NAME_INPUT].pos.move_x(600, 0.5_s);
-	m_ui[T_DESCRIPTION].pos.move_x(400, 0.5_s);
-	m_ui[T_DESCRIPTION_INPUT].pos.move_x(400, 0.5_s);
-	m_ui[T_SAVE].pos.move(BOTTOM_START_POS, 0.5_s);
-	m_ui[T_DISCARD].pos.move(BOTTOM_START_POS, 0.5_s);
-	m_ui.hide_all_widgets(0.5_s);
+	m_ui[T_TITLE].move_and_hide(TOP_START_POS, 0.5_s);
+	m_ui[T_NAME].move_x_and_hide(600, 0.5_s);
+	m_ui[T_NAME_INPUT].move_x_and_hide(600, 0.5_s);
+	m_ui[T_DESCRIPTION].move_x_and_hide(400, 0.5_s);
+	m_ui[T_DESCRIPTION_INPUT].move_x_and_hide(400, 0.5_s);
+	m_ui[T_SAVE].move_and_hide(BOTTOM_START_POS, 0.5_s);
+	m_ui[T_DISCARD].move_and_hide(BOTTOM_START_POS, 0.5_s);
 }

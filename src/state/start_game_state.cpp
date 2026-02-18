@@ -37,7 +37,7 @@ constexpr shortcut_table SHORTCUTS{
 	{"Left"_kc, T_PREV},
 	{"Right"_kc, T_NEXT},
 	{"Enter"_kc, T_START}, {"1"_kc, T_START},
-	{"Escape"_kc, T_EXIT}, {"2"_kc, T_EXIT},
+	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT}, {"2"_kc, T_EXIT},
 };
 
 // The base x positions of the gamemode information widgets.

@@ -251,13 +251,6 @@ void ui_manager::select_widget_to_the_right()
 
 //
 
-void ui_manager::hide_all_widgets(ticks time)
-{
-	for (widget& widget : tr::deref(std::views::values(m_widgets))) {
-		widget.hide(time);
-	}
-}
-
 void ui_manager::release_graphical_resources()
 {
 	std::ranges::for_each(tr::deref(std::views::values(m_widgets)), &widget::release_graphical_resources);

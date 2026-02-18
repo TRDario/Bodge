@@ -50,8 +50,6 @@ class ui_manager {
 	// Selects the next widget in the selection tree, or loops around.
 	void select_next_widget();
 
-	// Gradually hides all widgets in the interface.
-	void hide_all_widgets(ticks time);
 	// Releases the graphical resources of all widgets in the interface.
 	void release_graphical_resources();
 

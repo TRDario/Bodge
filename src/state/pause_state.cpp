@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements pause_state from state.hpp.                                                                                                //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -14,11 +20,11 @@ constexpr tag T_SAVE_AND_QUIT{"save_and_quit"};
 constexpr tag T_QUIT{"quit"};
 
 // List of buttons when pausing in a regular game.
-constexpr std::array<tag, 5> BUTTONS_REGULAR{T_UNPAUSE, T_SAVE_AND_RESTART, T_RESTART, T_SAVE_AND_QUIT, T_QUIT};
+constexpr std::array BUTTONS_REGULAR{T_UNPAUSE, T_SAVE_AND_RESTART, T_RESTART, T_SAVE_AND_QUIT, T_QUIT};
 // List of buttons when pausing in a test or replay game.
-constexpr std::array<tag, 3> BUTTONS_SPECIAL{T_UNPAUSE, T_RESTART, T_QUIT};
+constexpr std::array BUTTONS_SPECIAL{T_UNPAUSE, T_RESTART, T_QUIT};
 
-// Used when pausing in a regular game.
+// Selection tree for the pause menu when pausing in a regular game.
 constexpr selection_tree SELECTION_TREE_REGULAR{
 	selection_tree_row{T_UNPAUSE},
 	selection_tree_row{T_SAVE_AND_RESTART},
@@ -26,26 +32,26 @@ constexpr selection_tree SELECTION_TREE_REGULAR{
 	selection_tree_row{T_SAVE_AND_QUIT},
 	selection_tree_row{T_QUIT},
 };
-// Used when pausing in a test or replay game.
+// Selection tree for the pause menu when pausing in a test or replay game.
 constexpr selection_tree SELECTION_TREE_SPECIAL{
 	selection_tree_row{T_UNPAUSE},
 	selection_tree_row{T_RESTART},
 	selection_tree_row{T_QUIT},
 };
 
-// Used when pausing in a regular game.
+// Shortcut table for the pause menu when pausing in a regular game.
 constexpr shortcut_table SHORTCUTS_REGULAR{
-	{"Escape"_kc, T_UNPAUSE},			{"1"_kc, T_UNPAUSE},
+	{"Escape"_kc, T_UNPAUSE}, {"1"_kc, T_UNPAUSE},
 	{"Shift+R"_kc, T_SAVE_AND_RESTART}, {"2"_kc, T_SAVE_AND_RESTART},
-	{"R"_kc, T_RESTART},				{"3"_kc, T_RESTART},
-	{"Shift+Q"_kc, T_SAVE_AND_QUIT},	{"4"_kc, T_SAVE_AND_QUIT},
-	{"Q"_kc, T_QUIT},					{"5"_kc, T_QUIT},
+	{"R"_kc, T_RESTART}, {"3"_kc, T_RESTART},
+	{"Shift+Q"_kc, T_SAVE_AND_QUIT}, {"4"_kc, T_SAVE_AND_QUIT},
+	{"Q"_kc, T_QUIT}, {"5"_kc, T_QUIT},
 };
-// Used when pausing in a test or replay game.
+// Shortcut table for the pause menu when pausing in a test or replay game.
 constexpr shortcut_table SHORTCUTS_SPECIAL{
 	{"Escape"_kc, T_UNPAUSE}, {"1"_kc, T_UNPAUSE},
-	{"R"_kc, T_RESTART},	 {"2"_kc, T_RESTART},
-	{"Q"_kc, T_QUIT},		 {"3"_kc, T_QUIT},
+	{"R"_kc, T_RESTART}, {"2"_kc, T_RESTART},
+	{"Q"_kc, T_QUIT}, {"3"_kc, T_QUIT},
 };
 
 // clang-format on
@@ -157,8 +163,8 @@ float pause_state::blur_strength()
 void pause_state::set_up_full_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
-	constexpr tweened_position TITLE_MOVE_IN{{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
-	m_ui.emplace<label_widget>(T_PAUSED, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PAUSED},
+	constexpr tweened_position TITLE_ANIMATION{{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
+	m_ui.emplace<label_widget>(T_PAUSED, TITLE_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PAUSED},
 							   tr::sys::ttf_style::NORMAL, 64);
 
 	const status_callback scb{
@@ -210,8 +216,8 @@ void pause_state::set_up_full_ui()
 	for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
-		const tweened_position move_in{{500 + offset, y}, {500, y}, 0.5_s};
-		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+		const tweened_position animation{{500 + offset, y}, {500, y}, 0.5_s};
+		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], animation, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 										 loc_text_callback{BUTTONS_REGULAR[i]}, font::LANGUAGE, 48, i == 0 ? unpause_scb : scb,
 										 std::move(action_cbs[i]), sound::CONFIRM);
 	}
@@ -220,9 +226,9 @@ void pause_state::set_up_full_ui()
 void pause_state::set_up_limited_ui()
 {
 	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
-	constexpr tweened_position TITLE_MOVE_IN{{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
+	constexpr tweened_position TITLE_ANIMATION{{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 	const tag title_tag{std::holds_alternative<replay_game_data>(m_data) ? T_REPLAY_PAUSED : T_TEST_PAUSED};
-	m_ui.emplace<label_widget>(title_tag, TITLE_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{title_tag},
+	m_ui.emplace<label_widget>(title_tag, TITLE_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{title_tag},
 							   tr::sys::ttf_style::NORMAL, 64);
 
 	const status_callback scb{
@@ -263,8 +269,8 @@ void pause_state::set_up_limited_ui()
 	for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
-		const tweened_position move_in{{500 + offset, y}, {500, y}, 0.5_s};
-		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], move_in, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+		const tweened_position animation{{500 + offset, y}, {500, y}, 0.5_s};
+		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], animation, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 										 loc_text_callback{BUTTONS_SPECIAL[i]}, font::LANGUAGE, 48, i == 0 ? unpause_scb : scb,
 										 std::move(action_cbs[i]), sound::CONFIRM);
 	}
@@ -273,20 +279,18 @@ void pause_state::set_up_limited_ui()
 void pause_state::set_up_exit_animation()
 {
 	if (std::holds_alternative<regular_game_data>(m_data)) {
-		m_ui[T_PAUSED].pos.move_y(400 - (BUTTONS_REGULAR.size() + 1) * 30, 0.5_s);
+		m_ui[T_PAUSED].move_y_and_hide(400 - (BUTTONS_REGULAR.size() + 1) * 30, 0.5_s);
 		for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
-			m_ui[BUTTONS_REGULAR[i]].pos.move_x(500 + offset, 0.5_s);
+			m_ui[BUTTONS_REGULAR[i]].move_x_and_hide(500 + offset, 0.5_s);
 		}
 	}
 	else {
 		const tag title_tag{std::holds_alternative<replay_game_data>(m_data) ? T_REPLAY_PAUSED : T_TEST_PAUSED};
-		m_ui[title_tag].pos.move_y(400 - (BUTTONS_SPECIAL.size() + 1) * 30, 0.5_s);
+		m_ui[title_tag].move_y_and_hide(400 - (BUTTONS_SPECIAL.size() + 1) * 30, 0.5_s);
 		for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
-			m_ui[BUTTONS_SPECIAL[i]].pos.move_x(500 + offset, 0.5_s);
+			m_ui[BUTTONS_SPECIAL[i]].move_x_and_hide(500 + offset, 0.5_s);
 		}
 	}
-
-	m_ui.hide_all_widgets(0.5_s);
 }

@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Implements gamemode_editor_state from state.hpp.                                                                                      //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -18,8 +24,9 @@ constexpr tag T_SAVE{"save"};
 constexpr tag T_DISCARD{"discard"};
 
 // Buttons on the bottom of the screen.
-constexpr std::array<tag, 3> BOTTOM_BUTTONS{T_TEST, T_SAVE, T_DISCARD};
+constexpr std::array BOTTOM_BUTTONS{T_TEST, T_SAVE, T_DISCARD};
 
+// Selection tree for the gamemode editor menu.
 constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_NAME},
 	selection_tree_row{T_DESCRIPTION},
@@ -31,32 +38,33 @@ constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_DISCARD},
 };
 
+// Shortcut table for the gamemode editor menu.
 constexpr shortcut_table SHORTCUTS{
-	{"B"_kc, T_BALL_SETTINGS},
-	{"1"_kc, T_BALL_SETTINGS},
-	{"P"_kc, T_PLAYER_SETTINGS},
-	{"2"_kc, T_PLAYER_SETTINGS},
-	{"T"_kc, T_TEST},
-	{"3"_kc, T_TEST},
-	{"S"_kc, T_SAVE},
-	{"Enter"_kc, T_SAVE},
-	{"4"_kc, T_SAVE},
-	{"C"_kc, T_DISCARD},
-	{"Q"_kc, T_DISCARD},
-	{"E"_kc, T_DISCARD},
-	{"Escape"_kc, T_DISCARD},
-	{"5"_kc, T_DISCARD},
+	{"B"_kc, T_BALL_SETTINGS}, {"1"_kc, T_BALL_SETTINGS},
+	{"P"_kc, T_PLAYER_SETTINGS}, {"2"_kc, T_PLAYER_SETTINGS},
+	{"T"_kc, T_TEST}, {"3"_kc, T_TEST},
+	{"Ctrl+S"_kc, T_SAVE}, {"Enter"_kc, T_SAVE}, {"4"_kc, T_SAVE},
+	{"Escape"_kc, T_DISCARD}, {"Q"_kc, T_DISCARD}, {"5"_kc, T_DISCARD},
 };
 
-constexpr tweened_position TITLE_MOVE_IN{TOP_START_POS, TITLE_POS, 0.5_s};
-constexpr tweened_position SUBTITLE_MOVE_IN{TOP_START_POS, {500, 64}, 0.5_s};
-constexpr tweened_position NAME_MOVE_IN{glm::vec2{400, 240}, {500, 240}, 0.5_s};
-constexpr tweened_position AUTHOR_MOVE_IN{glm::vec2{600, 315}, glm::vec2{500, 315}, 0.5_s};
-constexpr tweened_position DESCRIPTION_MOVE_IN{glm::vec2{400, 365}, glm::vec2{500, 365}, 0.5_s};
-constexpr tweened_position BALL_SETTINGS_MOVE_IN{glm::vec2{600, 450}, glm::vec2{500, 450}, 0.5_s};
-constexpr tweened_position PLAYER_SETTINGS_MOVE_IN{glm::vec2{400, 550}, glm::vec2{500, 550}, 0.5_s};
-constexpr tweened_position SONG_MOVE_IN{glm::vec2{600, 650}, glm::vec2{500, 650}, 0.5_s};
-constexpr tweened_position SONG_C_MOVE_IN{glm::vec2{400, 700}, glm::vec2{500, 700}, 0.5_s};
+// Entry animation for the title widget.
+constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
+// Entry animation for the subtitle widget.
+constexpr tweened_position SUBTITLE_ANIMATION{TOP_START_POS, {500, 64}, 0.5_s};
+// Entry animation for the name input widget.
+constexpr tweened_position NAME_ANIMATION{glm::vec2{400, 240}, {500, 240}, 0.5_s};
+// Entry animation for the author label widget.
+constexpr tweened_position AUTHOR_ANIMATION{glm::vec2{600, 315}, glm::vec2{500, 315}, 0.5_s};
+// Entry animation for the description input widget.
+constexpr tweened_position DESCRIPTION_ANIMATION{glm::vec2{400, 365}, glm::vec2{500, 365}, 0.5_s};
+// Entry animation for the ball settings button widget.
+constexpr tweened_position BALL_SETTINGS_ANIMATION{glm::vec2{600, 450}, glm::vec2{500, 450}, 0.5_s};
+// Entry animation for the player settings button widget.
+constexpr tweened_position PLAYER_SETTINGS_ANIMATION{glm::vec2{400, 550}, glm::vec2{500, 550}, 0.5_s};
+// Entry animation for the "song" label widget.
+constexpr tweened_position SONG_ANIMATION{glm::vec2{600, 650}, glm::vec2{500, 650}, 0.5_s};
+// Entry animation for the current song widget.
+constexpr tweened_position SONG_C_ANIMATION{glm::vec2{400, 700}, glm::vec2{500, 700}, 0.5_s};
 
 // clang-format on
 ///////////////////////////////////////////////////////// GAMEMODE DESIGNER STATE /////////////////////////////////////////////////////////
@@ -244,7 +252,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	//
 
 	if (bool(animate_title)) {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_MOVE_IN, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
+		m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
 								   tr::sys::ttf_style::NORMAL, 64);
 	}
 	else {
@@ -253,7 +261,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	}
 
 	if (bool(animate_subtitle)) {
-		m_ui.emplace<label_widget>(T_SUBTITLE, SUBTITLE_MOVE_IN, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, std::move(subtitle_tcb),
+		m_ui.emplace<label_widget>(T_SUBTITLE, SUBTITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, std::move(subtitle_tcb),
 								   tr::sys::ttf_style::NORMAL, 32);
 	}
 	else {
@@ -261,25 +269,25 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 								   tr::sys::ttf_style::NORMAL, 32);
 	}
 
-	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_MOVE_IN, tr::align::CENTER, 0.5_s, tr::sys::ttf_style::NORMAL, 120, scb, name_enter_cb,
-										m_pending.name);
-	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+	m_ui.emplace<line_input_widget<12>>(T_NAME, NAME_ANIMATION, tr::align::CENTER, 0.5_s, tr::sys::ttf_style::NORMAL, 120, scb,
+										name_enter_cb, m_pending.name);
+	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 							   const_text_callback{TR_FMT::format("{}: {}", g_loc["by"], g_scorefile.name)}, tr::sys::ttf_style::NORMAL,
 							   32);
-	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_MOVE_IN, tr::align::CENTER, 0.5_s, tr::sys::ttf_style::ITALIC, 32, scb,
+	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, DESCRIPTION_ANIMATION, tr::align::CENTER, 0.5_s, tr::sys::ttf_style::ITALIC, 32, scb,
 										description_enter_cb, m_pending.description);
-	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, BALL_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, BALL_SETTINGS_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 									 loc_text_callback{T_BALL_SETTINGS}, font::LANGUAGE, 64, scb, ball_settings_acb, sound::CONFIRM);
-	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, PLAYER_SETTINGS_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
+	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, PLAYER_SETTINGS_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
 									 loc_text_callback{T_PLAYER_SETTINGS}, font::LANGUAGE, 64, scb, player_settings_acb, sound::CONFIRM);
-	m_ui.emplace<label_widget>(T_SONG, SONG_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SONG},
+	m_ui.emplace<label_widget>(T_SONG, SONG_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_SONG},
 							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<text_button_widget>(T_SONG_C, SONG_C_MOVE_IN, tr::align::CENTER, 0.5_s, NO_TOOLTIP, song_c_tcb, font::LANGUAGE, 64, scb,
+	m_ui.emplace<text_button_widget>(T_SONG_C, SONG_C_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, song_c_tcb, font::LANGUAGE, 64, scb,
 									 song_c_acb, sound::CONFIRM);
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		const sound sound{i != BOTTOM_BUTTONS.size() - 1 ? sound::CONFIRM : sound::CANCEL};
-		const tweened_position move_in{BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s};
-		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], move_in, tr::align::BOTTOM_CENTER, 0.5_s,
+		const tweened_position animation{BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s};
+		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], animation, tr::align::BOTTOM_CENTER, 0.5_s,
 										 BOTTOM_BUTTONS[i] == T_SAVE ? save_ttcb : NO_TOOLTIP, loc_text_callback{BOTTOM_BUTTONS[i]},
 										 font::LANGUAGE, 48, BOTTOM_BUTTONS[i] == T_SAVE ? save_scb : scb, bottom_acbs[i], sound);
 	}
