@@ -48,7 +48,9 @@
 |                                                                                                           - TRDario |
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
-| v1.3.0 (?? Feb 2026)                                                                                                |
+| v1.3.0 (23 Feb 2026)                                                                                                |
+| * Added three new gamemodes (and music tracks): Speedy, Focus, and Variety.                                         |
+| * Rebalanced Classic and Chonk to scale somewhat less drastically over time.                                        |
 | * Made it easier to earn lives: after failing to collect fragments, only the ones missed will spawn next time.      |
 | * Greatly expanded gamemode management options: gamemodes can now be cloned, edited, and deleted.                   |
 | * Adjusted the opacity of the lives, timer and score and made them fade out if a life fragment is behind them.      |

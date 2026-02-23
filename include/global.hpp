@@ -42,22 +42,16 @@ using namespace tr::sys::keyboard_literals;
 using ticks = u32;
 // Number of ticks in a second.
 inline constexpr ticks SECOND_TICKS{240};
-constexpr ticks operator""_s(unsigned long long seconds)
-{
-	return ticks(SECOND_TICKS * seconds);
-}
-constexpr ticks operator""_s(long double seconds)
-{
-	return ticks(SECOND_TICKS * seconds);
-}
-constexpr float operator""_sf(unsigned long long seconds)
-{
-	return float(SECOND_TICKS * seconds);
-}
-constexpr float operator""_sf(long double seconds)
-{
-	return float(SECOND_TICKS * seconds);
-}
+// Converts a number of seconds into a value in ticks.
+consteval ticks operator""_s(unsigned long long seconds);
+// Converts a number of seconds into a value in ticks.
+consteval ticks operator""_s(long double seconds);
+// Converts a number of seconds into a value in fractional ticks.
+consteval float operator""_sf(unsigned long long seconds);
+// Converts a number of seconds into a value in fractional ticks.
+consteval float operator""_sf(long double seconds);
+// Converts a number of beats given a BPM to a value in ticks.
+consteval ticks beats_bpm(int beats, int bpm);
 
 // Formats a score.
 std::string format_score(i64 score);
@@ -122,18 +116,7 @@ inline glm::vec2 g_mouse_pos{500, 500};
 inline tr::sys::mouse_button g_held_buttons{};
 
 // Chooses one of three values based on the currently held keymods.
-template <class T> T keymods_choose(T min, T mid, T max)
-{
-	if (g_held_keymods & tr::sys::keymod::CTRL) {
-		return max;
-	}
-	else if (g_held_keymods & tr::sys::keymod::SHIFT) {
-		return mid;
-	}
-	else {
-		return min;
-	}
-}
+template <class T> T keymods_choose(T min, T mid, T max);
 
 ////////////////////////////////////////////////////////////// MISCELLANEOUS //////////////////////////////////////////////////////////////
 
@@ -162,3 +145,45 @@ i64 current_timestamp();
 
 // Opens the game window.
 void open_window();
+
+////////////////////////////////////////////////////////////// IMPLEMENTAION //////////////////////////////////////////////////////////////
+
+consteval ticks operator""_s(unsigned long long seconds)
+{
+	return ticks(SECOND_TICKS * seconds);
+}
+
+consteval ticks operator""_s(long double seconds)
+{
+	return ticks(SECOND_TICKS * seconds);
+}
+
+consteval float operator""_sf(unsigned long long seconds)
+{
+	return float(SECOND_TICKS * seconds);
+}
+
+consteval float operator""_sf(long double seconds)
+{
+	return float(SECOND_TICKS * seconds);
+}
+
+consteval ticks beats_bpm(int beats, int bpm)
+{
+	return beats * 60_s / bpm;
+}
+
+//
+
+template <class T> T keymods_choose(T min, T mid, T max)
+{
+	if (g_held_keymods & tr::sys::keymod::CTRL) {
+		return max;
+	}
+	else if (g_held_keymods & tr::sys::keymod::SHIFT) {
+		return mid;
+	}
+	else {
+		return min;
+	}
+}
