@@ -146,5 +146,6 @@ language_name = "English"
 
 # Credits
     developed_by = "DEVELOPED BY:"
-    trdario_tt = "(BUGFIXER, BUGPRODUCER)"
-    playtesters = "PLAYTESTERS:"
+    trdario_tt   = "(BUGFIXER, BUGPRODUCER)"
+    playtesters  = "PLAYTESTERS:"
+    zer0_tt      = "#1 BALLER"

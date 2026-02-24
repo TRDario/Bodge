@@ -85,8 +85,8 @@ credits_state::credits_state(std::shared_ptr<playerless_game> game)
 							   const_text_callback{T_STARSURGE}, tr::sys::ttf_style::NORMAL, 48);
 	m_ui.emplace<label_widget>(T_TOWELI, glm::vec2{400, 795}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_TOWELI},
 							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<label_widget>(T_ZER0, glm::vec2{600, 845}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_ZER0},
-							   tr::sys::ttf_style::NORMAL, 48);
+	m_ui.emplace<label_widget>(T_ZER0, glm::vec2{600, 845}, tr::align::CENTER, DONT_UNHIDE, loc_text_callback{"zer0_tt"},
+							   const_text_callback{T_ZER0}, tr::sys::ttf_style::NORMAL, 48);
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
 									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 }
