@@ -69,6 +69,10 @@ void player::update_fragments()
 
 void player::add_to_renderer_alive(ticks time_since_start, const decrementing_timer<0.1_s>& style_cooldown_timer) const
 {
+	if (std::holds_alternative<uninitialized_skin>(m_skin)) {
+		try_loading_skin();
+	}
+
 	const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(std::abs(tr::turns(4.0f * m_invincibility_timer.elapsed_ratio()).cos()))};
 	const tr::angle rotation{270_deg * time_since_start / 1_s};
@@ -76,8 +80,13 @@ void player::add_to_renderer_alive(ticks time_since_start, const decrementing_ti
 	const float size{m_hitbox.r + 6 + size_offset};
 
 	if (opacity != 0) {
-		add_fill_to_renderer(opacity, rotation, size);
-		add_outline_to_renderer(tint, opacity, rotation, size);
+		if (std::holds_alternative<tr::gfx::texture>(m_skin)) {
+			add_skin_to_renderer(opacity, rotation, size * 2);
+		}
+		else {
+			add_fill_to_renderer(opacity, rotation, size);
+			add_outline_to_renderer(tint, opacity, rotation, size);
+		}
 		add_trail_to_renderer(tint, opacity, rotation, size);
 		add_style_wave_to_renderer(tint, style_cooldown_timer);
 	}
@@ -92,6 +101,43 @@ void player::add_to_renderer_dead(ticks time_since_game_over) const
 }
 
 //
+
+void player::try_loading_skin() const
+{
+	// Filenames that the game will attempt to load from the user directory.
+	constexpr std::array SKIN_FILENAMES{"player.bmp", "player.qoi", "player.png", "player.jpg", "player.jpeg"};
+
+	try {
+		std::optional<tr::bitmap> image;
+		for (const char* filename : SKIN_FILENAMES) {
+			try {
+				image = tr::load_bitmap_file(g_cli_settings.user_directory / filename);
+				break;
+			}
+			catch (...) {
+			}
+		}
+		if (!image.has_value()) {
+			m_skin.emplace<no_custom_skin>();
+			return;
+		}
+
+		tr::gfx::texture& skin_texture{m_skin.emplace<tr::gfx::texture>(*image, true)};
+		skin_texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
+		g_renderer->basic.set_default_layer_texture(layer::PLAYER, skin_texture);
+	}
+	catch (...) {
+		m_skin.emplace<no_custom_skin>();
+	}
+}
+
+void player::add_skin_to_renderer(u8 opacity, tr::angle rotation, float size) const
+{
+	const tr::gfx::simple_textured_mesh_ref skin{g_renderer->basic.new_textured_fan(layer::PLAYER, 4)};
+	tr::fill_rectangle_vertices(skin.positions.begin(), m_hitbox.c, glm::vec2{size / 2}, glm::vec2{size}, rotation);
+	tr::fill_rectangle_vertices(skin.uvs.begin(), {{0, 0}, {1, 1}});
+	std::ranges::fill(skin.tints, tr::rgba8{255, 255, 255, opacity});
+}
 
 void player::add_fill_to_renderer(u8 opacity, tr::angle rotation, float size) const
 {

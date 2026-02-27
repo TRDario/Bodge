@@ -37,6 +37,13 @@ class player {
 	void add_to_renderer_dead(ticks time_since_game_over) const;
 
   private:
+	// Tag representing an uninitialized skin.
+	struct uninitialized_skin {};
+	// Tag representing the lack of a custom skin.
+	struct no_custom_skin {};
+
+	// Optional player skin.
+	mutable std::variant<uninitialized_skin, no_custom_skin, tr::gfx::texture> m_skin;
 	// The player's hitbox.
 	tr::circle m_hitbox;
 	// The player's trail.
@@ -48,9 +55,13 @@ class player {
 	// Timer controlling the player's invincibility.
 	decrementing_timer<2_s> m_invincibility_timer;
 
-	// Adds the player visual's fill to the renderer.
+	// Tries to load a player skin from "player.png" in the user directory.
+	void try_loading_skin() const;
+	// Adds the player's skin to the renderer.
+	void add_skin_to_renderer(u8 opacity, tr::angle rotation, float size) const;
+	// Adds the skinless player visual's fill to the renderer.
 	void add_fill_to_renderer(u8 opacity, tr::angle rotation, float size) const;
-	// Adds the player visual's outline to the renderer.
+	// Adds the skinless player visual's outline to the renderer.
 	void add_outline_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const;
 	// Adds the player's trail to the renderer.
 	void add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const;

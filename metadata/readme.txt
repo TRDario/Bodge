@@ -135,6 +135,13 @@
 | If you wish to redirect it, you can do that by running the game with '--userdir <path to directory>' passed to the  |
 | command line.                                                                                                       |
 |                                                                                                                     |
+|-----------------------------------------------------PLAYER SKIN-----------------------------------------------------|
+|                                                                                                                     |
+| A custom player skin may be used by placing an image with the name 'player' in the user directory.                  |
+|                                                                                                                     |
+| The image may be in any of the BMP, PNG, JPEG, or QOI image formats (with the appropriate filename extension).      |
+| It may be in any size and aspect ratio, but will be scaled and squished down to 1:1 by the game.                    |                                     |
+|                                                                                                                     |
 |-------------------------------------------------CUSTOM LOCALIZATION-------------------------------------------------|
 |                                                                                                                     |
 | Custom localization files may be created and used by placing them in the 'localization' subdirectory of the user    |
