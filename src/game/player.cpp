@@ -104,30 +104,14 @@ void player::add_to_renderer_dead(ticks time_since_game_over) const
 
 void player::try_loading_skin() const
 {
-	// Filenames that the game will attempt to load from the user directory.
-	constexpr std::array SKIN_FILENAMES{"player.bmp", "player.qoi", "player.png", "player.jpg", "player.jpeg"};
-
 	try {
-		std::optional<tr::bitmap> image;
-		for (const char* filename : SKIN_FILENAMES) {
-			try {
-				image = tr::load_bitmap_file(g_cli_settings.user_directory / filename);
-				break;
-			}
-			catch (...) {
-			}
-		}
-		if (!image.has_value()) {
-			m_skin.emplace<no_custom_skin>();
-			return;
-		}
-
-		tr::gfx::texture& skin_texture{m_skin.emplace<tr::gfx::texture>(*image, true)};
+		const tr::bitmap image{tr::load_bitmap_file(g_cli_settings.user_directory / "skins" / g_settings.player_skin)};
+		tr::gfx::texture& skin_texture{m_skin.emplace<tr::gfx::texture>(image, true)};
 		skin_texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
 		g_renderer->basic.set_default_layer_texture(layer::PLAYER, skin_texture);
 	}
 	catch (...) {
-		m_skin.emplace<no_custom_skin>();
+		m_skin.emplace<no_skin>();
 	}
 }
 

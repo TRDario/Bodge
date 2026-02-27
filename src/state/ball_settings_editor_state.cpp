@@ -325,7 +325,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 							   velocity_step_i_scb, velocity_step_i_acb);
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		const tweened_position animation{{-50, 298 + i * 75}, {15, 298 + i * 75}, 0.5_s};
-		m_ui.emplace<label_widget>(LABELS[i].tag, animation, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
+		m_ui.emplace<label_widget>(LABELS[i].tag, animation, tr::align::CENTER_LEFT, 0.5_s, loc_text_callback{LABELS[i].tooltip},
 								   loc_text_callback{LABELS[i].tag}, tr::sys::ttf_style::NORMAL, 48);
 	}
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},

@@ -475,6 +475,8 @@ class settings_state : public main_menu_state {
 	substate m_substate;
 	// The pending settings.
 	settings m_pending;
+	// Available player skins.
+	std::vector<std::string> m_player_skins;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();

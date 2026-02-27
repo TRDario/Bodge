@@ -20,14 +20,13 @@ constexpr tag T_WINDOW_SIZE_C{"window_size_c"};
 constexpr tag T_WINDOW_SIZE_I{"window_size_i"};
 constexpr tag T_VSYNC{"vsync"};
 constexpr tag T_VSYNC_C{"vsync_c"};
-constexpr tag T_MSAA{"msaa"};
-constexpr tag T_MSAA_D{"msaa_d"};
-constexpr tag T_MSAA_C{"msaa_c"};
-constexpr tag T_MSAA_I{"msaa_i"};
 constexpr tag T_MOUSE_SENSITIVITY{"mouse_sensitivity"};
 constexpr tag T_MOUSE_SENSITIVITY_D{"mouse_sensitivity_d"};
 constexpr tag T_MOUSE_SENSITIVITY_C{"mouse_sensitivity_c"};
 constexpr tag T_MOUSE_SENSITIVITY_I{"mouse_sensitivity_i"};
+constexpr tag T_PLAYER_SKIN{"player_skin"};
+constexpr tag T_PLAYER_SKIN_C{"player_skin_c"};
+constexpr tag T_PLAYER_SKIN_PREVIEW{"player_skin_preview"};
 constexpr tag T_PRIMARY_HUE{"primary_hue"};
 constexpr tag T_PRIMARY_HUE_PREVIEW{"primary_hue_preview"};
 constexpr tag T_PRIMARY_HUE_D{"primary_hue_d"};
@@ -57,13 +56,13 @@ constexpr std::array LABELS{
 	label_info{T_DISPLAY_MODE, "display_mode_tt"},
 	label_info{T_WINDOW_SIZE, "window_size_tt"},
 	label_info{T_VSYNC, "vsync_tt"},
-	label_info{T_MSAA, "msaa_tt"},
 	label_info{T_MOUSE_SENSITIVITY, "mouse_sensitivity_tt"},
+	label_info{T_PLAYER_SKIN, "player_skin_tt"},
 	label_info{T_PRIMARY_HUE, "primary_hue_tt"},
 	label_info{T_SECONDARY_HUE, "secondary_hue_tt"},
 	label_info{T_SFX_VOLUME, "sfx_volume_tt"},
 	label_info{T_MUSIC_VOLUME, "music_volume_tt"},
-	label_info{T_LANGUAGE, nullptr},
+	label_info{T_LANGUAGE, "language_tt"},
 };
 
 // Right-hand side interactible widgets.
@@ -71,8 +70,8 @@ constexpr std::array RIGHT_WIDGETS{
 	T_DISPLAY_MODE_C,
 	T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I,
 	T_VSYNC_C,
-	T_MSAA_D, T_MSAA_C, T_MSAA_I,
 	T_MOUSE_SENSITIVITY_D, T_MOUSE_SENSITIVITY_C, T_MOUSE_SENSITIVITY_I,
+	T_PLAYER_SKIN_C, T_PLAYER_SKIN_PREVIEW,
 	T_PRIMARY_HUE_D, T_PRIMARY_HUE_C, T_PRIMARY_HUE_I, T_PRIMARY_HUE_PREVIEW,
 	T_SECONDARY_HUE_D, T_SECONDARY_HUE_C, T_SECONDARY_HUE_I, T_SECONDARY_HUE_PREVIEW,
 	T_SFX_VOLUME_D, T_SFX_VOLUME_C, T_SFX_VOLUME_I,
@@ -88,8 +87,8 @@ constexpr selection_tree SELECTION_TREE{
 	selection_tree_row{T_DISPLAY_MODE_C},
 	selection_tree_row{T_WINDOW_SIZE_D, T_WINDOW_SIZE_C, T_WINDOW_SIZE_I},
 	selection_tree_row{T_VSYNC_C},
-	selection_tree_row{T_MSAA_D, T_MSAA_C, T_MSAA_I},
 	selection_tree_row{T_MOUSE_SENSITIVITY_D, T_MOUSE_SENSITIVITY_C, T_MOUSE_SENSITIVITY_I},
+	selection_tree_row{T_PLAYER_SKIN_C},
 	selection_tree_row{T_PRIMARY_HUE_D, T_PRIMARY_HUE_C, T_PRIMARY_HUE_I},
 	selection_tree_row{T_SECONDARY_HUE_D, T_SECONDARY_HUE_C, T_SECONDARY_HUE_I},
 	selection_tree_row{T_SFX_VOLUME_D, T_SFX_VOLUME_C, T_SFX_VOLUME_I},
@@ -114,12 +113,12 @@ constexpr glm::vec2 DISPLAY_MODE_START_POS{1050, 121};
 constexpr glm::vec2 WINDOW_SIZE_START_POS{1050, DISPLAY_MODE_START_POS.y + 75};
 // Starting position for V-sync right widgets.
 constexpr glm::vec2 VSYNC_START_POS{1050, WINDOW_SIZE_START_POS.y + 75};
-// Starting position for MSAAA right widgets.
-constexpr glm::vec2 MSAA_START_POS{1050, VSYNC_START_POS.y + 75};
 // Starting position for mouse sensitivity right widgets.
-constexpr glm::vec2 MOUSE_SENSITIVITY_START_POS{1050, MSAA_START_POS.y + 75};
+constexpr glm::vec2 MOUSE_SENSITIVITY_START_POS{1050, VSYNC_START_POS.y + 75};
+// Starting position for player skin right widgets.
+constexpr glm::vec2 PLAYER_SKIN_START_POS{1050, MOUSE_SENSITIVITY_START_POS.y + 75};
 // Starting position for primary hue right widgets.
-constexpr glm::vec2 PRIMARY_HUE_START_POS{1050, MOUSE_SENSITIVITY_START_POS.y + 75};
+constexpr glm::vec2 PRIMARY_HUE_START_POS{1050, PLAYER_SKIN_START_POS.y + 75};
 // Starting position for secondary hue right widgets.
 constexpr glm::vec2 SECONDARY_HUE_START_POS{1050, PRIMARY_HUE_START_POS.y + 75};
 // Starting position for SFX volume right widgets.
@@ -141,18 +140,16 @@ constexpr tweened_position WINDOW_SIZE_C_ANIMATION{WINDOW_SIZE_START_POS, {875, 
 constexpr tweened_position WINDOW_SIZE_I_ANIMATION{WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s};
 // Entry animation used for the current V-sync mode widget.
 constexpr tweened_position VSYNC_C_ANIMATION{VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s};
-// Entry animation used for the MSAA decrease button widget.
-constexpr tweened_position MSAA_D_ANIMATION{MSAA_START_POS, {830, MSAA_START_POS.y}, 0.5_s};
-// Entry animation used for the current MSAA widget.
-constexpr tweened_position MSAA_C_ANIMATION{MSAA_START_POS, {907.5, MSAA_START_POS.y}, 0.5_s};
-// Entry animation used for the MSAA increase button widget.
-constexpr tweened_position MSAA_I_ANIMATION{MSAA_START_POS, {985, MSAA_START_POS.y}, 0.5_s};
 // Entry animation used for the mouse sensitivity decrease button widget.
 constexpr tweened_position MOUSE_SENSITIVITY_D_ANIMATION{MOUSE_SENSITIVITY_START_POS, {765, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
 // Entry animation used for the current mouse sensitivity widget.
 constexpr tweened_position MOUSE_SENSITIVITY_C_ANIMATION{MOUSE_SENSITIVITY_START_POS, {875, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
 // Entry animation used for the mouse sensitivity increase button widget.
 constexpr tweened_position MOUSE_SENSITIVITY_I_ANIMATION{MOUSE_SENSITIVITY_START_POS, {985, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
+// Entry animation used for the player skin preview widget.
+constexpr tweened_position PLAYER_SKIN_PREVIEW_ANIMATION{PLAYER_SKIN_START_POS, {985, PLAYER_SKIN_START_POS.y}, 0.5_s};
+// Entry animation used for the current player skin widget.
+constexpr tweened_position PLAYER_SKIN_C_ANIMATION{PLAYER_SKIN_START_POS, {930, PLAYER_SKIN_START_POS.y}, 0.5_s};
 // Entry animation used for the primary hue decrease button widget.
 constexpr tweened_position PRIMARY_HUE_D_ANIMATION{PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s};
 // Entry animation used for the current primary hue widget.
@@ -185,10 +182,33 @@ constexpr tweened_position MUSIC_VOLUME_I_ANIMATION{MUSIC_VOLUME_START_POS, {985
 constexpr tweened_position LANGUAGE_C_ANIMATION{LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s};
 
 // clang-format on
+///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
+
+std::vector<std::string> find_skins()
+{
+	constexpr std::array SKIN_EXTENSIONS{".bmp", ".qoi", ".png", ".jpg", ".jpeg"};
+
+	try {
+		std::vector<std::string> skins;
+		for (std::filesystem::directory_entry entry : std::filesystem::directory_iterator{g_cli_settings.user_directory / "skins"}) {
+			if (entry.is_regular_file() && std::ranges::find(SKIN_EXTENSIONS, entry.path().extension()) != SKIN_EXTENSIONS.end()) {
+				skins.push_back(entry.path().filename());
+			}
+		}
+		return skins;
+	}
+	catch (...) {
+		return {};
+	}
+}
+
 ////////////////////////////////////////////////////////////// SETTINGS STATE /////////////////////////////////////////////////////////////
 
 settings_state::settings_state(std::shared_ptr<playerless_game> game)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SETTINGS}, m_pending{g_settings}
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+	, m_substate{substate::IN_SETTINGS}
+	, m_pending{g_settings}
+	, m_player_skins{find_skins()}
 {
 	// STATUS CALLBACKS
 
@@ -204,10 +224,11 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	const status_callback window_size_c_scb{
 		[this] { return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN; },
 	};
-	const status_callback msaa_d_scb{[this] { return m_substate != substate::EXITING && m_pending.msaa != NO_MSAA; }};
-	const status_callback msaa_i_scb{[this] { return m_substate != substate::EXITING && m_pending.msaa != tr::sys::max_msaa(); }};
 	const status_callback mouse_sensitivity_d_scb{[this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity > 25; }};
 	const status_callback mouse_sensitivity_i_scb{[this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity < 250; }};
+	const status_callback player_skin_c_scb{
+		[this] { return m_substate != substate::EXITING && (m_player_skins.size() > 0 || !m_pending.player_skin.empty()); },
+	};
 	const status_callback sfx_volume_d_scb{[this] { return m_substate != substate::EXITING && m_pending.sfx_volume > 0; }};
 	const status_callback sfx_volume_i_scb{[this] { return m_substate != substate::EXITING && m_pending.sfx_volume < 100; }};
 	const status_callback music_volume_d_scb{[this] { return m_substate != substate::EXITING && m_pending.music_volume > 0; }};
@@ -242,14 +263,26 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		[&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + keymods_choose(1, 10, 100))); },
 	};
 	const action_callback vsync_c_acb{[&vsync = m_pending.vsync] { vsync = !vsync; }};
-	const action_callback msaa_d_acb{[&msaa = m_pending.msaa] { msaa = msaa == 2 ? NO_MSAA : u8(msaa / 2); }};
-	const action_callback msaa_i_acb{[&msaa = m_pending.msaa] { msaa = msaa == NO_MSAA ? 2 : u8(msaa * 2); }};
 	const action_callback mouse_sensitivity_d_acb{
 		[&ms = m_pending.mouse_sensitivity] { ms = u8(std::max(ms - keymods_choose(1, 10, 25), 25)); },
 	};
 	const action_callback mouse_sensitivity_i_acb{
 		[&ms = m_pending.mouse_sensitivity] { ms = u8(std::min(ms + keymods_choose(1, 10, 25), 250)); },
 	};
+	const action_callback player_skin_c_acb{[this] {
+		std::vector<std::string>::iterator player_skin_it{std::ranges::find(m_player_skins, m_pending.player_skin)};
+		if (player_skin_it == m_player_skins.end() && !m_player_skins.empty()) {
+			player_skin_it = m_player_skins.begin();
+			m_pending.player_skin = *player_skin_it;
+		}
+		else if (m_player_skins.empty() || ++player_skin_it == m_player_skins.end()) {
+			m_pending.player_skin = {};
+		}
+		else {
+			m_pending.player_skin = *player_skin_it;
+		}
+		m_ui.as<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW).update_skin();
+	}};
 	const action_callback primary_hue_d_acb{[&ph = m_pending.primary_hue] { ph = u16((ph - keymods_choose(1, 10, 100) + 360) % 360); }};
 	const action_callback primary_hue_i_acb{[&ph = m_pending.primary_hue] { ph = u16((ph + keymods_choose(1, 10, 100)) % 360); }};
 	const action_callback secondary_hue_d_acb{[&sh = m_pending.secondary_hue] { sh = u16((sh - keymods_choose(1, 10, 100) + 360) % 360); }};
@@ -272,6 +305,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 			g_text_engine.reload_language_preview_font(m_pending);
 			const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? GRAY : DISABLED_GRAY};
 			m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(window_size_color, 0.1_s);
+			m_ui.as<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW).update_skin();
 		},
 		[this] {
 			if (g_settings.releasing_graphical_resources_required_to_apply(m_pending)) {
@@ -299,8 +333,17 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	const text_callback display_mode_c_tcb{
 		[this] { return std::string{g_loc[m_pending.display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
 	};
-	const text_callback vsync_c_tcb{[&vsync = m_pending.vsync] { return std::string{g_loc[vsync ? "on" : "off"]}; }};
-	const text_callback msaa_c_tcb{[this] { return m_pending.msaa == NO_MSAA ? "--" : TR_FMT::format("x{}", m_pending.msaa); }};
+	const text_callback vsync_c_tcb{
+		[&vsync = m_pending.vsync] { return std::string{g_loc[vsync ? "on" : "off"]}; },
+	};
+	const text_callback player_skin_c_tcb{
+		[this] {
+			const bool valid_player_skin{std::ranges::find(m_player_skins, m_pending.player_skin) != m_player_skins.end()};
+			return valid_player_skin               ? m_pending.player_skin.substr(0, m_pending.player_skin.find_last_of('.'))
+				   : m_pending.player_skin.empty() ? std::string{g_loc["none"]}
+												   : std::string{g_loc["unknown"]};
+		},
+	};
 	const text_callback language_c_tcb{
 		[this] { return g_languages.contains(m_pending.language) ? g_languages[m_pending.language].name : "???"; },
 	};
@@ -313,7 +356,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		const label_info& label{LABELS[i]};
 		const tweened_position animation{{-50, 121 + i * 75}, {15, 121 + i * 75}, 0.5_s};
 		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? DISABLED_GRAY : GRAY};
-		m_ui.emplace<label_widget>(label.tag, animation, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
+		m_ui.emplace<label_widget>(label.tag, animation, tr::align::CENTER_LEFT, 0.5_s, loc_text_callback{LABELS[i].tooltip},
 								   loc_text_callback{label.tag}, tr::sys::ttf_style::NORMAL, 48, color);
 	}
 
@@ -327,16 +370,16 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 							   window_size_i_acb);
 	m_ui.emplace<text_button_widget>(T_VSYNC_C, VSYNC_C_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, vsync_c_tcb,
 									 font::LANGUAGE_PREVIEW, 48, scb, vsync_c_acb, sound::CONFIRM);
-	m_ui.emplace<arrow_widget>(T_MSAA_D, MSAA_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, msaa_d_scb, msaa_d_acb);
-	m_ui.emplace<label_widget>(T_MSAA_C, MSAA_C_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, msaa_c_tcb, tr::sys::ttf_style::NORMAL,
-							   48);
-	m_ui.emplace<arrow_widget>(T_MSAA_I, MSAA_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, msaa_i_scb, msaa_i_acb);
 	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_D, MOUSE_SENSITIVITY_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
 							   mouse_sensitivity_d_scb, mouse_sensitivity_d_acb);
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C, MOUSE_SENSITIVITY_C_ANIMATION, tr::align::CENTER, 0.5_s,
 															48, m_ui, m_pending.mouse_sensitivity, scb, mouse_sensitivity_c_vcb);
 	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_I, MOUSE_SENSITIVITY_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
 							   mouse_sensitivity_i_scb, mouse_sensitivity_i_acb);
+	m_ui.emplace<text_button_widget>(T_PLAYER_SKIN_C, PLAYER_SKIN_C_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP,
+									 player_skin_c_tcb, font::LANGUAGE_PREVIEW, 48, player_skin_c_scb, player_skin_c_acb, sound::CONFIRM);
+	m_ui.emplace<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW, PLAYER_SKIN_PREVIEW_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s,
+											 m_pending);
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, scb,
 							   primary_hue_d_acb);
 	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,

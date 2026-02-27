@@ -22,11 +22,6 @@ std::string loc_text_callback::operator()() const
 	return std::string{g_loc[tag]};
 }
 
-std::string tooltip_loc_text_callback::operator()() const
-{
-	return std::string{tag != nullptr ? g_loc[tag] : std::string{}};
-}
-
 std::string const_text_callback::operator()() const
 {
 	return str;

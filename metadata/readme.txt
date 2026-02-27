@@ -24,7 +24,7 @@
 |                ++++++++++++++++++                                                                                   |
 |                   ++++++++++++                                                                                      |
 |                                                                                                                     |
-|------------------------------------------------------FOREWORD-------------------------------------------------------|
+|-------------------------------------------------------FOREWORD------------------------------------------------------|
 |                                                                                                                     |
 |                                           Thank you for downloading Bodge.                                          |
 |                                                                                                                     |
@@ -48,6 +48,10 @@
 |                                                                                                           - TRDario |
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
+| v1.3.2 (28 Feb 2026)                                                                                                |
+| * Added support for custom player skins.                                                                            |
+| * Removed MSAA from the settings.                                                                                   |
+| * Fixed the game awkwardly hanging when transitioning to a state that takes a long time to load.                    |
 | v1.3.1 (24 Feb 2026)                                                                                                |
 | * Slightly rebalanced Swarm and fixed an oversight in Focus.                                                        |
 | v1.3.0 (24 Feb 2026)                                                                                                |
@@ -127,7 +131,7 @@
 |                                                                                                                     |
 | Replays can be sped up with ctrl and slowed down with shift.                                                        |
 |                                                                                                                     |
-|---------------------------------------------------USER DIRECTORY----------------------------------------------------|
+|----------------------------------------------------USER DIRECTORY---------------------------------------------------|
 |                                                                                                                     |
 | Your saved data, as well as any custom gamemodes, languages, and music tracks are stored in the user directory.     |
 | By default, this is in %appdata% on Windows, or /home/.local/share/ on Linux.                                       |
@@ -135,12 +139,15 @@
 | If you wish to redirect it, you can do that by running the game with '--userdir <path to directory>' passed to the  |
 | command line.                                                                                                       |
 |                                                                                                                     |
-|-----------------------------------------------------PLAYER SKIN-----------------------------------------------------|
+|-----------------------------------------------------PLAYER SKINS----------------------------------------------------|
 |                                                                                                                     |
-| A custom player skin may be used by placing an image with the name 'player' in the user directory.                  |
+| Custom player skins may be used by placing them in the 'skins' subdirectory of the user directory.                  |
 |                                                                                                                     |
-| The image may be in any of the BMP, PNG, JPEG, or QOI image formats (with the appropriate filename extension).      |
-| It may be in any size and aspect ratio, but will be scaled and squished down to 1:1 by the game.                    |                                     |
+| Images may be in any of the BMP, PNG, JPEG, or QOI image formats (with the appropriate filename extension).         |
+| They may be in any size and aspect ratio, but will be scaled and squished down to 1:1 by the game.                  |
+|                                                                                                                     |
+| Note that the player trail will be drawn in the same hexagonal pattern as with the default graphic, so may stick    |
+| out of custom skins that heavily deviate from a circular shape.                                                     |
 |                                                                                                                     |
 |-------------------------------------------------CUSTOM LOCALIZATION-------------------------------------------------|
 |                                                                                                                     |
@@ -163,7 +170,7 @@
 | The default english localization defines all key-value pairs except 'font', so it may be used as a template for     |
 | what you should define. Any keys left undefined will be displayed without localization.                             |
 |                                                                                                                     |
-|----------------------------------------------------CUSTOM MUSIC-----------------------------------------------------|
+|-----------------------------------------------------CUSTOM MUSIC----------------------------------------------------|
 |                                                                                                                     |
 | Custom music tracks may be used in custom gamemodes by placing them in the 'music' subdirectory of the user         |
 | directory.                                                                                                          |

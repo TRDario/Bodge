@@ -52,10 +52,10 @@ inline struct settings {
 	display_mode display_mode{display_mode::WINDOWED};
 	// Whether V-sync is enabled.
 	bool vsync{false};
-	// Multisampled anti-aliasing parameter.
-	u8 msaa{8};
 	// Mouse sensitivity as a percentage.
 	u8 mouse_sensitivity{100};
+	// Active player skin (or empty string for none).
+	std::string player_skin;
 	// Primary game hue.
 	u16 primary_hue{60};
 	// Secondary game hue.

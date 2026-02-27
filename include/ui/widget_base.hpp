@@ -38,15 +38,8 @@ template <class T> using validation_callback = std::function<T(std::common_type_
 
 // Special text callback value used to denote that a widget has no tooltip.
 inline const text_callback NO_TOOLTIP{};
-// Common callback for text widgets: getting a localization string using the widget name as the key.
+// Common callback for text widgets: getting a localization string using a key.
 struct loc_text_callback {
-	// The tag serving as the key for the localization lookup.
-	tag tag;
-
-	std::string operator()() const;
-};
-// Common callback for text widgets: getting a tooltip localization string.
-struct tooltip_loc_text_callback {
 	// The tag serving as the key for the localization lookup.
 	tag tag;
 

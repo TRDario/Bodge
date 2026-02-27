@@ -119,7 +119,7 @@ class basic_numeric_input_widget : private basic_numeric_input_widget_data<T, Di
 	// Creates a numeric input widget.
 	basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
 							   status_callback status_cb, validation_callback<T> validation_cb);
-	
+
 	// Gets whether the widget is interactible (delegates to the status callback).
 	bool interactible() const override;
 	// Gets whether the widget is writable (always true).
@@ -257,7 +257,7 @@ template <usize S> class multiline_input_widget : public input_buffer<S>, public
 
 	// Gets the size of the widget.
 	glm::vec2 size() const override;
-	
+
 	// Gets whether the widget is interactible (delegates to the status callback).
 	bool interactible() const override;
 	// Gets whether the widget is writable (always true).
@@ -336,9 +336,42 @@ class image_widget : public widget {
 	int m_priority;
 };
 
+//////////////////////////////////////////////////////// PLAYER SKIN PREVIEW WIDGET ///////////////////////////////////////////////////////
+
+// Widget used to display a player skin preview.
+class player_skin_preview_widget : public widget {
+  public:
+	// Creates a player skill preview widget.
+	player_skin_preview_widget(tweened_position pos, tr::align alignment, ticks unhide_time, settings& pending_settings);
+
+	// Gets the size of the widget.
+	glm::vec2 size() const override;
+
+	// Updates the previewed skin.
+	void update_skin();
+
+	// Updates the widget.
+	void tick() override;
+	// Adds the widget to the renderer.
+	void add_to_renderer() override;
+
+  private:
+	// Tag representing the lack of a skin.
+	struct no_skin {};
+	// Tag representing an unavailable skin.
+	struct unavailable_skin {};
+
+	// Optional image texture, don't immediately load into a GPU texture to ensure it can be asynchronously loaded.
+	std::variant<no_skin, unavailable_skin, tr::bitmap, tr::gfx::texture> m_texture;
+	// Reference to the pending settings.
+	settings& m_pending_settings;
+	// The rotation of the preview.
+	tr::angle m_rotation;
+};
+
 /////////////////////////////////////////////////////////// COLOR PREVIEW WIDGET //////////////////////////////////////////////////////////
 
-// Widget used to display a color previews.
+// Widget used to display a color preview.
 class color_preview_widget : public widget {
   public:
 	// Creates a color preview widget.

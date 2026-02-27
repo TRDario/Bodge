@@ -50,6 +50,7 @@ add_executable(
     src/ui/gamemode_widget.cpp
     src/ui/image_widget.cpp
     src/ui/label_widget.cpp
+    src/ui/player_skin_preview_widget.cpp
     src/ui/replay_playback_indicator_widget.cpp
     src/ui/replay_score_widget.cpp
     src/ui/text_button_widget.cpp

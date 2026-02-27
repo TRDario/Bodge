@@ -245,7 +245,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		const label_info& label{LABELS[i]};
 		const tweened_position animation{{-50, 375 + i * 75}, {15, 375 + i * 75}, 0.5_s};
-		m_ui.emplace<label_widget>(label.tag, animation, tr::align::CENTER_LEFT, 0.5_s, tooltip_loc_text_callback{LABELS[i].tooltip},
+		m_ui.emplace<label_widget>(label.tag, animation, tr::align::CENTER_LEFT, 0.5_s, loc_text_callback{LABELS[i].tooltip},
 								   loc_text_callback{label.tag}, tr::sys::ttf_style::NORMAL, 48);
 	}
 	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},

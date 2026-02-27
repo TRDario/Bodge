@@ -4,20 +4,49 @@
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "../include/settings.hpp"
 #include "../include/audio.hpp"
 #include "../include/renderer.hpp"
-#include "../include/settings.hpp"
 #include "../include/state.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
 // Settings file version identifier.
-constexpr u8 SETTINGS_VERSION{2};
+constexpr u8 SETTINGS_VERSION{3};
 
 //////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
 
-template <> struct tr::binary_reader<settings> : tr::default_binary_reader<settings> {};
-template <> struct tr::binary_writer<settings> : tr::default_binary_writer<settings> {};
+template <> struct tr::binary_reader<settings> {
+	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, settings& out)
+	{
+		span = tr::binary_read(span, out.window_size);
+		span = tr::binary_read(span, out.display_mode);
+		span = tr::binary_read(span, out.vsync);
+		span = tr::binary_read(span, out.mouse_sensitivity);
+		span = tr::binary_read(span, out.player_skin);
+		span = tr::binary_read(span, out.primary_hue);
+		span = tr::binary_read(span, out.secondary_hue);
+		span = tr::binary_read(span, out.sfx_volume);
+		span = tr::binary_read(span, out.music_volume);
+		return tr::binary_read(span, out.language);
+	}
+};
+
+template <> struct tr::binary_writer<settings> {
+	static void write_to_stream(std::ostream& os, const settings& in)
+	{
+		tr::binary_write(os, in.window_size);
+		tr::binary_write(os, in.display_mode);
+		tr::binary_write(os, in.vsync);
+		tr::binary_write(os, in.mouse_sensitivity);
+		tr::binary_write(os, in.player_skin);
+		tr::binary_write(os, in.primary_hue);
+		tr::binary_write(os, in.secondary_hue);
+		tr::binary_write(os, in.sfx_volume);
+		tr::binary_write(os, in.music_volume);
+		tr::binary_write(os, in.language);
+	}
+};
 
 u16 max_window_size()
 {
@@ -46,7 +75,6 @@ void settings::raw_load_from_file()
 void settings::validate()
 {
 	window_size = std::clamp(window_size, MIN_WINDOW_SIZE, max_window_size());
-	msaa = std::clamp(msaa, NO_MSAA, tr::sys::max_msaa());
 	mouse_sensitivity = std::clamp(mouse_sensitivity, 50_u8, 200_u8);
 	primary_hue = u16(primary_hue % 360);
 	secondary_hue = u16(secondary_hue % 360);
@@ -79,8 +107,7 @@ void settings::save_to_file() const
 
 bool settings::restart_required_to_apply(const settings& new_settings) const
 {
-	return new_settings.display_mode != display_mode ||
-		   (display_mode == display_mode::WINDOWED && new_settings.window_size != window_size) || new_settings.msaa != msaa;
+	return new_settings.display_mode != display_mode || (display_mode == display_mode::WINDOWED && new_settings.window_size != window_size);
 }
 
 bool settings::releasing_graphical_resources_required_to_apply(const settings& new_settings) const

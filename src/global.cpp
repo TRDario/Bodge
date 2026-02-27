@@ -54,7 +54,7 @@ void fragment::tick()
 
 void open_window()
 {
-	const tr::gfx::properties gfx{.multisamples = g_settings.msaa};
+	const tr::gfx::properties gfx{.multisamples = tr::sys::max_msaa()};
 	if (g_settings.display_mode == display_mode::FULLSCREEN) {
 		tr::sys::open_fullscreen_window("Bodge", tr::sys::NOT_RESIZABLE, gfx);
 	}

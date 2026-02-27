@@ -39,11 +39,11 @@ class player {
   private:
 	// Tag representing an uninitialized skin.
 	struct uninitialized_skin {};
-	// Tag representing the lack of a custom skin.
-	struct no_custom_skin {};
+	// Tag representing the lack of a skin.
+	struct no_skin {};
 
 	// Optional player skin.
-	mutable std::variant<uninitialized_skin, no_custom_skin, tr::gfx::texture> m_skin;
+	mutable std::variant<uninitialized_skin, no_skin, tr::gfx::texture> m_skin;
 	// The player's hitbox.
 	tr::circle m_hitbox;
 	// The player's trail.
