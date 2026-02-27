@@ -29,7 +29,8 @@ tr::next_state state::tick()
 
 tr::next_state state::next_state_if_after(ticks timestamp)
 {
-	return m_elapsed >= timestamp ? std::optional{m_next_state.get()} : tr::KEEP_STATE;
+	return m_elapsed >= timestamp && m_next_state.wait_for(0s) == std::future_status::ready ? std::optional{m_next_state.get()}
+																							: tr::KEEP_STATE;
 }
 
 ///////////////////////////////////////////////////////////// MAIN MENU STATE /////////////////////////////////////////////////////////////
