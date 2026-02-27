@@ -192,7 +192,7 @@ std::vector<std::string> find_skins()
 		std::vector<std::string> skins;
 		for (std::filesystem::directory_entry entry : std::filesystem::directory_iterator{g_cli_settings.user_directory / "skins"}) {
 			if (entry.is_regular_file() && std::ranges::find(SKIN_EXTENSIONS, entry.path().extension()) != SKIN_EXTENSIONS.end()) {
-				skins.push_back(entry.path().filename());
+				skins.push_back(entry.path().filename().string());
 			}
 		}
 		return skins;
