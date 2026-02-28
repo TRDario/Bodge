@@ -105,7 +105,10 @@ void player::add_to_renderer_dead(ticks time_since_game_over) const
 void player::try_loading_skin() const
 {
 	try {
-		const tr::bitmap image{tr::load_bitmap_file(g_cli_settings.user_directory / "skins" / g_settings.player_skin)};
+		tr::bitmap image{tr::load_bitmap_file(g_cli_settings.user_directory / "skins" / g_settings.player_skin)};
+		if (image.format() == tr::pixel_format::R8) {
+			image = tr::bitmap{image, tr::pixel_format::RGBA32};
+		}
 		tr::gfx::texture& skin_texture{m_skin.emplace<tr::gfx::texture>(image, true)};
 		skin_texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
 		g_renderer->basic.set_default_layer_texture(layer::PLAYER, skin_texture);

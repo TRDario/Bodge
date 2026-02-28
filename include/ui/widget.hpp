@@ -361,8 +361,8 @@ class player_skin_preview_widget : public widget {
 	// Tag representing an unavailable skin.
 	struct unavailable_skin {};
 
-	// Optional image texture, don't immediately load into a GPU texture to ensure it can be asynchronously loaded.
-	std::variant<no_skin, unavailable_skin, tr::bitmap, tr::gfx::texture> m_texture;
+	// Optional skin texture, don't immediately load into a GPU texture to ensure it can be asynchronously loaded.
+	std::variant<no_skin, unavailable_skin, tr::bitmap, tr::gfx::texture> m_skin;
 	// Reference to the pending settings.
 	settings& m_pending_settings;
 	// The rotation of the preview.

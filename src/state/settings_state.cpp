@@ -186,7 +186,7 @@ constexpr tweened_position LANGUAGE_C_ANIMATION{LANGUAGE_START_POS, {985, LANGUA
 
 std::vector<std::string> find_skins()
 {
-	constexpr std::array SKIN_EXTENSIONS{".bmp", ".qoi", ".png", ".jpg", ".jpeg"};
+	constexpr std::array SKIN_EXTENSIONS{".bmp", ".qoi", ".png"};
 
 	try {
 		std::vector<std::string> skins;

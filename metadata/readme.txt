@@ -143,7 +143,7 @@
 |                                                                                                                     |
 | Custom player skins may be used by placing them in the 'skins' subdirectory of the user directory.                  |
 |                                                                                                                     |
-| Images may be in any of the BMP, PNG, JPEG, or QOI image formats (with the appropriate filename extension).         |
+| Images may be in a BMP or PNG image format (with the appropriate filename extension).                               |
 | They may be in any size and aspect ratio, but will be scaled and squished down to 1:1 by the game.                  |
 |                                                                                                                     |
 | Note that the player trail will be drawn in the same hexagonal pattern as with the default graphic, so may stick    |

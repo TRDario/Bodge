@@ -25,15 +25,19 @@ glm::vec2 player_skin_preview_widget::size() const
 void player_skin_preview_widget::update_skin()
 {
 	if (m_pending_settings.player_skin.empty()) {
-		m_texture.emplace<no_skin>();
+		m_skin.emplace<no_skin>();
 		return;
 	}
 
 	try {
-		m_texture.emplace<tr::bitmap>(tr::load_bitmap_file(g_cli_settings.user_directory / "skins" / m_pending_settings.player_skin));
+		tr::bitmap image{tr::load_bitmap_file(g_cli_settings.user_directory / "skins" / m_pending_settings.player_skin)};
+		if (image.format() == tr::pixel_format::R8) {
+			image = tr::bitmap{image, tr::pixel_format::RGBA32};
+		}
+		m_skin = std::move(image);
 	}
 	catch (...) {
-		m_texture.emplace<unavailable_skin>();
+		m_skin.emplace<unavailable_skin>();
 	}
 }
 
@@ -47,21 +51,19 @@ void player_skin_preview_widget::tick()
 
 void player_skin_preview_widget::add_to_renderer()
 {
-	if (std::holds_alternative<tr::bitmap>(m_texture)) {
-		const tr::bitmap source{tr::get<tr::bitmap>(m_texture)};
-		tr::gfx::texture texture{source, true};
+	if (std::holds_alternative<tr::bitmap>(m_skin)) {
+		tr::gfx::texture texture{tr::get<tr::bitmap>(m_skin), true};
 		texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
-		m_texture = std::move(texture);
+		m_skin = std::move(texture);
 	}
 
-	if (std::holds_alternative<tr::gfx::texture>(m_texture)) {
-		const tr::gfx::simple_textured_mesh_ref skin{
-			g_renderer->basic.new_textured_fan(layer::UI, 4, std::get<tr::gfx::texture>(m_texture))};
+	if (std::holds_alternative<tr::gfx::texture>(m_skin)) {
+		const tr::gfx::simple_textured_mesh_ref skin{g_renderer->basic.new_textured_fan(layer::UI, 4, std::get<tr::gfx::texture>(m_skin))};
 		tr::fill_rectangle_vertices(skin.positions.begin(), tl() + 24.0f, glm::vec2{24}, glm::vec2{48}, m_rotation);
 		tr::fill_rectangle_vertices(skin.uvs.begin(), {{0, 0}, {1, 1}});
 		std::ranges::fill(skin.tints, tr::rgba8{255, 255, 255, tr::norm_cast<u8>(opacity())});
 	}
-	else if (std::holds_alternative<no_skin>(m_texture)) {
+	else if (std::holds_alternative<no_skin>(m_skin)) {
 		const tr::circle circle{tl() + 24.0f, 24.0f};
 		tr::rgba8 color{tr::color_cast<tr::rgba8>(tr::hsv{float(m_pending_settings.primary_hue), 1, 1})};
 		color.a = tr::norm_cast<u8>(opacity());
