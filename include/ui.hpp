@@ -14,6 +14,7 @@
 //     • image_widget                     - Displays an image.                                                                           //
 //     • color_preview_widget             - Displays a hue.                                                                              //
 //     • arrow_widget                     - Interactive left or right arrow button.                                                      //
+//     • player_skin_preview_widget       - Displays a player skin.                                                                      //
 //     • replay_playback_indicator_widget - Displays a playback speed indicator (<, >, >>).                                              //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

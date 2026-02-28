@@ -58,6 +58,7 @@ class name_entry_state : public main_menu_state {
 	// The current substate.
 	substate m_substate;
 
+	// The opacity of the fade overlay.
 	float fade_overlay_opacity() override;
 };
 
@@ -90,6 +91,7 @@ class title_state : public main_menu_state {
 	// The current substate.
 	substate m_substate;
 
+	// The opacity of the fade overlay.
 	float fade_overlay_opacity() override;
 
 	// Sets up the UI when entering.
@@ -135,6 +137,7 @@ class start_game_state : public main_menu_state {
 	// Holds the result of an asynchronously loaded new set of widgets.
 	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
 
+	// The opacity of the fade overlay.
 	float fade_overlay_opacity() override;
 
 	// Sets up the UI exit animation.
@@ -218,6 +221,7 @@ class gamemode_editor_state : public main_menu_state {
 	// The pending gamemode.
 	gamemode m_pending;
 
+	// The opacity of the fade overlay.
 	float fade_overlay_opacity() override;
 
 	// Sets up the UI when entering.
@@ -454,6 +458,7 @@ class replays_state : public main_menu_state {
 	// Holds the result of an asynchronously loaded new set of widgets.
 	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
 
+	// The opacity of the fade overlay.
 	float fade_overlay_opacity() override;
 
 	// Prepares the widgets for the next page.
@@ -646,8 +651,11 @@ class pause_state : public game_menu_state {
 	// The mouse position right before unpausing.
 	glm::vec2 m_end_mouse_pos;
 
+	// The opacity of the fade overlay.
 	float fade_overlay_opacity() override;
+	// The saturation of the background game.
 	float saturation_factor() override;
+	// The strength of the background blur.
 	float blur_strength() override;
 
 	// Sets up the full UI when entering.
@@ -689,8 +697,11 @@ class game_over_state : public game_menu_state {
 	// The current substate.
 	substate m_substate;
 
+	// The opacity of the fade overlay.
 	float fade_overlay_opacity() override;
+	// The saturation of the background game.
 	float saturation_factor() override;
+	// The strength of the background blur.
 	float blur_strength() override;
 
 	// Creates a text callback for the "best time" widget.
@@ -793,6 +804,7 @@ class save_replay_state : public game_menu_state {
 	// Gets the save screen flags from a substate value.
 	friend save_screen_flags to_flags(substate state);
 
+	// The opacity of the fade overlay.
 	float fade_overlay_opacity() override;
 
 	// Sets up the UI exit animation.
