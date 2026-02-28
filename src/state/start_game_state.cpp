@@ -215,6 +215,11 @@ float start_game_state::fade_overlay_opacity()
 	return m_substate == substate::STARTING_GAME ? m_elapsed / 0.5_sf : 0;
 }
 
+bool start_game_state::transparent_cursor() const
+{
+	return m_substate == substate::STARTING_GAME;
+}
+
 tr::next_state start_game_state::tick()
 {
 	main_menu_state::tick();

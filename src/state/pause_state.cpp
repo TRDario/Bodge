@@ -80,6 +80,11 @@ pause_state::pause_state(std::shared_ptr<game> game, game_state_data data, glm::
 
 //
 
+bool pause_state::transparent_cursor() const
+{
+	return m_substate == substate::UNPAUSING || m_substate == substate::RESTARTING;
+}
+
 tr::next_state pause_state::tick()
 {
 	game_menu_state::tick();

@@ -121,6 +121,11 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 
 //
 
+bool save_replay_state::transparent_cursor() const
+{
+	return to_base(m_substate) == substate_base::EXITING && to_flags(m_substate) | save_screen_flags::RESTARTING;
+}
+
 tr::next_state save_replay_state::tick()
 {
 	game_menu_state::tick();

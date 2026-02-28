@@ -14,6 +14,11 @@ state::state(selection_tree selection_tree, shortcut_table shortcuts)
 {
 }
 
+bool state::transparent_cursor() const
+{
+	return false;
+}
+
 tr::next_state state::handle_event(const tr::sys::event& event)
 {
 	m_ui.handle_event(event);

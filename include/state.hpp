@@ -41,6 +41,7 @@ class name_entry_state : public main_menu_state {
 	// Creates the name entry state.
 	name_entry_state();
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -70,6 +71,7 @@ class title_state : public main_menu_state {
 	// Creates a title state when entering from the name entry state.
 	title_state(std::shared_ptr<playerless_game> game);
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -104,6 +106,9 @@ class start_game_state : public main_menu_state {
 	// Creates a start game state.
 	start_game_state(std::shared_ptr<playerless_game> game);
 
+	// Signals whether the cursor should be drawn transparent.
+	bool transparent_cursor() const override;
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -144,6 +149,7 @@ class gamemode_manager_state : public main_menu_state {
 	// Creates a gamemode manager state.
 	gamemode_manager_state(std::shared_ptr<playerless_game> game, animate_title animate_title);
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -185,6 +191,9 @@ class gamemode_editor_state : public main_menu_state {
 	gamemode_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode,
 						  animate_subtitle animate_subtitle);
 
+	// Signals whether the cursor should be drawn transparent.
+	bool transparent_cursor() const override;
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -225,6 +234,7 @@ class ball_settings_editor_state : public main_menu_state {
 	// Creates a ball settings editor state.
 	ball_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode);
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -255,6 +265,7 @@ class player_settings_editor_state : public main_menu_state {
 	// Creates a player settings editor state.
 	player_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode);
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -295,6 +306,7 @@ class gamemode_selector_state : public main_menu_state {
 	// Creates a gamemode selector state.
 	gamemode_selector_state(std::shared_ptr<playerless_game> game, gamemode_selector_type type, animate_subtitle move_subtitle);
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -337,6 +349,7 @@ class scoreboard_selection_state : public main_menu_state {
 	// Creates a scoreboard selection state.
 	scoreboard_selection_state(std::shared_ptr<playerless_game> game, animate_title animate_title);
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -369,6 +382,7 @@ class scoreboard_state : public main_menu_state {
 	// Creates a scoreboard state.
 	scoreboard_state(std::shared_ptr<playerless_game> game, scoreboard scoreboard);
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -411,7 +425,9 @@ class replays_state : public main_menu_state {
 	// Creates a replays state coming from the title screen.
 	replays_state(std::shared_ptr<playerless_game> game);
 
-  public:
+	// Signals whether the cursor should be drawn transparent.
+	bool transparent_cursor() const override;
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -460,6 +476,7 @@ class settings_state : public main_menu_state {
 	// Creates a settings state when entering from the title screen.
 	settings_state(std::shared_ptr<playerless_game> game);
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -490,6 +507,7 @@ class credits_state : public main_menu_state {
 	// Creates a credits state when entering from the title screen.
 	credits_state(std::shared_ptr<playerless_game> game);
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -531,8 +549,13 @@ class game_state : public state {
 	// Creates a new game state.
 	game_state(std::shared_ptr<game> game, game_state_data data, fade_in fade_in);
 
+	// Signals whether the cursor should be drawn transparent.
+	bool transparent_cursor() const override;
+	// Handles an event.
 	tr::next_state handle_event(const tr::sys::event& event) override;
+	// Updates the state.
 	tr::next_state tick() override;
+	// Draws the state.
 	void draw() override;
 
   private:
@@ -592,6 +615,9 @@ class pause_state : public game_menu_state {
 	// Creates a test game pause state.
 	pause_state(std::shared_ptr<game> game, game_state_data data, glm::vec2 mouse_pos, blur_in blur_in);
 
+	// Signals whether the cursor should be drawn transparent.
+	bool transparent_cursor() const override;
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -640,6 +666,9 @@ class game_over_state : public game_menu_state {
 	// Creates a game over state.
 	game_over_state(std::shared_ptr<game> game, blur_in blur_in);
 
+	// Signals whether the cursor should be drawn transparent.
+	bool transparent_cursor() const override;
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -692,6 +721,7 @@ class save_score_state : public game_menu_state {
 	// Creates a save score state coming from the game over screen.
 	save_score_state(std::shared_ptr<game> game, save_screen_flags flags);
 
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:
@@ -734,6 +764,9 @@ class save_replay_state : public game_menu_state {
 	// Creates the save replay state.
 	save_replay_state(std::shared_ptr<game> game, save_screen_flags flags);
 
+	// Signals whether the cursor should be drawn transparent.
+	bool transparent_cursor() const override;
+	// Updates the state.
 	tr::next_state tick() override;
 
   private:

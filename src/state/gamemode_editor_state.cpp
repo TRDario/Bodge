@@ -94,6 +94,11 @@ gamemode_editor_state::gamemode_editor_state(std::shared_ptr<playerless_game> ga
 
 //
 
+bool gamemode_editor_state::transparent_cursor() const
+{
+	return m_substate == substate::ENTERING_TEST_GAME;
+}
+
 tr::next_state gamemode_editor_state::tick()
 {
 	main_menu_state::tick();

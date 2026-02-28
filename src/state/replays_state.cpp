@@ -85,6 +85,11 @@ replays_state::replays_state(std::shared_ptr<playerless_game> game)
 
 //
 
+bool replays_state::transparent_cursor() const
+{
+	return m_substate == substate::STARTING_REPLAY;
+}
+
 tr::next_state replays_state::tick()
 {
 	main_menu_state::tick();

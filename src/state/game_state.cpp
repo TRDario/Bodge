@@ -31,6 +31,11 @@ game_state::game_state(std::shared_ptr<game> game, game_state_data data, fade_in
 
 //
 
+bool game_state::transparent_cursor() const
+{
+	return true;
+}
+
 tr::next_state game_state::handle_event(const tr::sys::event& event)
 {
 	m_ui.handle_event(event);

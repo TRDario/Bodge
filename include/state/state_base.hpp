@@ -17,7 +17,11 @@ class state : public tr::state {
 	// Creates a state with an associated selection tree and shortcut table.
 	state(selection_tree selection_tree, shortcut_table shortcuts);
 
+	// Signals whether the cursor should be drawn transparent.
+	virtual bool transparent_cursor() const;
+	// Handles an event.
 	tr::next_state handle_event(const tr::sys::event& event) override;
+	// Updates the state.
 	tr::next_state tick() override;
 
   protected:
@@ -54,7 +58,9 @@ class main_menu_state : public state {
 	// Creates a main menu state with an existing background game.
 	main_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<playerless_game> game);
 
+	// Updates the state.
 	tr::next_state tick() override;
+	// Draws the state.
 	void draw() override;
 
   protected:
@@ -80,7 +86,9 @@ class game_menu_state : public state {
 	// Creates a game menu state.
 	game_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<game> game, update_game update_game);
 
+	// Updates the state.
 	tr::next_state tick() override;
+	// Draws the state.
 	void draw() override;
 
   protected:

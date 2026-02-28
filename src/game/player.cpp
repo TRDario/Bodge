@@ -86,8 +86,8 @@ void player::add_to_renderer_alive(ticks time_since_start, const decrementing_ti
 		else {
 			add_fill_to_renderer(opacity, rotation, size);
 			add_outline_to_renderer(tint, opacity, rotation, size);
+			add_trail_to_renderer(tint, opacity, rotation, size);
 		}
-		add_trail_to_renderer(tint, opacity, rotation, size);
 		add_style_wave_to_renderer(tint, style_cooldown_timer);
 	}
 }

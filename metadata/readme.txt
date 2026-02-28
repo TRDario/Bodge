@@ -48,8 +48,9 @@
 |                                                                                                           - TRDario |
 |-----------------------------------------------------PATCH NOTES-----------------------------------------------------|
 |                                                                                                                     |
-| v1.3.2 (28 Feb 2026)                                                                                                |
+| v1.3.2 (01 Mar 2026)                                                                                                |
 | * Added support for custom player skins.                                                                            |
+| * Made the cursor appear partially transparent in-game.                                                             |
 | * Removed MSAA from the settings.                                                                                   |
 | * Fixed the game awkwardly hanging when transitioning to a state that takes a long time to load.                    |
 | v1.3.1 (24 Feb 2026)                                                                                                |
@@ -145,9 +146,6 @@
 |                                                                                                                     |
 | Images may be in a BMP or PNG image format (with the appropriate filename extension).                               |
 | They may be in any size and aspect ratio, but will be scaled and squished down to 1:1 by the game.                  |
-|                                                                                                                     |
-| Note that the player trail will be drawn in the same hexagonal pattern as with the default graphic, so may stick    |
-| out of custom skins that heavily deviate from a circular shape.                                                     |
 |                                                                                                                     |
 |-------------------------------------------------CUSTOM LOCALIZATION-------------------------------------------------|
 |                                                                                                                     |

@@ -6,6 +6,7 @@
 
 #include "../include/renderer.hpp"
 #include "../include/settings.hpp"
+#include "../include/state.hpp"
 
 //////////////////////////////////////////////////////////// INTERNAL HELPERS /////////////////////////////////////////////////////////////
 
@@ -90,7 +91,10 @@ void renderer::draw_layers(const tr::gfx::render_target& target)
 
 void renderer::draw_cursor()
 {
-	const tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+	tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+	if (g_state_machine.get<state>().transparent_cursor()) {
+		color.a = 160;
+	}
 
 	tr::gfx::simple_color_mesh_ref quad{basic.new_color_fan(layer::CURSOR, 4)};
 	tr::fill_rectangle_vertices(quad.positions, {{g_mouse_pos.x - 12, g_mouse_pos.y - 1}, {8, 2}});

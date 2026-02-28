@@ -135,6 +135,10 @@ game_over_state::game_over_state(std::shared_ptr<game> game, blur_in blur_in)
 
 //
 
+bool game_over_state::transparent_cursor() const {
+	return m_substate == substate::RESTARTING;
+}
+
 tr::next_state game_over_state::tick()
 {
 	game_menu_state::tick();
