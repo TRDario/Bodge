@@ -350,6 +350,8 @@ class player_skin_preview_widget : public widget {
 	// Updates the previewed skin.
 	void update_skin();
 
+	// Releases the widget's graphical resources.
+	void release_graphical_resources() override;
 	// Updates the widget.
 	void tick() override;
 	// Adds the widget to the renderer.

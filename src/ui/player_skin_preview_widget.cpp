@@ -43,6 +43,11 @@ void player_skin_preview_widget::update_skin()
 
 //
 
+void player_skin_preview_widget::release_graphical_resources()
+{
+	update_skin();
+}
+
 void player_skin_preview_widget::tick()
 {
 	widget::tick();
