@@ -160,8 +160,7 @@ replay_widget::replay_widget(tweened_position pos, tr::align alignment, ticks un
 	, text_button_widget{pos,
 						 alignment,
 						 unhide_time,
-						 const_text_callback{replay_it.has_value() ? format_score_tooltip((*replay_it)->second)
-																   : "-------------------------------------------------"},
+						 const_text_callback{replay_it.has_value() ? format_score_tooltip((*replay_it)->second) : ""},
 						 const_text_callback{format_replay_text(replay_it)},
 						 font::LANGUAGE,
 						 34,

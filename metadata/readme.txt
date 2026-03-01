@@ -53,6 +53,7 @@
 | * Made the cursor appear partially transparent in-game.                                                             |
 | * Removed MSAA from the settings.                                                                                   |
 | * Fixed the game awkwardly hanging when transitioning to a state that takes a long time to load.                    |
+| * Fixed empty replay slots having a description.                                                                    |
 | v1.3.1 (24 Feb 2026)                                                                                                |
 | * Slightly rebalanced Swarm and fixed an oversight in Focus.                                                        |
 | v1.3.0 (24 Feb 2026)                                                                                                |
