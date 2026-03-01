@@ -198,7 +198,7 @@ class game : private playerless_game {
 /////////////////////////////////////////////////////////////// ACTIVE GAME ///////////////////////////////////////////////////////////////
 
 // Game that is actively being played.
-class active_game : public game {
+class active_game final : public game {
   public:
 	// Creates a new active game.
 	active_game(::gamemode gamemode, u64 seed = g_rng.generate<u64>());
@@ -213,7 +213,7 @@ class active_game : public game {
 /////////////////////////////////////////////////////////////// REPLAY GAME ///////////////////////////////////////////////////////////////
 
 // Game that is being played back through a replay.
-class replay_game : public game {
+class replay_game final : public game {
   public:
 	// Creates a replay game from a replay.
 	replay_game(replay&& replay);

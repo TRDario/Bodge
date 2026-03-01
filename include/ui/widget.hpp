@@ -17,7 +17,7 @@ class replays_state;
 /////////////////////////////////////////////////////////////// LABEL WIDGET //////////////////////////////////////////////////////////////
 
 // Static text label widget.
-class label_widget : public text_widget {
+class label_widget final : public text_widget {
   public:
 	// Creates a label widget.
 	label_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
@@ -114,7 +114,7 @@ template <class T, usize S> struct basic_numeric_input_widget_data {
 // Widget used to input a numeric value.
 // Formatter is a class with static members from_string() (string -> value) and to_string() (value/string_view -> string).
 template <class T, usize Digits, class Formatter>
-class basic_numeric_input_widget : private basic_numeric_input_widget_data<T, Digits>, public text_widget {
+class basic_numeric_input_widget final : private basic_numeric_input_widget_data<T, Digits>, public text_widget {
   public:
 	// Creates a numeric input widget.
 	basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
@@ -188,7 +188,7 @@ template <usize S> struct input_buffer {
 };
 
 // Widget used to input a line of text.
-template <usize S> class line_input_widget : public input_buffer<S>, public text_widget {
+template <usize S> class line_input_widget final : public input_buffer<S>, public text_widget {
   public:
 	// Creates a line input widget.
 	line_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size,
@@ -249,7 +249,7 @@ template <usize S> class line_input_widget : public input_buffer<S>, public text
 ////////////////////////////////////////////////////////// MULTILINE INPUT WIDGET /////////////////////////////////////////////////////////
 
 // Widget used to input multiple lines of text.
-template <usize S> class multiline_input_widget : public input_buffer<S>, public text_widget {
+template <usize S> class multiline_input_widget final : public input_buffer<S>, public text_widget {
   public:
 	// Creates a multiline input widget.
 	multiline_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float width, u8 max_lines, float font_size,
@@ -315,7 +315,7 @@ template <usize S> class multiline_input_widget : public input_buffer<S>, public
 /////////////////////////////////////////////////////////////// IMAGE WIDGET //////////////////////////////////////////////////////////////
 
 // Widget used to display an image.
-class image_widget : public widget {
+class image_widget final : public widget {
   public:
 	// Creates an image widget.
 	image_widget(tweened_position pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
@@ -339,7 +339,7 @@ class image_widget : public widget {
 //////////////////////////////////////////////////////// PLAYER SKIN PREVIEW WIDGET ///////////////////////////////////////////////////////
 
 // Widget used to display a player skin preview.
-class player_skin_preview_widget : public widget {
+class player_skin_preview_widget final : public widget {
   public:
 	// Creates a player skill preview widget.
 	player_skin_preview_widget(tweened_position pos, tr::align alignment, ticks unhide_time, settings& pending_settings);
@@ -374,7 +374,7 @@ class player_skin_preview_widget : public widget {
 /////////////////////////////////////////////////////////// COLOR PREVIEW WIDGET //////////////////////////////////////////////////////////
 
 // Widget used to display a color preview.
-class color_preview_widget : public widget {
+class color_preview_widget final : public widget {
   public:
 	// Creates a color preview widget.
 	color_preview_widget(tweened_position pos, tr::align alignment, ticks unhide_time, u16& hue);
@@ -399,7 +399,7 @@ enum class arrow_type : bool {
 };
 
 // Arrow widget used to change values or select an option.
-class arrow_widget : public widget {
+class arrow_widget final : public widget {
   public:
 	// Creates an arrow widget.
 	arrow_widget(tweened_position pos, tr::valign alignment, ticks unhide_time, arrow_type type, status_callback status_cb,
@@ -453,7 +453,7 @@ class arrow_widget : public widget {
 /////////////////////////////////////////////////////////////// ARROW WIDGET //////////////////////////////////////////////////////////////
 
 // Widget used to display the replay playback speed.
-class replay_playback_indicator_widget : public widget {
+class replay_playback_indicator_widget final : public widget {
   public:
 	// Creates a replay playback indicator widget.
 	replay_playback_indicator_widget(tweened_position pos, tr::align alignment, ticks unhide_time);
@@ -477,7 +477,7 @@ struct gamemode_widget_data {
 };
 
 // Button widget used to display replay information and select a replay to be played.
-class gamemode_widget : public gamemode_widget_data, public text_button_widget {
+class gamemode_widget final : public gamemode_widget_data, public text_button_widget {
   public:
 	// Creates a gamemode widget.
 	gamemode_widget(tweened_position pos, tr::align alignment, ticks unhide_time, status_callback status_cb,
@@ -487,7 +487,7 @@ class gamemode_widget : public gamemode_widget_data, public text_button_widget {
 /////////////////////////////////////////////////////////////// SCORE WIDGET //////////////////////////////////////////////////////////////
 
 // Widget used to display a time or score result.
-class score_widget : public text_widget {
+class score_widget final : public text_widget {
   public:
 	// Score widget types.
 	enum class type {
@@ -525,7 +525,7 @@ struct replay_widget_data {
 };
 
 // Button widget used to display replay information and select a replay to be played.
-class replay_widget : private replay_widget_data, public text_button_widget {
+class replay_widget final : private replay_widget_data, public text_button_widget {
   public:
 	// Creates a replay widget.
 	replay_widget(tweened_position pos, tr::align alignment, ticks unhide_time, replays_state& state,

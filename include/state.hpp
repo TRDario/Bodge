@@ -36,7 +36,7 @@ inline tr::state_machine g_state_machine;
 //////////////////////////////////////////////////////////// NAME ENTRY STATE /////////////////////////////////////////////////////////////
 
 // Name entry screen of the main menu that appears on first launch.
-class name_entry_state : public main_menu_state {
+class name_entry_state final : public main_menu_state {
   public:
 	// Creates the name entry state.
 	name_entry_state();
@@ -65,7 +65,7 @@ class name_entry_state : public main_menu_state {
 /////////////////////////////////////////////////////////////// TITLE STATE ///////////////////////////////////////////////////////////////
 
 // Title screen of the main menu.
-class title_state : public main_menu_state {
+class title_state final : public main_menu_state {
   public:
 	// Creates a title state when starting.
 	title_state();
@@ -103,7 +103,7 @@ class title_state : public main_menu_state {
 //////////////////////////////////////////////////////////// START GAME STATE /////////////////////////////////////////////////////////////
 
 // Start game screen of the main menu.
-class start_game_state : public main_menu_state {
+class start_game_state final : public main_menu_state {
   public:
 	// Creates a start game state.
 	start_game_state(std::shared_ptr<playerless_game> game);
@@ -147,7 +147,7 @@ class start_game_state : public main_menu_state {
 ////////////////////////////////////////////////////////// GAMEMODE MANAGER STATE /////////////////////////////////////////////////////////
 
 // Gamemode manager screen of the main menu.
-class gamemode_manager_state : public main_menu_state {
+class gamemode_manager_state final : public main_menu_state {
   public:
 	// Creates a gamemode manager state.
 	gamemode_manager_state(std::shared_ptr<playerless_game> game, animate_title animate_title);
@@ -186,7 +186,7 @@ struct edited_gamemode_editor_data {
 using gamemode_editor_data = std::variant<new_gamemode_editor_data, cloned_gamemode_editor_data, edited_gamemode_editor_data>;
 
 // Gamemode editor screens of the main menu.
-class gamemode_editor_state : public main_menu_state {
+class gamemode_editor_state final : public main_menu_state {
   public:
 	// Creates a gamemode editor state coming from a test game.
 	gamemode_editor_state(gamemode_editor_data data, gamemode gamemode);
@@ -233,7 +233,7 @@ class gamemode_editor_state : public main_menu_state {
 //////////////////////////////////////////////////////// BALL SETTINGS EDITOR STATE ///////////////////////////////////////////////////////
 
 // Ball settings editor screen of the gamemode designer menu.
-class ball_settings_editor_state : public main_menu_state {
+class ball_settings_editor_state final : public main_menu_state {
   public:
 	// Creates a ball settings editor state.
 	ball_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode);
@@ -264,7 +264,7 @@ class ball_settings_editor_state : public main_menu_state {
 /////////////////////////////////////////////////////// PLAYER SETTINGS EDITOR STATE //////////////////////////////////////////////////////
 
 // Player settings editor screen of the gamemode designer menu.
-class player_settings_editor_state : public main_menu_state {
+class player_settings_editor_state final : public main_menu_state {
   public:
 	// Creates a player settings editor state.
 	player_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode);
@@ -305,7 +305,7 @@ enum class gamemode_selector_type {
 };
 
 // Gamemode selector screens of the main menu.
-class gamemode_selector_state : public main_menu_state {
+class gamemode_selector_state final : public main_menu_state {
   public:
 	// Creates a gamemode selector state.
 	gamemode_selector_state(std::shared_ptr<playerless_game> game, gamemode_selector_type type, animate_subtitle move_subtitle);
@@ -348,7 +348,7 @@ class gamemode_selector_state : public main_menu_state {
 //////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////
 
 // Scoreboard selection screen of the main menu.
-class scoreboard_selection_state : public main_menu_state {
+class scoreboard_selection_state final : public main_menu_state {
   public:
 	// Creates a scoreboard selection state.
 	scoreboard_selection_state(std::shared_ptr<playerless_game> game, animate_title animate_title);
@@ -381,7 +381,7 @@ enum class scoreboard {
 };
 
 // Scoreboard screens of the main menu.
-class scoreboard_state : public main_menu_state {
+class scoreboard_state final : public main_menu_state {
   public:
 	// Creates a scoreboard state.
 	scoreboard_state(std::shared_ptr<playerless_game> game, scoreboard scoreboard);
@@ -422,7 +422,7 @@ class scoreboard_state : public main_menu_state {
 ////////////////////////////////////////////////////////////// REPLAYS STATE //////////////////////////////////////////////////////////////
 
 // Replay screen of the main menu.
-class replays_state : public main_menu_state {
+class replays_state final : public main_menu_state {
   public:
 	// Creates a replays state returning from a replay.
 	replays_state();
@@ -476,7 +476,7 @@ class replays_state : public main_menu_state {
 ////////////////////////////////////////////////////////////// SETTINGS STATE /////////////////////////////////////////////////////////////
 
 // Settings screen of the main menu.
-class settings_state : public main_menu_state {
+class settings_state final : public main_menu_state {
   public:
 	// Creates a settings state when entering from the title screen.
 	settings_state(std::shared_ptr<playerless_game> game);
@@ -507,7 +507,7 @@ class settings_state : public main_menu_state {
 ////////////////////////////////////////////////////////////// CREDITS STATE //////////////////////////////////////////////////////////////
 
 // Credits screen of the main menu.
-class credits_state : public main_menu_state {
+class credits_state final : public main_menu_state {
   public:
 	// Creates a credits state when entering from the title screen.
 	credits_state(std::shared_ptr<playerless_game> game);
@@ -549,7 +549,7 @@ enum class fade_in : bool {
 };
 
 // Ongoing game state.
-class game_state : public state {
+class game_state final : public state {
   public:
 	// Creates a new game state.
 	game_state(std::shared_ptr<game> game, game_state_data data, fade_in fade_in);
@@ -615,7 +615,7 @@ enum class blur_in : bool {
 };
 
 // Pause screen state.
-class pause_state : public game_menu_state {
+class pause_state final : public game_menu_state {
   public:
 	// Creates a test game pause state.
 	pause_state(std::shared_ptr<game> game, game_state_data data, glm::vec2 mouse_pos, blur_in blur_in);
@@ -669,7 +669,7 @@ class pause_state : public game_menu_state {
 ///////////////////////////////////////////////////////////// GAME OVER STATE /////////////////////////////////////////////////////////////
 
 // Game over screen state.
-class game_over_state : public game_menu_state {
+class game_over_state final : public game_menu_state {
   public:
 	// Creates a game over state.
 	game_over_state(std::shared_ptr<game> game, blur_in blur_in);
@@ -725,7 +725,7 @@ enum class save_screen_flags : u8 {
 DEFINE_BITMASK_OPERATORS(save_screen_flags);
 
 // Score saving screen of the pause and game over menus.
-class save_score_state : public game_menu_state {
+class save_score_state final : public game_menu_state {
   public:
 	// Creates a save score state coming from the pause screen.
 	save_score_state(std::shared_ptr<game> game, glm::vec2 mouse_pos, save_screen_flags flags);
@@ -770,7 +770,7 @@ class save_score_state : public game_menu_state {
 //////////////////////////////////////////////////////////// SAVE REPLAY STATE ////////////////////////////////////////////////////////////
 
 // Replay saving screen of the pause and game over menus.
-class save_replay_state : public game_menu_state {
+class save_replay_state final : public game_menu_state {
   public:
 	// Creates the save replay state.
 	save_replay_state(std::shared_ptr<game> game, save_screen_flags flags);
