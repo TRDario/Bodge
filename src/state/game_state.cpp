@@ -179,7 +179,8 @@ void game_state::set_song_speed_if_needed(float speed)
 void game_state::add_replay_cursor_to_renderer(glm::vec2 pos) const
 {
 	constexpr glm::vec2 SIZE{12, 2};
-	const tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+	const tr::rgb8 base_color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+	const tr::rgba8 color{base_color.r, base_color.g, base_color.b, 160};
 
 	tr::gfx::simple_color_mesh_ref quad{g_renderer->basic.new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(quad.positions, pos, SIZE / 2.0f, SIZE, 45_deg);
