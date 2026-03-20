@@ -4,8 +4,8 @@
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "../../include/text_engine.hpp"
 #include "../../include/renderer.hpp"
+#include "../../include/text_engine.hpp"
 
 ///////////////////////////////////////////////////////////// TOOLTIP MANAGER /////////////////////////////////////////////////////////////
 
@@ -14,11 +14,12 @@ tooltip_manager::tooltip_manager(tr::gfx::renderer_2d& basic)
 	basic.set_default_layer_texture(layer::TOOLTIP, m_texture);
 }
 
-void tooltip_manager::render_text(std::string_view text)
+void tooltip_manager::render_text(std::string_view text_string)
 {
-	const tr::bitmap render{g_text_engine.render_text(text, g_text_engine.determine_font(text), tr::sys::ttf_style::NORMAL, 20, 0, 800)};
-	m_last_text = text;
-	m_last_size = g_text_engine.text_size(text, g_text_engine.determine_font(text), tr::sys::ttf_style::NORMAL, 20, 0, 800);
+	const text text{text_string, g_text_engine.determine_font(text_string), tr::sys::ttf_style::NORMAL, 20, 0, 800};
+	const tr::bitmap render{g_text_engine.render_text(text)};
+	m_last_text = text_string;
+	m_last_size = g_text_engine.text_size(text);
 	const glm::vec2 scaled_last_size{m_last_size * g_renderer->scale()};
 
 	if (m_texture.size().x < scaled_last_size.x || m_texture.size().y < scaled_last_size.y) {
@@ -29,10 +30,10 @@ void tooltip_manager::render_text(std::string_view text)
 	m_texture.set_region({}, render.sub({{}, scaled_last_size}));
 }
 
-void tooltip_manager::add(std::string_view text)
+void tooltip_manager::add(std::string_view text_string)
 {
-	if (m_last_text != text) {
-		render_text(text);
+	if (m_last_text != text_string) {
+		render_text(text_string);
 	}
 
 	constexpr float BORDER{2};

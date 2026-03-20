@@ -59,7 +59,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 
 	const status_callback scb{[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }};
 	const status_callback save_scb{[this] {
-		return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(T_NAME_INPUT).buffer.empty();
+		return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty();
 	}};
 
 	// ACTION CALLBACKS
@@ -67,8 +67,8 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 	const action_callback name_acb{[this] { m_ui.select_next_widget(); }};
 	const action_callback save_acb{[this] {
 		const score_flags flags{!m_game->game_over(), g_cli_settings.game_speed != 1.0f};
-		const auto& description{m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).buffer};
-		const auto& name{m_ui.as<line_input_widget<20>>("name_input").buffer};
+		const std::string_view description{m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).contents()};
+		const std::string_view name{m_ui.as<line_input_widget<20>>("name_input").contents()};
 		active_game& game{(active_game&)*m_game};
 
 		m_substate = substate_base::EXITING | to_flags(m_substate);
@@ -98,7 +98,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 	// TOOLTIP CALLBACKS
 
 	const text_callback save_ttcb{[this] {
-		return m_ui.as<line_input_widget<20>>(T_NAME_INPUT).buffer.empty() ? std::string{g_loc["save_replay_tt"]} : std::string{};
+		return m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty() ? std::string{g_loc["save_replay_tt"]} : std::string{};
 	}};
 
 	//

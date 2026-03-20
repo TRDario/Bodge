@@ -129,8 +129,16 @@ text_widget::text_widget(tweened_position pos, tr::align alignment, ticks unhide
 	, m_max_width{max_width}
 	, m_text_cb{text_cb}
 	, m_last_text{text_cb()}
-	, m_cache{g_text_engine.render_text(m_last_text, g_text_engine.determine_font(m_last_text, m_font), m_style, m_font_size,
-										m_font_size / 12, m_max_width, tr::halign::CENTER)}
+	, m_cache{g_text_engine.render_text(
+		  text{
+			  m_last_text,
+			  g_text_engine.determine_font(m_last_text, m_font),
+			  m_style,
+			  m_font_size,
+			  m_font_size / 12,
+			  float(m_max_width),
+		  },
+		  tr::halign::CENTER)}
 	, m_last_size{tr::get<tr::bitmap>(m_cache).size()}
 {
 }
@@ -160,10 +168,11 @@ void text_widget::add_to_renderer_raw(tr::rgba8 tint)
 
 void text_widget::update_cache() const
 {
-	std::string text{m_text_cb()};
-	if (std::holds_alternative<std::monostate>(m_cache) || m_last_text != text) {
-		const tr::bitmap render{g_text_engine.render_text(text, g_text_engine.determine_font(text, m_font), m_style, m_font_size,
-														  m_font_size / 12, m_max_width, tr::halign::CENTER)};
+	std::string text_string{m_text_cb()};
+	if (std::holds_alternative<std::monostate>(m_cache) || m_last_text != text_string) {
+		const font font{g_text_engine.determine_font(text_string, m_font)};
+		const text text{text_string, font, m_style, m_font_size, m_font_size / 12, float(m_max_width)};
+		const tr::bitmap render{g_text_engine.render_text(text, tr::halign::CENTER)};
 		if (!std::holds_alternative<tr::gfx::texture>(m_cache) || cache_too_small(tr::get<tr::gfx::texture>(m_cache), render)) {
 			m_cache = tr::gfx::texture{render};
 			TR_SET_LABEL(tr::get<tr::gfx::texture>(m_cache), TR_FMT::format("(Bodge) Widget texture"));
@@ -174,7 +183,7 @@ void text_widget::update_cache() const
 			texture.set_region({}, render);
 		}
 		m_last_size = render.size();
-		m_last_text = std::move(text);
+		m_last_text = std::move(text_string);
 	}
 	else if (std::holds_alternative<tr::bitmap>(m_cache)) {
 		const tr::bitmap render{std::move(tr::get<tr::bitmap>(m_cache))};

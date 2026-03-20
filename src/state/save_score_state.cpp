@@ -80,7 +80,7 @@ save_score_state::save_score_state(std::shared_ptr<game> game, save_screen_flags
 tr::next_state save_score_state::tick()
 {
 	game_menu_state::tick();
-	m_score.description = m_ui.as<multiline_input_widget<255>>(T_INPUT).buffer;
+	m_score.description = m_ui.as<multiline_input_widget<255>>(T_INPUT).contents();
 	switch (to_base(m_substate)) {
 	case substate_base::SAVING_SCORE:
 		return tr::KEEP_STATE;

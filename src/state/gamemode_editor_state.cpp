@@ -143,7 +143,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		[this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
 	};
 	const status_callback save_scb{
-		[this] { return m_substate == substate::IN_GAMEMODE_EDITOR && !m_ui.as<line_input_widget<12>>(T_NAME).buffer.empty(); },
+		[this] { return m_substate == substate::IN_GAMEMODE_EDITOR && !m_ui.as<line_input_widget<12>>(T_NAME).contents().empty(); },
 	};
 
 	// ACTION CALLBACKS
@@ -158,8 +158,8 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		[this] {
 			m_substate = substate::EXITING;
 			m_elapsed = 0;
-			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).contents();
+			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 			set_up_exit_animation(animate_title::NO, animate_subtitle::YES);
 			m_next_state = make_async<ball_settings_editor_state>(m_game, m_data, m_pending);
 		},
@@ -168,8 +168,8 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		[this] {
 			m_substate = substate::EXITING;
 			m_elapsed = 0;
-			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).contents();
+			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 			set_up_exit_animation(animate_title::NO, animate_subtitle::YES);
 			m_next_state = make_async<player_settings_editor_state>(m_game, m_data, m_pending);
 		},
@@ -187,8 +187,8 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		[this] {
 			m_substate = substate::ENTERING_TEST_GAME;
 			m_elapsed = 0;
-			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).contents();
+			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 			set_up_exit_animation(animate_title::YES, animate_subtitle::YES);
 			g_audio.fade_song_out(0.5s);
 			m_next_state = make_game_state_async<active_game>(test_game_data{m_data}, m_pending);
@@ -196,8 +196,8 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		[this] {
 			m_substate = substate::EXITING;
 			m_elapsed = 0;
-			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).contents();
+			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 			switch (m_data.index()) {
 			case tr::type_index<new_gamemode_editor_data, gamemode_editor_data>:
 				g_new_gamemode_draft = gamemode{};
@@ -221,8 +221,8 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		[this] {
 			m_substate = substate::EXITING;
 			m_elapsed = 0;
-			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).buffer;
-			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).buffer;
+			m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).contents();
+			m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 			switch (m_data.index()) {
 			case tr::type_index<new_gamemode_editor_data, gamemode_editor_data>:
 				g_new_gamemode_draft = m_pending;
@@ -250,9 +250,9 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 
 	// TOOLTIP CALLBACKS
 
-	const text_callback save_ttcb{
-		[this] { return m_ui.as<line_input_widget<12>>(T_NAME).buffer.empty() ? std::string{g_loc["save_gamemode_tt"]} : std::string{}; },
-	};
+	const text_callback save_ttcb{[this] {
+		return m_ui.as<line_input_widget<12>>(T_NAME).contents().empty() ? std::string{g_loc["save_gamemode_tt"]} : std::string{};
+	}};
 
 	//
 

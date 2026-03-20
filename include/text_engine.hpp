@@ -21,6 +21,22 @@ enum class font : u8 {
 	LANGUAGE_PREVIEW
 };
 
+// Text string passed along with its visual properties.
+struct text {
+	// The text string.
+	std::string_view string;
+	// The font of the text.
+	font font;
+	// The font style of the text.
+	tr::sys::ttf_style style;
+	// The font size of the text.
+	float size;
+	// The thickness of the outline of the text.
+	float outline;
+	// The maximum width of a line of the text or UNLIMITED_WIDTH.
+	float max_width{tr::sys::UNLIMITED_WIDTH};
+};
+
 // Text engine class.
 inline class text_engine {
   public:
@@ -38,14 +54,11 @@ inline class text_engine {
 	// Gets the line skip for a certain size of a certain font.
 	float line_skip(font font, float size);
 	// Determines the size of a string of text when drawn.
-	glm::vec2 text_size(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline,
-						float max_w = tr::sys::UNLIMITED_WIDTH);
+	glm::vec2 text_size(const text& text);
 	// Counts the number of lines in a string of text.
-	usize count_lines(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline,
-					  float max_w = tr::sys::UNLIMITED_WIDTH);
+	usize count_lines(const text& text);
 	// Renders a string of text.
-	tr::bitmap render_text(std::string_view text, font font, tr::sys::ttf_style style, float size, float outline,
-						   float max_w = tr::sys::UNLIMITED_WIDTH, tr::halign align = tr::halign::LEFT);
+	tr::bitmap render_text(const text& text, tr::halign align = tr::halign::LEFT);
 	// Renders a gradient-shaded glyph.
 	tr::bitmap render_gradient_glyph(u32 glyph, font font, tr::sys::ttf_style style, float size, float outline);
 

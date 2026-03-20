@@ -190,9 +190,74 @@ class text_widget : public widget {
 	void add_to_renderer_raw(tr::rgba8 tint);
 };
 
+//////////////////////////////////////////////////////////// TEXT INPUT WIDGET ////////////////////////////////////////////////////////////
+
+// Must be initialized before text_widget, so is separated out into its own struct.
+template <usize BufferSize> struct input_buffer {
+	// Text input buffer.
+	tr::static_string<BufferSize> m_buffer;
+};
+
+// Base text input widget class.
+template <usize BufferSize> class text_input_widget : protected input_buffer<BufferSize>, public text_widget {
+  public:
+	// Creates a line input widget.
+	text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size, int width,
+					  status_callback status_cb, std::string_view initial_text = {});
+	// Creates a line input widget with a custom text callback.
+	text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size, int width,
+					  status_callback status_cb, text_callback text_cb);
+
+	// Gets whether the widget is interactible (delegates to the status callback).
+	bool interactible() const override;
+	// Gets whether the widget is writable (always true).
+	bool writable() const override;
+
+	// Function executed when the widget is clicked or activated with enter.
+	void on_action() override;
+	// Function executed when the widget is hovered.
+	void on_hover() override;
+	// Function executed when the widget is unhovered.
+	void on_unhover() override;
+	// Function executed when the widget is held.
+	void on_held() override;
+	// Function executed when the widget is unheld.
+	void on_unheld() override;
+	// Function executed when the widget is selected.
+	void on_selected() override;
+	// Function executed when the widget is unselected.
+	void on_unselected() override;
+	// Function executed when erasing from the widget.
+	void on_erase() override;
+	// Function executed when clearing the widget.
+	void on_clear() override;
+	// Function executed when copying from the widget.
+	void on_copy() override;
+
+	// Updates the widget.
+	void tick() override;
+
+  protected:
+	// Callback used to determine whether the input is interactible.
+	status_callback m_scb;
+	// The tint of the input.
+	tweened_color m_tint;
+	// Flag denoting whether the input is currently hovered over.
+	bool m_hovered;
+	// Flag denoting whether the input is currently held.
+	bool m_held;
+	// Flag denoting whether the input is currently selected.
+	bool m_selected;
+
+	// Gets the text of the input widget.
+	text text() const;
+};
+
 ///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
 
 template <usize S> std::string buffer_text_callback<S>::operator()() const
 {
 	return buffer.empty() ? std::string{g_loc["empty"]} : std::string{buffer};
 }
+
+#include "text_input_widget_impl.hpp" // IWYU pragma: keep

@@ -17,7 +17,7 @@ struct blur_renderer {
 	// Gets the render target corresponding to the input of the renderer.
 	tr::gfx::render_target input();
 
-	// Draws the blurred version of the image last renderered onto input.
+	// Draws the blurred version of the image last renderered onto input to the backbuffer.
 	void draw(float saturation, float strength);
 
   private:

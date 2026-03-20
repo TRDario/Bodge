@@ -38,13 +38,13 @@ name_entry_state::name_entry_state()
 
 	const status_callback input_scb{[this] { return m_substate != substate::EXITING; }};
 	const status_callback confirm_scb{
-		[this] { return m_substate != substate::EXITING && !m_ui.as<line_input_widget<20>>(T_INPUT).buffer.empty(); },
+		[this] { return m_substate != substate::EXITING && !m_ui.as<line_input_widget<20>>(T_INPUT).contents().empty(); },
 	};
 
 	// ACTION CALLBACKS
 
 	const action_callback action_cb{[this] {
-		const tr::static_string<80>& name{m_ui.as<line_input_widget<20>>(T_INPUT).buffer};
+		const std::string_view name{m_ui.as<line_input_widget<20>>(T_INPUT).contents()};
 		if (!name.empty()) {
 			m_elapsed = 0;
 			m_substate = substate::EXITING;

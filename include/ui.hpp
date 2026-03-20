@@ -1,21 +1,22 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                                       //
 // Widget hierarchy:                                                                                                                     //
-// • widget                               - Base widget interface.                                                                       //
-//     • text_widget                      - Base text widget interface.                                                                  //
-//         • label_widget                 - Displays text.                                                                               //
-//         • text_button_widget           - Interactive labeled button.                                                                  //
-//             • gamemode_widget          - Displays a gamemode's name, interactive.                                                     //
-//             • replay_widget            - Displays replay information, interactive.                                                    //
-//         • basic_numeric_input_widget   - Takes numeric input.                                                                         //
-//         • line_input_widget            - Takes text input on a single line.                                                           //
-//         • multiline_input_widget       - Takes text input across multiple lines.                                                      //
-//         • score_widget                 - Displays score information.                                                                  //
-//     • image_widget                     - Displays an image.                                                                           //
-//     • color_preview_widget             - Displays a hue.                                                                              //
-//     • arrow_widget                     - Interactive left or right arrow button.                                                      //
-//     • player_skin_preview_widget       - Displays a player skin.                                                                      //
-//     • replay_playback_indicator_widget - Displays a playback speed indicator (<, >, >>).                                              //
+// • widget                                 - Base widget interface.                                                                     //
+//     • text_widget                        - Base text widget interface.                                                                //
+//         • label_widget                   - Displays text.                                                                             //
+//         • text_button_widget             - Interactive labeled button.                                                                //
+//             • gamemode_widget            - Displays a gamemode's name, interactive.                                                   //
+//             • replay_widget              - Displays replay information, interactive.                                                  //
+//         • text_input_widget              - Base text input widget interface.                                                          //
+//             • basic_numeric_input_widget - Takes numeric input.                                                                       //
+//             • line_input_widget          - Takes text input on a single line.                                                         //
+//             • multiline_input_widget     - Takes text input across multiple lines.                                                    //
+//         • score_widget                   - Displays score information.                                                                //
+//     • image_widget                       - Displays an image.                                                                         //
+//     • color_preview_widget               - Displays a hue.                                                                            //
+//     • arrow_widget                       - Interactive left or right arrow button.                                                    //
+//     • player_skin_preview_widget         - Displays a player skin.                                                                    //
+//     • replay_playback_indicator_widget   - Displays a playback speed indicator (<, >, >>).                                            //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

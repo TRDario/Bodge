@@ -90,51 +90,24 @@ class text_button_widget : public text_widget {
 /////////////////////////////////////////////////////////// NUMERIC INPUT WIDGET //////////////////////////////////////////////////////////
 
 // Must be initialized before text_widget, so is separated out into its own struct.
-template <class T, usize S> struct basic_numeric_input_widget_data {
+template <class T> struct basic_numeric_input_widget_data {
 	// Reference to the UI manager.
 	ui_manager& m_ui;
 	// Reference to the variable the input is for.
 	T& m_ref;
-	// Buffer to write into.
-	tr::static_string<S> m_buffer;
-	// Callback used to determine whether the input is interactible.
-	status_callback m_scb;
 	// Callback used to validate the value after input is finished.
 	validation_callback<T> m_vcb;
-	// The tint of the input.
-	tweened_color m_tint;
-	// Flag denoting whether the input is currently hovered over.
-	bool m_hovered;
-	// Flag denoting whether the input is currently held.
-	bool m_held;
-	// Flag denoting whether the input is currently selected.
-	bool m_selected;
 };
 
 // Widget used to input a numeric value.
 // Formatter is a class with static members from_string() (string -> value) and to_string() (value/string_view -> string).
 template <class T, usize Digits, class Formatter>
-class basic_numeric_input_widget final : private basic_numeric_input_widget_data<T, Digits>, public text_widget {
+class basic_numeric_input_widget final : private basic_numeric_input_widget_data<T>, public text_input_widget<Digits> {
   public:
 	// Creates a numeric input widget.
 	basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
 							   status_callback status_cb, validation_callback<T> validation_cb);
 
-	// Gets whether the widget is interactible (delegates to the status callback).
-	bool interactible() const override;
-	// Gets whether the widget is writable (always true).
-	bool writable() const override;
-
-	// Function executed when the widget is clicked or activated with enter.
-	void on_action() override;
-	// Function executed when the widget is hovered.
-	void on_hover() override;
-	// Function executed when the widget is unhovered.
-	void on_unhover() override;
-	// Function executed when the widget is held.
-	void on_held() override;
-	// Function executed when the widget is unheld.
-	void on_unheld() override;
 	// Function executed when the widget is selected.
 	void on_selected() override;
 	// Function executed when the widget is unselected.
@@ -148,8 +121,6 @@ class basic_numeric_input_widget final : private basic_numeric_input_widget_data
 	// Function executed when clearing the widget.
 	void on_clear() override;
 
-	// Updates the widget.
-	void tick() override;
 	// Adds the widget to the renderer.
 	void add_to_renderer() override;
 };
@@ -181,135 +152,64 @@ template <usize Digits> using interval_input_widget = basic_numeric_input_widget
 
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
-// Must be initialized before text_widget, so is separated out into its own struct.
-template <usize S> struct input_buffer {
-	// Text input buffer.
-	tr::static_string<S * 4> buffer;
-};
-
 // Widget used to input a line of text.
-template <usize S> class line_input_widget final : public input_buffer<S>, public text_widget {
+template <usize MaxChars> class line_input_widget final : public text_input_widget<MaxChars * 4> {
   public:
 	// Creates a line input widget.
 	line_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size,
 					  status_callback status_cb, action_callback enter_cb, std::string_view initial_text = {});
 
-	// Gets whether the widget is interactible (delegates to the status callback).
-	bool interactible() const override;
-	// Gets whether the widget is writable (always true).
-	bool writable() const override;
+	// Gets the contents of the widget.
+	std::string_view contents() const;
 
-	// Function executed when the widget is clicked or activated with enter.
-	void on_action() override;
-	// Function executed when the widget is hovered.
-	void on_hover() override;
-	// Function executed when the widget is unhovered.
-	void on_unhover() override;
-	// Function executed when the widget is held.
-	void on_held() override;
-	// Function executed when the widget is unheld.
-	void on_unheld() override;
-	// Function executed when the widget is selected.
-	void on_selected() override;
-	// Function executed when the widget is unselected.
-	void on_unselected() override;
 	// Function executed when writing to the widget.
 	void on_write(std::string_view input) override;
 	// Function executed when pressing enter on the widget.
 	void on_enter() override;
-	// Function executed when erasing from the widget.
-	void on_erase() override;
-	// Function executed when clearing the widget.
-	void on_clear() override;
-	// Function executed when copying from the widget.
-	void on_copy() override;
 	// Function executed when pasting to the widget.
 	void on_paste() override;
 
-	// Updates the widget.
-	void tick() override;
 	// Adds the widget to the renderer.
 	void add_to_renderer() override;
 
   private:
-	// Callback used to determine whether the input is interactible.
-	status_callback m_scb;
 	// Function called when enter is pressed while the widget is selected.
 	action_callback m_enter_cb;
-	// The tint of the input.
-	tweened_color m_tint;
-	// Flag denoting whether the input is currently hovered over.
-	bool m_hovered;
-	// Flag denoting whether the input is currently held.
-	bool m_held;
-	// Flag denoting whether the input is currently selected.
-	bool m_selected;
 };
 
 ////////////////////////////////////////////////////////// MULTILINE INPUT WIDGET /////////////////////////////////////////////////////////
 
 // Widget used to input multiple lines of text.
-template <usize S> class multiline_input_widget final : public input_buffer<S>, public text_widget {
+template <usize MaxChars> class multiline_input_widget final : public text_input_widget<MaxChars * 4> {
   public:
 	// Creates a multiline input widget.
 	multiline_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float width, u8 max_lines, float font_size,
 						   status_callback status_cb);
 
+	// Gets the contents of the widget.
+	std::string_view contents() const;
+
 	// Gets the size of the widget.
 	glm::vec2 size() const override;
 
-	// Gets whether the widget is interactible (delegates to the status callback).
-	bool interactible() const override;
-	// Gets whether the widget is writable (always true).
-	bool writable() const override;
-
-	// Function executed when the widget is clicked or activated with enter.
-	void on_action() override;
-	// Function executed when the widget is hovered.
-	void on_hover() override;
-	// Function executed when the widget is unhovered.
-	void on_unhover() override;
-	// Function executed when the widget is held.
-	void on_held() override;
-	// Function executed when the widget is unheld.
-	void on_unheld() override;
-	// Function executed when the widget is selected.
-	void on_selected() override;
-	// Function executed when the widget is unselected.
-	void on_unselected() override;
 	// Function executed when writing to the widget.
 	void on_write(std::string_view input) override;
 	// Function executed when pressing enter on the widget.
 	void on_enter() override;
-	// Function executed when erasing from the widget.
-	void on_erase() override;
-	// Function executed when clearing the widget.
-	void on_clear() override;
-	// Function executed when copying from the widget.
-	void on_copy() override;
 	// Function executed when pasting to the widget.
 	void on_paste() override;
 
-	// Updates the widget.
-	void tick() override;
 	// Adds the widget to the renderer.
 	void add_to_renderer() override;
 
   private:
-	// Callback used to determine whether the input is interactible.
-	status_callback m_scb;
+	// The thickness of the outline of the widget.
+	static constexpr float OUTLINE_THICKNESS{2.0f};
+
 	// Size of the input box.
 	glm::vec2 m_size;
 	// Maximum allowed number of lines in the input.
 	u8 m_max_lines;
-	// The tint of the input.
-	tweened_color m_tint;
-	// Flag denoting whether the input is currently hovered over.
-	bool m_hovered;
-	// Flag denoting whether the input is currently held.
-	bool m_held;
-	// Flag denoting whether the input is currently selected.
-	bool m_selected;
 };
 
 /////////////////////////////////////////////////////////////// IMAGE WIDGET //////////////////////////////////////////////////////////////
