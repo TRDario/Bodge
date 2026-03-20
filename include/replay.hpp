@@ -2,6 +2,11 @@
 //                                                                                                                                       //
 // Provides replay structures and functions relating to them.                                                                            //
 //                                                                                                                                       //
+// Replays are loaded from replay files (a binary format) in <USER DIRECTORY>/replays which essentially contain a list of player inputs. //
+// They are very sensitive to desynchronisation because all the actual game logic is repeated on the viewing side, and even something    //
+// like compiling with the wrong compiler may return in miniscule gameplay differences that end up messing with replay playback.         //
+// All official builds of Bodge are compiled with Clang 20 to ensure replay coherency across operating systems and some versions.        //
+//                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once

@@ -66,9 +66,9 @@ class text_button_widget : public text_widget {
 
   private:
 	// Callback used to determine whether the button is interactible.
-	status_callback m_scb;
+	status_callback m_status_cb;
 	// Action executed when the button is interacted with.
-	action_callback m_acb;
+	action_callback m_action_cb;
 	// The sound played when the button is interacted with.
 	sound m_action_sound;
 
@@ -93,10 +93,10 @@ class text_button_widget : public text_widget {
 template <class T> struct basic_numeric_input_widget_data {
 	// Reference to the UI manager.
 	ui_manager& m_ui;
-	// Reference to the variable the input is for.
-	T& m_ref;
+	// Reference to the variable the widget is bound to.
+	T& m_bound_variable;
 	// Callback used to validate the value after input is finished.
-	validation_callback<T> m_vcb;
+	validation_callback<T> m_validation_cb;
 };
 
 // Widget used to input a numeric value.
@@ -116,10 +116,6 @@ class basic_numeric_input_widget final : private basic_numeric_input_widget_data
 	void on_write(std::string_view input) override;
 	// Function executed when pressing enter on the widget.
 	void on_enter() override;
-	// Function executed when erasing from the widget.
-	void on_erase() override;
-	// Function executed when clearing the widget.
-	void on_clear() override;
 
 	// Adds the widget to the renderer.
 	void add_to_renderer() override;
@@ -333,9 +329,9 @@ class arrow_widget final : public widget {
 
   protected:
 	// Callback used to determine whether the arrow is interactible.
-	status_callback m_scb;
+	status_callback m_status_cb;
 	// Action executed when the arrow is interacted with.
-	action_callback m_acb;
+	action_callback m_action_cb;
 	// The tint of the arrow.
 	tweened_color m_tint;
 	// The orientation of the arrow.

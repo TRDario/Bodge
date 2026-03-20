@@ -114,6 +114,6 @@ template <class T, class... Ts>
 std::future<tr::next_state> make_async(Ts... args)
 	requires(std::constructible_from<T, Ts...>)
 {
-	constexpr auto ctor{[](auto... args) { return (tr::next_state)std::make_unique<T>(std::move(args)...); }};
-	return std::async(std::launch::async, ctor, std::move(args)...);
+	constexpr auto constructor{[](auto... args) { return (tr::next_state)std::make_unique<T>(std::move(args)...); }};
+	return std::async(std::launch::async, constructor, std::move(args)...);
 }

@@ -2,6 +2,10 @@
 //                                                                                                                                       //
 // Provides settings structures and functionality.                                                                                       //
 //                                                                                                                                       //
+// Command-line settings are parsed on program start-up and are used for advanced settings that most players will never need to change.  //
+//                                                                                                                                       //
+// Regular settings are loaded from and saved to <USER DIRECTORY>/settings.dat (a binary file) and are modifiable in-game.               //
+//                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once

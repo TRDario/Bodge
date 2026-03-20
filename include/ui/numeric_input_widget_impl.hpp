@@ -54,7 +54,7 @@ basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(twe
 				  }
 			  }
 			  else {
-				  return Formatter::to_string(this->m_ref);
+				  return Formatter::to_string(this->m_bound_variable);
 			  }
 		  },
 	  }
@@ -76,9 +76,9 @@ template <class T, usize Digits, class Formatter> void basic_numeric_input_widge
 	text_input_widget<Digits>::on_unselected();
 	if (this->interactible()) {
 		// Promote small integers to int so writing e.g. '435' clamps nicely to '255' instead of failing.
-		std::common_type_t<T, int> temp{this->m_ref};
-		Formatter::from_string(temp, this->m_buffer);
-		this->m_ref = this->m_vcb(temp);
+		std::common_type_t<T, int> raw_value{this->m_bound_variable};
+		Formatter::from_string(raw_value, this->m_buffer);
+		this->m_bound_variable = this->m_validation_cb(raw_value);
 	}
 }
 
@@ -94,20 +94,6 @@ template <class T, usize Digits, class Formatter> void basic_numeric_input_widge
 {
 	this->m_ui.clear_selection();
 	g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
-}
-
-template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_erase()
-{
-	if (!this->m_buffer.empty()) {
-		this->m_buffer.pop_back();
-		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
-	}
-}
-
-template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_clear()
-{
-	this->m_buffer.clear();
-	g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 }
 
 //

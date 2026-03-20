@@ -2,6 +2,8 @@
 //                                                                                                                                       //
 // Provides score structures and scorefile functionality.                                                                                //
 //                                                                                                                                       //
+// The scorefile is loaded from and saved to <USER DIRECTORY>/scorefile.dat (a binary file) and contains all player data.                //
+//                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once

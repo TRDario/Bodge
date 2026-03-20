@@ -76,6 +76,7 @@ void player_skin_preview_widget::add_to_renderer()
 		const tr::gfx::simple_color_mesh_ref fill{g_renderer->basic.new_color_fan(layer::UI, 6)};
 		tr::fill_regular_polygon_vertices(fill.positions, circle, m_rotation);
 		std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, color.a});
+
 		const tr::gfx::simple_color_mesh_ref outline{g_renderer->basic.new_color_outline(layer::UI, 6)};
 		tr::fill_regular_polygon_outline_vertices(outline.positions, circle, m_rotation, 4.0f);
 		std::fill_n(outline.colors.begin(), 6, color);

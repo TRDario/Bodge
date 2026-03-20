@@ -37,6 +37,10 @@ using namespace tr::matrix_operators;
 using namespace tr::sys::keyboard_literals;
 
 ///////////////////////////////////////////////////////////////// TICKRATE ////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// The game logic runs at a fixed rate of 240hz. This section deals with converting time to ticks and vice versa.                        //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Atomic unit of time used by the game simulation and UI.
 using ticks = u32;
@@ -65,6 +69,10 @@ std::string format_playtime(ticks playtime);
 std::string format_timestamp(i64 timestamp);
 
 /////////////////////////////////////////////////////////// GRAPHICAL CONSTANTS ///////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Common colors, transformation, and mesh data.                                                                                         //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Commonly-used yellow.
 inline constexpr tr::rgba8 YELLOW{"FFFF00C0"_rgba8};
@@ -97,6 +105,10 @@ inline constexpr float FIELD_MIN{FIELD_BORDER_THICKNESS};
 inline constexpr float FIELD_MAX{1000 - FIELD_BORDER_THICKNESS};
 
 /////////////////////////////////////////////////////////////// UI CONSTANTS //////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// A few common positions for UI elements.                                                                                               //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Starting position for elements on the top of the screen.
 inline constexpr glm::vec2 TOP_START_POS{500, -50};
@@ -107,6 +119,10 @@ inline constexpr glm::vec2 BOTTOM_START_POS{500, 1050};
 inline constexpr glm::vec2 TITLE_POS{500, 0};
 
 ////////////////////////////////////////////////////////////////// INPUT //////////////////////////////////////////////////////////////////
+//                                                                                                                                       //
+// Globals storing input state and helper functions.                                                                                     //
+//                                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // The held keyboard modifiers.
 inline tr::sys::keymod g_held_keymods{tr::sys::keymod::NONE};
@@ -177,13 +193,5 @@ consteval ticks beats_bpm(int beats, int bpm)
 
 template <class T> T keymods_choose(T min, T mid, T max)
 {
-	if (g_held_keymods & tr::sys::keymod::CTRL) {
-		return max;
-	}
-	else if (g_held_keymods & tr::sys::keymod::SHIFT) {
-		return mid;
-	}
-	else {
-		return min;
-	}
+	return g_held_keymods & tr::sys::keymod::CTRL ? max : g_held_keymods & tr::sys::keymod::SHIFT ? mid : min;
 }

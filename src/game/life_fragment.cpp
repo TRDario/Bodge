@@ -34,7 +34,7 @@ bool life_fragment::collected() const
 
 const tr::circle life_fragment::hitbox() const
 {
-	return {m_pos, LIFE_FRAGMENT_LENGTH};
+	return {m_position, LIFE_FRAGMENT_LENGTH};
 }
 
 void life_fragment::set_collected()
@@ -45,10 +45,10 @@ void life_fragment::set_collected()
 
 void life_fragment::respawn(tr::xorshiftr_128p& rng, const tr::frect2& region)
 {
-	m_pos = {rng.generate(std::max(region.tl.x, LIFE_FRAGMENT_MIN_POS), std::min(region.tl.x + region.size.x, LIFE_FRAGMENT_MAX_POS)),
-			 rng.generate(std::max(region.tl.y, LIFE_FRAGMENT_MIN_POS), std::min(region.tl.y + region.size.y, LIFE_FRAGMENT_MAX_POS))};
-	m_rot = rng.generate_angle();
-	m_rotvel = rng.generate(0.4_deg, 0.75_deg) * rng.generate_sign();
+	m_position = {rng.generate(std::max(region.tl.x, LIFE_FRAGMENT_MIN_POS), std::min(region.tl.x + region.size.x, LIFE_FRAGMENT_MAX_POS)),
+				  rng.generate(std::max(region.tl.y, LIFE_FRAGMENT_MIN_POS), std::min(region.tl.y + region.size.y, LIFE_FRAGMENT_MAX_POS))};
+	m_rotation = rng.generate_angle();
+	m_angular_velocity = rng.generate(0.4_deg, 0.75_deg) * rng.generate_sign();
 	m_state = state::COLLECTIBLE;
 	m_elapsed = 0;
 }
@@ -61,14 +61,14 @@ void life_fragment::tick()
 	case state::INACTIVE_COLLECTED:
 		break;
 	case state::COLLECTIBLE:
-		m_rot += m_rotvel * std::clamp(1.0f / (m_elapsed / float(LIFE_FRAGMENT_SPAWN_ANIMATION_TIME)), 1.0f, 5.0f);
+		m_rotation += m_angular_velocity * std::clamp(1.0f / (m_elapsed / float(LIFE_FRAGMENT_SPAWN_ANIMATION_TIME)), 1.0f, 5.0f);
 		if (m_elapsed >= LIFE_FRAGMENT_DURATION) {
 			m_state = state::INACTIVE;
 			m_elapsed = 0;
 		}
 		break;
 	case state::COLLECTED:
-		m_rot += m_rotvel * std::clamp(1.0f / m_elapsed * LIFE_FRAGMENT_SPAWN_ANIMATION_TIME, 1.0f, 2.5f);
+		m_rotation += m_angular_velocity * std::clamp(1.0f / m_elapsed * LIFE_FRAGMENT_SPAWN_ANIMATION_TIME, 1.0f, 2.5f);
 		if (m_elapsed >= LIFE_FRAGMENT_COLLECTION_ANIMATION_TIME) {
 			m_state = state::INACTIVE_COLLECTED;
 			m_elapsed = 0;
@@ -116,7 +116,7 @@ void life_fragment::add_to_renderer() const
 	}
 
 	const tr::gfx::simple_color_mesh_ref mesh{g_renderer->basic.new_color_fan(layer::LIFE_FRAGMENTS, 4)};
-	tr::fill_rectangle_vertices(mesh.positions, m_pos, size / 2.0f, size, m_rot);
+	tr::fill_rectangle_vertices(mesh.positions, m_position, size / 2.0f, size, m_rotation);
 	std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 }
 
@@ -127,7 +127,7 @@ void life_fragment::add_pulse_to_renderer(tr::rgb8 color) const
 	const u8 opacity{tr::norm_cast<u8>(std::max(0.75f - std::sqrt(0.75f * t), 0.0f))};
 
 	if (opacity > 0 && scale > 0) {
-		g_renderer->circle.add_circle_outline(layer::LIFE_FRAGMENTS, {m_pos, scale}, 2, tr::rgba8{color, opacity});
+		g_renderer->circle.add_circle_outline(layer::LIFE_FRAGMENTS, {m_position, scale}, 2, tr::rgba8{color, opacity});
 	}
 }
 
@@ -138,6 +138,6 @@ void life_fragment::add_spawn_wave_to_renderer(tr::rgb8 color) const
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t))};
 
 	if (opacity > 0 && scale > 0) {
-		g_renderer->circle.add_circle_outline(layer::LIFE_FRAGMENTS, {m_pos, scale}, 2, tr::rgba8{color, opacity});
+		g_renderer->circle.add_circle_outline(layer::LIFE_FRAGMENTS, {m_position, scale}, 2, tr::rgba8{color, opacity});
 	}
 }

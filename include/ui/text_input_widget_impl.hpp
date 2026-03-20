@@ -15,8 +15,8 @@ text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align a
 											   float font_size, int width, status_callback status_cb, std::string_view initial_text)
 	: input_buffer<MaxChars>{initial_text}
 	, text_widget{pos, alignment, unhide_time, NO_TOOLTIP, buffer_text_callback{this->m_buffer}, font::LANGUAGE, style, font_size, width}
-	, m_scb{std::move(status_cb)}
-	, m_tint{m_scb() ? GRAY : DISABLED_GRAY}
+	, m_status_cb{std::move(status_cb)}
+	, m_tint{m_status_cb() ? GRAY : DISABLED_GRAY}
 	, m_hovered{false}
 	, m_held{false}
 	, m_selected{false}
@@ -28,8 +28,8 @@ text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align a
 											   float font_size, int width, status_callback status_cb, text_callback text_cb)
 	: input_buffer<MaxChars>{}
 	, text_widget{pos, alignment, unhide_time, NO_TOOLTIP, std::move(text_cb), font::LANGUAGE, style, font_size, width}
-	, m_scb{std::move(status_cb)}
-	, m_tint{m_scb() ? GRAY : DISABLED_GRAY}
+	, m_status_cb{std::move(status_cb)}
+	, m_tint{m_status_cb() ? GRAY : DISABLED_GRAY}
 	, m_hovered{false}
 	, m_held{false}
 	, m_selected{false}
@@ -68,7 +68,7 @@ template <usize MaxChars> void text_input_widget<MaxChars>::tick()
 
 template <usize MaxChars> bool text_input_widget<MaxChars>::interactible() const
 {
-	return m_scb();
+	return m_status_cb();
 }
 
 template <usize MaxChars> bool text_input_widget<MaxChars>::writable() const

@@ -2,6 +2,8 @@
 //                                                                                                                                       //
 // Provides gamemode structures and functions relating to them.                                                                          //
 //                                                                                                                                       //
+// Custom gamemodes are loaded from gamemode files (a binary format) in <USER DIRECTORY>/gamemodes.                                      //
+//                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once

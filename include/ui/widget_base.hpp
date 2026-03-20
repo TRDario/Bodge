@@ -239,7 +239,7 @@ template <usize BufferSize> class text_input_widget : protected input_buffer<Buf
 
   protected:
 	// Callback used to determine whether the input is interactible.
-	status_callback m_scb;
+	status_callback m_status_cb;
 	// The tint of the input.
 	tweened_color m_tint;
 	// Flag denoting whether the input is currently hovered over.

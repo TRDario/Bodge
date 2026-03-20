@@ -55,11 +55,11 @@ class life_fragment {
 	};
 
 	// The position of the fragment.
-	glm::vec2 m_pos{};
+	glm::vec2 m_position{};
 	// The rotation of the fragment.
-	tr::angle m_rot{};
+	tr::angle m_rotation{};
 	// The angular velocity of the fragment.
-	tr::angle m_rotvel{};
+	tr::angle m_angular_velocity{};
 	// The current state of the fragment.
 	state m_state{state::INACTIVE};
 	// Time elapsed since the current state began.
