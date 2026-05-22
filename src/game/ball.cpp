@@ -169,15 +169,16 @@ void handle_collision(ball& a, ball& b)
 {
 	const glm::vec2 dist_vec{a.m_hitbox.c - b.m_hitbox.c};
 	const glm::vec2 vel_diff{a.m_velocity - b.m_velocity};
-	const glm::vec2 dist2{dist_vec.x * dist_vec.x + dist_vec.y * dist_vec.y};
+	const float dist2{dist_vec.x * dist_vec.x + dist_vec.y * dist_vec.y};
+	const glm::vec2 impulse_vec{glm::dot(dist_vec, vel_diff) / dist2 * dist_vec};
 	const float a_mass{a.m_hitbox.r};
 	const float b_mass{b.m_hitbox.r};
 	const float total_mass{a_mass + b_mass};
 
 	play_ball_sound(b.m_hitbox.c + dist_vec / 2.0f, std::max(glm::length(a.m_velocity), glm::length(b.m_velocity)));
 
-	a.m_velocity -= ((2 * b_mass / total_mass) * (glm::dot(dist_vec, vel_diff) / dist2) * dist_vec);
-	b.m_velocity -= ((2 * a_mass / total_mass) * (glm::dot(-dist_vec, -vel_diff) / dist2) * -dist_vec);
+	a.m_velocity -= 2 * b_mass / total_mass * impulse_vec;
+	b.m_velocity -= 2 * a_mass / total_mass * -impulse_vec;
 
 	a.m_time_since_last_collision = 0;
 	b.m_time_since_last_collision = 0;
