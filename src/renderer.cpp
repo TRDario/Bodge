@@ -33,7 +33,7 @@ renderer::renderer()
 	: screen{setup_screen()}, circle{scale()}, blur{screen.size().x}, tooltip{basic}
 {
 	if (g_cli_settings.show_perf) {
-		extra.emplace();
+		m_extra.emplace();
 	}
 
 	basic.set_default_transform(TRANSFORM);
@@ -110,4 +110,39 @@ void renderer::draw_cursor()
 	std::ranges::fill(quad.colors, color);
 
 	basic.draw(screen);
+}
+
+//
+
+void renderer::start_benchmark()
+{
+	if (m_extra.has_value()) {
+		m_extra->benchmark.start();
+	}
+}
+
+void renderer::stop_benchmark()
+{
+	if (m_extra.has_value()) {
+		m_extra->benchmark.stop();
+	}
+}
+
+void renderer::fetch_benchmark()
+{
+	if (m_extra.has_value()) {
+		m_extra->benchmark.fetch();
+	}
+}
+
+void renderer::draw_benchmarks()
+{
+	if (m_extra.has_value()) {
+		m_extra->debug.write_right(g_state_machine.tick_benchmark(), "Tick:", 1.0s / 1_s);
+		m_extra->debug.newline_right();
+		m_extra->debug.write_right(g_state_machine.draw_benchmark(), "Render (CPU):", 1.0s / g_cli_settings.refresh_rate);
+		m_extra->debug.newline_right();
+		m_extra->debug.write_right(g_renderer->m_extra->benchmark, "Render (GPU):", 1.0s / g_cli_settings.refresh_rate);
+		m_extra->debug.draw();
+	}
 }

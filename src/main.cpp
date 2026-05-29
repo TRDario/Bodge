@@ -78,33 +78,23 @@ tr::sys::signal initialize()
 
 tr::sys::signal handle_event(tr::sys::event& event)
 {
-	if (event.is<tr::sys::quit_event>()) {
-		g_state_machine.clear();
-	}
-	else if (event.is<tr::sys::window_gain_focus_event>()) {
-		tr::sys::set_mouse_relative_mode(true);
-	}
-	else if (event.is<tr::sys::window_lose_focus_event>()) {
-		tr::sys::set_mouse_relative_mode(false);
-	}
-	else if (event.is<tr::sys::key_down_event>()) {
-		g_held_keymods = event.as<tr::sys::key_down_event>().mods;
-	}
-	else if (event.is<tr::sys::key_up_event>()) {
-		g_held_keymods = event.as<tr::sys::key_up_event>().mods;
-	}
-	else if (event.is<tr::sys::mouse_motion_event>() && tr::sys::window_has_focus()) {
-		const float multiplier{g_settings.mouse_sensitivity / 100.0f / g_renderer->scale() * tr::sys::window_pixel_density()};
-		const glm::vec2 delta{event.as<tr::sys::mouse_motion_event>().delta * multiplier};
-		g_mouse_pos = glm::clamp(g_mouse_pos + delta, 0.0f, 1000.0f);
-	}
-	else if (event.is<tr::sys::mouse_down_event>()) {
-		g_held_buttons |= event.as<tr::sys::mouse_down_event>().button;
-	}
-	else if (event.is<tr::sys::mouse_up_event>()) {
-		g_held_buttons &= ~event.as<tr::sys::mouse_up_event>().button;
-	}
-
+	event | tr::match{
+				[](tr::sys::quit_event) { g_state_machine.clear(); },
+				[](tr::sys::window_gain_focus_event) { tr::sys::set_mouse_relative_mode(true); },
+				[](tr::sys::window_lose_focus_event) { tr::sys::set_mouse_relative_mode(false); },
+				[](tr::one_of<tr::sys::key_down_event, tr::sys::key_up_event> auto event) { g_held_keymods = event.mods; },
+				[](tr::sys::mouse_motion_event event) {
+					if (tr::sys::window_has_focus()) {
+						const float scale{g_renderer->scale() * tr::sys::window_pixel_density()};
+						const float multiplier{g_settings.mouse_sensitivity / 100.0f / scale};
+						const glm::vec2 delta{event.delta * multiplier};
+						g_mouse_pos = glm::clamp(g_mouse_pos + delta, 0.0f, 1000.0f);
+					}
+				},
+				[](tr::sys::mouse_down_event event) { g_held_buttons |= event.button; },
+				[](tr::sys::mouse_up_event event) { g_held_buttons &= ~event.button; },
+				[](auto) {},
+			};
 	g_state_machine.handle_event(event);
 	return !g_state_machine.empty() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
 }
@@ -117,27 +107,14 @@ tr::sys::signal tick()
 
 tr::sys::signal draw()
 {
-	if (g_cli_settings.show_perf) {
-		g_renderer->extra->benchmark.start();
-	}
+	g_renderer->start_benchmark();
 	g_state_machine.draw();
 	g_renderer->draw_cursor();
-	if (g_cli_settings.show_perf) {
-		g_renderer->extra->debug.write_right(g_state_machine.tick_benchmark(), "Tick:", 1.0s / 1_s);
-		g_renderer->extra->debug.newline_right();
-		g_renderer->extra->debug.write_right(g_state_machine.draw_benchmark(), "Render (CPU):", 1.0s / g_cli_settings.refresh_rate);
-		g_renderer->extra->debug.newline_right();
-		g_renderer->extra->debug.write_right(g_renderer->extra->benchmark, "Render (GPU):", 1.0s / g_cli_settings.refresh_rate);
-		g_renderer->extra->debug.draw();
-	}
-	if (g_cli_settings.show_perf) {
-		g_renderer->extra->benchmark.stop();
-	}
+	g_renderer->draw_benchmarks();
+	g_renderer->stop_benchmark();
 	tr::gfx::flip_backbuffer();
 	tr::gfx::clear_backbuffer();
-	if (g_cli_settings.show_perf) {
-		g_renderer->extra->benchmark.fetch();
-	}
+	g_renderer->fetch_benchmark();
 	return tr::sys::signal::CONTINUE;
 }
 

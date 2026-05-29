@@ -28,16 +28,9 @@ enum layer {
 	CURSOR
 };
 
-// Extra renderer components.
-struct renderer_extra {
-	// Debug renderer for displaying performance statistics.
-	tr::gfx::debug_renderer debug;
-	// GPU benchmark measuring drawing performance.
-	tr::gfx::gpu_benchmark benchmark;
-};
-
 // Rendering subsystem.
-struct renderer {
+class renderer {
+  public:
 	// The screen rendering target.
 	const tr::gfx::render_target screen;
 
@@ -45,8 +38,6 @@ struct renderer {
 	tr::gfx::renderer_2d basic;
 	// Circle renderer.
 	tr::gfx::circle_renderer circle;
-	// Optional extra components.
-	std::optional<renderer_extra> extra;
 	// Blur renderer.
 	blur_renderer blur;
 	// Tooltip manager.
@@ -70,6 +61,27 @@ struct renderer {
 	void draw_layers(const tr::gfx::render_target& target);
 	// Draws the cursor.
 	void draw_cursor();
+
+	// Marks the start of frame rendering.
+	void start_benchmark();
+	// Marks the end of frame rendering.
+	void stop_benchmark();
+	// Fetches a benchmark.
+	void fetch_benchmark();
+	// Draws tick and render benchmarks.
+	void draw_benchmarks();
+
+  private:
+	// Extra renderer components.
+	struct extra {
+		// Debug renderer for displaying performance statistics.
+		tr::gfx::debug_renderer debug;
+		// GPU benchmark measuring drawing performance.
+		tr::gfx::gpu_benchmark benchmark;
+	};
+
+	// Optional extra components.
+	std::optional<extra> m_extra;
 };
 // Global renderer.
 inline std::optional<renderer> g_renderer;
