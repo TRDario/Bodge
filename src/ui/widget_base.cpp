@@ -173,22 +173,25 @@ void text_widget::update_cache() const
 		const font font{g_text_engine.determine_font(text_string, m_font)};
 		const text text{text_string, font, m_style, m_font_size, m_font_size / 12, float(m_max_width)};
 		const tr::bitmap render{g_text_engine.render_text(text, tr::halign::CENTER)};
-		if (!std::holds_alternative<tr::gfx::texture>(m_cache) || cache_too_small(tr::get<tr::gfx::texture>(m_cache), render)) {
-			m_cache = tr::gfx::texture{render};
-			TR_SET_LABEL(tr::get<tr::gfx::texture>(m_cache), TR_FMT::format("(Bodge) Widget texture"));
+		tr::gfx::texture* const cache_texture{std::get_if<tr::gfx::texture>(&m_cache)};
+		if (cache_texture == nullptr || cache_too_small(*cache_texture, render)) {
+			tr::gfx::texture& texture{m_cache.emplace<tr::gfx::texture>(render)};
+			TR_SET_LABEL(texture, TR_FMT::format("(Bodge) Widget texture"));
 		}
 		else {
-			tr::gfx::texture& texture{tr::get<tr::gfx::texture>(m_cache)};
-			texture.clear({});
-			texture.set_region({}, render);
+			cache_texture->clear({});
+			cache_texture->set_region({}, render);
 		}
 		m_last_size = render.size();
 		m_last_text = std::move(text_string);
 	}
-	else if (std::holds_alternative<tr::bitmap>(m_cache)) {
-		const tr::bitmap render{std::move(tr::get<tr::bitmap>(m_cache))};
-		m_cache = tr::gfx::texture{render};
-		TR_SET_LABEL(tr::get<tr::gfx::texture>(m_cache), TR_FMT::format("(Bodge) Widget texture"));
+	else {
+		tr::bitmap* const cache_bitmap{std::get_if<tr::bitmap>(&m_cache)};
+		if (cache_bitmap != nullptr) {
+			const tr::bitmap source{std::move(*cache_bitmap)};
+			tr::gfx::texture& texture{m_cache.emplace<tr::gfx::texture>(source)};
+			TR_SET_LABEL(texture, TR_FMT::format("(Bodge) Widget texture"));
+		}
 	}
 }
 

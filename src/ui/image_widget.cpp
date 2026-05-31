@@ -34,11 +34,11 @@ glm::vec2 image_widget::size() const
 
 void image_widget::add_to_renderer()
 {
-	if (std::holds_alternative<tr::bitmap>(m_texture)) {
-		const tr::bitmap source{tr::get<tr::bitmap>(m_texture)};
-		tr::gfx::texture texture{source, true};
+	tr::bitmap* const texture_bitmap{std::get_if<tr::bitmap>(&m_texture)};
+	if (texture_bitmap != nullptr) {
+		const tr::bitmap source{std::move(*texture_bitmap)};
+		tr::gfx::texture& texture{m_texture.emplace<tr::gfx::texture>(source)};
 		texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
-		m_texture = std::move(texture);
 	}
 
 	tr::rgba8 color{255, 255, 255, 255};

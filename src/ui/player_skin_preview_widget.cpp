@@ -56,14 +56,16 @@ void player_skin_preview_widget::tick()
 
 void player_skin_preview_widget::add_to_renderer()
 {
-	if (std::holds_alternative<tr::bitmap>(m_skin)) {
-		tr::gfx::texture texture{tr::get<tr::bitmap>(m_skin), true};
+	tr::bitmap* const skin_bitmap{std::get_if<tr::bitmap>(&m_skin)};
+	if (skin_bitmap != nullptr) {
+		const tr::bitmap source{std::move(*skin_bitmap)};
+		tr::gfx::texture& texture{m_skin.emplace<tr::gfx::texture>(source, true)};
 		texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
-		m_skin = std::move(texture);
 	}
 
-	if (std::holds_alternative<tr::gfx::texture>(m_skin)) {
-		const tr::gfx::simple_textured_mesh_ref skin{g_renderer->basic.new_textured_fan(layer::UI, 4, std::get<tr::gfx::texture>(m_skin))};
+	tr::gfx::texture* const skin_texture{std::get_if<tr::gfx::texture>(&m_skin)};
+	if (skin_texture != nullptr) {
+		const tr::gfx::simple_textured_mesh_ref skin{g_renderer->basic.new_textured_fan(layer::UI, 4, *skin_texture)};
 		tr::fill_rectangle_vertices(skin.positions.begin(), tl() + 24.0f, glm::vec2{24}, glm::vec2{48}, m_rotation);
 		tr::fill_rectangle_vertices(skin.uvs.begin(), {{0, 0}, {1, 1}});
 		std::ranges::fill(skin.tints, tr::rgba8{255, 255, 255, tr::norm_cast<u8>(opacity())});

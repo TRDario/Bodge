@@ -630,8 +630,9 @@ void game::add_score_to_renderer() const
 
 void game::add_to_renderer() const
 {
-	if (std::holds_alternative<tr::gfx::bitmap_atlas<char>>(m_number_atlas)) {
-		tr::gfx::bitmap_atlas<char> source{tr::get<tr::gfx::bitmap_atlas<char>>(m_number_atlas)};
+	tr::gfx::bitmap_atlas<char>* const number_atlas_bitmap{std::get_if<tr::gfx::bitmap_atlas<char>>(&m_number_atlas)};
+	if (number_atlas_bitmap != nullptr) {
+		tr::gfx::bitmap_atlas<char> source{std::move(*number_atlas_bitmap)};
 		tr::gfx::dyn_atlas<char>& atlas{m_number_atlas.emplace<tr::gfx::dyn_atlas<char>>(std::move(source))};
 		atlas.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
 		g_renderer->basic.set_default_layer_texture(layer::GAME_OVERLAY, atlas);
