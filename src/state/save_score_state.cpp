@@ -142,30 +142,21 @@ void save_score_state::set_up_ui()
 		24,
 		[this] { return to_base(m_substate) == substate_base::SAVING_SCORE; }
 	);
-	m_ui.emplace<text_button_widget>(T_SAVE,
-		tweened_position{BOTTOM_START_POS, {500, 950}, 0.5_s},
-		tr::align::BOTTOM_CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_SAVE},
-		font::LANGUAGE,
-		48,
-		[this] { return to_base(m_substate) == substate_base::SAVING_SCORE; },
-		[this] { on_save(); },
-		sound::CONFIRM
-	);
-	m_ui.emplace<text_button_widget>(T_CANCEL,
-		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
-		tr::align::BOTTOM_CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_CANCEL},
-		font::LANGUAGE,
-		48,
-		[this] { return to_base(m_substate) == substate_base::SAVING_SCORE; },
-		[this] { on_cancel(); },
-		sound::CANCEL
-	);
+	m_ui.emplace<text_button_widget>(T_SAVE, {
+		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = localized_text{T_SAVE},
+		.status = [this] { return to_base(m_substate) == substate_base::SAVING_SCORE; },
+		.action = [this] { on_save(); }
+	});
+	m_ui.emplace<text_button_widget>(T_CANCEL, {
+		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = localized_text{T_CANCEL},
+		.status = [this] { return to_base(m_substate) == substate_base::SAVING_SCORE; },
+		.action = [this] { on_cancel(); },
+		.action_sound = sound::CANCEL
+	});
 	// clang-format on
 }
 

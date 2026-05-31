@@ -51,42 +51,29 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 		.text = constant_text{g_scorefile.format_player_info()},
 		.font_size = 32
 	});
-	m_ui.emplace<text_button_widget>(T_EXIT,
-		bool(animate_title) ? tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s} : tweened_position{{500, 1000}},
-		tr::align::BOTTOM_CENTER,
-		bool(animate_title) ? 0.5_s : 0_s,
-		NO_TOOLTIP,
-		localized_text{T_EXIT},
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
-		[this] { on_exit(); },
-		sound::CANCEL
-	);
-	m_ui.emplace<text_button_widget>(T_VIEW_TIMES,
-		tweened_position{{400, 450}, {500, 450}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_VIEW_TIMES},
-		font::LANGUAGE,
-		64,
-		[this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
-		[this] { on_view_times(); },
-		sound::CONFIRM
-	);
-	m_ui.emplace<text_button_widget>(T_VIEW_SCORES,
-		tweened_position{{600, 550}, {500, 550}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_VIEW_SCORES},
-		font::LANGUAGE,
-		64,
-		[this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
-		[this] { on_view_scores(); },
-		sound::CONFIRM
-	);
+	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.animation = bool(animate_title) ? tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s} : tweened_position{{500, 1000}},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,
+		.text = localized_text{T_EXIT},
+		.status = [this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
+		.action = [this] { on_exit(); },
+		.action_sound = sound::CANCEL
+	});
+	m_ui.emplace<text_button_widget>(T_VIEW_TIMES, {
+		.animation = {{400, 450}, {500, 450}, 0.5_s},
+		.text = localized_text{T_VIEW_TIMES},
+		.font_size = 64,
+		.status = [this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
+		.action = [this] { on_view_times(); }
+	});
+	m_ui.emplace<text_button_widget>(T_VIEW_SCORES, {
+		.animation = {{600, 550}, {500, 550}, 0.5_s},
+		.text = localized_text{T_VIEW_SCORES},
+		.font_size = 64,
+		.status = [this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
+		.action = [this] { on_view_scores(); }
+	});
 	// clang-format on
 }
 

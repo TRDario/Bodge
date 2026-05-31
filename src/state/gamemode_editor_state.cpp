@@ -226,46 +226,31 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		[this] { m_ui.clear_selection(); },
 		m_pending.description
 	);
-	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS,
-		tweened_position{{600, 450}, {500, 450}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_BALL_SETTINGS}, 
-		font::LANGUAGE,
-		64,
-		[this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
-		[this] { on_enter_ball_settings(); },
-		sound::CONFIRM
-	);
-	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS,
-		tweened_position{{400, 550}, {500, 550}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_PLAYER_SETTINGS},
-		font::LANGUAGE,
-		64,
-		[this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
-		[this] { on_enter_player_settings(); },
-		sound::CONFIRM
-	);
+	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, {
+		.animation = {{600, 450}, {500, 450}, 0.5_s},
+		.text = localized_text{T_BALL_SETTINGS}, 
+		.font_size = 64,
+		.status = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
+		.action = [this] { on_enter_ball_settings(); }
+	});
+	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, {
+		.animation = {{400, 550}, {500, 550}, 0.5_s},
+		.text = localized_text{T_PLAYER_SETTINGS},
+		.font_size = 64,
+		.status = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
+		.action = [this] { on_enter_player_settings(); }
+	});
 	m_ui.emplace<label_widget>(T_SONG, {
 		.animation = {{600, 650}, {500, 650}, 0.5_s},
 		.text = localized_text{T_SONG}
 	});
-	m_ui.emplace<text_button_widget>(T_SONG_C,
-		tweened_position{{400, 700}, {500, 700}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		[this] { return std::string{m_pending.song}; },
-		font::LANGUAGE,
-		64,
-		[this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
-		[this] { on_change_song(); },
-		sound::CONFIRM
-	);
+	m_ui.emplace<text_button_widget>(T_SONG_C, {
+		.animation = {{400, 700}, {500, 700}, 0.5_s},
+		.text = [this] { return std::string{m_pending.song}; },
+		.font_size = 64,
+		.status = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
+		.action = [this] { on_change_song(); }
+	});
 
 	struct bottom_button_parameters {
 		text_command tooltip_text;
@@ -288,18 +273,15 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		 .sound = sound::CANCEL}
 	}};
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
-		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i],
-			tweened_position{BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s},
-			tr::align::BOTTOM_CENTER,
-			0.5_s,
-			bottom_button_parameters[i].tooltip_text,
-			localized_text{BOTTOM_BUTTONS[i]},
-			font::LANGUAGE,
-			48,
-			bottom_button_parameters[i].status_command,
-			bottom_button_parameters[i].action_command,
-			bottom_button_parameters[i].sound
-		);
+		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], {
+			.animation = {BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s},
+			.alignment = tr::align::BOTTOM_CENTER,
+			.tooltip_text = bottom_button_parameters[i].tooltip_text,
+			.text = localized_text{BOTTOM_BUTTONS[i]},
+			.status = bottom_button_parameters[i].status_command,
+			.action = bottom_button_parameters[i].action_command,
+			.action_sound = bottom_button_parameters[i].sound
+		});
 	}
 	// clang-format on
 }

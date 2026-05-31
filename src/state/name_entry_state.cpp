@@ -46,18 +46,14 @@ name_entry_state::name_entry_state()
 		[this] { return m_substate != substate::EXITING; },
 		[this] { on_exit(); }
 	);
-	m_ui.emplace<text_button_widget>(T_CONFIRM,
-		tweened_position{BOTTOM_START_POS, {500, 1000}, 1.0_s},
-		tr::align::BOTTOM_CENTER,
-		1.0_s,
-		NO_TOOLTIP,
-		localized_text{T_CONFIRM},
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate != substate::EXITING && !m_ui.as<line_input_widget<20>>(T_INPUT).contents().empty(); },
-		[this] { on_exit(); },
-		sound::CONFIRM
-	);
+	m_ui.emplace<text_button_widget>(T_CONFIRM, {
+		.animation = {BOTTOM_START_POS, {500, 1000}, 1.0_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.unhide_time = 1.0_s,
+		.text = localized_text{T_CONFIRM},
+		.status = [this] { return m_substate != substate::EXITING && !m_ui.as<line_input_widget<20>>(T_INPUT).contents().empty(); },
+		.action = [this] { on_exit(); }
+	});
 	// clang-format on
 
 	m_ui.select_widget(T_INPUT);

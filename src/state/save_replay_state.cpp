@@ -73,34 +73,25 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 		24,
 		[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }
 	);
-	m_ui.emplace<text_button_widget>(T_SAVE,
-		tweened_position{BOTTOM_START_POS, {500, 950}, 0.5_s},
-		tr::align::BOTTOM_CENTER,
-		0.5_s,
-		[this] {
+	m_ui.emplace<text_button_widget>(T_SAVE, {
+		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.tooltip_text = [this] {
 			return m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty() ? std::string{g_loc["save_replay_tt"]} : std::string{};
 		},
-		localized_text{T_SAVE},
-		font::LANGUAGE,
-		48,
-		[this] {
+		.text = localized_text{T_SAVE},
+		.status = [this] {
 			return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty();
 		},
-		[this] { on_save(); },
-		sound::CONFIRM
-	);
-	m_ui.emplace<text_button_widget>(T_DISCARD,
-		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
-		tr::align::BOTTOM_CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_DISCARD},
-		font::LANGUAGE,
-		48,
-		[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; },
-		[this] { on_discard(); },
-		sound::CONFIRM
-	);
+		.action = [this] { on_save(); }
+	});
+	m_ui.emplace<text_button_widget>(T_DISCARD, {
+		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = localized_text{T_DISCARD},
+		.status = [this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; },
+		.action = [this] { on_discard(); }
+	});
 	// clang-format on
 }
 

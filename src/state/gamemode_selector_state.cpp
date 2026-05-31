@@ -177,18 +177,14 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<playerless_game
 		.text = std::visit([](const auto& selector) { return selector.subtitle_text(); }, m_selector),
 		.font_size = 32
 	});
-	m_ui.emplace<text_button_widget>(T_EXIT,
-		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
-		tr::align::BOTTOM_CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_EXIT},
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate == substate::IN_GAMEMODE_SELECTOR; },
-		[this] { on_exit(); },
-		sound::CANCEL
-	);
+	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = localized_text{T_EXIT},
+		.status = [this] { return m_substate == substate::IN_GAMEMODE_SELECTOR; },
+		.action = [this] { on_exit(); },
+		.action_sound = sound::CANCEL
+	});
 	if (m_gamemodes.empty()) {
 		m_ui.emplace<label_widget>(T_NO_GAMEMODES_FOUND, {
 			.animation = tweened_position{{600, 467}, {500, 467}, 0.5_s},

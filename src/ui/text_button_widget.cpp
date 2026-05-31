@@ -8,21 +8,13 @@
 
 //////////////////////////////////////////////////////////// TEXT BUTTON WIDGET ///////////////////////////////////////////////////////////
 
-text_button_widget::text_button_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_command tooltip_text,
-									   text_command text, font font, float font_size, status_command status_command,
-									   action_command action_command, sound action_sound)
-	: text_widget{pos,
-				  alignment,
-				  unhide_time,
-				  std::move(tooltip_text),
-				  std::move(text),
-				  font,
-				  tr::sys::ttf_style::NORMAL,
-				  font_size,
+text_button_widget::text_button_widget(properties&& properties)
+	: text_widget{properties.animation,       properties.alignment, properties.unhide_time,     std::move(properties.tooltip_text),
+				  std::move(properties.text), properties.font,      tr::sys::ttf_style::NORMAL, properties.font_size,
 				  tr::sys::UNLIMITED_WIDTH}
-	, m_status{std::move(status_command)}
-	, m_action{std::move(action_command)}
-	, m_action_sound{action_sound}
+	, m_status{std::move(properties.status)}
+	, m_action{std::move(properties.action)}
+	, m_action_sound{properties.action_sound}
 	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
 	, m_hovered{false}
 	, m_held{false}

@@ -56,9 +56,34 @@ class label_widget final : public text_widget {
 // Text widget that can be interacted with as a button.
 class text_button_widget : public text_widget {
   public:
+	// Text button properties.
+	struct properties {
+		// Initial position (or animation) of the button.
+		tweened_position animation;
+		// Alignment of the button.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the button.
+		ticks unhide_time{0.5_s};
+		// Command used to fetch the tooltip text of the button.
+		text_command tooltip_text{NO_TOOLTIP};
+		// Command used to fetch the text of the button.
+		text_command text;
+		// Font of the button.
+		font font{font::LANGUAGE};
+		// Font style of the button.
+		tr::sys::ttf_style font_style{tr::sys::ttf_style::NORMAL};
+		// Font size of the button.
+		float font_size{48};
+		// Command used to query the status of the button.
+		status_command status;
+		// Command called when the button is pressed.
+		action_command action;
+		// Sound played during an action.
+		sound action_sound{sound::CONFIRM};
+	};
+
 	// Creates a text button widget.
-	text_button_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_command tooltip_text, text_command text,
-					   font font, float font_size, status_command status_command, action_command action_command, sound action_sound);
+	text_button_widget(properties&& properties);
 
 	// Gets whether the widget is interactible (delegates to the status command).
 	bool interactible() const override;

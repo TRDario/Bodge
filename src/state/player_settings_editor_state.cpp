@@ -121,18 +121,12 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives < 255; },
 		.action = [&sl = m_pending.player.starting_lives] { sl = u8(std::min(sl + keymods_choose(1, 5, 10), 255)); }
 	});
-	m_ui.emplace<text_button_widget>(T_SPAWN_LIFE_FRAGMENTS_C,
-		tweened_position{SPAWN_LIFE_FRAGMENTS_START_POS, {875.5f, SPAWN_LIFE_FRAGMENTS_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		[&slf = m_pending.player.spawn_life_fragments] { return std::string{g_loc[slf ? "on" : "off"]}; },
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[this] { on_toggle_life_fragments(); },
-		sound::CONFIRM
-	);
+	m_ui.emplace<text_button_widget>(T_SPAWN_LIFE_FRAGMENTS_C, {
+		.animation = {SPAWN_LIFE_FRAGMENTS_START_POS, {875.5f, SPAWN_LIFE_FRAGMENTS_START_POS.y}, 0.5_s},
+		.text = [&slf = m_pending.player.spawn_life_fragments] { return std::string{g_loc[slf ? "on" : "off"]}; },
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.action = [this] { on_toggle_life_fragments(); }
+	});
 	m_ui.emplace<arrow_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_D, {
 		.animation = {LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {765, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
@@ -215,17 +209,14 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		});
 	}
 
-	m_ui.emplace<text_button_widget>(T_EXIT,
-		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
-		tr::align::BOTTOM_CENTER,
-		0.5_s,
-		NO_TOOLTIP, localized_text{T_EXIT},
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[this] { on_exit(); },
-		sound::CANCEL
-	);
+	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = localized_text{T_EXIT},
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.action = [this] { on_exit(); },
+		.action_sound = sound::CANCEL
+	});
 	// clang-format on
 }
 

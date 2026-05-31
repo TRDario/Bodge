@@ -38,10 +38,11 @@ class ui_manager {
 	// Gets access to a widget in the interface.
 	template <class T> T& as(tag tag);
 
-	// Emplaces a new widget into the interface.
+	// Emplaces a new widget into the interface (TO BE REMOVED).
 	template <class T, class... Args>
 		requires(std::constructible_from<T, Args...>)
 	T& emplace(tag tag, Args&&... args);
+	// Emplaces a new widget into the interface.
 	template <class T, class... Args>
 		requires(requires { typename T::properties; })
 	T& emplace(tag tag, typename T::properties&& properties);

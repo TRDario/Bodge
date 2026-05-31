@@ -163,18 +163,15 @@ void title_state::set_up_ui()
 	for (usize i = 0; i < BUTTONS.size(); ++i) {
 		const glm::vec2 end_pos{990 - 25 * i, 965 - (BUTTONS.size() - i - 1) * 50};
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(35.0f, 75.0f)};
-		m_ui.emplace<text_button_widget>(BUTTONS[i],
-			tweened_position{{end_pos.x + offset, end_pos.y}, end_pos, 1_s},
-			tr::align::CENTER_RIGHT,
-			1_s,
-			NO_TOOLTIP,
-			localized_text{BUTTONS[i]},
-			font::LANGUAGE,
-			48,
-			[this] { return m_substate == substate::IN_TITLE || m_substate == substate::FADING_IN; },
-			button_parameters[i].action,
-			button_parameters[i].sound
-		);
+		m_ui.emplace<text_button_widget>(BUTTONS[i], {
+			.animation = {{end_pos.x + offset, end_pos.y}, end_pos, 1_s},
+			.alignment = tr::align::CENTER_RIGHT,
+			.unhide_time = 1_s,
+			.text = localized_text{BUTTONS[i]},
+			.status = [this] { return m_substate == substate::IN_TITLE || m_substate == substate::FADING_IN; },
+			.action = button_parameters[i].action,
+			.action_sound = button_parameters[i].sound
+		});
 	}
 	// clang-format on
 }

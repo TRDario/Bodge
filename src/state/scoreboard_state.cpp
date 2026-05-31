@@ -95,18 +95,15 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		.text = constant_text{g_scorefile.format_player_info()},
 		.font_size = 32
 	});
-	m_ui.emplace<text_button_widget>(T_EXIT,
-		glm::vec2{500, 1000},
-		tr::align::BOTTOM_CENTER,
-		0,
-		NO_TOOLTIP,
-		localized_text{T_EXIT},
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate == substate::IN_SCOREBOARD; },
-		[this] { on_exit(); },
-		sound::CANCEL
-	);
+	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.animation = {{500, 1000}},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.unhide_time = 0_s,
+		.text = localized_text{T_EXIT},
+		.status = [this] { return m_substate == substate::IN_SCOREBOARD; },
+		.action = [this] { on_exit(); },
+		.action_sound = sound::CANCEL
+	});
 
 	if (g_scorefile.categories.empty()) {
 		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, {

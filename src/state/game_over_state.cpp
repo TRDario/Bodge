@@ -107,19 +107,12 @@ game_over_state::game_over_state(std::shared_ptr<game> game, blur_in blur_in)
 	for (usize i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
-		const tweened_position pos{{500 + offset, y}, {500, y}, 0.5_s};
-		m_ui.emplace<text_button_widget>(BUTTONS[i],
-			pos,
-			tr::align::CENTER,
-			0.5_s,
-			NO_TOOLTIP,
-			localized_text{BUTTONS[i]},
-			font::LANGUAGE,
-			48,
-			[this] { return m_substate == substate::BLURRING_IN || m_substate == substate::GAME_OVER; },
-			std::move(action_commands[i]),
-			sound::CONFIRM
-		);
+		m_ui.emplace<text_button_widget>(BUTTONS[i], {
+			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
+			.text = localized_text{BUTTONS[i]},
+			.status = [this] { return m_substate == substate::BLURRING_IN || m_substate == substate::GAME_OVER; },
+			.action = std::move(action_commands[i]),
+		});
 	}
 	// clang-format on
 }

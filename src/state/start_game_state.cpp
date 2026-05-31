@@ -195,30 +195,21 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 		.status = [this] { return m_substate == substate::IN_START_GAME; },
 		.action = [this] { on_next_gamemode(); }
 	});
-	m_ui.emplace<text_button_widget>(T_START,
-		tweened_position{BOTTOM_START_POS, {500, 950}, 0.5_s},
-		tr::align::BOTTOM_CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_START},
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate == substate::IN_START_GAME || m_substate == substate::ENTERING_START_GAME; },
-		[this] { on_start(); },
-		sound::CONFIRM
-	);
-	m_ui.emplace<text_button_widget>(T_EXIT,
-		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
-		tr::align::BOTTOM_CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_EXIT},
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate == substate::IN_START_GAME || m_substate == substate::ENTERING_START_GAME; },
-		[this] { on_exit(); },
-		sound::CANCEL
-	);
+	m_ui.emplace<text_button_widget>(T_START, {
+		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = localized_text{T_START},
+		.status = [this] { return m_substate == substate::IN_START_GAME || m_substate == substate::ENTERING_START_GAME; },
+		.action = [this] { on_start(); }
+	});
+	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = localized_text{T_EXIT},
+		.status = [this] { return m_substate == substate::IN_START_GAME || m_substate == substate::ENTERING_START_GAME; },
+		.action = [this] { on_exit(); },
+		.action_sound = sound::CANCEL
+	});
 	// clang-format on
 }
 

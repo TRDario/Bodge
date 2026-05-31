@@ -58,7 +58,7 @@ gamemode_manager_state::gamemode_manager_state(std::shared_ptr<playerless_game> 
 		.font_size = 64
 	});
 
-	const std::array<action_command, CENTER_BUTTONS.size()> center_commands{
+	const std::array<action_command, CENTER_BUTTONS.size()> center_actions{
 		[this] { on_enter_new_gamemode(); },
 		[this] { on_enter_clone_gamemode(); },
 		[this] { on_enter_edit_gamemode(); },
@@ -66,31 +66,24 @@ gamemode_manager_state::gamemode_manager_state(std::shared_ptr<playerless_game> 
 	};
 	for (usize i = 0; i < CENTER_BUTTONS.size(); ++i) {
 		const float y{500.0f - ((CENTER_BUTTONS.size() - 1) * 50.0f) + i * 100};
-		m_ui.emplace<text_button_widget>(CENTER_BUTTONS[i].tag,
-			tweened_position{glm::vec2{i % 2 == 0 ? 600 : 400, y}, glm::vec2{500, y}, 0.5_s},
-			tr::align::CENTER,
-			0.5_s,
-			localized_text{CENTER_BUTTONS[i].tooltip},
-			localized_text{CENTER_BUTTONS[i].tag},
-			font::LANGUAGE, 64,
-			[this] { return m_substate == substate::IN_GAMEMODE_MANAGER; },
-			center_commands[i],
-			sound::CONFIRM
-		);
+		m_ui.emplace<text_button_widget>(CENTER_BUTTONS[i].tag, {
+			.animation = {glm::vec2{i % 2 == 0 ? 600 : 400, y}, glm::vec2{500, y}, 0.5_s},
+			.tooltip_text = localized_text{CENTER_BUTTONS[i].tooltip},
+			.text = localized_text{CENTER_BUTTONS[i].tag},
+			.font_size = 64,
+			.status = [this] { return m_substate == substate::IN_GAMEMODE_MANAGER; },
+			.action = center_actions[i],
+		});
 	}
 
-	m_ui.emplace<text_button_widget>(T_EXIT,
-		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
-		tr::align::BOTTOM_CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_EXIT},
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate == substate::IN_GAMEMODE_MANAGER; },
-		[this] { on_exit(); },
-		sound::CANCEL
-	);
+	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = localized_text{T_EXIT},
+		.status = [this] { return m_substate == substate::IN_GAMEMODE_MANAGER; },
+		.action = [this] { on_exit(); },
+		.action_sound = sound::CANCEL
+	});
 	// clang-format on
 }
 

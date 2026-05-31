@@ -144,18 +144,14 @@ void replays_state::set_up_ui()
 		.text = localized_text{T_TITLE},
 		.font_size = 64
 	});
-	m_ui.emplace<text_button_widget>(T_EXIT,
-		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
-		tr::align::BOTTOM_CENTER,
-		0.5_s,
-		NO_TOOLTIP,
-		localized_text{T_EXIT},
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate == substate::IN_REPLAYS; },
-		[this] { on_exit(); },
-		sound::CANCEL
-	);
+	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = localized_text{T_EXIT},
+		.status = [this] { return m_substate == substate::IN_REPLAYS; },
+		.action = [this] { on_exit(); },
+		.action_sound = sound::CANCEL
+	});
 	if (m_replays.empty()) {
 		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, {
 			.animation = {{600, 467}, {500, 467}, 0.5_s},

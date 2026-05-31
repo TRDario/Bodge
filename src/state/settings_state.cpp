@@ -175,18 +175,13 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		});
 	}
 
-	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C,
-		tweened_position{DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s},
-		tr::align::CENTER_RIGHT,
-		0.5_s,
-		NO_TOOLTIP,
-		[this] { return std::string{g_loc[m_pending.display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
-		font::LANGUAGE,
-		48,
-		[this] { return m_substate != substate::EXITING; },
-		[this] { on_change_display_mode(); },
-		sound::CONFIRM
-	);
+	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, {
+		.animation = {DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s},
+		.alignment = tr::align::CENTER_RIGHT,
+		.text = [this] { return std::string{g_loc[m_pending.display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
+		.status = [this] { return m_substate != substate::EXITING; },
+		.action = [this] { on_change_display_mode(); }
+	});
 	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, {
 		.animation = {WINDOW_SIZE_START_POS, {765, WINDOW_SIZE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
@@ -215,18 +210,13 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		},
 		.action = [&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + keymods_choose(1, 10, 100))); }
 	});
-	m_ui.emplace<text_button_widget>(T_VSYNC_C,
-		tweened_position{VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s},
-		tr::align::CENTER_RIGHT,
-		0.5_s,
-		NO_TOOLTIP,
-		[&vsync = m_pending.vsync] { return std::string{g_loc[vsync ? "on" : "off"]}; },
-		font::LANGUAGE_PREVIEW,
-		48,
-		[this] { return m_substate != substate::EXITING; },
-		[&vsync = m_pending.vsync] { vsync = !vsync; },
-		sound::CONFIRM
-	);
+	m_ui.emplace<text_button_widget>(T_VSYNC_C, {
+		.animation = {VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s},
+		.alignment = tr::align::CENTER_RIGHT,
+		.text = [&vsync = m_pending.vsync] { return std::string{g_loc[vsync ? "on" : "off"]}; },
+		.status = [this] { return m_substate != substate::EXITING; },
+		.action = [&vsync = m_pending.vsync] { vsync = !vsync; },
+	});
 	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_D, {
 		.animation = {MOUSE_SENSITIVITY_START_POS, {765, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
@@ -249,23 +239,18 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.status = [this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity < 250; },
 		.action = [&ms = m_pending.mouse_sensitivity] { ms = u8(std::min(ms + keymods_choose(1, 10, 25), 250)); }
 	});
-	m_ui.emplace<text_button_widget>(T_PLAYER_SKIN_C,
-		tweened_position{PLAYER_SKIN_START_POS, {930, PLAYER_SKIN_START_POS.y}, 0.5_s},
-		tr::align::CENTER_RIGHT,
-		0.5_s,
-		NO_TOOLTIP,
-		[this] {
+	m_ui.emplace<text_button_widget>(T_PLAYER_SKIN_C, {
+		.animation = {PLAYER_SKIN_START_POS, {930, PLAYER_SKIN_START_POS.y}, 0.5_s},
+		.alignment = tr::align::CENTER_RIGHT,
+		.text = [this] {
 			const bool valid_player_skin{std::ranges::find(m_player_skins, m_pending.player_skin) != m_player_skins.end()};
 			return valid_player_skin               ? m_pending.player_skin.substr(0, m_pending.player_skin.find_last_of('.'))
 				   : m_pending.player_skin.empty() ? std::string{g_loc["none"]}
 												   : std::string{g_loc["unknown"]};
 		},
-		font::LANGUAGE_PREVIEW,
-		48,
-		[this] { return m_substate != substate::EXITING && (m_player_skins.size() > 0 || !m_pending.player_skin.empty()); },
-		[this] { on_change_player_skin(); },
-		sound::CONFIRM
-	);
+		.status = [this] { return m_substate != substate::EXITING && (m_player_skins.size() > 0 || !m_pending.player_skin.empty()); },
+		.action = [this] { on_change_player_skin(); }
+	});
 	m_ui.emplace<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW,
 		tweened_position{PLAYER_SKIN_START_POS, {985, PLAYER_SKIN_START_POS.y}, 0.5_s},
 		tr::align::CENTER_RIGHT,
@@ -372,18 +357,14 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.status = [this] { return m_substate != substate::EXITING && m_pending.music_volume < 100; },
 		.action = [&mv = m_pending.music_volume] { mv = u8(std::min(mv + keymods_choose(1, 10, 25), 100)); }
 	});
-	m_ui.emplace<text_button_widget>(T_LANGUAGE_C,
-		tweened_position{LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s},
-		tr::align::CENTER_RIGHT,
-		0.5_s,
-		NO_TOOLTIP,
-		[this] { return g_languages.contains(m_pending.language) ? g_languages[m_pending.language].name : "???"; },
-		font::LANGUAGE_PREVIEW,
-		48,
-		[this] { return m_substate != substate::EXITING && (g_languages.size() >= 2 - (!g_languages.contains(m_pending.language))); },
-		[this] { on_change_language(); },
-		sound::CONFIRM
-	);
+	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, {
+		.animation = {LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s},
+		.alignment = tr::align::CENTER_RIGHT,
+		.text = [this] { return g_languages.contains(m_pending.language) ? g_languages[m_pending.language].name : "???"; },
+		.font = font::LANGUAGE_PREVIEW,
+		.status = [this] { return m_substate != substate::EXITING && (g_languages.size() >= 2 - (!g_languages.contains(m_pending.language))); },
+		.action = [this] { on_change_language(); }
+	});
 
 	struct bottom_button_parameters {
 		status_command status;
@@ -402,18 +383,14 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		 sound::CANCEL},
 	}};
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
-		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i],
-			tweened_position{BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s},
-			tr::align::BOTTOM_CENTER,
-			0.5_s,
-			NO_TOOLTIP,
-			localized_text{BOTTOM_BUTTONS[i]},
-			font::LANGUAGE,
-			48,
-			bottom_button_parameters[i].status,
-			bottom_button_parameters[i].action,
-			bottom_button_parameters[i].sound
-		);
+		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], {
+			.animation = {BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s},
+			.alignment = tr::align::BOTTOM_CENTER,
+			.text = localized_text{BOTTOM_BUTTONS[i]},
+			.status = bottom_button_parameters[i].status,
+			.action = bottom_button_parameters[i].action,
+			.action_sound = bottom_button_parameters[i].sound
+		});
 	}
 	// clang-format on
 }

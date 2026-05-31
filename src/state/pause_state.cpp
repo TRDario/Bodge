@@ -194,18 +194,12 @@ void pause_state::set_up_full_ui()
 	for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
-		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i],
-			tweened_position{{500 + offset, y}, {500, y}, 0.5_s},
-			tr::align::CENTER,
-			0.5_s,
-			NO_TOOLTIP,
-			localized_text{BUTTONS_REGULAR[i]},
-			font::LANGUAGE,
-			48,
-			button_commands[i].status,
-			button_commands[i].action,
-			sound::CONFIRM
-		);
+		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], {
+			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
+			.text = localized_text{BUTTONS_REGULAR[i]},
+			.status = button_commands[i].status,
+			.action = button_commands[i].action
+		});
 	}
 	// clang-format on
 }
@@ -236,18 +230,12 @@ void pause_state::set_up_limited_ui()
 	for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
-		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i],
-			tweened_position{{500 + offset, y}, {500, y}, 0.5_s},
-			tr::align::CENTER,
-			0.5_s,
-			NO_TOOLTIP,
-			localized_text{BUTTONS_SPECIAL[i]},
-			font::LANGUAGE,
-			48,
-			button_commands[i].status,
-			button_commands[i].action,
-			sound::CONFIRM
-		);
+		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], {
+			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
+			.text = localized_text{BUTTONS_SPECIAL[i]},
+			.status = button_commands[i].status,
+			.action = button_commands[i].action
+		});
 	}
 	// clang-format on
 }
