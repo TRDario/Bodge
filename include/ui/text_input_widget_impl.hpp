@@ -12,11 +12,11 @@
 
 template <usize MaxChars>
 text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
-											   float font_size, int width, status_callback status_cb, std::string_view initial_text)
+											   float font_size, int width, status_command status_command, std::string_view initial_text)
 	: input_buffer<MaxChars>{initial_text}
-	, text_widget{pos, alignment, unhide_time, NO_TOOLTIP, buffer_text_callback{this->m_buffer}, font::LANGUAGE, style, font_size, width}
-	, m_status_cb{std::move(status_cb)}
-	, m_tint{m_status_cb() ? GRAY : DISABLED_GRAY}
+	, text_widget{pos, alignment, unhide_time, NO_TOOLTIP, buffer_text{this->m_buffer}, font::LANGUAGE, style, font_size, width}
+	, m_status{std::move(status_command)}
+	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
 	, m_hovered{false}
 	, m_held{false}
 	, m_selected{false}
@@ -25,11 +25,11 @@ text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align a
 
 template <usize MaxChars>
 text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
-											   float font_size, int width, status_callback status_cb, text_callback text_cb)
+											   float font_size, int width, status_command status_command, text_command text)
 	: input_buffer<MaxChars>{}
-	, text_widget{pos, alignment, unhide_time, NO_TOOLTIP, std::move(text_cb), font::LANGUAGE, style, font_size, width}
-	, m_status_cb{std::move(status_cb)}
-	, m_tint{m_status_cb() ? GRAY : DISABLED_GRAY}
+	, text_widget{pos, alignment, unhide_time, NO_TOOLTIP, std::move(text), font::LANGUAGE, style, font_size, width}
+	, m_status{std::move(status_command)}
+	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
 	, m_hovered{false}
 	, m_held{false}
 	, m_selected{false}
@@ -68,7 +68,7 @@ template <usize MaxChars> void text_input_widget<MaxChars>::tick()
 
 template <usize MaxChars> bool text_input_widget<MaxChars>::interactible() const
 {
-	return m_status_cb();
+	return m_status();
 }
 
 template <usize MaxChars> bool text_input_widget<MaxChars>::writable() const

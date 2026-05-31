@@ -43,27 +43,6 @@ constexpr shortcut_table SHORTCUTS{
 // The base x positions of the gamemode information widgets.
 constexpr std::array GAMEMODE_WIDGETS_BASE_X{500.0f, 500.0f, 500.0f, 325.0f, 325.0f, 675.0f, 675.0f};
 
-// Entry animation for the title widget.
-constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
-// Entry animation for the gamemode name widget.
-constexpr tweened_position NAME_ANIMATION{{500, 300}, {500, 400}, 0.5_s};
-// Entry animation for the gamemode author widget.
-constexpr tweened_position AUTHOR_ANIMATION{{400, 475}, {500, 475}, 0.5_s};
-// Entry animation for the gamemode description widget.
-constexpr tweened_position DESCRIPTION_ANIMATION{{600, 525}, {500, 525}, 0.5_s};
-// Entry animation for the best time label widget.
-constexpr tweened_position BEST_TIME_ANIMATION{{325, 725}, {325, 625}, 0.5_s};
-// Entry animation for the best score label widget.
-constexpr tweened_position BEST_SCORE_ANIMATION{{675, 725}, {675, 625}, 0.5_s};
-// Entry animation for the previous gamemode arrow widget.
-constexpr tweened_position PREV_ANIMATION{{-50, 500}, {10, 500}, 0.5_s};
-// Entry animation for the next gamemode arrow widget.
-constexpr tweened_position NEXT_ANIMATION{{1050, 500}, {990, 500}, 0.5_s};
-// Entry animation for the start button widget.
-constexpr tweened_position START_ANIMATION{BOTTOM_START_POS, {500, 950}, 0.5_s};
-// Entry animation for the exit button widget.
-constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
-
 // clang-format on
 //////////////////////////////////////////////////////////// INTERNAL HELPERS /////////////////////////////////////////////////////////////
 
@@ -74,44 +53,68 @@ enum class starting_side : bool {
 };
 
 // Emplaces a label widget into a map.
-template <class... Args> static void emplace_label_widget(std::unordered_map<tag, std::unique_ptr<widget>>& map, tag tag, Args&&... args)
+static void emplace_label_widget(std::unordered_map<tag, std::unique_ptr<widget>>& map, tag tag, label_widget::properties&& properties)
 {
-	map.emplace(tag, std::make_unique<label_widget>(std::forward<Args>(args)...));
+	map.emplace(tag, std::make_unique<label_widget>(std::move(properties)));
 }
 
 // Creates a set of widgets for a different gamemode.
 static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const gamemode& selected, starting_side side)
 {
-	// ANIMATIONS
-
 	const float label_h{621 - g_text_engine.line_skip(font::LANGUAGE, 32)};
-	const tweened_position name_animation{{side == starting_side::LEFT ? 250 : 750, 400}, {500, 400}, 0.25_s};
-	const tweened_position author_animation{{side == starting_side::LEFT ? 250 : 750, 475}, {500, 475}, 0.25_s};
-	const tweened_position description_animation{{side == starting_side::LEFT ? 250 : 750, 525}, {500, 525}, 0.25_s};
-	const tweened_position best_time_label_animation{{side == starting_side::LEFT ? 75 : 525, label_h}, {325, label_h}, 0.25_s};
-	const tweened_position best_time_animation{{side == starting_side::LEFT ? 75 : 525, 625}, {325, 625}, 0.25_s};
-	const tweened_position best_score_label_animation{{side == starting_side::LEFT ? 425 : 925, label_h}, {675, label_h}, 0.25_s};
-	const tweened_position best_score_animation{{side == starting_side::LEFT ? 425 : 925, 625}, {675, 625}, 0.25_s};
 
-	//
-
+	// clang-format off
 	std::unordered_map<tag, std::unique_ptr<widget>> map;
-	emplace_label_widget(map, T_NAME, name_animation, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-						 const_text_callback{std::string{selected.name_loc()}}, tr::sys::ttf_style::NORMAL, 120);
-	emplace_label_widget(map, T_AUTHOR, author_animation, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-						 const_text_callback{TR_FMT::format("{}: {}", g_loc["by"], selected.author)}, tr::sys::ttf_style::NORMAL, 32);
-	emplace_label_widget(map, T_DESCRIPTION, description_animation, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-						 const_text_callback{std::string{selected.description_loc_with_fallback()}}, tr::sys::ttf_style::ITALIC, 32,
-						 DARK_GRAY);
-	emplace_label_widget(map, T_BEST_TIME_LABEL, best_time_label_animation, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-						 loc_text_callback{T_BEST_TIME_LABEL}, tr::sys::ttf_style::NORMAL, 32, YELLOW);
-	emplace_label_widget(map, T_BEST_TIME, best_time_animation, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-						 const_text_callback{format_time(g_scorefile.bests(selected).time)}, tr::sys::ttf_style::NORMAL, 64, YELLOW);
-	emplace_label_widget(map, T_BEST_SCORE_LABEL, best_score_label_animation, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-						 loc_text_callback{T_BEST_SCORE_LABEL}, tr::sys::ttf_style::NORMAL, 32, YELLOW);
-	emplace_label_widget(map, T_BEST_SCORE, best_score_animation, tr::align::CENTER, 0.25_s, NO_TOOLTIP,
-						 const_text_callback{format_score(g_scorefile.bests(selected).score)}, tr::sys::ttf_style::NORMAL, 64, YELLOW);
+	emplace_label_widget(map, T_NAME, {
+		.animation = {{side == starting_side::LEFT ? 250 : 750, 400}, {500, 400}, 0.25_s},
+		.unhide_time = 0.25_s,
+		.text = constant_text{std::string{selected.name_loc()}},
+		.font_size = 120
+	});
+	emplace_label_widget(map, T_AUTHOR, {
+		.animation = {{side == starting_side::LEFT ? 250 : 750, 475}, {500, 475}, 0.25_s},
+		.unhide_time = 0.25_s,
+		.text = constant_text{TR_FMT::format("{}: {}", g_loc["by"], selected.author)},
+		.font_size = 32
+	});
+	emplace_label_widget(map, T_DESCRIPTION, {
+		.animation = {{side == starting_side::LEFT ? 250 : 750, 525}, {500, 525}, 0.25_s},
+		.unhide_time = 0.25_s,
+		.text = constant_text{std::string{selected.description_loc_with_fallback()}},
+		.font_style = tr::sys::ttf_style::ITALIC,
+		.font_size = 32,
+		.color = DARK_GRAY
+	});
+	emplace_label_widget(map, T_BEST_TIME_LABEL, {
+		.animation = {{side == starting_side::LEFT ? 75 : 525, label_h}, {325, label_h}, 0.25_s},
+		.unhide_time = 0.25_s,
+		.text = localized_text{T_BEST_TIME_LABEL},
+		.font_size = 32,
+		.color = YELLOW
+	});
+	emplace_label_widget(map, T_BEST_TIME, {
+		.animation = {{side == starting_side::LEFT ? 75 : 525, 625}, {325, 625}, 0.25_s},
+		.unhide_time = 0.25_s,
+		.text = constant_text{format_time(g_scorefile.bests(selected).time)},
+		.font_size = 64,
+		.color = YELLOW
+	});
+	emplace_label_widget(map, T_BEST_SCORE_LABEL, {
+		.animation = {{side == starting_side::LEFT ? 425 : 925, label_h}, {675, label_h}, 0.25_s},
+		.unhide_time = 0.25_s,
+		.text = localized_text{T_BEST_SCORE_LABEL},
+		.font_size = 32,
+		.color = YELLOW
+	});
+	emplace_label_widget(map, T_BEST_SCORE, {
+		.animation = {{side == starting_side::LEFT ? 425 : 925, 625}, {675, 625}, 0.25_s},
+		.unhide_time = 0.25_s,
+		.text = constant_text{format_score(g_scorefile.bests(selected).score)},
+		.font_size = 64,
+		.color = YELLOW
+	});
 	return map;
+	// clang-format on
 }
 
 //////////////////////////////////////////////////////////// START GAME WIDGET ////////////////////////////////////////////////////////////
@@ -129,83 +132,94 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 		m_selected = last_selected_it;
 	}
 
-	// ANIMATIONS
-
 	const float label_h{621 - g_text_engine.line_skip(font::LANGUAGE, 32)};
-	const tweened_position best_time_label_animation{{325, label_h + 100}, {325, label_h}, 0.5_s};
-	const tweened_position best_score_label_animation{{675, label_h + 100}, {675, label_h}, 0.5_s};
-
-	// STATUS CALLBACKS
-
-	const status_callback scb{[this] { return m_substate == substate::IN_START_GAME || m_substate == substate::ENTERING_START_GAME; }};
-	const status_callback arrow_scb{[this] { return m_substate == substate::IN_START_GAME; }};
-
-	// ACTION CALLBACKS
-
-	const action_callback prev_acb{[this] {
-		m_selected = m_selected == m_gamemodes.begin() ? m_selected = m_gamemodes.end() - 1 : std::prev(m_selected);
-		m_substate = substate::SWITCHING_GAMEMODE;
-		m_elapsed = 0;
-		for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
-			m_ui[GAMEMODE_WIDGETS[i]].move_x_and_hide(GAMEMODE_WIDGETS_BASE_X[i] + 250, 0.25_s);
-		}
-		m_next_widgets = std::async(std::launch::async, prepare_next_widgets, m_selected->gamemode, starting_side::LEFT);
-	}};
-	const action_callback next_acb{[this] {
-		if (++m_selected == m_gamemodes.end()) {
-			m_selected = m_gamemodes.begin();
-		}
-		m_substate = substate::SWITCHING_GAMEMODE;
-		m_elapsed = 0;
-		for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
-			m_ui[GAMEMODE_WIDGETS[i]].move_x_and_hide(GAMEMODE_WIDGETS_BASE_X[i] - 250, 0.25_s);
-		}
-		m_next_widgets = std::async(std::launch::async, prepare_next_widgets, m_selected->gamemode, starting_side::RIGHT);
-	}};
-	const action_callback start_acb{[this] {
-		m_substate = substate::STARTING_GAME;
-		m_elapsed = 0;
-		set_up_exit_animation();
-		g_scorefile.last_selected = m_selected->gamemode;
-		g_audio.fade_song_out(0.5s);
-		m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_selected->gamemode);
-	}};
-	const action_callback exit_acb{[this] {
-		m_substate = substate::EXITING_TO_TITLE;
-		m_elapsed = 0;
-		set_up_exit_animation();
-		g_scorefile.last_selected = m_selected->gamemode;
-		m_next_state = make_async<title_state>(m_game);
-	}};
-
-	//
-
 	const bests bests{g_scorefile.bests(m_selected->gamemode)};
 
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_NAME, NAME_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   const_text_callback{std::string{m_selected->gamemode.name_loc()}}, tr::sys::ttf_style::NORMAL, 120);
-	m_ui.emplace<label_widget>(T_AUTHOR, AUTHOR_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   const_text_callback{TR_FMT::format("{}: {}", g_loc["by"], m_selected->gamemode.author)},
-							   tr::sys::ttf_style::NORMAL, 32);
-	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   const_text_callback{m_selected->gamemode.description_loc_with_fallback()}, tr::sys::ttf_style::ITALIC, 32,
-							   DARK_GRAY);
-	m_ui.emplace<label_widget>(T_BEST_TIME_LABEL, best_time_label_animation, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   loc_text_callback{T_BEST_TIME_LABEL}, tr::sys::ttf_style::NORMAL, 32, YELLOW);
-	m_ui.emplace<label_widget>(T_BEST_TIME, BEST_TIME_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   const_text_callback{format_time(bests.time)}, tr::sys::ttf_style::NORMAL, 64, YELLOW);
-	m_ui.emplace<label_widget>(T_BEST_SCORE_LABEL, best_score_label_animation, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   loc_text_callback{T_BEST_SCORE_LABEL}, tr::sys::ttf_style::NORMAL, 32, YELLOW);
-	m_ui.emplace<label_widget>(T_BEST_SCORE, BEST_SCORE_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-							   const_text_callback{format_score(bests.score)}, tr::sys::ttf_style::NORMAL, 64, YELLOW);
-	m_ui.emplace<arrow_widget>(T_PREV, PREV_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, arrow_scb, prev_acb);
-	m_ui.emplace<arrow_widget>(T_NEXT, NEXT_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, arrow_scb, next_acb);
-	m_ui.emplace<text_button_widget>(T_START, START_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_START},
-									 font::LANGUAGE, 48, scb, start_acb, sound::CONFIRM);
-	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
-									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
+	// clang-format off
+	m_ui.emplace<label_widget>(T_TITLE, {
+		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
+		.alignment = tr::align::TOP_CENTER,
+		.text = localized_text{T_TITLE},
+		.font_size = 64
+	});
+	m_ui.emplace<label_widget>(T_NAME, {
+		.animation = {{500, 300}, {500, 400}, 0.5_s},
+		.text = constant_text{std::string{m_selected->gamemode.name_loc()}},
+		.font_size = 120
+	});
+	m_ui.emplace<label_widget>(T_AUTHOR, {
+		.animation = {{400, 475}, {500, 475}, 0.5_s},
+		.text = constant_text{TR_FMT::format("{}: {}", g_loc["by"], m_selected->gamemode.author)},
+		.font_size = 32
+	});
+	m_ui.emplace<label_widget>(T_DESCRIPTION, {
+		.animation = {{600, 525}, {500, 525}, 0.5_s},
+		.text = constant_text{m_selected->gamemode.description_loc_with_fallback()},
+		.font_style = tr::sys::ttf_style::ITALIC,
+		.font_size = 32,
+		.color = DARK_GRAY
+	});
+	m_ui.emplace<label_widget>(T_BEST_TIME_LABEL, {
+		.animation = {{325, label_h + 100}, {325, label_h}, 0.5_s},
+		.text = localized_text{T_BEST_TIME_LABEL},
+		.font_size = 32,
+		.color = YELLOW
+	});
+	m_ui.emplace<label_widget>(T_BEST_TIME, {
+		.animation = {{325, 725}, {325, 625}, 0.5_s},
+		.text = constant_text{format_time(bests.time)},
+		.font_size = 64,
+		.color = YELLOW
+	});
+	m_ui.emplace<label_widget>(T_BEST_SCORE_LABEL, {
+		.animation = {{675, label_h + 100}, {675, label_h}, 0.5_s},
+		.text = localized_text{T_BEST_SCORE_LABEL},
+		.font_size = 32,
+		.color = YELLOW
+	});
+	m_ui.emplace<label_widget>(T_BEST_SCORE, {
+		.animation = {{675, 725}, {675, 625}, 0.5_s},
+		.text = constant_text{format_score(bests.score)},
+		.font_size = 64,
+		.color = YELLOW
+	});
+	m_ui.emplace<arrow_widget>(T_PREV, {
+		.animation = {{-50, 500}, {10, 500}, 0.5_s},
+		.type = arrow_type::LEFT,
+		.status = [this] { return m_substate == substate::IN_START_GAME; },
+		.action = [this] { on_previous_gamemode(); }
+	});
+	m_ui.emplace<arrow_widget>(T_NEXT, {
+		.animation = {{1050, 500}, {990, 500}, 0.5_s},
+		.type = arrow_type::RIGHT,
+		.status = [this] { return m_substate == substate::IN_START_GAME; },
+		.action = [this] { on_next_gamemode(); }
+	});
+	m_ui.emplace<text_button_widget>(T_START,
+		tweened_position{BOTTOM_START_POS, {500, 950}, 0.5_s},
+		tr::align::BOTTOM_CENTER,
+		0.5_s,
+		NO_TOOLTIP,
+		localized_text{T_START},
+		font::LANGUAGE,
+		48,
+		[this] { return m_substate == substate::IN_START_GAME || m_substate == substate::ENTERING_START_GAME; },
+		[this] { on_start(); },
+		sound::CONFIRM
+	);
+	m_ui.emplace<text_button_widget>(T_EXIT,
+		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		tr::align::BOTTOM_CENTER,
+		0.5_s,
+		NO_TOOLTIP,
+		localized_text{T_EXIT},
+		font::LANGUAGE,
+		48,
+		[this] { return m_substate == substate::IN_START_GAME || m_substate == substate::ENTERING_START_GAME; },
+		[this] { on_exit(); },
+		sound::CANCEL
+	);
+	// clang-format on
 }
 
 //
@@ -265,4 +279,49 @@ void start_game_state::set_up_exit_animation()
 	m_ui[T_NEXT].move_x_and_hide(1100, 0.5_s);
 	m_ui[T_START].move_and_hide(BOTTOM_START_POS, 0.5_s);
 	m_ui[T_EXIT].move_and_hide(BOTTOM_START_POS, 0.5_s);
+}
+
+//
+
+void start_game_state::on_previous_gamemode()
+{
+	m_selected = m_selected == m_gamemodes.begin() ? m_selected = m_gamemodes.end() - 1 : std::prev(m_selected);
+	m_substate = substate::SWITCHING_GAMEMODE;
+	m_elapsed = 0;
+	for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
+		m_ui[GAMEMODE_WIDGETS[i]].move_x_and_hide(GAMEMODE_WIDGETS_BASE_X[i] + 250, 0.25_s);
+	}
+	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, m_selected->gamemode, starting_side::LEFT);
+}
+
+void start_game_state::on_next_gamemode()
+{
+	if (++m_selected == m_gamemodes.end()) {
+		m_selected = m_gamemodes.begin();
+	}
+	m_substate = substate::SWITCHING_GAMEMODE;
+	m_elapsed = 0;
+	for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
+		m_ui[GAMEMODE_WIDGETS[i]].move_x_and_hide(GAMEMODE_WIDGETS_BASE_X[i] - 250, 0.25_s);
+	}
+	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, m_selected->gamemode, starting_side::RIGHT);
+}
+
+void start_game_state::on_start()
+{
+	m_substate = substate::STARTING_GAME;
+	m_elapsed = 0;
+	set_up_exit_animation();
+	g_scorefile.last_selected = m_selected->gamemode;
+	g_audio.fade_song_out(0.5s);
+	m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_selected->gamemode);
+}
+
+void start_game_state::on_exit()
+{
+	m_substate = substate::EXITING_TO_TITLE;
+	m_elapsed = 0;
+	set_up_exit_animation();
+	g_scorefile.last_selected = m_selected->gamemode;
+	m_next_state = make_async<title_state>(m_game);
 }

@@ -32,63 +32,84 @@ constexpr shortcut_table SHORTCUTS{
 	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT}, {"1"_kc, T_EXIT}
 };
 
-// Entry animation for the title widget.
-constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
-// Entry animation for the exit button widget.
-constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
-
 // clang-format on
 ////////////////////////////////////////////////////////////// CREDITS STATE //////////////////////////////////////////////////////////////
 
 credits_state::credits_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_CREDITS}
 {
-	// STATUS CALLBACKS
-
-	const status_callback scb{[this] { return m_substate == substate::IN_CREDITS; }};
-
-	// ACTION CALLBACKS
-
-	const action_callback exit_acb{[this] {
-		m_substate = substate::EXITING;
-		m_elapsed = 0;
-		m_ui[T_TITLE].move_and_hide(TOP_START_POS, 0.5_s);
-		m_ui[T_BODGE].hide(0.5_s);
-		m_ui[T_VERSION].hide(0.5_s);
-		m_ui[T_DEVELOPED_BY].hide(0.5_s);
-		m_ui[T_TRDARIO].hide(0.5_s);
-		m_ui[T_ART].hide(0.5_s);
-		m_ui[T_PLAYTESTERS].hide(0.5_s);
-		m_ui[T_STARSURGE].hide(0.5_s);
-		m_ui[T_TOWELI].hide(0.5_s);
-		m_ui[T_ZER0].hide(0.5_s);
-		m_ui[T_EXIT].move_and_hide(BOTTOM_START_POS, 0.5_s);
-		m_next_state = make_async<title_state>(m_game);
-	}};
-
-	//
-
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_BODGE, glm::vec2{400, 185}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_BODGE},
-							   tr::sys::ttf_style::NORMAL, 128);
-	m_ui.emplace<label_widget>(T_VERSION, glm::vec2{600, 265}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_VERSION},
-							   tr::sys::ttf_style::NORMAL, 32);
-	m_ui.emplace<label_widget>(T_DEVELOPED_BY, glm::vec2{400, 385}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
-							   loc_text_callback{T_DEVELOPED_BY}, tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_TRDARIO, glm::vec2{600, 445}, tr::align::CENTER, DONT_UNHIDE, loc_text_callback{"trdario_tt"},
-							   const_text_callback{T_TRDARIO}, tr::sys::ttf_style::NORMAL, 48, "FF8080A0"_rgba8);
-	m_ui.emplace<image_widget>(T_ART, glm::vec2{500, 525}, tr::align::TOP_CENTER, DONT_UNHIDE, 0, "credits_art");
-	m_ui.emplace<label_widget>(T_PLAYTESTERS, glm::vec2{400, 685}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
-							   loc_text_callback{T_PLAYTESTERS}, tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_STARSURGE, glm::vec2{600, 745}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP,
-							   const_text_callback{T_STARSURGE}, tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<label_widget>(T_TOWELI, glm::vec2{400, 795}, tr::align::CENTER, DONT_UNHIDE, NO_TOOLTIP, const_text_callback{T_TOWELI},
-							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<label_widget>(T_ZER0, glm::vec2{600, 845}, tr::align::CENTER, DONT_UNHIDE, loc_text_callback{"zer0_tt"},
-							   const_text_callback{T_ZER0}, tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
-									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
+	// clang-format off
+	m_ui.emplace<label_widget>(T_TITLE, {
+		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
+		.alignment = tr::align::TOP_CENTER,
+		.text = localized_text{T_TITLE},
+		.font_size = 64
+	});
+	m_ui.emplace<label_widget>(T_BODGE, {
+		.animation = {{400, 185}},
+		.unhide_time = DONT_UNHIDE,
+		.text = constant_text{T_BODGE},
+		.font_size = 128
+	});
+	m_ui.emplace<label_widget>(T_VERSION, {
+		.animation = {{600, 265}},
+		.unhide_time = DONT_UNHIDE,
+		.text = constant_text{T_VERSION},
+	});
+	m_ui.emplace<label_widget>(T_DEVELOPED_BY, {
+		.animation = {{400, 385}},
+		.unhide_time = DONT_UNHIDE,
+		.text = localized_text{T_DEVELOPED_BY},
+		.font_size = 64
+	});
+	m_ui.emplace<label_widget>(T_TRDARIO, {
+		.animation = {{600, 445}},
+		.unhide_time = DONT_UNHIDE,
+		.tooltip_text = localized_text{"trdario_tt"},
+		.text = constant_text{T_TRDARIO},
+		.color = "FF8080A0"_rgba8
+	});
+	m_ui.emplace<image_widget>(T_ART,
+		glm::vec2{500, 525},
+		tr::align::TOP_CENTER,
+		DONT_UNHIDE,
+		0,
+		"credits_art"
+	);
+	m_ui.emplace<label_widget>(T_PLAYTESTERS, {
+		.animation = {{400, 685}},
+		.unhide_time = DONT_UNHIDE,
+		.text = localized_text{T_PLAYTESTERS},
+		.font_size = 64
+	});
+	m_ui.emplace<label_widget>(T_STARSURGE, {
+		.animation = {{600, 745}},
+		.unhide_time = DONT_UNHIDE,
+		.text = constant_text{T_STARSURGE}
+	});
+	m_ui.emplace<label_widget>(T_TOWELI, {
+		.animation = {{400, 795}},
+		.unhide_time = DONT_UNHIDE,
+		.text = constant_text{T_TOWELI},
+	});
+	m_ui.emplace<label_widget>(T_ZER0, {
+		.animation = {{600, 845}},
+		.unhide_time = DONT_UNHIDE,
+		.tooltip_text = localized_text{"zer0_tt"},
+		.text = constant_text{T_ZER0}
+	});
+	m_ui.emplace<text_button_widget>(T_EXIT,
+		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		tr::align::BOTTOM_CENTER, 0.5_s,
+		NO_TOOLTIP,
+		localized_text{T_EXIT},
+		font::LANGUAGE,
+		48,
+		[this] { return m_substate == substate::IN_CREDITS; },
+		[this] { on_exit(); },
+		sound::CANCEL
+	);
+	// clang-format on
 }
 
 //
@@ -129,4 +150,24 @@ tr::next_state credits_state::tick()
 	case substate::EXITING:
 		return next_state_if_after(0.5_s);
 	};
+}
+
+//
+
+void credits_state::on_exit()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	m_ui[T_TITLE].move_and_hide(TOP_START_POS, 0.5_s);
+	m_ui[T_BODGE].hide(0.5_s);
+	m_ui[T_VERSION].hide(0.5_s);
+	m_ui[T_DEVELOPED_BY].hide(0.5_s);
+	m_ui[T_TRDARIO].hide(0.5_s);
+	m_ui[T_ART].hide(0.5_s);
+	m_ui[T_PLAYTESTERS].hide(0.5_s);
+	m_ui[T_STARSURGE].hide(0.5_s);
+	m_ui[T_TOWELI].hide(0.5_s);
+	m_ui[T_ZER0].hide(0.5_s);
+	m_ui[T_EXIT].move_and_hide(BOTTOM_START_POS, 0.5_s);
+	m_next_state = make_async<title_state>(m_game);
 }

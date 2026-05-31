@@ -15,22 +15,22 @@ static bool cache_too_small(const tr::gfx::texture& cache, const tr::bitmap& ima
 	return cache.size().x < image.size().x || cache.size().y < image.size().y;
 }
 
-///////////////////////////////////////////////////////////// TEXT CALLBACKS //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////// TEXT COMMANDS //////////////////////////////////////////////////////////////
 
-std::string loc_text_callback::operator()() const
+std::string localized_text::operator()() const
 {
 	return std::string{g_loc[tag]};
 }
 
-std::string const_text_callback::operator()() const
+std::string constant_text::operator()() const
 {
 	return str;
 }
 
 ///////////////////////////////////////////////////////////////// WIDGET //////////////////////////////////////////////////////////////////
 
-widget::widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb)
-	: pos{pos}, tooltip_cb{std::move(tooltip_cb)}, m_alignment{alignment}, m_opacity{0}
+widget::widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_command tooltip_text)
+	: pos{pos}, tooltip_text{std::move(tooltip_text)}, m_alignment{alignment}, m_opacity{0}
 {
 	if (unhide_time != DONT_UNHIDE) {
 		unhide(unhide_time);
@@ -120,17 +120,17 @@ void widget::tick()
 
 /////////////////////////////////////////////////////////////// TEXT WIDGET ///////////////////////////////////////////////////////////////
 
-text_widget::text_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
+text_widget::text_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_command tooltip_text, text_command text,
 						 font font, tr::sys::ttf_style style, float font_size, int max_width)
-	: widget{pos, alignment, unhide_time, tooltip_cb}
+	: widget{pos, alignment, unhide_time, tooltip_text}
 	, m_font{font}
 	, m_style{style}
 	, m_font_size{font_size}
 	, m_max_width{max_width}
-	, m_text_cb{text_cb}
-	, m_last_text{text_cb()}
+	, m_text{text}
+	, m_last_text{text()}
 	, m_cache{g_text_engine.render_text(
-		  text{
+		  ::text{
 			  m_last_text,
 			  g_text_engine.determine_font(m_last_text, m_font),
 			  m_style,
@@ -168,7 +168,7 @@ void text_widget::add_to_renderer_raw(tr::rgba8 tint)
 
 void text_widget::update_cache() const
 {
-	std::string text_string{m_text_cb()};
+	std::string text_string{m_text()};
 	if (std::holds_alternative<std::monostate>(m_cache) || m_last_text != text_string) {
 		const font font{g_text_engine.determine_font(text_string, m_font)};
 		const text text{text_string, font, m_style, m_font_size, m_font_size / 12, float(m_max_width)};

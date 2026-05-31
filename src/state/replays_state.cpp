@@ -52,19 +52,6 @@ constexpr shortcut_table SHORTCUTS{
 	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT},
 };
 
-// Entry animation for the title widget.
-constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
-// Entry animation for the "no replays found" widget.
-constexpr tweened_position NO_REPLAYS_FOUND_ANIMATION{{600, 467}, {500, 467}, 0.5_s};
-// Entry animation for the previous page button widget.
-constexpr tweened_position PAGE_D_ANIMATION{{-50, 942.5}, {10, 942.5}, 0.5_s};
-// Entry animation for the current page widget.
-constexpr tweened_position PAGE_C_ANIMATION{BOTTOM_START_POS, {500, 950}, 0.5_s};
-// Entry animation for the next page button widget.
-constexpr tweened_position PAGE_I_ANIMATION{{1050, 942.5}, {990, 942.5}, 0.5_s};
-// Entry animation for the exit button widget.
-constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
-
 // clang-format on
 ////////////////////////////////////////////////////////////// REPLAYS STATE //////////////////////////////////////////////////////////////
 
@@ -150,64 +137,71 @@ std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_wid
 
 void replays_state::set_up_ui()
 {
-	// STATUS CALLBACKS
-
-	const status_callback scb{[this] { return m_substate == substate::IN_REPLAYS; }};
-	const status_callback page_d_scb{[this] { return m_substate == substate::IN_REPLAYS && m_page > 0; }};
-	const status_callback page_i_scb{[this] {
-		const u16 last_page{u16(std::max(m_replays.size() - 1, 0_uz) / REPLAYS_PER_PAGE)};
-		return m_substate == substate::IN_REPLAYS && m_page < last_page;
-	}};
-
-	// ACTION CALLBACKS
-
-	const action_callback exit_acb{[this] {
-		m_substate = substate::EXITING;
-		m_elapsed = 0;
-		set_up_exit_animation();
-		m_next_state = make_async<title_state>(m_game);
-	}};
-	const action_callback page_d_acb{[this] {
-		m_substate = substate::SWITCHING_PAGE;
-		m_elapsed = 0;
-		--m_page;
-		set_up_page_switch_animation();
-	}};
-	const action_callback page_i_acb{[this] {
-		m_substate = substate::SWITCHING_PAGE;
-		m_elapsed = 0;
-		++m_page;
-		set_up_page_switch_animation();
-	}};
-
-	// TEXT CALLBACKS
-
-	const text_callback page_c_tcb{[this] {
-		const usize total_pages{std::max(m_replays.size() - 1, 0_uz) / REPLAYS_PER_PAGE + 1};
-		return TR_FMT::format("{}/{}", m_page + 1, total_pages);
-	}};
-
-	//
-
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
-									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
+	// clang-format off
+	m_ui.emplace<label_widget>(T_TITLE, {
+		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
+		.alignment = tr::align::TOP_CENTER,
+		.text = localized_text{T_TITLE},
+		.font_size = 64
+	});
+	m_ui.emplace<text_button_widget>(T_EXIT,
+		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		tr::align::BOTTOM_CENTER,
+		0.5_s,
+		NO_TOOLTIP,
+		localized_text{T_EXIT},
+		font::LANGUAGE,
+		48,
+		[this] { return m_substate == substate::IN_REPLAYS; },
+		[this] { on_exit(); },
+		sound::CANCEL
+	);
 	if (m_replays.empty()) {
-		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, NO_REPLAYS_FOUND_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
-								   loc_text_callback{T_NO_REPLAYS_FOUND}, tr::sys::ttf_style::NORMAL, 64, DARK_GRAY);
+		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, {
+			.animation = {{600, 467}, {500, 467}, 0.5_s},
+			.alignment = tr::align::TOP_CENTER,
+			.text = localized_text{T_NO_REPLAYS_FOUND},
+			.font_size = 64,
+			.color = DARK_GRAY
+		});
 		return;
 	}
 	replay_map::iterator replay_it{m_replays.begin()};
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
-		const std::optional<replay_map::iterator> opt_it{replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt};
-		const tweened_position animation{{i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s};
-		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], animation, tr::align::CENTER, 0.5_s, *this, opt_it);
+		m_ui.emplace<replay_widget>(REPLAY_TAGS[i],
+			tweened_position{{i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s},
+			tr::align::CENTER,
+			0.5_s,
+			*this,
+			replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt
+		);
 	}
-	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_ANIMATION, tr::valign::BOTTOM, 0.5_s, arrow_type::LEFT, page_d_scb, page_d_acb);
-	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, page_c_tcb,
-							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_ANIMATION, tr::valign::BOTTOM, 0.5_s, arrow_type::RIGHT, page_i_scb, page_i_acb);
+	m_ui.emplace<arrow_widget>(T_PAGE_D, {
+		.animation = {{-50, 942.5}, {10, 942.5}, 0.5_s},
+		.alignment = tr::valign::BOTTOM,
+		.type = arrow_type::LEFT,
+		.status = [this] { return m_substate == substate::IN_REPLAYS && m_page > 0; },
+		.action = [this] { on_page_decrement(); }
+	});
+	m_ui.emplace<label_widget>(T_PAGE_C, {
+		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = [this] {
+			const usize total_pages{std::max(m_replays.size() - 1, 0_uz) / REPLAYS_PER_PAGE + 1};
+			return TR_FMT::format("{}/{}", m_page + 1, total_pages);
+		}
+	});
+	m_ui.emplace<arrow_widget>(T_PAGE_I, {
+		.animation = {{1050, 942.5}, {990, 942.5}, 0.5_s},
+		.alignment = tr::valign::BOTTOM,
+		.type = arrow_type::RIGHT,
+		.status = [this] {
+			const u16 last_page{u16(std::max(m_replays.size() - 1, 0_uz) / REPLAYS_PER_PAGE)};
+			return m_substate == substate::IN_REPLAYS && m_page < last_page;
+		},
+		.action = [this] { on_page_increment(); }
+	});
+	// clang-format on
 }
 
 void replays_state::set_up_page_switch_animation()
@@ -233,4 +227,30 @@ void replays_state::set_up_exit_animation()
 		m_ui[T_PAGE_D].move_x_and_hide(-50, 0.5_s);
 		m_ui[T_PAGE_I].move_x_and_hide(1050, 0.5_s);
 	}
+}
+
+//
+
+void replays_state::on_exit()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation();
+	m_next_state = make_async<title_state>(m_game);
+}
+
+void replays_state::on_page_decrement()
+{
+	m_substate = substate::SWITCHING_PAGE;
+	m_elapsed = 0;
+	--m_page;
+	set_up_page_switch_animation();
+}
+
+void replays_state::on_page_increment()
+{
+	m_substate = substate::SWITCHING_PAGE;
+	m_elapsed = 0;
+	++m_page;
+	set_up_page_switch_animation();
 }

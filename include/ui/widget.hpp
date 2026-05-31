@@ -19,9 +19,28 @@ class replays_state;
 // Static text label widget.
 class label_widget final : public text_widget {
   public:
+	// Label properties.
+	struct properties {
+		// Initial position (or animation) of the label.
+		tweened_position animation;
+		// Alignment of the label.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the label.
+		ticks unhide_time{0.5_s};
+		// Command used to fetch the tooltip text of the label.
+		text_command tooltip_text{NO_TOOLTIP};
+		// Command used to fetch the text of the label.
+		text_command text;
+		// Font style of the label.
+		tr::sys::ttf_style font_style{tr::sys::ttf_style::NORMAL};
+		// Font size of the label.
+		float font_size{48};
+		// Color of the label.
+		tr::rgba8 color{GRAY};
+	};
+
 	// Creates a label widget.
-	label_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
-				 tr::sys::ttf_style style, float font_size, tr::rgba8 color = GRAY);
+	label_widget(properties&& properties);
 
 	// The tint of the widget.
 	tweened_color tint;
@@ -38,13 +57,13 @@ class label_widget final : public text_widget {
 class text_button_widget : public text_widget {
   public:
 	// Creates a text button widget.
-	text_button_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb,
-					   font font, float font_size, status_callback status_cb, action_callback action_cb, sound action_sound);
+	text_button_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_command tooltip_text, text_command text,
+					   font font, float font_size, status_command status_command, action_command action_command, sound action_sound);
 
-	// Gets whether the widget is interactible (delegates to the status callback).
+	// Gets whether the widget is interactible (delegates to the status command).
 	bool interactible() const override;
 
-	// Function executed when the widget is clicked or activated with enter (delegates to the action callback).
+	// Function executed when the widget is clicked or activated with enter (delegates to the action command).
 	void on_action() override;
 	// Function executed when the widget is hovered.
 	void on_hover() override;
@@ -65,10 +84,10 @@ class text_button_widget : public text_widget {
 	void add_to_renderer() override;
 
   private:
-	// Callback used to determine whether the button is interactible.
-	status_callback m_status_cb;
+	// Command used to determine whether the button is interactible.
+	status_command m_status;
 	// Action executed when the button is interacted with.
-	action_callback m_action_cb;
+	action_command m_action;
 	// The sound played when the button is interacted with.
 	sound m_action_sound;
 
@@ -95,8 +114,8 @@ template <class T> struct basic_numeric_input_widget_data {
 	ui_manager& m_ui;
 	// Reference to the variable the widget is bound to.
 	T& m_bound_variable;
-	// Callback used to validate the value after input is finished.
-	validation_callback<T> m_validation_cb;
+	// Command used to validate the value after input is finished.
+	validation_command<T> m_validator;
 };
 
 // Widget used to input a numeric value.
@@ -106,7 +125,7 @@ class basic_numeric_input_widget final : private basic_numeric_input_widget_data
   public:
 	// Creates a numeric input widget.
 	basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
-							   status_callback status_cb, validation_callback<T> validation_cb);
+							   status_command status_command, validation_command<T> validation_command);
 
 	// Function executed when the widget is selected.
 	void on_selected() override;
@@ -153,7 +172,7 @@ template <usize MaxChars> class line_input_widget final : public text_input_widg
   public:
 	// Creates a line input widget.
 	line_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size,
-					  status_callback status_cb, action_callback enter_cb, std::string_view initial_text = {});
+					  status_command status_command, action_command enter_action_command, std::string_view initial_text = {});
 
 	// Gets the contents of the widget.
 	std::string_view contents() const;
@@ -170,7 +189,7 @@ template <usize MaxChars> class line_input_widget final : public text_input_widg
 
   private:
 	// Function called when enter is pressed while the widget is selected.
-	action_callback m_enter_cb;
+	action_command m_enter_action;
 };
 
 ////////////////////////////////////////////////////////// MULTILINE INPUT WIDGET /////////////////////////////////////////////////////////
@@ -180,7 +199,7 @@ template <usize MaxChars> class multiline_input_widget final : public text_input
   public:
 	// Creates a multiline input widget.
 	multiline_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float width, u8 max_lines, float font_size,
-						   status_callback status_cb);
+						   status_command status_command);
 
 	// Gets the contents of the widget.
 	std::string_view contents() const;
@@ -297,17 +316,32 @@ enum class arrow_type : bool {
 // Arrow widget used to change values or select an option.
 class arrow_widget final : public widget {
   public:
+	// Arrow widget properties.
+	struct properties {
+		// Initial animation of the widget.
+		tweened_position animation;
+		// Vertical alignment of the arrow widget.
+		tr::valign alignment{tr::valign::CENTER};
+		// Amount of time it takes to unhide the label.
+		ticks unhide_time{0.5_s};
+		// Arrow type.
+		arrow_type type;
+		// Command used to query the status of the widget.
+		status_command status;
+		// Command called when the arrow is pressed.
+		action_command action;
+	};
+
 	// Creates an arrow widget.
-	arrow_widget(tweened_position pos, tr::valign alignment, ticks unhide_time, arrow_type type, status_callback status_cb,
-				 action_callback action_cb);
+	arrow_widget(properties&& properties);
 
 	// Gets the size of the widget.
 	glm::vec2 size() const override;
 
-	// Gets whether the widget is interactible (delegates to the status callback).
+	// Gets whether the widget is interactible (delegates to the status command).
 	bool interactible() const override;
 
-	// Function executed when the widget is clicked or activated with enter (delegates to the action callback).
+	// Function executed when the widget is clicked or activated with enter (delegates to the action command).
 	void on_action() override;
 	// Function executed when the widget is hovered.
 	void on_hover() override;
@@ -328,10 +362,10 @@ class arrow_widget final : public widget {
 	void add_to_renderer() override;
 
   protected:
-	// Callback used to determine whether the arrow is interactible.
-	status_callback m_status_cb;
+	// Command used to determine whether the arrow is interactible.
+	status_command m_status;
 	// Action executed when the arrow is interacted with.
-	action_callback m_action_cb;
+	action_command m_action;
 	// The tint of the arrow.
 	tweened_color m_tint;
 	// The orientation of the arrow.
@@ -363,8 +397,8 @@ class replay_playback_indicator_widget final : public widget {
 
 ///////////////////////////////////////////////////////////// GAMEMODE WIDGET /////////////////////////////////////////////////////////////
 
-// Action callback type used by the gamemode widget.
-using gamemode_widget_action_callback = std::function<void(const gamemode_with_path&)>;
+// Action command type used by the gamemode widget.
+using gamemode_widget_action_command = std::function<void(const gamemode_with_path&)>;
 
 // Must be initialized before text_button_widget, so is separated out into its own struct.
 struct gamemode_widget_data {
@@ -376,8 +410,8 @@ struct gamemode_widget_data {
 class gamemode_widget final : public gamemode_widget_data, public text_button_widget {
   public:
 	// Creates a gamemode widget.
-	gamemode_widget(tweened_position pos, tr::align alignment, ticks unhide_time, status_callback status_cb,
-					gamemode_widget_action_callback action_cb, std::optional<gamemode_with_path> gamemode);
+	gamemode_widget(tweened_position pos, tr::align alignment, ticks unhide_time, status_command status_command,
+					gamemode_widget_action_command action_command, std::optional<gamemode_with_path> gamemode);
 };
 
 /////////////////////////////////////////////////////////////// SCORE WIDGET //////////////////////////////////////////////////////////////

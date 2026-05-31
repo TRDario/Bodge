@@ -33,9 +33,9 @@ std::string default_numeric_input_formatter<T, Format, BufferFormat>::to_string(
 template <class T, usize Digits, class Formatter>
 basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time,
 																			 float font_size, ui_manager& ui, T& ref,
-																			 status_callback status_cb,
-																			 validation_callback<T> validation_cb)
-	: basic_numeric_input_widget_data<T>{ui, ref, std::move(validation_cb)}
+																			 status_command status_command,
+																			 validation_command<T> validation_command)
+	: basic_numeric_input_widget_data<T>{ui, ref, std::move(validation_command)}
 	, text_input_widget<Digits>{
 		  pos,
 		  alignment,
@@ -43,7 +43,7 @@ basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(twe
 		  tr::sys::ttf_style::NORMAL,
 		  font_size,
 		  tr::sys::UNLIMITED_WIDTH,
-		  std::move(status_cb),
+		  std::move(status_command),
 		  [this] {
 			  if (this->m_selected) {
 				  if (this->m_buffer.empty()) {
@@ -78,7 +78,7 @@ template <class T, usize Digits, class Formatter> void basic_numeric_input_widge
 		// Promote small integers to int so writing e.g. '435' clamps nicely to '255' instead of failing.
 		std::common_type_t<T, int> raw_value{this->m_bound_variable};
 		Formatter::from_string(raw_value, this->m_buffer);
-		this->m_bound_variable = this->m_validation_cb(raw_value);
+		this->m_bound_variable = this->m_validator(raw_value);
 	}
 }
 

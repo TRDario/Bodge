@@ -49,21 +49,6 @@ constexpr shortcut_table SHORTCUTS{
 	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT},
 };
 
-// Entry animation used for the "no scores found" widget.
-constexpr tweened_position NO_SCORES_FOUND_ANIMATION{{600, 500}, {500, 500}, 0.5_s};
-// Entry animation used for the previous gamemode button widget.
-constexpr tweened_position GAMEMODE_D_ANIMATION{{-50, 892.5}, {10, 892.5}, 0.5_s};
-// Entry animation used for the current gamemode widget.
-constexpr tweened_position GAMEMODE_C_ANIMATION{BOTTOM_START_POS, {500, 900}, 0.5_s};
-// Entry animation used for the next gamemode button widget.
-constexpr tweened_position GAMEMODE_I_ANIMATION{{1050, 892.5}, {990, 892.5}, 0.5_s};
-// Entry animation used for the previous page button widget.
-constexpr tweened_position PAGE_D_ANIMATION{{-50, 942.5}, {10, 942.5}, 0.5_s};
-// Entry animation used for the current page widget.
-constexpr tweened_position PAGE_C_ANIMATION{BOTTOM_START_POS, {500, 950}, 0.5_s};
-// Entry animation used for the next page button widget.
-constexpr tweened_position PAGE_I_ANIMATION{{1050, 942.5}, {990, 942.5}, 0.5_s};
-
 // clang-format on
 ///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
 
@@ -95,100 +80,101 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		std::ranges::sort(m_sorted_scores, scoreboard == scoreboard::SCORE ? compare_scores : compare_times);
 	}
 
-	// TOOLTIP CALLBACKS
+	// clang-format off
+	m_ui.emplace<label_widget>(T_TITLE, {
+		.animation = TITLE_POS,
+		.alignment = tr::align::TOP_CENTER,
+		.unhide_time = 0_s,
+		.text = localized_text{T_TITLE},
+		.font_size = 64
+	});
+	m_ui.emplace<label_widget>(T_PLAYER_INFO, {
+		.animation = {{500, 64}},
+		.alignment = tr::align::TOP_CENTER,
+		.unhide_time = 0_s,
+		.text = constant_text{g_scorefile.format_player_info()},
+		.font_size = 32
+	});
+	m_ui.emplace<text_button_widget>(T_EXIT,
+		glm::vec2{500, 1000},
+		tr::align::BOTTOM_CENTER,
+		0,
+		NO_TOOLTIP,
+		localized_text{T_EXIT},
+		font::LANGUAGE,
+		48,
+		[this] { return m_substate == substate::IN_SCOREBOARD; },
+		[this] { on_exit(); },
+		sound::CANCEL
+	);
 
-	const text_callback cur_gamemode_ttcb{[this] { return std::string{m_selected->gamemode.description_loc()}; }};
-
-	// STATUS CALLBACKS
-
-	const status_callback scb{[this] { return m_substate == substate::IN_SCOREBOARD; }};
-	const status_callback gamemode_change_scb{
-		[this] { return m_substate == substate::IN_SCOREBOARD && g_scorefile.categories.size() > 1; },
-	};
-	const status_callback page_d_scb{[this] { return m_substate == substate::IN_SCOREBOARD && m_page > 0; }};
-	const status_callback page_i_scb{[this] {
-		const int last_page{std::max(int(m_selected->entries.size()) - 1, 0) / SCORES_PER_PAGE};
-		return m_substate == substate::IN_SCOREBOARD && m_page < last_page;
-	}};
-
-	// ACTION CALLBACKS
-
-	const action_callback exit_acb{[this] {
-		m_substate = substate::EXITING;
-		m_elapsed = 0;
-		set_up_exit_animation();
-		m_next_state = make_async<scoreboard_selection_state>(m_game, animate_title::NO);
-	}};
-	const action_callback gamemode_d_acb{[this] {
-		m_substate = substate::SWITCHING_PAGE;
-		m_elapsed = 0;
-		m_page = 0;
-		if (m_selected == g_scorefile.categories.begin()) {
-			m_selected = g_scorefile.categories.end();
-		}
-		--m_selected;
-		set_up_page_switch_animation();
-	}};
-	const action_callback gamemode_i_acb{[this] {
-		m_substate = substate::SWITCHING_PAGE;
-		m_elapsed = 0;
-		m_page = 0;
-		if (++m_selected == g_scorefile.categories.end()) {
-			m_selected = g_scorefile.categories.begin();
-		}
-		set_up_page_switch_animation();
-	}};
-	const action_callback page_d_acb{[this] {
-		m_substate = substate::SWITCHING_PAGE;
-		m_elapsed = 0;
-		--m_page;
-		set_up_page_switch_animation();
-	}};
-	const action_callback page_i_acb{[this] {
-		m_substate = substate::SWITCHING_PAGE;
-		m_elapsed = 0;
-		++m_page;
-		set_up_page_switch_animation();
-	}};
-
-	// TEXT CALLBACKS
-
-	const text_callback cur_gamemode_tcb{[this] { return std::string{m_selected->gamemode.name_loc()}; }};
-	const text_callback cur_page_tcb{[this] {
-		const int total{std::max(int(m_selected->entries.size()) - 1, 0) / SCORES_PER_PAGE + 1};
-		return TR_FMT::format("{}/{}", m_page + 1, total);
-	}};
-
-	//
-
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_PLAYER_INFO, glm::vec2{500, 64}, tr::align::TOP_CENTER, 0, NO_TOOLTIP,
-							   const_text_callback{g_scorefile.format_player_info()}, tr::sys::ttf_style::NORMAL, 32);
-	m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
-									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
 	if (g_scorefile.categories.empty()) {
-		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, NO_SCORES_FOUND_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-								   loc_text_callback{T_NO_SCORES_FOUND}, tr::sys::ttf_style::NORMAL, 64, DARK_GRAY);
+		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, {
+			.animation = {{600, 500}, {500, 500}, 0.5_s},
+			.text = localized_text{T_NO_SCORES_FOUND},
+			.font_size = 64,
+			.color = DARK_GRAY
+		});
 		return;
 	}
+
 	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
-		const tweened_position animation{{i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s};
-		const usize rank{m_page * SCORES_PER_PAGE + i + 1};
-		const tr::opt_ref<score_entry> score{m_sorted_scores.size() > i ? tr::opt_ref{m_sorted_scores[i]} : std::nullopt};
-		m_ui.emplace<score_widget>(SCORE_TAGS[i], animation, tr::align::CENTER, 0.5_s, (enum score_widget::type)(m_scoreboard), rank,
-								   score);
+		m_ui.emplace<score_widget>(SCORE_TAGS[i],
+			tweened_position{{i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s},
+			tr::align::CENTER,
+			0.5_s,
+			(enum score_widget::type)(m_scoreboard),
+			m_page * SCORES_PER_PAGE + i + 1,
+			m_sorted_scores.size() > i ? tr::opt_ref{m_sorted_scores[i]} : std::nullopt
+		);
 	}
-	m_ui.emplace<arrow_widget>(T_GAMEMODE_D, GAMEMODE_D_ANIMATION, tr::valign::BOTTOM, 0.5_s, arrow_type::LEFT, gamemode_change_scb,
-							   gamemode_d_acb);
-	m_ui.emplace<label_widget>(T_GAMEMODE_C, GAMEMODE_C_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, cur_gamemode_ttcb, cur_gamemode_tcb,
-							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<arrow_widget>(T_GAMEMODE_I, GAMEMODE_I_ANIMATION, tr::valign::BOTTOM, 0.5_s, arrow_type::RIGHT, gamemode_change_scb,
-							   gamemode_i_acb);
-	m_ui.emplace<arrow_widget>(T_PAGE_D, PAGE_D_ANIMATION, tr::valign::BOTTOM, 0.5_s, arrow_type::LEFT, page_d_scb, page_d_acb);
-	m_ui.emplace<label_widget>(T_PAGE_C, PAGE_C_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, cur_page_tcb,
-							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<arrow_widget>(T_PAGE_I, PAGE_I_ANIMATION, tr::valign::BOTTOM, 0.5_s, arrow_type::RIGHT, page_i_scb, page_i_acb);
+
+	m_ui.emplace<arrow_widget>(T_GAMEMODE_D, {
+		.animation = {{-50, 892.5}, {10, 892.5}, 0.5_s},
+		.alignment = tr::valign::BOTTOM,
+		.type = arrow_type::LEFT,
+		.status = [this] { return m_substate == substate::IN_SCOREBOARD && g_scorefile.categories.size() > 1; },
+		.action = [this] { on_gamemode_decrement(); }
+	});
+	m_ui.emplace<label_widget>(T_GAMEMODE_C, {
+		.animation = {BOTTOM_START_POS, {500, 900}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.tooltip_text = [this] { return std::string{m_selected->gamemode.description_loc()}; },
+		.text = [this] { return std::string{m_selected->gamemode.name_loc()}; }
+	});
+	m_ui.emplace<arrow_widget>(T_GAMEMODE_I, {
+		.animation = {{1050, 892.5}, {990, 892.5}, 0.5_s},
+		.alignment = tr::valign::BOTTOM,
+		.type = arrow_type::RIGHT,
+		.status = [this] { return m_substate == substate::IN_SCOREBOARD && g_scorefile.categories.size() > 1; },
+		.action = [this] { on_gamemode_increment(); }
+	});
+	m_ui.emplace<arrow_widget>(T_PAGE_D, {
+		.animation = {{-50, 942.5}, {10, 942.5}, 0.5_s},
+		.alignment = tr::valign::BOTTOM,
+		.type = arrow_type::LEFT,
+		.status = [this] { return m_substate == substate::IN_SCOREBOARD && m_page > 0; },
+		.action = [this] { on_page_decrement(); }
+	});
+	m_ui.emplace<label_widget>(T_PAGE_C, {
+		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
+		.alignment = tr::align::BOTTOM_CENTER,
+		.text = [this] {
+			const int total{std::max(int(m_selected->entries.size()) - 1, 0) / SCORES_PER_PAGE + 1};
+			return TR_FMT::format("{}/{}", m_page + 1, total);
+		}
+	});
+	m_ui.emplace<arrow_widget>(T_PAGE_I, {
+		.animation = {{1050, 942.5}, {990, 942.5}, 0.5_s},
+		.alignment = tr::valign::BOTTOM,
+		.type = arrow_type::RIGHT,
+		.status = [this] {
+			const int last_page{std::max(int(m_selected->entries.size()) - 1, 0) / SCORES_PER_PAGE};
+			return m_substate == substate::IN_SCOREBOARD && m_page < last_page;
+		},
+		.action = [this] { on_page_increment(); }
+	});
+	// clang-format on
 }
 
 ///////////////////////////////////////////////////////////// VIRTUAL METHODS /////////////////////////////////////////////////////////////
@@ -241,4 +227,53 @@ void scoreboard_state::set_up_exit_animation()
 		m_ui[T_PAGE_C].move_and_hide(BOTTOM_START_POS, 0.5_s);
 		m_ui[T_PAGE_I].move_x_and_hide(1050, 0.5_s);
 	}
+}
+
+//
+
+void scoreboard_state::on_exit()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation();
+	m_next_state = make_async<scoreboard_selection_state>(m_game, animate_title::NO);
+}
+
+void scoreboard_state::on_gamemode_decrement()
+{
+	m_substate = substate::SWITCHING_PAGE;
+	m_elapsed = 0;
+	m_page = 0;
+	if (m_selected == g_scorefile.categories.begin()) {
+		m_selected = g_scorefile.categories.end();
+	}
+	--m_selected;
+	set_up_page_switch_animation();
+}
+
+void scoreboard_state::on_gamemode_increment()
+{
+	m_substate = substate::SWITCHING_PAGE;
+	m_elapsed = 0;
+	m_page = 0;
+	if (++m_selected == g_scorefile.categories.end()) {
+		m_selected = g_scorefile.categories.begin();
+	}
+	set_up_page_switch_animation();
+}
+
+void scoreboard_state::on_page_decrement()
+{
+	m_substate = substate::SWITCHING_PAGE;
+	m_elapsed = 0;
+	--m_page;
+	set_up_page_switch_animation();
+}
+
+void scoreboard_state::on_page_increment()
+{
+	m_substate = substate::SWITCHING_PAGE;
+	m_elapsed = 0;
+	++m_page;
+	set_up_page_switch_animation();
 }

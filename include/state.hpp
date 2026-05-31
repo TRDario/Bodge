@@ -26,7 +26,9 @@
 #pragma once
 #include "state/state_base.hpp"
 
-using gamemode_widget_action_callback = std::function<void(const gamemode_with_path&)>;
+using gamemode_widget_action_command = std::function<void(const gamemode_with_path&)>;
+class gamemode_editor_state;
+class gamemode_selector_state;
 
 ////////////////////////////////////////////////////////////// STATE MACHINE //////////////////////////////////////////////////////////////
 
@@ -60,6 +62,9 @@ class name_entry_state final : public main_menu_state {
 
 	// The opacity of the fade overlay.
 	float fade_overlay_opacity() override;
+
+	// Function called upon exiting from the name entry screen.
+	void on_exit();
 };
 
 /////////////////////////////////////////////////////////////// TITLE STATE ///////////////////////////////////////////////////////////////
@@ -98,6 +103,21 @@ class title_state final : public main_menu_state {
 	void set_up_ui();
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
+
+	// Function called when the "start game" button is pressed.
+	void on_start_game();
+	// Function called when the "gamemode manager" button is pressed.
+	void on_gamemode_manager();
+	// Function called when the "scoreboards" button is pressed.
+	void on_scoreboards();
+	// Function called when the "replays" button is pressed.
+	void on_replays();
+	// Function called when the "settings" button is pressed.
+	void on_settings();
+	// Function called when the "credits" button is pressed.
+	void on_credits();
+	// Function called when the "exit" button is pressed.
+	void on_exit();
 };
 
 //////////////////////////////////////////////////////////// START GAME STATE /////////////////////////////////////////////////////////////
@@ -142,6 +162,15 @@ class start_game_state final : public main_menu_state {
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
+
+	// Function called when the "previous gamemode" arrow is pressed.
+	void on_previous_gamemode();
+	// Function called when the "next gamemode" arrow is pressed.
+	void on_next_gamemode();
+	// Function called when the "start" button is pressed.
+	void on_start();
+	// Function called when the "exit" button is pressed.
+	void on_exit();
 };
 
 ////////////////////////////////////////////////////////// GAMEMODE MANAGER STATE /////////////////////////////////////////////////////////
@@ -169,29 +198,68 @@ class gamemode_manager_state final : public main_menu_state {
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation(animate_title animate_title);
+
+	// Function called when the "new gamemode" button is pressed.
+	void on_enter_new_gamemode();
+	// Function called when the "edit gamemode" button is pressed.
+	void on_enter_edit_gamemode();
+	// Function called when the "clone gamemode" button is pressed.
+	void on_enter_clone_gamemode();
+	// Function called when the "delete gamemode" button is pressed.
+	void on_enter_delete_gamemode();
+	// Function called upon exiting from the gamemode manager.
+	void on_exit();
 };
 
 ////////////////////////////////////////////////////////// GAMEMODE EDITOR STATE //////////////////////////////////////////////////////////
 
 // Data specific to a new gamemode editor.
-struct new_gamemode_editor_data {};
-// Data specific to a cloned gamemode editor.
-struct cloned_gamemode_editor_data {};
-// Data specific to an edited gamemode editor.
-struct edited_gamemode_editor_data {
-	// Path to the edited gamemode.
-	std::filesystem::path path;
+class new_gamemode_editor {
+  public:
+	// Gets the text command used for the subtitle of the gamemode editor.
+	localized_text subtitle_text() const;
+	// Function called by the gamemode editor state on save.
+	void on_save(gamemode_editor_state& state) const;
+	// Function called by the gamemode editor state on discard.
+	void on_discard(gamemode_editor_state& state) const;
 };
-// Gamemode editor data.
-using gamemode_editor_data = std::variant<new_gamemode_editor_data, cloned_gamemode_editor_data, edited_gamemode_editor_data>;
+// Data specific to a cloned gamemode editor.
+class cloned_gamemode_editor {
+  public:
+	// Gets the text command used for the subtitle of the gamemode editor.
+	localized_text subtitle_text() const;
+	// Function called by the gamemode editor state on save.
+	void on_save(gamemode_editor_state& state) const;
+	// Function called by the gamemode editor state on discard.
+	void on_discard(gamemode_editor_state& state) const;
+};
+// Data specific to an edited gamemode editor.
+class edited_gamemode_editor {
+  public:
+	// Edited gmemode editor data.
+	edited_gamemode_editor(std::filesystem::path path);
+
+	// Gets the text command used for the subtitle of the gamemode editor.
+	localized_text subtitle_text() const;
+	// Function called by the gamemode editor state on save.
+	void on_save(gamemode_editor_state& state) const;
+	// Function called by the gamemode editor state on discard.
+	void on_discard(gamemode_editor_state& state) const;
+
+  private:
+	// Path to the edited gamemode.
+	std::filesystem::path m_path;
+};
+// Generic gamemode editor.
+using gamemode_editor = std::variant<new_gamemode_editor, cloned_gamemode_editor, edited_gamemode_editor>;
 
 // Gamemode editor screens of the main menu.
 class gamemode_editor_state final : public main_menu_state {
   public:
 	// Creates a gamemode editor state coming from a test game.
-	gamemode_editor_state(gamemode_editor_data data, gamemode gamemode);
+	gamemode_editor_state(gamemode_editor data, gamemode gamemode);
 	// Creates a gamemode editor state coming from another menu state.
-	gamemode_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode,
+	gamemode_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor data, gamemode gamemode,
 						  animate_subtitle animate_subtitle);
 
 	// Signals whether the cursor should be drawn transparent.
@@ -214,8 +282,8 @@ class gamemode_editor_state final : public main_menu_state {
 
 	// The current substate.
 	substate m_substate;
-	// Type-dependent editor data.
-	gamemode_editor_data m_data;
+	// Editor type.
+	gamemode_editor m_type;
 	// List of names of available songs.
 	std::vector<std::string> m_available_songs;
 	// The pending gamemode.
@@ -228,6 +296,23 @@ class gamemode_editor_state final : public main_menu_state {
 	void set_up_ui(animate_title animate_title, animate_subtitle animate_subtitle);
 	// Sets up the UI exit animation.
 	void set_up_exit_animation(animate_title animate_title, animate_subtitle animate_subtitle);
+
+	// Function called when the "player settings" button is pressed.
+	void on_enter_player_settings();
+	// Function called when the "ball settings" button is pressed.
+	void on_enter_ball_settings();
+	// Function called when the song button is pressed.
+	void on_change_song();
+	// Function called when the "test" button is pressed.
+	void on_test();
+	// Function called when the "save" button is pressed.
+	void on_save();
+	// Function called when the "discard" button is pressed.
+	void on_discard();
+
+	friend class new_gamemode_editor;
+	friend class edited_gamemode_editor;
+	friend class cloned_gamemode_editor;
 };
 
 //////////////////////////////////////////////////////// BALL SETTINGS EDITOR STATE ///////////////////////////////////////////////////////
@@ -236,7 +321,7 @@ class gamemode_editor_state final : public main_menu_state {
 class ball_settings_editor_state final : public main_menu_state {
   public:
 	// Creates a ball settings editor state.
-	ball_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode);
+	ball_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor data, gamemode gamemode);
 
 	// Updates the state.
 	tr::next_state tick() override;
@@ -253,12 +338,15 @@ class ball_settings_editor_state final : public main_menu_state {
 	// The current substate.
 	substate m_substate;
 	// Type-dependent editor data.
-	gamemode_editor_data m_data;
+	gamemode_editor m_data;
 	// The pending gamemode.
 	gamemode m_pending;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
+
+	// Function called when the "exit" button is pressed.
+	void on_exit();
 };
 
 /////////////////////////////////////////////////////// PLAYER SETTINGS EDITOR STATE //////////////////////////////////////////////////////
@@ -267,7 +355,7 @@ class ball_settings_editor_state final : public main_menu_state {
 class player_settings_editor_state final : public main_menu_state {
   public:
 	// Creates a player settings editor state.
-	player_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor_data data, gamemode gamemode);
+	player_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor data, gamemode gamemode);
 
 	// Updates the state.
 	tr::next_state tick() override;
@@ -284,31 +372,56 @@ class player_settings_editor_state final : public main_menu_state {
 	// The current substate.
 	substate m_substate;
 	// Type-dependent editor data.
-	gamemode_editor_data m_data;
+	gamemode_editor m_data;
 	// The pending gamemode.
 	gamemode m_pending;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
+
+	// Function called when the "spawn life fragments" setting is toggled.
+	void on_toggle_life_fragments();
+	// Function called when the "exit" button is pressed.
+	void on_exit();
 };
 
 ///////////////////////////////////////////////////////// GAMEMODE SELECTOR STATE /////////////////////////////////////////////////////////
 
-// Types of gamemode selectors.
-enum class gamemode_selector_type {
-	// Selector for gamemode cloning.
-	CLONE,
-	// Selector for gamemode editing.
-	EDIT,
-	// Selector for gamemode deleting.
-	DELETE
+// Selector for cloning gamemodes.
+struct clone_gamemode_selector {
+	// Filters gamemodes such that only clonable gamemodes remain.
+	void filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const;
+	// Gets the text command used for the subtitle of the gamemode selector.
+	localized_text subtitle_text() const;
+	// Function executed when a gamemode is selected.
+	void on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const;
 };
+// Selector for editing gamemodes.
+struct edit_gamemode_selector {
+	// Filters gamemodes such that only editable gamemodes remain.
+	void filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const;
+	// Gets the text command used for the subtitle of the gamemode selector.
+	localized_text subtitle_text() const;
+	// Function executed when a gamemode is selected.
+	void on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const;
+};
+// Selector for deleting gamemodes.
+struct delete_gamemode_selector {
+	// Filters gamemodes such that only deletable gamemodes remain.
+	void filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const;
+	// Gets the text command used for the subtitle of the gamemode selector.
+	localized_text subtitle_text() const;
+	// Function executed when a gamemode is selected.
+	void on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const;
+};
+// Generic gamemode selector.
+using gamemode_selector = std::variant<clone_gamemode_selector, edit_gamemode_selector, delete_gamemode_selector>;
 
 // Gamemode selector screens of the main menu.
 class gamemode_selector_state final : public main_menu_state {
   public:
 	// Creates a gamemode selector state.
-	gamemode_selector_state(std::shared_ptr<playerless_game> game, gamemode_selector_type type, animate_subtitle move_subtitle);
+	gamemode_selector_state(std::shared_ptr<playerless_game> game, gamemode_selector selector, animate_subtitle move_subtitle);
 
 	// Updates the state.
 	tr::next_state tick() override;
@@ -326,8 +439,8 @@ class gamemode_selector_state final : public main_menu_state {
 
 	// The current substate.
 	substate m_substate;
-	// The type of selector.
-	gamemode_selector_type m_type;
+	// Concete selector type.
+	gamemode_selector m_selector;
 	// List of available gamemodes.
 	std::vector<gamemode_with_path> m_gamemodes;
 	// The currently open page.
@@ -335,14 +448,25 @@ class gamemode_selector_state final : public main_menu_state {
 	// Holds the result of an asynchronously loaded new set of widgets.
 	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
 
-	// Gets a gamemode action callback fitting for the current gamemode selector type.
-	gamemode_widget_action_callback gamemode_acb();
 	// Prepares the widgets for the next page.
 	std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets();
 	// Sets up the UI page switching animation.
 	void set_up_page_switch_animation();
 	// Sets up the UI exit animation.
 	void set_up_exit_animation(animate_subtitle move_subtitle);
+
+	// Function called when a gamemode is selected.
+	void on_gamemode_selected(const gamemode_with_path& gp);
+	// Function called when the "exit" button is pressed.
+	void on_exit();
+	// Function called when the page is decremented.
+	void on_page_decrement();
+	// Function called when the page is incremented.
+	void on_page_increment();
+
+	friend struct clone_gamemode_selector;
+	friend struct edit_gamemode_selector;
+	friend struct delete_gamemode_selector;
 };
 
 //////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////
@@ -370,6 +494,13 @@ class scoreboard_selection_state final : public main_menu_state {
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation(animate_title animate_title);
+
+	// Function called when the "view times" button is pressed.
+	void on_view_times();
+	// Function called when the "view scores" button is pressed.
+	void on_view_scores();
+	// Function called when the "exit" button is pressed.
+	void on_exit();
 };
 
 //////////////////////////////////////////////////////////// SCOREBOARDS STATE ////////////////////////////////////////////////////////////
@@ -417,6 +548,17 @@ class scoreboard_state final : public main_menu_state {
 	void set_up_page_switch_animation();
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
+
+	// Function called when the "exit" button is pressed.
+	void on_exit();
+	// Function called when the gamemode is decremented.
+	void on_gamemode_decrement();
+	// Function called when the gamemode is incremented.
+	void on_gamemode_increment();
+	// Function called when the page is decremented.
+	void on_page_decrement();
+	// Function called when the page is incremented.
+	void on_page_increment();
 };
 
 ////////////////////////////////////////////////////////////// REPLAYS STATE //////////////////////////////////////////////////////////////
@@ -470,6 +612,13 @@ class replays_state final : public main_menu_state {
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
 
+	// Function called when the "exit" button is pressed.
+	void on_exit();
+	// Function called when the page is decremented.
+	void on_page_decrement();
+	// Function called when the page is incremented.
+	void on_page_increment();
+
 	friend class replay_widget;
 };
 
@@ -502,6 +651,19 @@ class settings_state final : public main_menu_state {
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
+
+	// Function called when the display mode is changed.
+	void on_change_display_mode();
+	// Function called when the player skin is changed.
+	void on_change_player_skin();
+	// Function called when the language is changed.
+	void on_change_language();
+	// Function called when the "revert" button is pressed.
+	void on_revert();
+	// Function called when the "apply" button is pressed.
+	void on_apply();
+	// Function called when the "exit" button is pressed.
+	void on_exit();
 };
 
 ////////////////////////////////////////////////////////////// CREDITS STATE //////////////////////////////////////////////////////////////
@@ -526,6 +688,9 @@ class credits_state final : public main_menu_state {
 
 	// The current substate.
 	substate m_substate;
+
+	// Function called upon exiting the credits menu.
+	void on_exit();
 };
 
 /////////////////////////////////////////////////////////////// GAME STATE ////////////////////////////////////////////////////////////////
@@ -537,7 +702,7 @@ struct replay_game_data {};
 // Data specific to a test game state.
 struct test_game_data {
 	// Properties of the gamemode editor.
-	gamemode_editor_data editor_data;
+	gamemode_editor editor_data;
 };
 // Game state data.
 using game_state_data = std::variant<regular_game_data, replay_game_data, test_game_data>;
@@ -664,6 +829,17 @@ class pause_state final : public game_menu_state {
 	void set_up_limited_ui();
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
+
+	// Function called when the "unpause" button is pressed.
+	void on_unpause();
+	// Function called when the "save and restart" button is pressed.
+	void on_save_and_restart();
+	// Function called when the "restart" button is pressed.
+	void on_restart();
+	// Function called when the "save and quit" button is pressed.
+	void on_save_and_quit();
+	// Function called when the "quit" button is pressed.
+	void on_quit();
 };
 
 ///////////////////////////////////////////////////////////// GAME OVER STATE /////////////////////////////////////////////////////////////
@@ -704,13 +880,22 @@ class game_over_state final : public game_menu_state {
 	// The strength of the background blur.
 	float blur_strength() override;
 
-	// Creates a text callback for the "best time" widget.
-	text_callback best_time_text_callback() const;
-	// Creates a text callback for the "best score" widget.
-	text_callback best_score_text_callback() const;
+	// Creates a text command for the "best time" widget.
+	text_command best_time_text() const;
+	// Creates a text command for the "best score" widget.
+	text_command best_score_text() const;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
+
+	// Function called upon pressing "save and restart".
+	void on_save_and_restart();
+	// Function called upon pressing "restart".
+	void on_restart();
+	// Function called upon pressing "save and exit".
+	void on_save_and_exit();
+	// Function called upon pressing "exit".
+	void on_exit();
 };
 
 //////////////////////////////////////////////////////////// SAVE SCORE STATE /////////////////////////////////////////////////////////////
@@ -765,6 +950,11 @@ class save_score_state final : public game_menu_state {
 	void set_up_ui();
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
+
+	// Function called when the "save" button is pressed.
+	void on_save();
+	// Function called when the "cancel" button is pressed.
+	void on_cancel();
 };
 
 //////////////////////////////////////////////////////////// SAVE REPLAY STATE ////////////////////////////////////////////////////////////
@@ -809,4 +999,9 @@ class save_replay_state final : public game_menu_state {
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
+
+	// Function called when the "save" button is pressed.
+	void on_save();
+	// Function called when the "discard" button is pressed.
+	void on_discard();
 };

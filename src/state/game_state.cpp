@@ -22,11 +22,21 @@ game_state::game_state(std::shared_ptr<game> game, game_state_data data, fade_in
 	, m_song_speed{1}
 	, m_game{std::move(game)}
 {
+	// clang-format off
 	if (std::holds_alternative<replay_game_data>(m_data)) {
-		m_ui.emplace<label_widget>(T_REPLAY, glm::vec2{4, 1000}, tr::align::BOTTOM_LEFT, 0, NO_TOOLTIP, loc_text_callback{T_REPLAY},
-								   tr::sys::ttf_style::NORMAL, 48);
-		m_ui.emplace<replay_playback_indicator_widget>(T_INDICATOR, glm::vec2{992, 994}, tr::align::BOTTOM_RIGHT, 0);
+		m_ui.emplace<label_widget>(T_REPLAY, {
+			.animation = {{4, 1000}},
+			.alignment = tr::align::BOTTOM_LEFT,
+			.unhide_time =  0,
+			.text = localized_text{T_REPLAY}
+		});
+		m_ui.emplace<replay_playback_indicator_widget>(T_INDICATOR,
+			glm::vec2{992, 994},
+			tr::align::BOTTOM_RIGHT,
+			0
+		);
 	}
+	// clang-format on
 }
 
 //

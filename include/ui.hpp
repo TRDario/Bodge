@@ -42,6 +42,9 @@ class ui_manager {
 	template <class T, class... Args>
 		requires(std::constructible_from<T, Args...>)
 	T& emplace(tag tag, Args&&... args);
+	template <class T, class... Args>
+		requires(requires { typename T::properties; })
+	T& emplace(tag tag, typename T::properties&& properties);
 	// Replaces the widgets in the interface with a new set of widgets.
 	void replace(std::unordered_map<tag, std::unique_ptr<widget>>&& widgets);
 
@@ -128,4 +131,11 @@ template <class T, class... Args>
 T& ui_manager::emplace(tag tag, Args&&... args)
 {
 	return (T&)(*m_widgets.emplace(tag, std::make_unique<T>(std::forward<Args>(args)...)).first->second);
+}
+
+template <class T, class... Args>
+	requires(requires { typename T::properties; })
+T& ui_manager::emplace(tag tag, typename T::properties&& properties)
+{
+	return (T&)(*m_widgets.emplace(tag, std::make_unique<T>(std::move(properties))).first->second);
 }

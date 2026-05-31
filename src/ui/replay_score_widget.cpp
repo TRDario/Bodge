@@ -111,18 +111,18 @@ static void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 co
 score_widget::score_widget(tweened_position pos, tr::align alignment, ticks unhide_time, enum type type, usize rank,
 						   tr::opt_ref<const ::score_entry> score)
 	: text_widget{
-		pos,
-		alignment,
-		unhide_time,
-		const_text_callback{format_score_tooltip(score)},
-		const_text_callback(format_score_text(score, type, rank)),
-		font::LANGUAGE,
-		tr::sys::ttf_style::NORMAL,
-		48,
-		tr::sys::UNLIMITED_WIDTH,
-	},
-	m_empty{!score.has_ref()},
-	m_flags{score.has_ref() ? score->flags : score_flags{}}
+		  pos,
+		  alignment,
+		  unhide_time,
+		  constant_text{format_score_tooltip(score)},
+		  constant_text(format_score_text(score, type, rank)),
+		  font::LANGUAGE,
+		  tr::sys::ttf_style::NORMAL,
+		  48,
+		  tr::sys::UNLIMITED_WIDTH,
+	  }
+	, m_empty{!score.has_ref()}
+	, m_flags{score.has_ref() ? score->flags : score_flags{}}
 {
 }
 
@@ -160,8 +160,8 @@ replay_widget::replay_widget(tweened_position pos, tr::align alignment, ticks un
 	, text_button_widget{pos,
 						 alignment,
 						 unhide_time,
-						 const_text_callback{replay_it.has_value() ? format_score_tooltip((*replay_it)->second) : ""},
-						 const_text_callback{format_replay_text(replay_it)},
+						 constant_text{replay_it.has_value() ? format_score_tooltip((*replay_it)->second) : ""},
+						 constant_text{format_replay_text(replay_it)},
 						 font::LANGUAGE,
 						 34,
 						 [this] { return m_parent_state.m_substate == replays_state::substate::IN_REPLAYS && m_replay_it.has_value(); },

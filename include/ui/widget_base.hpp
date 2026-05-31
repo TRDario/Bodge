@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                                       //
-// Provides type definitions relating to UI widgets, several generic text callbacks, and base widget classes.                            //
+// Provides type definitions relating to UI widgets, several generic text commands, and base widget classes.                             //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -28,32 +28,32 @@ using selection_tree = std::initializer_list<selection_tree_row>;
 using shortcut_table = std::initializer_list<std::pair<const tr::sys::key_chord, tag>>;
 
 // Function returning a string used by a text widget or for a tooltip.
-using text_callback = std::function<std::string()>;
+using text_command = std::function<std::string()>;
 // Function returning a boolean denoting whether a widget is considered interactible.
-using status_callback = std::function<bool()>;
+using status_command = std::function<bool()>;
 // Function used for a widget action.
-using action_callback = std::function<void()>;
+using action_command = std::function<void()>;
 // Function used for validating a widget value.
-template <class T> using validation_callback = std::function<T(std::common_type_t<T, int>)>;
+template <class T> using validation_command = std::function<T(std::common_type_t<T, int>)>;
 
-// Special text callback value used to denote that a widget has no tooltip.
-inline const text_callback NO_TOOLTIP{};
-// Common callback for text widgets: getting a localization string using a key.
-struct loc_text_callback {
+// Special text command value used to denote that a widget has no tooltip.
+inline const text_command NO_TOOLTIP{};
+// Common text command for text widgets: getting a localization string using a key.
+struct localized_text {
 	// The tag serving as the key for the localization lookup.
 	tag tag;
 
 	std::string operator()() const;
 };
-// Common callback for text widgets: copying a string directly.
-struct const_text_callback {
+// Common text command for text widgets: copying a constant string directly.
+struct constant_text {
 	// The string to copy.
 	std::string str;
 
 	std::string operator()() const;
 };
-// Common callback for text widgets: copying from a buffer if non-empty or a localized "empty" otherwise.
-template <usize S> struct buffer_text_callback {
+// Common text command for text widgets: copying from a buffer if non-empty or a localized "empty" otherwise.
+template <usize S> struct buffer_text {
 	// Reference to the text buffer.
 	tr::static_string<S>& buffer;
 
@@ -69,14 +69,14 @@ constexpr ticks DONT_UNHIDE{std::numeric_limits<ticks>::max()};
 class widget {
   public:
 	// Creates a widget.
-	widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb);
+	widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_command tooltip_text);
 	// Destroys the widget.
 	virtual ~widget() = default;
 
 	// The position of the widget.
 	tweened_position pos;
-	// Callback that returns tooltip strings.
-	text_callback tooltip_cb;
+	// Command that returns tooltip strings.
+	text_command tooltip_text;
 
 	// Gets the size of the widget.
 	virtual glm::vec2 size() const = 0;
@@ -158,7 +158,7 @@ class widget {
 class text_widget : public widget {
   public:
 	// Creates a text widget.
-	text_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb, text_callback text_cb, font font,
+	text_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_command tooltip_text, text_command text, font font,
 				tr::sys::ttf_style style, float font_size, int max_width);
 
 	// Gets the size of the widget.
@@ -175,8 +175,8 @@ class text_widget : public widget {
 	float m_font_size;
 	// The maximum allowed width of the widget.
 	int m_max_width;
-	// The text callback of the widget.
-	text_callback m_text_cb;
+	// The text command of the widget.
+	text_command m_text;
 	// The last drawn string.
 	mutable std::string m_last_text;
 	// Cached resources.
@@ -203,12 +203,12 @@ template <usize BufferSize> class text_input_widget : protected input_buffer<Buf
   public:
 	// Creates a line input widget.
 	text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size, int width,
-					  status_callback status_cb, std::string_view initial_text = {});
-	// Creates a line input widget with a custom text callback.
+					  status_command status_command, std::string_view initial_text = {});
+	// Creates a line input widget with a custom text command.
 	text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size, int width,
-					  status_callback status_cb, text_callback text_cb);
+					  status_command status_command, text_command text);
 
-	// Gets whether the widget is interactible (delegates to the status callback).
+	// Gets whether the widget is interactible (delegates to the status command).
 	bool interactible() const override;
 	// Gets whether the widget is writable (always true).
 	bool writable() const override;
@@ -238,8 +238,8 @@ template <usize BufferSize> class text_input_widget : protected input_buffer<Buf
 	void tick() override;
 
   protected:
-	// Callback used to determine whether the input is interactible.
-	status_callback m_status_cb;
+	// Command used to determine whether the input is interactible.
+	status_command m_status;
 	// The tint of the input.
 	tweened_color m_tint;
 	// Flag denoting whether the input is currently hovered over.
@@ -255,7 +255,7 @@ template <usize BufferSize> class text_input_widget : protected input_buffer<Buf
 
 ///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////
 
-template <usize S> std::string buffer_text_callback<S>::operator()() const
+template <usize S> std::string buffer_text<S>::operator()() const
 {
 	return buffer.empty() ? std::string{g_loc["empty"]} : std::string{buffer};
 }

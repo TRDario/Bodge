@@ -24,46 +24,41 @@ constexpr shortcut_table SHORTCUTS{
 	{"Enter"_kc, T_CONFIRM},
 };
 
-// Entry animation for the title widget.
-constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 1.0_s};
-// Entry animation for the confirm button widget.
-constexpr tweened_position CONFIRM_ANIMATION{BOTTOM_START_POS, {500, 1000}, 1.0_s};
-
 //////////////////////////////////////////////////////////// NAME ENTRY STATE /////////////////////////////////////////////////////////////
 
 name_entry_state::name_entry_state()
 	: main_menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::FADING_IN}
 {
-	// STATUS CALLBACKS
-
-	const status_callback input_scb{[this] { return m_substate != substate::EXITING; }};
-	const status_callback confirm_scb{
+	// clang-format off
+	m_ui.emplace<label_widget>(T_TITLE, {
+		.animation = {TOP_START_POS, TITLE_POS, 1.0_s},
+		.alignment = tr::align::TOP_CENTER,
+		.unhide_time = 1.0_s,
+		.text = localized_text{T_TITLE},
+		.font_size = 64
+	});
+	m_ui.emplace<line_input_widget<20>>(T_INPUT,
+		glm::vec2{500, 500},
+		tr::align::CENTER,
+		1.0_s,
+		tr::sys::ttf_style::NORMAL,
+		64,
+		[this] { return m_substate != substate::EXITING; },
+		[this] { on_exit(); }
+	);
+	m_ui.emplace<text_button_widget>(T_CONFIRM,
+		tweened_position{BOTTOM_START_POS, {500, 1000}, 1.0_s},
+		tr::align::BOTTOM_CENTER,
+		1.0_s,
+		NO_TOOLTIP,
+		localized_text{T_CONFIRM},
+		font::LANGUAGE,
+		48,
 		[this] { return m_substate != substate::EXITING && !m_ui.as<line_input_widget<20>>(T_INPUT).contents().empty(); },
-	};
-
-	// ACTION CALLBACKS
-
-	const action_callback action_cb{[this] {
-		const std::string_view name{m_ui.as<line_input_widget<20>>(T_INPUT).contents()};
-		if (!name.empty()) {
-			m_elapsed = 0;
-			m_substate = substate::EXITING;
-			m_ui[T_TITLE].move_and_hide(TOP_START_POS, 1.0_s);
-			m_ui[T_INPUT].hide(1.0_s);
-			m_ui[T_CONFIRM].move_and_hide(BOTTOM_START_POS, 1.0_s);
-			g_scorefile.name = name;
-			m_next_state = make_async<title_state>(m_game);
-		}
-	}};
-
-	//
-
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 1.0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<line_input_widget<20>>(T_INPUT, glm::vec2{500, 500}, tr::align::CENTER, 1.0_s, tr::sys::ttf_style::NORMAL, 64, input_scb,
-										action_cb);
-	m_ui.emplace<text_button_widget>(T_CONFIRM, CONFIRM_ANIMATION, tr::align::BOTTOM_CENTER, 1.0_s, NO_TOOLTIP,
-									 loc_text_callback{T_CONFIRM}, font::LANGUAGE, 48, confirm_scb, action_cb, sound::CONFIRM);
+		[this] { on_exit(); },
+		sound::CONFIRM
+	);
+	// clang-format on
 
 	m_ui.select_widget(T_INPUT);
 }
@@ -95,4 +90,20 @@ tr::next_state name_entry_state::tick()
 float name_entry_state::fade_overlay_opacity()
 {
 	return m_substate == substate::FADING_IN ? 1 - m_elapsed / 1.0_sf : 0;
+}
+
+//
+
+void name_entry_state::on_exit()
+{
+	const std::string_view name{m_ui.as<line_input_widget<20>>(T_INPUT).contents()};
+	if (!name.empty()) {
+		m_elapsed = 0;
+		m_substate = substate::EXITING;
+		m_ui[T_TITLE].move_and_hide(TOP_START_POS, 1.0_s);
+		m_ui[T_INPUT].hide(1.0_s);
+		m_ui[T_CONFIRM].move_and_hide(BOTTOM_START_POS, 1.0_s);
+		g_scorefile.name = name;
+		m_next_state = make_async<title_state>(m_game);
+	}
 }

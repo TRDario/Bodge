@@ -128,59 +128,6 @@ constexpr glm::vec2 MUSIC_VOLUME_START_POS{1050, SFX_VOLUME_START_POS.y + 75};
 // Starting position for language right widgets.
 constexpr glm::vec2 LANGUAGE_START_POS{1050, MUSIC_VOLUME_START_POS.y + 75};
 
-// Entry animation used for the title widget.
-constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
-// Entry animation used for the current display mode widget.
-constexpr tweened_position DISPLAY_MODE_C_ANIMATION{DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s};
-// Entry animation used for the window size decrease button widget.
-constexpr tweened_position WINDOW_SIZE_D_ANIMATION{WINDOW_SIZE_START_POS, {765, WINDOW_SIZE_START_POS.y}, 0.5_s};
-// Entry animation used for the current window size widget.
-constexpr tweened_position WINDOW_SIZE_C_ANIMATION{WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s};
-// Entry animation used for the window size increase button widget.
-constexpr tweened_position WINDOW_SIZE_I_ANIMATION{WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s};
-// Entry animation used for the current V-sync mode widget.
-constexpr tweened_position VSYNC_C_ANIMATION{VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s};
-// Entry animation used for the mouse sensitivity decrease button widget.
-constexpr tweened_position MOUSE_SENSITIVITY_D_ANIMATION{MOUSE_SENSITIVITY_START_POS, {765, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
-// Entry animation used for the current mouse sensitivity widget.
-constexpr tweened_position MOUSE_SENSITIVITY_C_ANIMATION{MOUSE_SENSITIVITY_START_POS, {875, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
-// Entry animation used for the mouse sensitivity increase button widget.
-constexpr tweened_position MOUSE_SENSITIVITY_I_ANIMATION{MOUSE_SENSITIVITY_START_POS, {985, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s};
-// Entry animation used for the player skin preview widget.
-constexpr tweened_position PLAYER_SKIN_PREVIEW_ANIMATION{PLAYER_SKIN_START_POS, {985, PLAYER_SKIN_START_POS.y}, 0.5_s};
-// Entry animation used for the current player skin widget.
-constexpr tweened_position PLAYER_SKIN_C_ANIMATION{PLAYER_SKIN_START_POS, {930, PLAYER_SKIN_START_POS.y}, 0.5_s};
-// Entry animation used for the primary hue decrease button widget.
-constexpr tweened_position PRIMARY_HUE_D_ANIMATION{PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s};
-// Entry animation used for the current primary hue widget.
-constexpr tweened_position PRIMARY_HUE_C_ANIMATION{PRIMARY_HUE_START_POS, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s};
-// Entry animation used for the primary hue increase button widget.
-constexpr tweened_position PRIMARY_HUE_I_ANIMATION{PRIMARY_HUE_START_POS, {930, PRIMARY_HUE_START_POS.y}, 0.5_s};
-// Entry animation used for the primary hue preview widget.
-constexpr tweened_position PRIMARY_HUE_PREVIEW_ANIMATION{PRIMARY_HUE_START_POS, {985, PRIMARY_HUE_START_POS.y}, 0.5_s};
-// Entry animation used for the secondary hue decrease button widget.
-constexpr tweened_position SECONDARY_HUE_D_ANIMATION{SECONDARY_HUE_START_POS, {745, SECONDARY_HUE_START_POS.y}, 0.5_s};
-// Entry animation used for the current secondary hue widget.
-constexpr tweened_position SECONDARY_HUE_C_ANIMATION{SECONDARY_HUE_START_POS, {837.5, SECONDARY_HUE_START_POS.y}, 0.5_s};
-// Entry animation used for the secondary hue increase button widget.
-constexpr tweened_position SECONDARY_HUE_I_ANIMATION{SECONDARY_HUE_START_POS, {930, SECONDARY_HUE_START_POS.y}, 0.5_s};
-// Entry animation used for the secondary hue preview widget.
-constexpr tweened_position SECONDARY_HUE_PREVIEW_ANIMATION{SECONDARY_HUE_START_POS, {985, SECONDARY_HUE_START_POS.y}, 0.5_s};
-// Entry animation used for the SFX volume decrease button widget.
-constexpr tweened_position SFX_VOLUME_D_ANIMATION{SFX_VOLUME_START_POS, {765, SFX_VOLUME_START_POS.y}, 0.5_s};
-// Entry animation used for the current SFX volume widget.
-constexpr tweened_position SFX_VOLUME_C_ANIMATION{SFX_VOLUME_START_POS, {875, SFX_VOLUME_START_POS.y}, 0.5_s};
-// Entry animation used for the SFX volume increase button widget.
-constexpr tweened_position SFX_VOLUME_I_ANIMATION{SFX_VOLUME_START_POS, {985, SFX_VOLUME_START_POS.y}, 0.5_s};
-// Entry animation used for the music volume decrease button widget.
-constexpr tweened_position MUSIC_VOLUME_D_ANIMATION{MUSIC_VOLUME_START_POS, {765, MUSIC_VOLUME_START_POS.y}, 0.5_s};
-// Entry animation used for the current music volume widget.
-constexpr tweened_position MUSIC_VOLUME_C_ANIMATION{MUSIC_VOLUME_START_POS, {875, MUSIC_VOLUME_START_POS.y}, 0.5_s};
-// Entry animation used for the music volume increase button widget.
-constexpr tweened_position MUSIC_VOLUME_I_ANIMATION{MUSIC_VOLUME_START_POS, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s};
-// Entry animation used for the current language widget.
-constexpr tweened_position LANGUAGE_C_ANIMATION{LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s};
-
 // clang-format on
 ///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
 
@@ -210,212 +157,265 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	, m_pending{g_settings}
 	, m_player_skins{find_skins()}
 {
-	// STATUS CALLBACKS
+	// clang-format off
+	m_ui.emplace<label_widget>(T_TITLE, {
+		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
+		.alignment = tr::align::TOP_CENTER,
+		.text = localized_text{T_TITLE},
+		.font_size = 64
+	});
 
-	const status_callback scb{[this] { return m_substate != substate::EXITING; }};
-	const status_callback window_size_d_scb{[this] {
-		return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN &&
-			   m_pending.window_size > MIN_WINDOW_SIZE;
-	}};
-	const status_callback window_size_i_scb{[this] {
-		return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN &&
-			   m_pending.window_size < max_window_size();
-	}};
-	const status_callback window_size_c_scb{
-		[this] { return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN; },
-	};
-	const status_callback mouse_sensitivity_d_scb{[this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity > 25; }};
-	const status_callback mouse_sensitivity_i_scb{[this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity < 250; }};
-	const status_callback player_skin_c_scb{
-		[this] { return m_substate != substate::EXITING && (m_player_skins.size() > 0 || !m_pending.player_skin.empty()); },
-	};
-	const status_callback sfx_volume_d_scb{[this] { return m_substate != substate::EXITING && m_pending.sfx_volume > 0; }};
-	const status_callback sfx_volume_i_scb{[this] { return m_substate != substate::EXITING && m_pending.sfx_volume < 100; }};
-	const status_callback music_volume_d_scb{[this] { return m_substate != substate::EXITING && m_pending.music_volume > 0; }};
-	const status_callback music_volume_i_scb{[this] { return m_substate != substate::EXITING && m_pending.music_volume < 100; }};
-	const status_callback language_c_scb{
-		[this] { return m_substate != substate::EXITING && (g_languages.size() >= 2 - (!g_languages.contains(m_pending.language))); },
-	};
-	const std::array<status_callback, BOTTOM_BUTTONS.size()> bottom_scbs{
-		[this] { return m_substate != substate::EXITING && m_pending != g_settings; },
-		[this] { return m_substate != substate::EXITING && m_pending != g_settings; },
-		[this] { return m_substate != substate::EXITING && m_pending == g_settings; },
-	};
+	for (usize i = 0; i < LABELS.size(); ++i) {
+		m_ui.emplace<label_widget>(LABELS[i].tag, {
+			.animation = {{-50, 121 + i * 75}, {15, 121 + i * 75}, 0.5_s},
+			.alignment = tr::align::CENTER_LEFT,
+			.tooltip_text = localized_text{LABELS[i].tooltip},
+			.text = localized_text{LABELS[i].tag},
+			.color = LABELS[i].tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? DISABLED_GRAY : GRAY
+		});
+	}
 
-	// ACTION CALLBACKS
-
-	const action_callback display_mode_c_acb{[&, &dm = m_pending.display_mode] {
-		switch (dm) {
-		case display_mode::WINDOWED:
-			dm = display_mode::FULLSCREEN;
-			m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(DISABLED_GRAY, 0.1_s);
-			break;
-		case display_mode::FULLSCREEN:
-			dm = display_mode::WINDOWED;
-			m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(GRAY, 0.1_s);
-			break;
-		}
-	}};
-	const action_callback window_size_d_acb{
-		[&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, u16(ws - keymods_choose(1, 10, 100))); },
-	};
-	const action_callback window_size_i_acb{
-		[&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + keymods_choose(1, 10, 100))); },
-	};
-	const action_callback vsync_c_acb{[&vsync = m_pending.vsync] { vsync = !vsync; }};
-	const action_callback mouse_sensitivity_d_acb{
-		[&ms = m_pending.mouse_sensitivity] { ms = u8(std::max(ms - keymods_choose(1, 10, 25), 25)); },
-	};
-	const action_callback mouse_sensitivity_i_acb{
-		[&ms = m_pending.mouse_sensitivity] { ms = u8(std::min(ms + keymods_choose(1, 10, 25), 250)); },
-	};
-	const action_callback player_skin_c_acb{[this] {
-		std::vector<std::string>::iterator player_skin_it{std::ranges::find(m_player_skins, m_pending.player_skin)};
-		if (player_skin_it == m_player_skins.end() && !m_player_skins.empty()) {
-			player_skin_it = m_player_skins.begin();
-			m_pending.player_skin = *player_skin_it;
-		}
-		else if (m_player_skins.empty() || ++player_skin_it == m_player_skins.end()) {
-			m_pending.player_skin = {};
-		}
-		else {
-			m_pending.player_skin = *player_skin_it;
-		}
-		m_ui.as<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW).update_skin();
-	}};
-	const action_callback primary_hue_d_acb{[&ph = m_pending.primary_hue] { ph = u16((ph - keymods_choose(1, 10, 100) + 360) % 360); }};
-	const action_callback primary_hue_i_acb{[&ph = m_pending.primary_hue] { ph = u16((ph + keymods_choose(1, 10, 100)) % 360); }};
-	const action_callback secondary_hue_d_acb{[&sh = m_pending.secondary_hue] { sh = u16((sh - keymods_choose(1, 10, 100) + 360) % 360); }};
-	const action_callback secondary_hue_i_acb{[&sh = m_pending.secondary_hue] { sh = u16((sh + keymods_choose(1, 10, 100)) % 360); }};
-	const action_callback sfx_volume_d_acb{[&sv = m_pending.sfx_volume] { sv = u8(std::max(sv - keymods_choose(1, 10, 25), 0)); }};
-	const action_callback sfx_volume_i_acb{[&sv = m_pending.sfx_volume] { sv = u8(std::min(sv + keymods_choose(1, 10, 25), 100)); }};
-	const action_callback music_volume_d_acb{[&mv = m_pending.music_volume] { mv = u8(std::max(mv - keymods_choose(1, 10, 25), 0)); }};
-	const action_callback music_volume_i_acb{[&mv = m_pending.music_volume] { mv = u8(std::min(mv + keymods_choose(1, 10, 25), 100)); }};
-	const action_callback language_c_acb{[this] {
-		std::map<language_code, language_info>::iterator language_it{g_languages.find(m_pending.language)};
-		if (language_it == g_languages.end() || ++language_it == g_languages.end()) {
-			language_it = g_languages.begin();
-		}
-		m_pending.language = language_it->first;
-		g_text_engine.reload_language_preview_font(m_pending);
-	}};
-	const std::array<action_callback, BOTTOM_BUTTONS.size()> bottom_acbs{
-		[this] {
-			m_pending = g_settings;
-			g_text_engine.reload_language_preview_font(m_pending);
-			const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? GRAY : DISABLED_GRAY};
-			m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(window_size_color, 0.1_s);
-			m_ui.as<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW).update_skin();
-		},
-		[this] {
-			if (g_settings.releasing_graphical_resources_required_to_apply(m_pending)) {
-				m_ui.release_graphical_resources();
-			}
-			g_settings.apply(m_pending);
-		},
-		[this] {
-			m_substate = substate::EXITING;
-			m_elapsed = 0;
-			set_up_exit_animation();
-			m_next_state = make_async<title_state>(m_game);
-		},
-	};
-
-	// VALIDATION CALLBACKS
-
-	const validation_callback<u16> window_size_c_vcb{[](u16 v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); }};
-	const validation_callback<u8> mouse_sensitivity_c_vcb{[](int v) { return u8(std::clamp(v, 25, 250)); }};
-	const validation_callback<u16> hue_c_vcb{[](int v) { return u16(v % 360); }};
-	const validation_callback<u8> volume_c_vcb{[](int v) { return u8(std::min(v, 100)); }};
-
-	// TEXT CALLBACKS
-
-	const text_callback display_mode_c_tcb{
+	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C,
+		tweened_position{DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s},
+		tr::align::CENTER_RIGHT,
+		0.5_s,
+		NO_TOOLTIP,
 		[this] { return std::string{g_loc[m_pending.display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
-	};
-	const text_callback vsync_c_tcb{
+		font::LANGUAGE,
+		48,
+		[this] { return m_substate != substate::EXITING; },
+		[this] { on_change_display_mode(); },
+		sound::CONFIRM
+	);
+	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, {
+		.animation = {WINDOW_SIZE_START_POS, {765, WINDOW_SIZE_START_POS.y}, 0.5_s},
+		.type = arrow_type::LEFT,
+		.status = [this] {
+			return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN &&
+			       m_pending.window_size > MIN_WINDOW_SIZE;
+		},
+		.action = [&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, u16(ws - keymods_choose(1, 10, 100))); }
+	});
+	m_ui.emplace<numeric_input_widget<u16, 4>>(T_WINDOW_SIZE_C,
+		tweened_position{WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s},
+		tr::align::CENTER,
+		0.5_s,
+		48,
+		m_ui,
+		m_pending.window_size,
+		[this] { return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN; },
+		[](u16 v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); }
+	);
+	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, {
+		.animation = {WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s},
+		.type = arrow_type::RIGHT,
+		.status = [this] {
+			return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN &&
+				   m_pending.window_size < max_window_size();
+		},
+		.action = [&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + keymods_choose(1, 10, 100))); }
+	});
+	m_ui.emplace<text_button_widget>(T_VSYNC_C,
+		tweened_position{VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s},
+		tr::align::CENTER_RIGHT,
+		0.5_s,
+		NO_TOOLTIP,
 		[&vsync = m_pending.vsync] { return std::string{g_loc[vsync ? "on" : "off"]}; },
-	};
-	const text_callback player_skin_c_tcb{
+		font::LANGUAGE_PREVIEW,
+		48,
+		[this] { return m_substate != substate::EXITING; },
+		[&vsync = m_pending.vsync] { vsync = !vsync; },
+		sound::CONFIRM
+	);
+	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_D, {
+		.animation = {MOUSE_SENSITIVITY_START_POS, {765, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s},
+		.type = arrow_type::LEFT,
+		.status = [this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity > 25; },
+		.action = [&ms = m_pending.mouse_sensitivity] { ms = u8(std::max(ms - keymods_choose(1, 10, 25), 25)); }
+	});
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C,
+		tweened_position{MOUSE_SENSITIVITY_START_POS, {875, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s},
+		tr::align::CENTER,
+		0.5_s,
+		48,
+		m_ui,
+		m_pending.mouse_sensitivity,
+		[this] { return m_substate != substate::EXITING; },
+		[](int v) { return u8(std::clamp(v, 25, 250)); }
+	);
+	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_I, {
+		.animation = {MOUSE_SENSITIVITY_START_POS, {985, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s}, 
+		.type = arrow_type::RIGHT,
+		.status = [this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity < 250; },
+		.action = [&ms = m_pending.mouse_sensitivity] { ms = u8(std::min(ms + keymods_choose(1, 10, 25), 250)); }
+	});
+	m_ui.emplace<text_button_widget>(T_PLAYER_SKIN_C,
+		tweened_position{PLAYER_SKIN_START_POS, {930, PLAYER_SKIN_START_POS.y}, 0.5_s},
+		tr::align::CENTER_RIGHT,
+		0.5_s,
+		NO_TOOLTIP,
 		[this] {
 			const bool valid_player_skin{std::ranges::find(m_player_skins, m_pending.player_skin) != m_player_skins.end()};
 			return valid_player_skin               ? m_pending.player_skin.substr(0, m_pending.player_skin.find_last_of('.'))
 				   : m_pending.player_skin.empty() ? std::string{g_loc["none"]}
 												   : std::string{g_loc["unknown"]};
 		},
-	};
-	const text_callback language_c_tcb{
+		font::LANGUAGE_PREVIEW,
+		48,
+		[this] { return m_substate != substate::EXITING && (m_player_skins.size() > 0 || !m_pending.player_skin.empty()); },
+		[this] { on_change_player_skin(); },
+		sound::CONFIRM
+	);
+	m_ui.emplace<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW,
+		tweened_position{PLAYER_SKIN_START_POS, {985, PLAYER_SKIN_START_POS.y}, 0.5_s},
+		tr::align::CENTER_RIGHT,
+		0.5_s,
+		m_pending
+	);
+	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, {
+		.animation = {PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s},
+		.type = arrow_type::LEFT,
+		.status = [this] { return m_substate != substate::EXITING; },
+		.action = [&ph = m_pending.primary_hue] { ph = u16((ph - keymods_choose(1, 10, 100) + 360) % 360); }
+	});
+	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C,
+		tweened_position{PRIMARY_HUE_START_POS, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s},
+		tr::align::CENTER,
+		0.5_s,
+		48,
+		m_ui,
+		m_pending.primary_hue,
+		[this] { return m_substate != substate::EXITING; },
+		[](int v) { return u16(v % 360); }
+	);
+	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, {
+		.animation = {PRIMARY_HUE_START_POS, {930, PRIMARY_HUE_START_POS.y}, 0.5_s},
+		.type = arrow_type::RIGHT,
+		.status = [this] { return m_substate != substate::EXITING; },
+		.action = [&ph = m_pending.primary_hue] { ph = u16((ph + keymods_choose(1, 10, 100)) % 360); }
+	});
+	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW,
+		tweened_position{PRIMARY_HUE_START_POS, {985, PRIMARY_HUE_START_POS.y}, 0.5_s},
+		tr::align::CENTER_RIGHT,
+		0.5_s,
+		m_pending.primary_hue
+	);
+	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, {
+		.animation = {SECONDARY_HUE_START_POS, {745, SECONDARY_HUE_START_POS.y}, 0.5_s},
+		.type = arrow_type::LEFT,
+		.status = [this] { return m_substate != substate::EXITING; },
+		.action = [&sh = m_pending.secondary_hue] { sh = u16((sh - keymods_choose(1, 10, 100) + 360) % 360); }
+	});
+	m_ui.emplace<numeric_input_widget<u16, 3>>(T_SECONDARY_HUE_C,
+		tweened_position{SECONDARY_HUE_START_POS, {837.5, SECONDARY_HUE_START_POS.y}, 0.5_s},
+		tr::align::CENTER,
+		0.5_s,
+		48,
+		m_ui,
+		m_pending.secondary_hue,
+		[this] { return m_substate != substate::EXITING; },
+		[](int v) { return u16(v % 360); }
+	);
+	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, {
+		.animation = {SECONDARY_HUE_START_POS, {930, SECONDARY_HUE_START_POS.y}, 0.5_s},
+		.type = arrow_type::RIGHT,
+		.status = [this] { return m_substate != substate::EXITING; },
+		.action = [&sh = m_pending.secondary_hue] { sh = u16((sh + keymods_choose(1, 10, 100)) % 360); }
+	});
+	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW,
+		tweened_position{SECONDARY_HUE_START_POS, {985, SECONDARY_HUE_START_POS.y}, 0.5_s},
+		tr::align::CENTER_RIGHT,
+		0.5_s,
+		m_pending.secondary_hue
+	);
+	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_D, {
+		.animation = {SFX_VOLUME_START_POS, {765, SFX_VOLUME_START_POS.y}, 0.5_s},
+		.type = arrow_type::LEFT,
+		.status = [this] { return m_substate != substate::EXITING && m_pending.sfx_volume > 0; },
+		.action = [&sv = m_pending.sfx_volume] { sv = u8(std::max(sv - keymods_choose(1, 10, 25), 0)); }
+	});
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C,
+		tweened_position{SFX_VOLUME_START_POS, {875, SFX_VOLUME_START_POS.y}, 0.5_s},
+		tr::align::CENTER,
+		0.5_s,
+		48,
+		m_ui,
+		m_pending.sfx_volume,
+		[this] { return m_substate != substate::EXITING; },
+		[](int v) { return u8(std::min(v, 100)); }
+	);
+	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_I, {
+		.animation = {SFX_VOLUME_START_POS, {985, SFX_VOLUME_START_POS.y}, 0.5_s},
+		.type = arrow_type::RIGHT,
+		.status = [this] { return m_substate != substate::EXITING && m_pending.sfx_volume < 100; },
+		.action = [&sv = m_pending.sfx_volume] { sv = u8(std::min(sv + keymods_choose(1, 10, 25), 100)); }
+	});
+	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_D, {
+		.animation = {MUSIC_VOLUME_START_POS, {765, MUSIC_VOLUME_START_POS.y}, 0.5_s},
+		.type = arrow_type::LEFT,
+		.status = [this] { return m_substate != substate::EXITING && m_pending.music_volume > 0; },
+		.action = [&mv = m_pending.music_volume] { mv = u8(std::max(mv - keymods_choose(1, 10, 25), 0)); }
+	});
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C,
+		tweened_position{MUSIC_VOLUME_START_POS, {875, MUSIC_VOLUME_START_POS.y}, 0.5_s},
+		tr::align::CENTER,
+		0.5_s,
+		48,
+		m_ui,
+		m_pending.music_volume,
+		[this] { return m_substate != substate::EXITING; },
+		[](int v) { return u8(std::min(v, 100)); }
+	);
+	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_I, {
+		.animation = {MUSIC_VOLUME_START_POS, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s},
+		.type = arrow_type::RIGHT,
+		.status = [this] { return m_substate != substate::EXITING && m_pending.music_volume < 100; },
+		.action = [&mv = m_pending.music_volume] { mv = u8(std::min(mv + keymods_choose(1, 10, 25), 100)); }
+	});
+	m_ui.emplace<text_button_widget>(T_LANGUAGE_C,
+		tweened_position{LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s},
+		tr::align::CENTER_RIGHT,
+		0.5_s,
+		NO_TOOLTIP,
 		[this] { return g_languages.contains(m_pending.language) ? g_languages[m_pending.language].name : "???"; },
+		font::LANGUAGE_PREVIEW,
+		48,
+		[this] { return m_substate != substate::EXITING && (g_languages.size() >= 2 - (!g_languages.contains(m_pending.language))); },
+		[this] { on_change_language(); },
+		sound::CONFIRM
+	);
+
+	struct bottom_button_parameters {
+		status_command status;
+		action_command action;
+		sound sound;
 	};
-
-	//
-
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
-	for (usize i = 0; i < LABELS.size(); ++i) {
-		const label_info& label{LABELS[i]};
-		const tweened_position animation{{-50, 121 + i * 75}, {15, 121 + i * 75}, 0.5_s};
-		const tr::rgba8 color{label.tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? DISABLED_GRAY : GRAY};
-		m_ui.emplace<label_widget>(label.tag, animation, tr::align::CENTER_LEFT, 0.5_s, loc_text_callback{LABELS[i].tooltip},
-								   loc_text_callback{label.tag}, tr::sys::ttf_style::NORMAL, 48, color);
-	}
-
-	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, DISPLAY_MODE_C_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP,
-									 display_mode_c_tcb, font::LANGUAGE, 48, scb, display_mode_c_acb, sound::CONFIRM);
-	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, WINDOW_SIZE_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, window_size_d_scb,
-							   window_size_d_acb);
-	m_ui.emplace<numeric_input_widget<u16, 4>>(T_WINDOW_SIZE_C, WINDOW_SIZE_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
-											   m_pending.window_size, window_size_c_scb, window_size_c_vcb);
-	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, WINDOW_SIZE_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, window_size_i_scb,
-							   window_size_i_acb);
-	m_ui.emplace<text_button_widget>(T_VSYNC_C, VSYNC_C_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, vsync_c_tcb,
-									 font::LANGUAGE_PREVIEW, 48, scb, vsync_c_acb, sound::CONFIRM);
-	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_D, MOUSE_SENSITIVITY_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT,
-							   mouse_sensitivity_d_scb, mouse_sensitivity_d_acb);
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C, MOUSE_SENSITIVITY_C_ANIMATION, tr::align::CENTER, 0.5_s,
-															48, m_ui, m_pending.mouse_sensitivity, scb, mouse_sensitivity_c_vcb);
-	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_I, MOUSE_SENSITIVITY_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT,
-							   mouse_sensitivity_i_scb, mouse_sensitivity_i_acb);
-	m_ui.emplace<text_button_widget>(T_PLAYER_SKIN_C, PLAYER_SKIN_C_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP,
-									 player_skin_c_tcb, font::LANGUAGE_PREVIEW, 48, player_skin_c_scb, player_skin_c_acb, sound::CONFIRM);
-	m_ui.emplace<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW, PLAYER_SKIN_PREVIEW_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s,
-											 m_pending);
-	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, PRIMARY_HUE_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, scb,
-							   primary_hue_d_acb);
-	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C, PRIMARY_HUE_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
-											   m_pending.primary_hue, scb, hue_c_vcb);
-	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, PRIMARY_HUE_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, scb,
-							   primary_hue_i_acb);
-	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, PRIMARY_HUE_PREVIEW_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s,
-									   m_pending.primary_hue);
-	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, SECONDARY_HUE_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, scb,
-							   secondary_hue_d_acb);
-	m_ui.emplace<numeric_input_widget<u16, 3>>(T_SECONDARY_HUE_C, SECONDARY_HUE_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
-											   m_pending.secondary_hue, scb, hue_c_vcb);
-	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, SECONDARY_HUE_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, scb,
-							   secondary_hue_i_acb);
-	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, SECONDARY_HUE_PREVIEW_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s,
-									   m_pending.secondary_hue);
-	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_D, SFX_VOLUME_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, sfx_volume_d_scb,
-							   sfx_volume_d_acb);
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, SFX_VOLUME_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
-															m_pending.sfx_volume, scb, volume_c_vcb);
-	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_I, SFX_VOLUME_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, sfx_volume_i_scb,
-							   sfx_volume_i_acb);
-	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_D, MUSIC_VOLUME_D_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::LEFT, music_volume_d_scb,
-							   music_volume_d_acb);
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, MUSIC_VOLUME_C_ANIMATION, tr::align::CENTER, 0.5_s, 48, m_ui,
-															m_pending.music_volume, scb, volume_c_vcb);
-	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_I, MUSIC_VOLUME_I_ANIMATION, tr::valign::CENTER, 0.5_s, arrow_type::RIGHT, music_volume_i_scb,
-							   music_volume_i_acb);
-	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, LANGUAGE_C_ANIMATION, tr::align::CENTER_RIGHT, 0.5_s, NO_TOOLTIP, language_c_tcb,
-									 font::LANGUAGE_PREVIEW, 48, language_c_scb, language_c_acb, sound::CONFIRM);
+	const std::array<bottom_button_parameters, BOTTOM_BUTTONS.size()> bottom_button_parameters{{
+		{[this] { return m_substate != substate::EXITING && m_pending != g_settings; },
+		 [this] { on_revert(); },
+		 sound::CONFIRM},
+		{[this] { return m_substate != substate::EXITING && m_pending != g_settings; },
+		 [this] { on_apply(); },
+		 sound::CONFIRM},
+		{[this] { return m_substate != substate::EXITING && m_pending == g_settings; },
+		 [this] { on_exit(); },
+		 sound::CANCEL},
+	}};
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
-		const tweened_position animation{BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s};
-		const sound sound{i == 1 ? sound::CONFIRM : sound::CANCEL};
-		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], animation, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
-										 loc_text_callback{BOTTOM_BUTTONS[i]}, font::LANGUAGE, 48, bottom_scbs[i], bottom_acbs[i], sound);
+		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i],
+			tweened_position{BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s},
+			tr::align::BOTTOM_CENTER,
+			0.5_s,
+			NO_TOOLTIP,
+			localized_text{BOTTOM_BUTTONS[i]},
+			font::LANGUAGE,
+			48,
+			bottom_button_parameters[i].status,
+			bottom_button_parameters[i].action,
+			bottom_button_parameters[i].sound
+		);
 	}
+	// clang-format on
 }
 
 //
@@ -445,4 +445,71 @@ void settings_state::set_up_exit_animation()
 	for (tag tag : BOTTOM_BUTTONS) {
 		m_ui[tag].move_and_hide(BOTTOM_START_POS, 0.5_s);
 	}
+}
+
+//
+
+void settings_state::on_change_display_mode()
+{
+	switch (m_pending.display_mode) {
+	case display_mode::WINDOWED:
+		m_pending.display_mode = display_mode::FULLSCREEN;
+		m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(DISABLED_GRAY, 0.1_s);
+		break;
+	case display_mode::FULLSCREEN:
+		m_pending.display_mode = display_mode::WINDOWED;
+		m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(GRAY, 0.1_s);
+		break;
+	}
+}
+
+void settings_state::on_change_player_skin()
+{
+	std::vector<std::string>::iterator player_skin_it{std::ranges::find(m_player_skins, m_pending.player_skin)};
+	if (player_skin_it == m_player_skins.end() && !m_player_skins.empty()) {
+		player_skin_it = m_player_skins.begin();
+		m_pending.player_skin = *player_skin_it;
+	}
+	else if (m_player_skins.empty() || ++player_skin_it == m_player_skins.end()) {
+		m_pending.player_skin = {};
+	}
+	else {
+		m_pending.player_skin = *player_skin_it;
+	}
+	m_ui.as<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW).update_skin();
+}
+
+void settings_state::on_change_language()
+{
+	std::map<language_code, language_info>::iterator language_it{g_languages.find(m_pending.language)};
+	if (language_it == g_languages.end() || ++language_it == g_languages.end()) {
+		language_it = g_languages.begin();
+	}
+	m_pending.language = language_it->first;
+	g_text_engine.reload_language_preview_font(m_pending);
+}
+
+void settings_state::on_revert()
+{
+	m_pending = g_settings;
+	g_text_engine.reload_language_preview_font(m_pending);
+	const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? GRAY : DISABLED_GRAY};
+	m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(window_size_color, 0.1_s);
+	m_ui.as<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW).update_skin();
+}
+
+void settings_state::on_apply()
+{
+	if (g_settings.releasing_graphical_resources_required_to_apply(m_pending)) {
+		m_ui.release_graphical_resources();
+	}
+	g_settings.apply(m_pending);
+}
+
+void settings_state::on_exit()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation();
+	m_next_state = make_async<title_state>(m_game);
 }

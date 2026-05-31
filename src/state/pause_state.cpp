@@ -167,118 +167,89 @@ float pause_state::blur_strength()
 
 void pause_state::set_up_full_ui()
 {
+	// clang-format off
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
-	constexpr tweened_position TITLE_ANIMATION{{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
-	m_ui.emplace<label_widget>(T_PAUSED, TITLE_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_PAUSED},
-							   tr::sys::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(T_PAUSED, {
+		.animation = {{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s},
+		.text = localized_text{T_PAUSED},
+		.font_size = 64
+	});
 
-	const status_callback scb{
-		[this] { return m_substate == substate::PAUSED || m_substate == substate::PAUSING; },
+	struct button_commands {
+		status_command status;
+		action_command action;
 	};
-	const status_callback unpause_scb{[this] { return m_substate == substate::PAUSED; }};
-	std::array<action_callback, BUTTONS_REGULAR.size()> action_cbs{
-		[this] {
-			m_elapsed = 0;
-			m_substate = substate::UNPAUSING;
-			m_end_mouse_pos = g_mouse_pos;
-			set_up_exit_animation();
-			g_audio.play_sound(sound::UNPAUSE, 0.8f, 0.0f);
-			m_next_state = make_async<game_state>(m_game, m_data, fade_in::NO);
-		},
-		[this] {
-			m_elapsed = 0;
-			m_substate = substate::SAVING;
-			set_up_exit_animation();
-			m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::RESTARTING);
-		},
-		[this] {
-			const score_flags score_flags{true, g_cli_settings.game_speed != 1};
-			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
-
-			m_elapsed = 0;
-			m_substate = substate::RESTARTING;
-			g_scorefile.add_score(m_game->gamemode(), score);
-			set_up_exit_animation();
-			m_next_state = make_game_state_async<active_game>(m_data, m_game->gamemode());
-		},
-		[this] {
-			m_elapsed = 0;
-			m_substate = substate::SAVING;
-			set_up_exit_animation();
-			m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::NONE);
-		},
-		[this] {
-			const score_flags score_flags{true, g_cli_settings.game_speed != 1};
-			const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
-
-			m_elapsed = 0;
-			m_substate = substate::QUITTING;
-			g_scorefile.add_score(m_game->gamemode(), score);
-			set_up_exit_animation();
-			m_next_state = make_async<title_state>();
-		},
-	};
+	std::array<button_commands, BUTTONS_REGULAR.size()> button_commands{{
+		{[this] { return m_substate == substate::PAUSED || m_substate == substate::PAUSING; },
+		 [this] { on_unpause(); }},
+		{[this] { return m_substate == substate::PAUSED; },
+		 [this] { on_save_and_restart(); }},
+		{[this] { return m_substate == substate::PAUSED; },
+		 [this] { on_restart(); }},
+		{[this] { return m_substate == substate::PAUSED; },
+		 [this] { on_save_and_quit(); }},
+		{[this] { return m_substate == substate::PAUSED; },
+		 [this] { on_quit(); }},
+	}};
 	for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
-		const tweened_position animation{{500 + offset, y}, {500, y}, 0.5_s};
-		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], animation, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-										 loc_text_callback{BUTTONS_REGULAR[i]}, font::LANGUAGE, 48, i == 0 ? unpause_scb : scb,
-										 std::move(action_cbs[i]), sound::CONFIRM);
+		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i],
+			tweened_position{{500 + offset, y}, {500, y}, 0.5_s},
+			tr::align::CENTER,
+			0.5_s,
+			NO_TOOLTIP,
+			localized_text{BUTTONS_REGULAR[i]},
+			font::LANGUAGE,
+			48,
+			button_commands[i].status,
+			button_commands[i].action,
+			sound::CONFIRM
+		);
 	}
+	// clang-format on
 }
 
 void pause_state::set_up_limited_ui()
 {
+	// clang-format off
 	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
-	constexpr tweened_position TITLE_ANIMATION{{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s};
 	const tag title_tag{std::holds_alternative<replay_game_data>(m_data) ? T_REPLAY_PAUSED : T_TEST_PAUSED};
-	m_ui.emplace<label_widget>(title_tag, TITLE_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{title_tag},
-							   tr::sys::ttf_style::NORMAL, 64);
+	m_ui.emplace<label_widget>(title_tag, {
+		.animation = {{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s},
+		.text = localized_text{title_tag},
+		.font_size = 64
+	});
 
-	const status_callback scb{
-		[this] { return m_substate == substate::PAUSED || m_substate == substate::PAUSING; },
+	struct button_commands {
+		status_command status;
+		action_command action;
 	};
-	const status_callback unpause_scb{[this] { return m_substate == substate::PAUSED; }};
-	std::array<action_callback, BUTTONS_SPECIAL.size()> action_cbs{
-		[this] {
-			m_elapsed = 0;
-			m_substate = substate::UNPAUSING;
-			m_end_mouse_pos = g_mouse_pos;
-			set_up_exit_animation();
-			m_next_state = make_async<game_state>(m_game, m_data, fade_in::NO);
-		},
-		[this] {
-			m_elapsed = 0;
-			m_substate = substate::RESTARTING;
-			set_up_exit_animation();
-			if (std::holds_alternative<replay_game_data>(m_data)) {
-				m_next_state = make_game_state_async<replay_game>(m_data, (replay_game&)*m_game);
-			}
-			else {
-				m_next_state = make_game_state_async<active_game>(m_data, m_game->gamemode());
-			}
-		},
-		[this] {
-			m_elapsed = 0;
-			m_substate = substate::QUITTING;
-			set_up_exit_animation();
-			if (std::holds_alternative<replay_game_data>(m_data)) {
-				m_next_state = make_async<replays_state>();
-			}
-			else {
-				m_next_state = make_async<gamemode_editor_state>(tr::get<test_game_data>(m_data).editor_data, m_game->gamemode());
-			}
-		},
-	};
+	std::array<button_commands, BUTTONS_SPECIAL.size()> button_commands{{
+		{[this] { return m_substate == substate::PAUSED || m_substate == substate::PAUSING; },
+		 [this] { on_unpause(); }},
+		{[this] { return m_substate == substate::PAUSED; },
+		 [this] { on_restart(); }},
+		{[this] { return m_substate == substate::PAUSED; },
+		 [this] { on_quit(); }},
+	}};
 	for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
-		const tweened_position animation{{500 + offset, y}, {500, y}, 0.5_s};
-		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], animation, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-										 loc_text_callback{BUTTONS_SPECIAL[i]}, font::LANGUAGE, 48, i == 0 ? unpause_scb : scb,
-										 std::move(action_cbs[i]), sound::CONFIRM);
+		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i],
+			tweened_position{{500 + offset, y}, {500, y}, 0.5_s},
+			tr::align::CENTER,
+			0.5_s,
+			NO_TOOLTIP,
+			localized_text{BUTTONS_SPECIAL[i]},
+			font::LANGUAGE,
+			48,
+			button_commands[i].status,
+			button_commands[i].action,
+			sound::CONFIRM
+		);
 	}
+	// clang-format on
 }
 
 void pause_state::set_up_exit_animation()
@@ -297,5 +268,71 @@ void pause_state::set_up_exit_animation()
 			const float offset{(i % 2 != 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 			m_ui[BUTTONS_SPECIAL[i]].move_x_and_hide(500 + offset, 0.5_s);
 		}
+	}
+}
+
+//
+
+void pause_state::on_unpause()
+{
+	m_elapsed = 0;
+	m_substate = substate::UNPAUSING;
+	m_end_mouse_pos = g_mouse_pos;
+	set_up_exit_animation();
+	g_audio.play_sound(sound::UNPAUSE, 0.8f, 0.0f);
+	m_next_state = make_async<game_state>(m_game, m_data, fade_in::NO);
+}
+
+void pause_state::on_save_and_restart()
+{
+	m_elapsed = 0;
+	m_substate = substate::SAVING;
+	set_up_exit_animation();
+	m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::RESTARTING);
+}
+
+void pause_state::on_restart()
+{
+	m_elapsed = 0;
+	m_substate = substate::RESTARTING;
+	set_up_exit_animation();
+	if (std::holds_alternative<regular_game_data>(m_data)) {
+		const score_flags score_flags{true, g_cli_settings.game_speed != 1};
+		const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
+		g_scorefile.add_score(m_game->gamemode(), score);
+		m_next_state = make_game_state_async<active_game>(m_data, m_game->gamemode());
+	}
+	else if (std::holds_alternative<replay_game_data>(m_data)) {
+		m_next_state = make_game_state_async<replay_game>(m_data, (replay_game&)*m_game);
+	}
+	else {
+		m_next_state = make_game_state_async<active_game>(m_data, m_game->gamemode());
+	}
+}
+
+void pause_state::on_save_and_quit()
+{
+	m_elapsed = 0;
+	m_substate = substate::SAVING;
+	set_up_exit_animation();
+	m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::NONE);
+}
+
+void pause_state::on_quit()
+{
+	m_elapsed = 0;
+	m_substate = substate::QUITTING;
+	set_up_exit_animation();
+	if (std::holds_alternative<regular_game_data>(m_data)) {
+		const score_flags score_flags{true, g_cli_settings.game_speed != 1};
+		const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
+		g_scorefile.add_score(m_game->gamemode(), score);
+		m_next_state = make_async<title_state>();
+	}
+	else if (std::holds_alternative<replay_game_data>(m_data)) {
+		m_next_state = make_async<replays_state>();
+	}
+	else {
+		m_next_state = make_async<gamemode_editor_state>(tr::get<test_game_data>(m_data).editor_data, m_game->gamemode());
 	}
 }

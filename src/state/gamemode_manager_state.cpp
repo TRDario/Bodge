@@ -43,79 +43,55 @@ constexpr shortcut_table SHORTCUTS{
 	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT}, {"5"_kc, T_EXIT},
 };
 
-// Entry animation for the title widget.
-constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
-// Entry animation for the exit button widget.
-constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
-
 // clang-format on
 ////////////////////////////////////////////////////////// GAMEMODE MANAGER STATE /////////////////////////////////////////////////////////
 
 gamemode_manager_state::gamemode_manager_state(std::shared_ptr<playerless_game> game, animate_title animate_title)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_GAMEMODE_MANAGER}
 {
-	// STATUS CALLBACKS
+	// clang-format off
+	m_ui.emplace<label_widget>(T_TITLE, {
+		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, TITLE_POS, 0.5_s} : tweened_position{TITLE_POS},
+		.alignment = tr::align::TOP_CENTER,
+		.unhide_time = bool(animate_title) ? 0.5_s : 0,
+		.text = localized_text{T_TITLE},
+		.font_size = 64
+	});
 
-	const status_callback scb{
-		[this] { return m_substate == substate::IN_GAMEMODE_MANAGER; },
+	const std::array<action_command, CENTER_BUTTONS.size()> center_commands{
+		[this] { on_enter_new_gamemode(); },
+		[this] { on_enter_clone_gamemode(); },
+		[this] { on_enter_edit_gamemode(); },
+		[this] { on_enter_delete_gamemode(); },
 	};
-
-	// ACTION CALLBACKS
-
-	const std::array<action_callback, CENTER_BUTTONS.size()> center_acbs{
-		[this] {
-			m_substate = substate::EXITING;
-			m_elapsed = 0;
-			set_up_exit_animation(animate_title::NO);
-			m_next_state =
-				make_async<gamemode_editor_state>(m_game, new_gamemode_editor_data{}, g_new_gamemode_draft, animate_subtitle::YES);
-		},
-		[this] {
-			m_substate = substate::EXITING;
-			m_elapsed = 0;
-			set_up_exit_animation(animate_title::NO);
-			m_next_state = make_async<gamemode_selector_state>(m_game, gamemode_selector_type::CLONE, animate_subtitle::YES);
-		},
-		[this] {
-			m_substate = substate::EXITING;
-			m_elapsed = 0;
-			set_up_exit_animation(animate_title::NO);
-			m_next_state = make_async<gamemode_selector_state>(m_game, gamemode_selector_type::EDIT, animate_subtitle::YES);
-		},
-		[this] {
-			m_substate = substate::EXITING;
-			m_elapsed = 0;
-			set_up_exit_animation(animate_title::NO);
-			m_next_state = make_async<gamemode_selector_state>(m_game, gamemode_selector_type::DELETE, animate_subtitle::YES);
-		},
-	};
-	const action_callback exit_acb{[this] {
-		m_substate = substate::EXITING;
-		m_elapsed = 0;
-		set_up_exit_animation(animate_title::YES);
-		m_next_state = make_async<title_state>(m_game);
-	}};
-
-	//
-
-	if (bool(animate_title)) {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::sys::ttf_style::NORMAL, 64);
-	}
-	else {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::sys::ttf_style::NORMAL, 64);
-	}
-
 	for (usize i = 0; i < CENTER_BUTTONS.size(); ++i) {
 		const float y{500.0f - ((CENTER_BUTTONS.size() - 1) * 50.0f) + i * 100};
-		const tweened_position animation{glm::vec2{i % 2 == 0 ? 600 : 400, y}, glm::vec2{500, y}, 0.5_s};
-		m_ui.emplace<text_button_widget>(CENTER_BUTTONS[i].tag, animation, tr::align::CENTER, 0.5_s,
-										 loc_text_callback{CENTER_BUTTONS[i].tooltip}, loc_text_callback{CENTER_BUTTONS[i].tag},
-										 font::LANGUAGE, 64, scb, center_acbs[i], sound::CONFIRM);
+		m_ui.emplace<text_button_widget>(CENTER_BUTTONS[i].tag,
+			tweened_position{glm::vec2{i % 2 == 0 ? 600 : 400, y}, glm::vec2{500, y}, 0.5_s},
+			tr::align::CENTER,
+			0.5_s,
+			localized_text{CENTER_BUTTONS[i].tooltip},
+			localized_text{CENTER_BUTTONS[i].tag},
+			font::LANGUAGE, 64,
+			[this] { return m_substate == substate::IN_GAMEMODE_MANAGER; },
+			center_commands[i],
+			sound::CONFIRM
+		);
 	}
-	m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
-									 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
+
+	m_ui.emplace<text_button_widget>(T_EXIT,
+		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		tr::align::BOTTOM_CENTER,
+		0.5_s,
+		NO_TOOLTIP,
+		localized_text{T_EXIT},
+		font::LANGUAGE,
+		48,
+		[this] { return m_substate == substate::IN_GAMEMODE_MANAGER; },
+		[this] { on_exit(); },
+		sound::CANCEL
+	);
+	// clang-format on
 }
 
 //
@@ -142,4 +118,46 @@ void gamemode_manager_state::set_up_exit_animation(animate_title animate_title)
 		m_ui[CENTER_BUTTONS[i].tag].move_x_and_hide(i % 2 == 0 ? 400 : 600, 0.5_s);
 	}
 	m_ui[T_EXIT].move_and_hide(BOTTOM_START_POS, 0.5_s);
+}
+
+//
+
+void gamemode_manager_state::on_enter_new_gamemode()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation(animate_title::NO);
+	m_next_state = make_async<gamemode_editor_state>(m_game, new_gamemode_editor{}, g_new_gamemode_draft, animate_subtitle::YES);
+}
+
+void gamemode_manager_state::on_enter_edit_gamemode()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation(animate_title::NO);
+	m_next_state = make_async<gamemode_selector_state>(m_game, edit_gamemode_selector{}, animate_subtitle::YES);
+}
+
+void gamemode_manager_state::on_enter_clone_gamemode()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation(animate_title::NO);
+	m_next_state = make_async<gamemode_selector_state>(m_game, clone_gamemode_selector{}, animate_subtitle::YES);
+}
+
+void gamemode_manager_state::on_enter_delete_gamemode()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation(animate_title::NO);
+	m_next_state = make_async<gamemode_selector_state>(m_game, delete_gamemode_selector{}, animate_subtitle::YES);
+}
+
+void gamemode_manager_state::on_exit()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation(animate_title::YES);
+	m_next_state = make_async<title_state>(m_game);
 }

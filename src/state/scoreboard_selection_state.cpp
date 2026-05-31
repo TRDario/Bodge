@@ -30,70 +30,64 @@ constexpr shortcut_table SHORTCUTS{
 	{"Escape"_kc, T_EXIT}, {"Q"_kc, T_EXIT},
 };
 
-// Entry animation used for the title widget.
-constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
-// Entry animation used for the player info widget.
-constexpr tweened_position PLAYER_INFO_ANIMATION{TOP_START_POS, {500, 64}, 0.5_s};
-// Entry animation used for the view times button widget.
-constexpr tweened_position VIEW_TIMES_ANIMATION{{400, 450}, {500, 450}, 0.5_s};
-// Entry animation used for the view scores button widget.
-constexpr tweened_position VIEW_SCORES_ANIMATION{{600, 550}, {500, 550}, 0.5_s};
-// Entry animation used for the exit button widget.
-constexpr tweened_position EXIT_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
-
 // clang-format on
 //////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////
 
 scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerless_game> game, animate_title animate_title)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SCOREBOARD_SELECTION}
 {
-	// STATUS CALLBACKS
-
-	const status_callback scb{[this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; }};
-
-	// ACTION CALLBACKS
-
-	const action_callback view_times_acb{[this] {
-		m_substate = substate::EXITING;
-		m_elapsed = 0;
-		set_up_exit_animation(animate_title::NO);
-		m_next_state = make_async<scoreboard_state>(m_game, scoreboard::TIME);
-	}};
-	const action_callback view_scores_acb{[this] {
-		m_substate = substate::EXITING;
-		m_elapsed = 0;
-		set_up_exit_animation(animate_title::NO);
-		m_next_state = make_async<scoreboard_state>(m_game, scoreboard::SCORE);
-	}};
-	const action_callback exit_acb{[this] {
-		m_substate = substate::EXITING;
-		m_elapsed = 0;
-		set_up_exit_animation(animate_title::YES);
-		m_next_state = make_async<title_state>(m_game);
-	}};
-
-	//
-
-	if (bool(animate_title)) {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::sys::ttf_style::NORMAL, 64);
-		m_ui.emplace<label_widget>(T_PLAYER_INFO, PLAYER_INFO_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP,
-								   const_text_callback{g_scorefile.format_player_info()}, tr::sys::ttf_style::NORMAL, 32);
-		m_ui.emplace<text_button_widget>(T_EXIT, EXIT_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_EXIT},
-										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
-	}
-	else {
-		m_ui.emplace<label_widget>(T_TITLE, TITLE_POS, tr::align::TOP_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_TITLE},
-								   tr::sys::ttf_style::NORMAL, 64);
-		m_ui.emplace<label_widget>(T_PLAYER_INFO, glm::vec2{500, 64}, tr::align::TOP_CENTER, 0, NO_TOOLTIP,
-								   const_text_callback{g_scorefile.format_player_info()}, tr::sys::ttf_style::NORMAL, 32);
-		m_ui.emplace<text_button_widget>(T_EXIT, glm::vec2{500, 1000}, tr::align::BOTTOM_CENTER, 0, NO_TOOLTIP, loc_text_callback{T_EXIT},
-										 font::LANGUAGE, 48, scb, exit_acb, sound::CANCEL);
-	}
-	m_ui.emplace<text_button_widget>(T_VIEW_TIMES, VIEW_TIMES_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-									 loc_text_callback{T_VIEW_TIMES}, font::LANGUAGE, 64, scb, view_times_acb, sound::CONFIRM);
-	m_ui.emplace<text_button_widget>(T_VIEW_SCORES, VIEW_SCORES_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP,
-									 loc_text_callback{T_VIEW_SCORES}, font::LANGUAGE, 64, scb, view_scores_acb, sound::CONFIRM);
+	// clang-format off
+	m_ui.emplace<label_widget>(T_TITLE, {
+		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, TITLE_POS, 0.5_s} : tweened_position{TITLE_POS},
+		.alignment = tr::align::TOP_CENTER,
+		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,
+		.text = localized_text{T_TITLE},
+		.font_size = 64
+	});
+	m_ui.emplace<label_widget>(T_PLAYER_INFO, {
+		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, {500, 64}, 0.5_s} : tweened_position{{500, 64}},
+		.alignment = tr::align::TOP_CENTER,
+		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,
+		.text = constant_text{g_scorefile.format_player_info()},
+		.font_size = 32
+	});
+	m_ui.emplace<text_button_widget>(T_EXIT,
+		bool(animate_title) ? tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s} : tweened_position{{500, 1000}},
+		tr::align::BOTTOM_CENTER,
+		bool(animate_title) ? 0.5_s : 0_s,
+		NO_TOOLTIP,
+		localized_text{T_EXIT},
+		font::LANGUAGE,
+		48,
+		[this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
+		[this] { on_exit(); },
+		sound::CANCEL
+	);
+	m_ui.emplace<text_button_widget>(T_VIEW_TIMES,
+		tweened_position{{400, 450}, {500, 450}, 0.5_s},
+		tr::align::CENTER,
+		0.5_s,
+		NO_TOOLTIP,
+		localized_text{T_VIEW_TIMES},
+		font::LANGUAGE,
+		64,
+		[this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
+		[this] { on_view_times(); },
+		sound::CONFIRM
+	);
+	m_ui.emplace<text_button_widget>(T_VIEW_SCORES,
+		tweened_position{{600, 550}, {500, 550}, 0.5_s},
+		tr::align::CENTER,
+		0.5_s,
+		NO_TOOLTIP,
+		localized_text{T_VIEW_SCORES},
+		font::LANGUAGE,
+		64,
+		[this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
+		[this] { on_view_scores(); },
+		sound::CONFIRM
+	);
+	// clang-format on
 }
 
 tr::next_state scoreboard_selection_state::tick()
@@ -118,4 +112,30 @@ void scoreboard_selection_state::set_up_exit_animation(animate_title animate_tit
 	}
 	m_ui[T_VIEW_TIMES].move_x_and_hide(600, 0.5_s);
 	m_ui[T_VIEW_SCORES].move_x_and_hide(400, 0.5_s);
+}
+
+//
+
+void scoreboard_selection_state::on_view_times()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation(animate_title::NO);
+	m_next_state = make_async<scoreboard_state>(m_game, scoreboard::TIME);
+}
+
+void scoreboard_selection_state::on_view_scores()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation(animate_title::NO);
+	m_next_state = make_async<scoreboard_state>(m_game, scoreboard::SCORE);
+}
+
+void scoreboard_selection_state::on_exit()
+{
+	m_substate = substate::EXITING;
+	m_elapsed = 0;
+	set_up_exit_animation(animate_title::YES);
+	m_next_state = make_async<title_state>(m_game);
 }

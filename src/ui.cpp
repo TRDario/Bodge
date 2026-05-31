@@ -441,8 +441,8 @@ void ui_manager::add_to_renderer()
 {
 	std::ranges::for_each(tr::deref(std::views::values(m_widgets)), &widget::add_to_renderer);
 	if (m_hovered.has_ref()) {
-		if (m_hovered->second->tooltip_cb) {
-			const std::string tooltip{m_hovered->second->tooltip_cb()};
+		if (m_hovered->second->tooltip_text) {
+			const std::string tooltip{m_hovered->second->tooltip_text()};
 			if (!tooltip.empty()) {
 				g_renderer->tooltip.add(tooltip);
 			}

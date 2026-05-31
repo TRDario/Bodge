@@ -67,13 +67,13 @@ constexpr std::array<tr::rgba8, 15> ARROW_COLORS{{
 
 /////////////////////////////////////////////////////////////// ARROW WIDGET //////////////////////////////////////////////////////////////
 
-arrow_widget::arrow_widget(tweened_position pos, tr::valign alignment, ticks unhide_time, arrow_type type, status_callback status_cb,
-						   action_callback action_cb)
-	: widget{pos, alignment | (type == arrow_type::RIGHT ? tr::halign::RIGHT : tr::halign::LEFT), unhide_time, NO_TOOLTIP}
-	, m_status_cb{std::move(status_cb)}
-	, m_action_cb{std::move(action_cb)}
-	, m_tint{m_status_cb() ? GRAY : DISABLED_GRAY}
-	, m_type{type}
+arrow_widget::arrow_widget(properties&& properties)
+	: widget{properties.animation, properties.alignment | (type == arrow_type::RIGHT ? tr::halign::RIGHT : tr::halign::LEFT),
+			 properties.unhide_time, NO_TOOLTIP}
+	, m_status{std::move(properties.status_command)}
+	, m_action{std::move(properties.action_command)}
+	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
+	, m_type{properties.type}
 	, m_hovered{false}
 	, m_held{false}
 	, m_selected{false}
@@ -140,12 +140,12 @@ void arrow_widget::tick()
 
 bool arrow_widget::interactible() const
 {
-	return m_status_cb();
+	return m_status();
 }
 
 void arrow_widget::on_action()
 {
-	m_action_cb();
+	m_action();
 	m_action_animation_timer.start();
 	m_tint = WHITE;
 	g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));

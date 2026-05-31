@@ -8,22 +8,22 @@
 
 //////////////////////////////////////////////////////////// TEXT BUTTON WIDGET ///////////////////////////////////////////////////////////
 
-text_button_widget::text_button_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_callback tooltip_cb,
-									   text_callback text_cb, font font, float font_size, status_callback status_cb,
-									   action_callback action_cb, sound action_sound)
+text_button_widget::text_button_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_command tooltip_text,
+									   text_command text, font font, float font_size, status_command status_command,
+									   action_command action_command, sound action_sound)
 	: text_widget{pos,
 				  alignment,
 				  unhide_time,
-				  std::move(tooltip_cb),
-				  std::move(text_cb),
+				  std::move(tooltip_text),
+				  std::move(text),
 				  font,
 				  tr::sys::ttf_style::NORMAL,
 				  font_size,
 				  tr::sys::UNLIMITED_WIDTH}
-	, m_status_cb{std::move(status_cb)}
-	, m_action_cb{std::move(action_cb)}
+	, m_status{std::move(status_command)}
+	, m_action{std::move(action_command)}
 	, m_action_sound{action_sound}
-	, m_tint{m_status_cb() ? GRAY : DISABLED_GRAY}
+	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
 	, m_hovered{false}
 	, m_held{false}
 	, m_selected{false}
@@ -72,12 +72,12 @@ void text_button_widget::add_to_renderer()
 
 bool text_button_widget::interactible() const
 {
-	return m_status_cb();
+	return m_status();
 }
 
 void text_button_widget::on_action()
 {
-	m_action_cb();
+	m_action();
 	m_action_animation_timer.start();
 	m_tint = WHITE;
 	g_audio.play_sound(m_action_sound, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));

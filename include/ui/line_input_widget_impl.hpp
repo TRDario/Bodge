@@ -11,12 +11,12 @@
 
 template <usize MaxChars>
 line_input_widget<MaxChars>::line_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
-											   float font_size, status_callback status_cb, action_callback enter_cb,
+											   float font_size, status_command status_command, action_command enter_action_command,
 											   std::string_view initial_text)
 	: text_input_widget<MaxChars * 4>{
-		  pos, alignment, unhide_time, style, font_size, tr::sys::UNLIMITED_WIDTH, std::move(status_cb), initial_text,
+		  pos, alignment, unhide_time, style, font_size, tr::sys::UNLIMITED_WIDTH, std::move(status_command), initial_text,
 	  }
-	, m_enter_cb{std::move(enter_cb)}
+	, m_enter_action{std::move(enter_action_command)}
 {
 }
 
@@ -39,7 +39,7 @@ template <usize MaxChars> void line_input_widget<MaxChars>::on_write(std::string
 
 template <usize MaxChars> void line_input_widget<MaxChars>::on_enter()
 {
-	m_enter_cb();
+	m_enter_action();
 	g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 

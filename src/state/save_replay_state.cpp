@@ -32,21 +32,6 @@ constexpr shortcut_table SHORTCUTS{
 	{"Escape"_kc, T_DISCARD}, {"Q"_kc, T_DISCARD}, {"2"_kc, T_DISCARD},
 };
 
-// Entry animation used for the title widget.
-constexpr tweened_position TITLE_ANIMATION{TOP_START_POS, TITLE_POS, 0.5_s};
-// Entry animation used for the name label widget.
-constexpr tweened_position NAME_ANIMATION{{400, 200}, {500, 200}, 0.5_s};
-// Entry animation used for the name input widget.
-constexpr tweened_position NAME_INPUT_ANIMATION{{400, 235}, {500, 235}, 0.5_s};
-// Entry animation used for the description label widget.
-constexpr tweened_position DESCRIPTION_ANIMATION{{600, 440}, {500, 440}, 0.5_s};
-// Entry animation used for the description input widget.
-constexpr tweened_position DESCRIPTION_INPUT_ANIMATION{{600, 475}, {500, 475}, 0.5_s};
-// Entry animation used for the save button widget.
-constexpr tweened_position SAVE_ANIMATION{BOTTOM_START_POS, {500, 950}, 0.5_s};
-// Entry animation used for the discard button widget.
-constexpr tweened_position DISCARD_ANIMATION{BOTTOM_START_POS, {500, 1000}, 0.5_s};
-
 // clang-format on
 //////////////////////////////////////////////////////////// SAVE REPLAY STATE ////////////////////////////////////////////////////////////
 
@@ -55,68 +40,68 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 	, m_substate{substate_base::SAVING_REPLAY | flags}
 	, m_replay{((active_game&)*m_game).replay.header()}
 {
-	// STATUS CALLBACKS
-
-	const status_callback scb{[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }};
-	const status_callback save_scb{[this] {
-		return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty();
-	}};
-
-	// ACTION CALLBACKS
-
-	const action_callback name_acb{[this] { m_ui.select_next_widget(); }};
-	const action_callback save_acb{[this] {
-		const score_flags flags{!m_game->game_over(), g_cli_settings.game_speed != 1.0f};
-		const std::string_view description{m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).contents()};
-		const std::string_view name{m_ui.as<line_input_widget<20>>("name_input").contents()};
-		active_game& game{(active_game&)*m_game};
-
-		m_substate = substate_base::EXITING | to_flags(m_substate);
-		m_elapsed = 0;
-		set_up_exit_animation();
-		game.replay.set_header(score_entry{description, current_timestamp(), game.final_score(), game.final_time(), flags}, name);
-		game.replay.save_to_file();
-		if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
-			m_next_state = make_async<title_state>();
-		}
-		else {
-			m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
-		}
-	}};
-	const action_callback discard_acb{[this] {
-		m_substate = substate_base::EXITING | to_flags(m_substate);
-		m_elapsed = 0;
-		set_up_exit_animation();
-		if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
-			m_next_state = make_async<title_state>();
-		}
-		else {
-			m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
-		}
-	}};
-
-	// TOOLTIP CALLBACKS
-
-	const text_callback save_ttcb{[this] {
-		return m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty() ? std::string{g_loc["save_replay_tt"]} : std::string{};
-	}};
-
-	//
-
-	m_ui.emplace<label_widget>(T_TITLE, TITLE_ANIMATION, tr::align::TOP_CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_TITLE},
-							   tr::sys::ttf_style::NORMAL, 64);
-	m_ui.emplace<label_widget>(T_NAME, NAME_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_NAME},
-							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, NAME_INPUT_ANIMATION, tr::align::TOP_CENTER, 0.5_s, tr::sys::ttf_style::NORMAL, 64,
-										scb, name_acb);
-	m_ui.emplace<label_widget>(T_DESCRIPTION, DESCRIPTION_ANIMATION, tr::align::CENTER, 0.5_s, NO_TOOLTIP, loc_text_callback{T_DESCRIPTION},
-							   tr::sys::ttf_style::NORMAL, 48);
-	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, DESCRIPTION_INPUT_ANIMATION, tr::align::TOP_CENTER, 0.5_s, 800, 10, 24,
-											  scb);
-	m_ui.emplace<text_button_widget>(T_SAVE, SAVE_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, save_ttcb, loc_text_callback{T_SAVE},
-									 font::LANGUAGE, 48, save_scb, save_acb, sound::CONFIRM);
-	m_ui.emplace<text_button_widget>(T_DISCARD, DISCARD_ANIMATION, tr::align::BOTTOM_CENTER, 0.5_s, NO_TOOLTIP,
-									 loc_text_callback{T_DISCARD}, font::LANGUAGE, 48, scb, discard_acb, sound::CONFIRM);
+	// clang-format off
+	m_ui.emplace<label_widget>(T_TITLE, {
+		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
+		.alignment = tr::align::TOP_CENTER,
+		.text = localized_text{T_TITLE},
+		.font_size = 64
+	});
+	m_ui.emplace<label_widget>(T_NAME, {
+		.animation = {{400, 200}, {500, 200}, 0.5_s},
+		.text = localized_text{T_NAME}
+	});
+	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT,
+		tweened_position{{400, 235}, {500, 235}, 0.5_s},
+		tr::align::TOP_CENTER,
+		0.5_s,
+		tr::sys::ttf_style::NORMAL,
+		64,
+		[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; },
+		[this] { m_ui.select_next_widget(); }
+	);
+	m_ui.emplace<label_widget>(T_DESCRIPTION, {
+		.animation = {{600, 440}, {500, 440}, 0.5_s},
+		.text = localized_text{T_DESCRIPTION},
+	});
+	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT,
+		tweened_position{{600, 475}, {500, 475}, 0.5_s},
+		tr::align::TOP_CENTER,
+		0.5_s,
+		800,
+		10,
+		24,
+		[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }
+	);
+	m_ui.emplace<text_button_widget>(T_SAVE,
+		tweened_position{BOTTOM_START_POS, {500, 950}, 0.5_s},
+		tr::align::BOTTOM_CENTER,
+		0.5_s,
+		[this] {
+			return m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty() ? std::string{g_loc["save_replay_tt"]} : std::string{};
+		},
+		localized_text{T_SAVE},
+		font::LANGUAGE,
+		48,
+		[this] {
+			return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty();
+		},
+		[this] { on_save(); },
+		sound::CONFIRM
+	);
+	m_ui.emplace<text_button_widget>(T_DISCARD,
+		tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s},
+		tr::align::BOTTOM_CENTER,
+		0.5_s,
+		NO_TOOLTIP,
+		localized_text{T_DISCARD},
+		font::LANGUAGE,
+		48,
+		[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; },
+		[this] { on_discard(); },
+		sound::CONFIRM
+	);
+	// clang-format on
 }
 
 //
@@ -174,4 +159,39 @@ void save_replay_state::set_up_exit_animation()
 	m_ui[T_DESCRIPTION_INPUT].move_x_and_hide(400, 0.5_s);
 	m_ui[T_SAVE].move_and_hide(BOTTOM_START_POS, 0.5_s);
 	m_ui[T_DISCARD].move_and_hide(BOTTOM_START_POS, 0.5_s);
+}
+
+//
+
+void save_replay_state::on_save()
+{
+	const score_flags flags{!m_game->game_over(), g_cli_settings.game_speed != 1.0f};
+	const std::string_view description{m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).contents()};
+	const std::string_view name{m_ui.as<line_input_widget<20>>("name_input").contents()};
+	active_game& game{(active_game&)*m_game};
+
+	m_substate = substate_base::EXITING | to_flags(m_substate);
+	m_elapsed = 0;
+	set_up_exit_animation();
+	game.replay.set_header(score_entry{description, current_timestamp(), game.final_score(), game.final_time(), flags}, name);
+	game.replay.save_to_file();
+	if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
+		m_next_state = make_async<title_state>();
+	}
+	else {
+		m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
+	}
+}
+
+void save_replay_state::on_discard()
+{
+	m_substate = substate_base::EXITING | to_flags(m_substate);
+	m_elapsed = 0;
+	set_up_exit_animation();
+	if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
+		m_next_state = make_async<title_state>();
+	}
+	else {
+		m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
+	}
 }
