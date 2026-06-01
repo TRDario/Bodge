@@ -144,7 +144,7 @@ void gamemode_manager_state::on_enter_delete_gamemode()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<gamemode_selector_state>(m_game, delete_gamemode_selector{}, animate_subtitle::YES);
+	m_next_state = make_async<gamemode_selector_state>(m_game, delete_gamemodes_selector{}, animate_subtitle::YES);
 }
 
 void gamemode_manager_state::on_exit()

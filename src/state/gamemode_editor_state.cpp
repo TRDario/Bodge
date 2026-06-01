@@ -201,31 +201,26 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		.text = std::visit([](const auto& type) { return type.subtitle_text(); }, m_type),
 		.font_size = 32
 	});
-	m_ui.emplace<line_input_widget<12>>(T_NAME,
-		tweened_position{{400, 240}, {500, 240}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		tr::sys::ttf_style::NORMAL,
-		120,
-		[this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
-		[this] { m_ui.select_next_widget(); },
-		m_pending.name
-	);
+	m_ui.emplace<line_input_widget<12>>(T_NAME, {
+		.animation = {{400, 240}, {500, 240}, 0.5_s},
+		.font_size = 120,
+		.status = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
+		.enter_action = [this] { m_ui.select_next_widget(); },
+		.initial_text = m_pending.name
+	});
 	m_ui.emplace<label_widget>(T_AUTHOR, {
 		.animation = {{600, 315}, {500, 315}, 0.5_s},
 		.text = constant_text{TR_FMT::format("{}: {}", g_loc["by"], g_scorefile.name)},
 		.font_size = 32
 	});
-	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION,
-		tweened_position{{400, 365}, {500, 365}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		tr::sys::ttf_style::ITALIC,
-		32,
-		[this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
-		[this] { m_ui.clear_selection(); },
-		m_pending.description
-	);
+	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, {
+		.animation = {{400, 365}, {500, 365}, 0.5_s},
+		.font_style = tr::sys::ttf_style::ITALIC,
+		.font_size = 32,
+		.status = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
+		.enter_action = [this] { m_ui.clear_selection(); },
+		.initial_text = m_pending.description
+	});
 	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, {
 		.animation = {{600, 450}, {500, 450}, 0.5_s},
 		.text = localized_text{T_BALL_SETTINGS}, 

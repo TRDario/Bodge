@@ -21,9 +21,11 @@ static tr::bitmap load_image(std::string_view texture)
 
 ////////////////////////////////////////////////////////////// IMAGE WIDGET ///////////////////////////////////////////////////////////////
 
-image_widget::image_widget(tweened_position pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
-						   tr::opt_ref<u16> hue)
-	: widget{pos, alignment, unhide_time, NO_TOOLTIP}, m_texture{load_image(file)}, m_hue{hue}, m_priority{priority}
+image_widget::image_widget(const properties& properties)
+	: widget{properties.animation, properties.alignment, properties.unhide_time, NO_TOOLTIP}
+	, m_texture{load_image(properties.file)}
+	, m_hue{properties.hue}
+	, m_priority{properties.priority}
 {
 }
 

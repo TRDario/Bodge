@@ -126,17 +126,17 @@ void edit_gamemode_selector::on_gamemode_selected(gamemode_selector_state& state
 
 //
 
-void delete_gamemode_selector::filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const
+void delete_gamemodes_selector::filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const
 {
 	std::erase_if(gamemodes, [](const gamemode_with_path& gp) { return gp.gamemode.builtin; });
 }
 
-localized_text delete_gamemode_selector::subtitle_text() const
+localized_text delete_gamemodes_selector::subtitle_text() const
 {
-	return localized_text{"delete_gamemode"};
+	return localized_text{"delete_gamemodes"};
 }
 
-void delete_gamemode_selector::on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const
+void delete_gamemodes_selector::on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const
 {
 	const ssize index{std::distance(state.m_gamemodes.begin(), std::ranges::find(state.m_gamemodes, gp))};
 	const usize page_index{usize(index) % GAMEMODES_PER_PAGE};
@@ -196,14 +196,12 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<playerless_game
 		return;
 	}
 	for (usize i = 0; i < GAMEMODES_PER_PAGE; ++i) {
-		m_ui.emplace<gamemode_widget>(GAMEMODE_TAGS[i],
-			tweened_position{{i % 2 == 0 ? 400 : 600, 160 + 75 * i}, {500, 160 + 75 * i}, 0.5_s},
-			tr::align::CENTER,
-			0.5_s,
-			[this] { return m_substate == substate::IN_GAMEMODE_SELECTOR; },
-			[this] (const gamemode_with_path& gp) { on_gamemode_selected(gp); },
-			i < m_gamemodes.size() ? std::optional{m_gamemodes[i]} : std::nullopt
-		);
+		m_ui.emplace<gamemode_widget>(GAMEMODE_TAGS[i], {
+			.animation = {{i % 2 == 0 ? 400 : 600, 160 + 75 * i}, {500, 160 + 75 * i}, 0.5_s},
+			.status = [this] { return m_substate == substate::IN_GAMEMODE_SELECTOR; },
+			.action = [this] (const gamemode_with_path& gp) { on_gamemode_selected(gp); },
+			.gamemode = i < m_gamemodes.size() ? std::optional{m_gamemodes[i]} : std::nullopt
+		});
 	}
 	m_ui.emplace<arrow_widget>(T_PAGE_D, {
 		.animation = {{-50, 942.5}, {10, 942.5}, 0.5_s},
@@ -292,14 +290,13 @@ std::unordered_map<tag, std::unique_ptr<widget>> gamemode_selector_state::prepar
 	std::vector<gamemode_with_path>::iterator gamemode_it{std::next(m_gamemodes.begin(), GAMEMODES_PER_PAGE * m_page)};
 	for (usize i = 0; i < GAMEMODES_PER_PAGE; ++i) {
 		// clang-format off
-		map.emplace(GAMEMODE_TAGS[i], std::make_unique<gamemode_widget>(
-			tweened_position{{i % 2 == 0 ? 600 : 400, 160 + 75 * i}, {500, 160 + 75 * i}, 0.25_s},
-			tr::align::CENTER,
-			0.25_s,
-			[this] { return m_substate == substate::IN_GAMEMODE_SELECTOR; },
-			[this] (const gamemode_with_path& gp) { on_gamemode_selected(gp); },
-			gamemode_it != m_gamemodes.end() ? std::optional{*gamemode_it++} : std::nullopt
-		));
+		map.emplace(GAMEMODE_TAGS[i], std::make_unique<gamemode_widget>(gamemode_widget::properties{
+			.animation = {{i % 2 == 0 ? 600 : 400, 160 + 75 * i}, {500, 160 + 75 * i}, 0.25_s},
+			.unhide_time = 0.25_s,
+			.status = [this] { return m_substate == substate::IN_GAMEMODE_SELECTOR; },
+			.action = [this] (const gamemode_with_path& gp) { on_gamemode_selected(gp); },
+			.gamemode = gamemode_it != m_gamemodes.end() ? std::optional{*gamemode_it++} : std::nullopt
+		}));
 		// clang-format on
 	}
 	return map;

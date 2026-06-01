@@ -58,10 +58,16 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(enu
 {
 	std::unordered_map<tag, std::unique_ptr<widget>> map;
 	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
-		const tweened_position animation{{i % 2 == 0 ? 600 : 400, 173 + 86 * i}, {500, 173 + 86 * i}, 0.25_s};
 		const usize rank{page * SCORES_PER_PAGE + i + 1};
-		const tr::opt_ref<const score_entry> score{rank <= scores.size() ? tr::opt_ref{scores[rank - 1]} : std::nullopt};
-		map.emplace(SCORE_TAGS[i], std::make_unique<score_widget>(animation, tr::align::CENTER, 0.25_s, type, rank, score));
+		// clang-format off
+		map.emplace(SCORE_TAGS[i], std::make_unique<score_widget>(score_widget::properties{
+			.animation = {{i % 2 == 0 ? 600 : 400, 173 + 86 * i}, {500, 173 + 86 * i}, 0.25_s},
+			.unhide_time = 0.25_s,
+			.type = type,
+			.rank = rank,
+			.score = rank <= scores.size() ? tr::opt_ref{scores[rank - 1]} : std::nullopt
+		}));
+		// clang-format on
 	}
 	return map;
 }
@@ -116,14 +122,12 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 	}
 
 	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
-		m_ui.emplace<score_widget>(SCORE_TAGS[i],
-			tweened_position{{i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s},
-			tr::align::CENTER,
-			0.5_s,
-			(enum score_widget::type)(m_scoreboard),
-			m_page * SCORES_PER_PAGE + i + 1,
-			m_sorted_scores.size() > i ? tr::opt_ref{m_sorted_scores[i]} : std::nullopt
-		);
+		m_ui.emplace<score_widget>(SCORE_TAGS[i], {
+			.animation = {{i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s},
+			.type = (enum score_widget::type)(m_scoreboard),
+			.rank = m_page * SCORES_PER_PAGE + i + 1,
+			.score = m_sorted_scores.size() > i ? tr::opt_ref{m_sorted_scores[i]} : std::nullopt
+		});
 	}
 
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_D, {

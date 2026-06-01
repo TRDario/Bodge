@@ -105,29 +105,25 @@ float title_state::fade_overlay_opacity()
 void title_state::set_up_ui()
 {
 	// clang-format off
-	m_ui.emplace<image_widget>(T_LOGO_TEXT,
-		tweened_position{{500, 100}, {500, 160}, 2.5_s},
-		tr::align::CENTER,
-		2.5_s,
-		0,
-		"logo_text"
-	);
-	m_ui.emplace<image_widget>(T_LOGO_OVERLAY,
-		tweened_position{{500, 100}, {500, 160}, 2.5_s},
-		tr::align::CENTER,
-		2.5_s,
-		1,
-		"logo_overlay",
-		g_settings.primary_hue
-	);
-	m_ui.emplace<image_widget>(T_LOGO_BALL,
-		tweened_position{{-180, 644}, {327, 217}, 2.5_s},
-		tr::align::CENTER,
-		2.5_s,
-		2,
-		"logo_ball",
-		g_settings.secondary_hue
-	);
+	m_ui.emplace<image_widget>(T_LOGO_TEXT, {
+		.animation = {{500, 100}, {500, 160}, 2.5_s},
+		.unhide_time = 2.5_s,
+		.file = "logo_text"
+	});
+	m_ui.emplace<image_widget>(T_LOGO_OVERLAY, {
+		.animation = {{500, 100}, {500, 160}, 2.5_s},
+		.unhide_time = 2.5_s,
+		.priority = 1,
+		.file = "logo_overlay",
+		.hue = g_settings.primary_hue
+	});
+	m_ui.emplace<image_widget>(T_LOGO_BALL, {
+		.animation = {{-180, 644}, {327, 217}, 2.5_s},
+		.unhide_time = 2.5_s,
+		.priority = 2,
+		.file = "logo_ball",
+		.hue = g_settings.secondary_hue
+	});
 
 	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, {
 		.animation = {{4, 1000}},

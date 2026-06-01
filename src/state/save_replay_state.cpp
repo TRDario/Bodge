@@ -51,28 +51,25 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 		.animation = {{400, 200}, {500, 200}, 0.5_s},
 		.text = localized_text{T_NAME}
 	});
-	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT,
-		tweened_position{{400, 235}, {500, 235}, 0.5_s},
-		tr::align::TOP_CENTER,
-		0.5_s,
-		tr::sys::ttf_style::NORMAL,
-		64,
-		[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; },
-		[this] { m_ui.select_next_widget(); }
-	);
+	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, {
+		.animation = {{400, 235}, {500, 235}, 0.5_s},
+		.alignment = tr::align::TOP_CENTER,
+		.font_size = 64,
+		.status = [this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; },
+		.enter_action = [this] { m_ui.select_next_widget(); }
+	});
 	m_ui.emplace<label_widget>(T_DESCRIPTION, {
 		.animation = {{600, 440}, {500, 440}, 0.5_s},
 		.text = localized_text{T_DESCRIPTION},
 	});
-	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT,
-		tweened_position{{600, 475}, {500, 475}, 0.5_s},
-		tr::align::TOP_CENTER,
-		0.5_s,
-		800,
-		10,
-		24,
-		[this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }
-	);
+	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, {
+		.animation = {{600, 475}, {500, 475}, 0.5_s},
+		.alignment = tr::align::TOP_CENTER,
+		.width = 800,
+		.max_lines = 10,
+		.font_size = 24,
+		.status = [this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }
+	});
 	m_ui.emplace<text_button_widget>(T_SAVE, {
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,

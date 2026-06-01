@@ -68,10 +68,10 @@ constexpr std::array<tr::rgba8, 15> ARROW_COLORS{{
 /////////////////////////////////////////////////////////////// ARROW WIDGET //////////////////////////////////////////////////////////////
 
 arrow_widget::arrow_widget(properties&& properties)
-	: widget{properties.animation, properties.alignment | (type == arrow_type::RIGHT ? tr::halign::RIGHT : tr::halign::LEFT),
+	: widget{properties.animation, properties.alignment | (properties.type == arrow_type::RIGHT ? tr::halign::RIGHT : tr::halign::LEFT),
 			 properties.unhide_time, NO_TOOLTIP}
-	, m_status{std::move(properties.status_command)}
-	, m_action{std::move(properties.action_command)}
+	, m_status{std::move(properties.status)}
+	, m_action{std::move(properties.action)}
 	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
 	, m_type{properties.type}
 	, m_hovered{false}

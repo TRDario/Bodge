@@ -11,13 +11,11 @@
 ////////////////////////////////////////////////////////// MULTILINE INPUT WIDGET /////////////////////////////////////////////////////////
 
 template <usize MaxChars>
-multiline_input_widget<MaxChars>::multiline_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float width,
-														 u8 max_lines, float font_size, status_command status_command)
-	: text_input_widget<MaxChars * 4>{
-		  pos, alignment, unhide_time, tr::sys::ttf_style::NORMAL, font_size, int(width), std::move(status_command),
-	  }
-	, m_size{width, g_text_engine.line_skip(font::LANGUAGE, font_size) * max_lines + 2 * OUTLINE_THICKNESS}
-	, m_max_lines{max_lines}
+multiline_input_widget<MaxChars>::multiline_input_widget(properties&& properties)
+	: text_input_widget<MaxChars * 4>{properties.animation, properties.alignment,  properties.unhide_time,      tr::sys::ttf_style::NORMAL,
+									  properties.font_size, int(properties.width), std::move(properties.status)}
+	, m_size{properties.width, g_text_engine.line_skip(font::LANGUAGE, properties.font_size) * properties.max_lines + 2 * OUTLINE_THICKNESS}
+	, m_max_lines{properties.max_lines}
 {
 }
 

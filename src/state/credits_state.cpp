@@ -69,13 +69,12 @@ credits_state::credits_state(std::shared_ptr<playerless_game> game)
 		.text = constant_text{T_TRDARIO},
 		.color = "FF8080A0"_rgba8
 	});
-	m_ui.emplace<image_widget>(T_ART,
-		glm::vec2{500, 525},
-		tr::align::TOP_CENTER,
-		DONT_UNHIDE,
-		0,
-		"credits_art"
-	);
+	m_ui.emplace<image_widget>(T_ART, {
+		.animation = {{500, 525}},
+		.alignment = tr::align::TOP_CENTER,
+		.unhide_time = DONT_UNHIDE,
+		.file = "credits_art"
+	});
 	m_ui.emplace<label_widget>(T_PLAYTESTERS, {
 		.animation = {{400, 685}},
 		.unhide_time = DONT_UNHIDE,

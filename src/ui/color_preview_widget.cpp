@@ -8,8 +8,8 @@
 
 /////////////////////////////////////////////////////////// COLOR PREVIEW WIDGET //////////////////////////////////////////////////////////
 
-color_preview_widget::color_preview_widget(tweened_position pos, tr::align alignment, ticks unhide_time, u16& hue_ref)
-	: widget{pos, alignment, unhide_time, NO_TOOLTIP}, m_hue{hue_ref}
+color_preview_widget::color_preview_widget(const properties& properties)
+	: widget{properties.animation, properties.alignment, properties.unhide_time, NO_TOOLTIP}, m_hue{properties.hue}
 {
 }
 

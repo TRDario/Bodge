@@ -31,19 +31,16 @@ std::string default_numeric_input_formatter<T, Format, BufferFormat>::to_string(
 /////////////////////////////////////////////////////////// NUMERIC INPUT WIDGET //////////////////////////////////////////////////////////
 
 template <class T, usize Digits, class Formatter>
-basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time,
-																			 float font_size, ui_manager& ui, T& ref,
-																			 status_command status_command,
-																			 validation_command<T> validation_command)
-	: basic_numeric_input_widget_data<T>{ui, ref, std::move(validation_command)}
+basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(properties&& properties)
+	: basic_numeric_input_widget_data<T>{properties.ui, properties.variable, std::move(properties.validation)}
 	, text_input_widget<Digits>{
-		  pos,
-		  alignment,
-		  unhide_time,
+		  properties.animation,
+		  properties.alignment,
+		  properties.unhide_time,
 		  tr::sys::ttf_style::NORMAL,
-		  font_size,
+		  properties.font_size,
 		  tr::sys::UNLIMITED_WIDTH,
-		  std::move(status_command),
+		  std::move(properties.status),
 		  [this] {
 			  if (this->m_selected) {
 				  if (this->m_buffer.empty()) {

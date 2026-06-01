@@ -37,15 +37,13 @@ name_entry_state::name_entry_state()
 		.text = localized_text{T_TITLE},
 		.font_size = 64
 	});
-	m_ui.emplace<line_input_widget<20>>(T_INPUT,
-		glm::vec2{500, 500},
-		tr::align::CENTER,
-		1.0_s,
-		tr::sys::ttf_style::NORMAL,
-		64,
-		[this] { return m_substate != substate::EXITING; },
-		[this] { on_exit(); }
-	);
+	m_ui.emplace<line_input_widget<20>>(T_INPUT, {
+		.animation = {{500, 500}},
+		.unhide_time = 1.0_s,
+		.font_size = 64,
+		.status = [this] { return m_substate != substate::EXITING; },
+		.enter_action = [this] { on_exit(); }
+	});
 	m_ui.emplace<text_button_widget>(T_CONFIRM, {
 		.animation = {BOTTOM_START_POS, {500, 1000}, 1.0_s},
 		.alignment = tr::align::BOTTOM_CENTER,

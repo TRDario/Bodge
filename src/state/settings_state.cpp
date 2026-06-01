@@ -191,16 +191,13 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		},
 		.action = [&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, u16(ws - keymods_choose(1, 10, 100))); }
 	});
-	m_ui.emplace<numeric_input_widget<u16, 4>>(T_WINDOW_SIZE_C,
-		tweened_position{WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.window_size,
-		[this] { return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN; },
-		[](u16 v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); }
-	);
+	m_ui.emplace<numeric_input_widget<u16, 4>>(T_WINDOW_SIZE_C, {
+		.animation = {WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.window_size,
+		.status = [this] { return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN; },
+		.validation = [](u16 v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); }
+	});
 	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, {
 		.animation = {WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -223,16 +220,13 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.status = [this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity > 25; },
 		.action = [&ms = m_pending.mouse_sensitivity] { ms = u8(std::max(ms - keymods_choose(1, 10, 25), 25)); }
 	});
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C,
-		tweened_position{MOUSE_SENSITIVITY_START_POS, {875, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.mouse_sensitivity,
-		[this] { return m_substate != substate::EXITING; },
-		[](int v) { return u8(std::clamp(v, 25, 250)); }
-	);
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C, {
+		.animation = {MOUSE_SENSITIVITY_START_POS, {875, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.mouse_sensitivity,
+		.status = [this] { return m_substate != substate::EXITING; },
+		.validation = [](int v) { return u8(std::clamp(v, 25, 250)); }
+	});
 	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_I, {
 		.animation = {MOUSE_SENSITIVITY_START_POS, {985, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s}, 
 		.type = arrow_type::RIGHT,
@@ -251,84 +245,72 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.status = [this] { return m_substate != substate::EXITING && (m_player_skins.size() > 0 || !m_pending.player_skin.empty()); },
 		.action = [this] { on_change_player_skin(); }
 	});
-	m_ui.emplace<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW,
-		tweened_position{PLAYER_SKIN_START_POS, {985, PLAYER_SKIN_START_POS.y}, 0.5_s},
-		tr::align::CENTER_RIGHT,
-		0.5_s,
-		m_pending
-	);
+	m_ui.emplace<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW, {
+		.animation = {PLAYER_SKIN_START_POS, {985, PLAYER_SKIN_START_POS.y}, 0.5_s},
+		.alignment = tr::align::CENTER_RIGHT,
+		.settings = m_pending
+	});
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, {
 		.animation = {PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING; },
 		.action = [&ph = m_pending.primary_hue] { ph = u16((ph - keymods_choose(1, 10, 100) + 360) % 360); }
 	});
-	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C,
-		tweened_position{PRIMARY_HUE_START_POS, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.primary_hue,
-		[this] { return m_substate != substate::EXITING; },
-		[](int v) { return u16(v % 360); }
-	);
+	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C, {
+		.animation = {PRIMARY_HUE_START_POS, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.primary_hue,
+		.status = [this] { return m_substate != substate::EXITING; },
+		.validation = [](int v) { return u16(v % 360); }
+	});
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, {
 		.animation = {PRIMARY_HUE_START_POS, {930, PRIMARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING; },
 		.action = [&ph = m_pending.primary_hue] { ph = u16((ph + keymods_choose(1, 10, 100)) % 360); }
 	});
-	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW,
-		tweened_position{PRIMARY_HUE_START_POS, {985, PRIMARY_HUE_START_POS.y}, 0.5_s},
-		tr::align::CENTER_RIGHT,
-		0.5_s,
-		m_pending.primary_hue
-	);
+	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, {
+		.animation = {PRIMARY_HUE_START_POS, {985, PRIMARY_HUE_START_POS.y}, 0.5_s},
+		.alignment = tr::align::CENTER_RIGHT,
+		.hue = m_pending.primary_hue
+	});
 	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, {
 		.animation = {SECONDARY_HUE_START_POS, {745, SECONDARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING; },
 		.action = [&sh = m_pending.secondary_hue] { sh = u16((sh - keymods_choose(1, 10, 100) + 360) % 360); }
 	});
-	m_ui.emplace<numeric_input_widget<u16, 3>>(T_SECONDARY_HUE_C,
-		tweened_position{SECONDARY_HUE_START_POS, {837.5, SECONDARY_HUE_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.secondary_hue,
-		[this] { return m_substate != substate::EXITING; },
-		[](int v) { return u16(v % 360); }
-	);
+	m_ui.emplace<numeric_input_widget<u16, 3>>(T_SECONDARY_HUE_C, {
+		.animation = {SECONDARY_HUE_START_POS, {837.5, SECONDARY_HUE_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.secondary_hue,
+		.status = [this] { return m_substate != substate::EXITING; },
+		.validation = [](int v) { return u16(v % 360); }
+	});
 	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, {
 		.animation = {SECONDARY_HUE_START_POS, {930, SECONDARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING; },
 		.action = [&sh = m_pending.secondary_hue] { sh = u16((sh + keymods_choose(1, 10, 100)) % 360); }
 	});
-	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW,
-		tweened_position{SECONDARY_HUE_START_POS, {985, SECONDARY_HUE_START_POS.y}, 0.5_s},
-		tr::align::CENTER_RIGHT,
-		0.5_s,
-		m_pending.secondary_hue
-	);
+	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, {
+		.animation = {SECONDARY_HUE_START_POS, {985, SECONDARY_HUE_START_POS.y}, 0.5_s},
+		.alignment = tr::align::CENTER_RIGHT,
+		.hue = m_pending.secondary_hue
+	});
 	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_D, {
 		.animation = {SFX_VOLUME_START_POS, {765, SFX_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.sfx_volume > 0; },
 		.action = [&sv = m_pending.sfx_volume] { sv = u8(std::max(sv - keymods_choose(1, 10, 25), 0)); }
 	});
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C,
-		tweened_position{SFX_VOLUME_START_POS, {875, SFX_VOLUME_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.sfx_volume,
-		[this] { return m_substate != substate::EXITING; },
-		[](int v) { return u8(std::min(v, 100)); }
-	);
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, {
+		.animation = {SFX_VOLUME_START_POS, {875, SFX_VOLUME_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.sfx_volume,
+		.status = [this] { return m_substate != substate::EXITING; },
+		.validation = [](int v) { return u8(std::min(v, 100)); }
+	});
 	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_I, {
 		.animation = {SFX_VOLUME_START_POS, {985, SFX_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -341,16 +323,13 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.status = [this] { return m_substate != substate::EXITING && m_pending.music_volume > 0; },
 		.action = [&mv = m_pending.music_volume] { mv = u8(std::max(mv - keymods_choose(1, 10, 25), 0)); }
 	});
-	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C,
-		tweened_position{MUSIC_VOLUME_START_POS, {875, MUSIC_VOLUME_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.music_volume,
-		[this] { return m_substate != substate::EXITING; },
-		[](int v) { return u8(std::min(v, 100)); }
-	);
+	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, {
+		.animation = {MUSIC_VOLUME_START_POS, {875, MUSIC_VOLUME_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.music_volume,
+		.status = [this] { return m_substate != substate::EXITING; },
+		.validation = [](int v) { return u8(std::min(v, 100)); }
+	});
 	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_I, {
 		.animation = {MUSIC_VOLUME_START_POS, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,

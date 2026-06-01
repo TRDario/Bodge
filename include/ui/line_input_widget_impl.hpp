@@ -10,13 +10,12 @@
 //////////////////////////////////////////////////////////// LINE INPUT WIDGET ////////////////////////////////////////////////////////////
 
 template <usize MaxChars>
-line_input_widget<MaxChars>::line_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
-											   float font_size, status_command status_command, action_command enter_action_command,
-											   std::string_view initial_text)
+line_input_widget<MaxChars>::line_input_widget(properties&& properties)
 	: text_input_widget<MaxChars * 4>{
-		  pos, alignment, unhide_time, style, font_size, tr::sys::UNLIMITED_WIDTH, std::move(status_command), initial_text,
+		  properties.animation, properties.alignment,     properties.unhide_time,       properties.font_style,
+		  properties.font_size, tr::sys::UNLIMITED_WIDTH, std::move(properties.status), properties.initial_text,
 	  }
-	, m_enter_action{std::move(enter_action_command)}
+	, m_enter_action{std::move(properties.enter_action)}
 {
 }
 

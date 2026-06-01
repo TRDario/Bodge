@@ -133,15 +133,14 @@ void save_score_state::set_up_ui()
 		.animation = {{600, 440}, {500, 440}, 0.5_s},
 		.text = localized_text{T_DESCRIPTION}
 	});
-	m_ui.emplace<multiline_input_widget<255>>(T_INPUT,
-		tweened_position{{600, 475}, {500, 475}, 0.5_s},
-		tr::align::TOP_CENTER,
-		0.5_s,
-		800,
-		10,
-		24,
-		[this] { return to_base(m_substate) == substate_base::SAVING_SCORE; }
-	);
+	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, {
+		.animation = {{600, 475}, {500, 475}, 0.5_s},
+		.alignment = tr::align::TOP_CENTER,
+		.width = 800,
+		.max_lines = 10,
+		.font_size = 24,
+		.status = [this] { return to_base(m_substate) == substate_base::SAVING_SCORE; }
+	});
 	m_ui.emplace<text_button_widget>(T_SAVE, {
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,

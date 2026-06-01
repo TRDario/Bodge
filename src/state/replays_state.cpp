@@ -130,7 +130,14 @@ std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_wid
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		const std::optional<replay_map::const_iterator> opt_it{replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt};
 		const tweened_position animation{{i % 2 == 0 ? 600 : 400, 183 + 125 * i}, {500, 183 + 125 * i}, 0.25_s};
-		map.emplace(REPLAY_TAGS[i], std::make_unique<replay_widget>(animation, tr::align::CENTER, 0.25_s, *this, opt_it));
+		// clang-format off
+		map.emplace(REPLAY_TAGS[i], std::make_unique<replay_widget>(replay_widget::properties{
+			.animation = animation,
+			.unhide_time = 0.25_s,
+			.state = *this,
+			.replay_it = opt_it
+		}));
+		// clang-format on
 	}
 	return map;
 }
@@ -164,13 +171,11 @@ void replays_state::set_up_ui()
 	}
 	replay_map::iterator replay_it{m_replays.begin()};
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
-		m_ui.emplace<replay_widget>(REPLAY_TAGS[i],
-			tweened_position{{i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s},
-			tr::align::CENTER,
-			0.5_s,
-			*this,
-			replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt
-		);
+		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], {
+			.animation = {{i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s},
+			.state = *this,
+			.replay_it = replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt
+		});
 	}
 	m_ui.emplace<arrow_widget>(T_PAGE_D, {
 		.animation = {{-50, 942.5}, {10, 942.5}, 0.5_s},

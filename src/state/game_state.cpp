@@ -30,11 +30,11 @@ game_state::game_state(std::shared_ptr<game> game, game_state_data data, fade_in
 			.unhide_time =  0,
 			.text = localized_text{T_REPLAY}
 		});
-		m_ui.emplace<replay_playback_indicator_widget>(T_INDICATOR,
-			glm::vec2{992, 994},
-			tr::align::BOTTOM_RIGHT,
-			0
-		);
+		m_ui.emplace<replay_playback_indicator_widget>(T_INDICATOR, {
+			.animation = {{992, 994}},
+			.alignment = tr::align::BOTTOM_RIGHT,
+			.unhide_time = 0
+		});
 	}
 	// clang-format on
 }

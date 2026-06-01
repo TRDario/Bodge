@@ -148,9 +148,28 @@ template <class T> struct basic_numeric_input_widget_data {
 template <class T, usize Digits, class Formatter>
 class basic_numeric_input_widget final : private basic_numeric_input_widget_data<T>, public text_input_widget<Digits> {
   public:
+	// Numeric input widget properties.
+	struct properties {
+		// Initial position (or animation) of the input.
+		tweened_position animation;
+		// Alignment of the button.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the button.
+		ticks unhide_time{0.5_s};
+		// Font size of the button.
+		float font_size{48};
+		// Reference to the UI manager.
+		ui_manager& ui;
+		// Reference to the variable the widget is bound to.
+		T& variable;
+		// Command used to query the status of the input.
+		status_command status;
+		// Command used to validate the value after input is finished.
+		validation_command<T> validation;
+	};
+
 	// Creates a numeric input widget.
-	basic_numeric_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float font_size, ui_manager& ui, T& ref,
-							   status_command status_command, validation_command<T> validation_command);
+	basic_numeric_input_widget(properties&& properties);
 
 	// Function executed when the widget is selected.
 	void on_selected() override;
@@ -195,9 +214,28 @@ template <usize Digits> using interval_input_widget = basic_numeric_input_widget
 // Widget used to input a line of text.
 template <usize MaxChars> class line_input_widget final : public text_input_widget<MaxChars * 4> {
   public:
+	// Line input widget properties.
+	struct properties {
+		// Initial position (or animation) of the input.
+		tweened_position animation;
+		// Alignment of the input.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the input.
+		ticks unhide_time{0.5_s};
+		// Font style of the button.
+		tr::sys::ttf_style font_style{tr::sys::ttf_style::NORMAL};
+		// Font size of the button.
+		float font_size{48};
+		// Command used to query the status of the input.
+		status_command status;
+		// Command called when the enter key is pressed.
+		action_command enter_action;
+		// Initial text used by the input.
+		std::string_view initial_text{};
+	};
+
 	// Creates a line input widget.
-	line_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size,
-					  status_command status_command, action_command enter_action_command, std::string_view initial_text = {});
+	line_input_widget(properties&& properties);
 
 	// Gets the contents of the widget.
 	std::string_view contents() const;
@@ -222,9 +260,26 @@ template <usize MaxChars> class line_input_widget final : public text_input_widg
 // Widget used to input multiple lines of text.
 template <usize MaxChars> class multiline_input_widget final : public text_input_widget<MaxChars * 4> {
   public:
+	// Multiline input widget properties.
+	struct properties {
+		// Initial position (or animation) of the input.
+		tweened_position animation;
+		// Alignment of the input.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the input.
+		ticks unhide_time{0.5_s};
+		// Width of the input.
+		float width;
+		// Maximum allowed number of lines in the input.
+		u8 max_lines;
+		// Font size of the button.
+		float font_size{48};
+		// Command used to query the status of the input.
+		status_command status;
+	};
+
 	// Creates a multiline input widget.
-	multiline_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, float width, u8 max_lines, float font_size,
-						   status_command status_command);
+	multiline_input_widget(properties&& properties);
 
 	// Gets the contents of the widget.
 	std::string_view contents() const;
@@ -257,9 +312,24 @@ template <usize MaxChars> class multiline_input_widget final : public text_input
 // Widget used to display an image.
 class image_widget final : public widget {
   public:
+	// Image widget properties.
+	struct properties {
+		// Initial animation of the image.
+		tweened_position animation;
+		// Alignment of the image.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the image.
+		ticks unhide_time{0.5_s};
+		// Priority of the image.
+		int priority{0};
+		// Name of the image file.
+		std::string_view file;
+		// Hue of the image (untinted if nullopt).
+		tr::opt_ref<u16> hue{std::nullopt};
+	};
+
 	// Creates an image widget.
-	image_widget(tweened_position pos, tr::align alignment, ticks unhide_time, int priority, std::string_view file,
-				 tr::opt_ref<u16> hue = std::nullopt);
+	image_widget(const properties& properties);
 
 	// Gets the size of the widget.
 	glm::vec2 size() const override;
@@ -281,8 +351,20 @@ class image_widget final : public widget {
 // Widget used to display a player skin preview.
 class player_skin_preview_widget final : public widget {
   public:
+	// Player skin preview widget properties.
+	struct properties {
+		// Initial animation of the preview.
+		tweened_position animation;
+		// Alignment of the preview.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the preview.
+		ticks unhide_time{0.5_s};
+		// Reference to the pending settings.
+		settings& settings;
+	};
+
 	// Creates a player skill preview widget.
-	player_skin_preview_widget(tweened_position pos, tr::align alignment, ticks unhide_time, settings& pending_settings);
+	player_skin_preview_widget(const properties& properties);
 
 	// Gets the size of the widget.
 	glm::vec2 size() const override;
@@ -316,8 +398,20 @@ class player_skin_preview_widget final : public widget {
 // Widget used to display a color preview.
 class color_preview_widget final : public widget {
   public:
+	// Color preview widget properties.
+	struct properties {
+		// Initial animation of the widget.
+		tweened_position animation;
+		// Alignment of the widget.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the widget.
+		ticks unhide_time{0.5_s};
+		// Reference to the hue color.
+		u16& hue;
+	};
+
 	// Creates a color preview widget.
-	color_preview_widget(tweened_position pos, tr::align alignment, ticks unhide_time, u16& hue);
+	color_preview_widget(const properties& properties);
 
 	// Gets the size of the widget.
 	glm::vec2 size() const override;
@@ -347,7 +441,7 @@ class arrow_widget final : public widget {
 		tweened_position animation;
 		// Vertical alignment of the arrow widget.
 		tr::valign alignment{tr::valign::CENTER};
-		// Amount of time it takes to unhide the label.
+		// Amount of time it takes to unhide the widget.
 		ticks unhide_time{0.5_s};
 		// Arrow type.
 		arrow_type type;
@@ -410,8 +504,18 @@ class arrow_widget final : public widget {
 // Widget used to display the replay playback speed.
 class replay_playback_indicator_widget final : public widget {
   public:
+	// Replay playback indicator widget properties.
+	struct properties {
+		// Initial animation of the widget.
+		tweened_position animation;
+		// Alignment of the widget.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the widget.
+		ticks unhide_time{0.5_s};
+	};
+
 	// Creates a replay playback indicator widget.
-	replay_playback_indicator_widget(tweened_position pos, tr::align alignment, ticks unhide_time);
+	replay_playback_indicator_widget(const properties& properties);
 
 	// Gets the size of the widget.
 	glm::vec2 size() const override;
@@ -434,9 +538,24 @@ struct gamemode_widget_data {
 // Button widget used to display replay information and select a replay to be played.
 class gamemode_widget final : public gamemode_widget_data, public text_button_widget {
   public:
+	// Gamemode widget properties.
+	struct properties {
+		// Initial position (or animation) of the widget.
+		tweened_position animation;
+		// Alignment of the widget.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the widget.
+		ticks unhide_time{0.5_s};
+		// Command used to query the status of the widget.
+		status_command status;
+		// Command called when the widget is pressed.
+		gamemode_widget_action_command action;
+		// Gamemode associated with the widget.
+		std::optional<gamemode_with_path> gamemode;
+	};
+
 	// Creates a gamemode widget.
-	gamemode_widget(tweened_position pos, tr::align alignment, ticks unhide_time, status_command status_command,
-					gamemode_widget_action_command action_command, std::optional<gamemode_with_path> gamemode);
+	gamemode_widget(properties&& properties);
 };
 
 /////////////////////////////////////////////////////////////// SCORE WIDGET //////////////////////////////////////////////////////////////
@@ -452,9 +571,24 @@ class score_widget final : public text_widget {
 		SCORE = 4
 	};
 
+	// Score widget properties.
+	struct properties {
+		// Initial position (or animation) of the widget.
+		tweened_position animation;
+		// Alignment of the widget.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the widget.
+		ticks unhide_time{0.5_s};
+		// Type of score widget.
+		type type;
+		// Rank of the score widget.
+		usize rank;
+		// Reference to the score entry.
+		tr::opt_ref<const score_entry> score;
+	};
+
 	// Creates a score widget.
-	score_widget(tweened_position pos, tr::align alignment, ticks unhide_time, enum type type, usize rank,
-				 tr::opt_ref<const score_entry> score);
+	score_widget(const properties& properties);
 
 	// Gets the size of the widget.
 	glm::vec2 size() const override;
@@ -482,9 +616,22 @@ struct replay_widget_data {
 // Button widget used to display replay information and select a replay to be played.
 class replay_widget final : private replay_widget_data, public text_button_widget {
   public:
+	// Replay widget properties.
+	struct properties {
+		// Initial position (or animation) of the widget.
+		tweened_position animation;
+		// Alignment of the widget.
+		tr::align alignment{tr::align::CENTER};
+		// Amount of time it takes to unhide the widget.
+		ticks unhide_time{0.5_s};
+		// Reference to the replays state.
+		replays_state& state;
+		// Iterator to the replay associated with the widget.
+		std::optional<replay_map::const_iterator> replay_it;
+	};
+
 	// Creates a replay widget.
-	replay_widget(tweened_position pos, tr::align alignment, ticks unhide_time, replays_state& state,
-				  std::optional<replay_map::const_iterator> replay_it);
+	replay_widget(const properties& properties);
 
 	// Gets the size of the widget.
 	glm::vec2 size() const override;

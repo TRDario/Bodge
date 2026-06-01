@@ -406,7 +406,7 @@ struct edit_gamemode_selector {
 	void on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const;
 };
 // Selector for deleting gamemodes.
-struct delete_gamemode_selector {
+struct delete_gamemodes_selector {
 	// Filters gamemodes such that only deletable gamemodes remain.
 	void filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const;
 	// Gets the text command used for the subtitle of the gamemode selector.
@@ -415,7 +415,7 @@ struct delete_gamemode_selector {
 	void on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const;
 };
 // Generic gamemode selector.
-using gamemode_selector = std::variant<clone_gamemode_selector, edit_gamemode_selector, delete_gamemode_selector>;
+using gamemode_selector = std::variant<clone_gamemode_selector, edit_gamemode_selector, delete_gamemodes_selector>;
 
 // Gamemode selector screens of the main menu.
 class gamemode_selector_state final : public main_menu_state {
@@ -466,7 +466,7 @@ class gamemode_selector_state final : public main_menu_state {
 
 	friend struct clone_gamemode_selector;
 	friend struct edit_gamemode_selector;
-	friend struct delete_gamemode_selector;
+	friend struct delete_gamemodes_selector;
 };
 
 //////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////

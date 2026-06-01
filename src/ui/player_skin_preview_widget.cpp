@@ -8,9 +8,10 @@
 
 //////////////////////////////////////////////////////// PLAYER SKIN PREVIEW WIDGET ///////////////////////////////////////////////////////
 
-player_skin_preview_widget::player_skin_preview_widget(tweened_position pos, tr::align alignment, ticks unhide_time,
-													   settings& pending_settings)
-	: widget{pos, alignment, unhide_time, NO_TOOLTIP}, m_pending_settings{pending_settings}, m_rotation{}
+player_skin_preview_widget::player_skin_preview_widget(const properties& properties)
+	: widget{properties.animation, properties.alignment, properties.unhide_time, NO_TOOLTIP}
+	, m_pending_settings{properties.settings}
+	, m_rotation{}
 {
 	update_skin();
 }

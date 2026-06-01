@@ -105,16 +105,13 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives > 0; },
 		.action = [&sl = m_pending.player.starting_lives] { sl = u8(std::max(int(sl - keymods_choose(1, 5, 10)), 0)); }
 	});
-	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_LIVES_C,
-		tweened_position{STARTING_LIVES_START_POS, {875.5f, STARTING_LIVES_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.player.starting_lives,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[](u32 v) { return std::clamp(v, 0_u32, 255_u32); }
-	);
+	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_LIVES_C, {
+		.animation = {STARTING_LIVES_START_POS, {875.5f, STARTING_LIVES_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.player.starting_lives,
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.validation = [](u32 v) { return std::clamp(v, 0_u32, 255_u32); }
+	});
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, {
 		.animation = {STARTING_LIVES_START_POS, {985, STARTING_LIVES_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -136,16 +133,13 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		},
 		.action = [&lfsi = m_pending.player.life_fragment_spawn_interval] { lfsi = std::max(lfsi - keymods_choose(0.1_s, 1_s, 10_s), 15_s); }
 	});
-	m_ui.emplace<interval_input_widget<4>>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_C,
-		tweened_position{LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {875.5f, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.player.life_fragment_spawn_interval,
-		[this] { return m_substate == substate::IN_EDITOR && m_pending.player.spawn_life_fragments; },
-		[](ticks v) { return std::clamp(v, 15_s, 100_s); }
-	);
+	m_ui.emplace<interval_input_widget<4>>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_C, {
+		.animation = {LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {875.5f, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.player.life_fragment_spawn_interval,
+		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.spawn_life_fragments; },
+		.validation = [](ticks v) { return std::clamp(v, 15_s, 100_s); }
+	});
 	m_ui.emplace<arrow_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_I, {
 		.animation = {LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {985, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -161,16 +155,13 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius > 1.0f; },
 		.action = [&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - keymods_choose(1, 5, 10), 1.0f); }
 	});
-	m_ui.emplace<numeric_input_widget<float, 3, "{:.0f}">>(T_HITBOX_RADIUS_C,
-		tweened_position{HITBOX_RADIUS_START_POS, {875.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.player.hitbox_radius,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[](float v) { return std::clamp(v, 1.0f, 100.0f); }
-	);
+	m_ui.emplace<numeric_input_widget<float, 3, "{:.0f}">>(T_HITBOX_RADIUS_C, {
+		.animation = {HITBOX_RADIUS_START_POS, {875.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.player.hitbox_radius,
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.validation = [](float v) { return std::clamp(v, 1.0f, 100.0f); }
+	});
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_I, {
 		.animation = {HITBOX_RADIUS_START_POS, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -183,16 +174,13 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.inertia_factor > 0.0f; },
 		.action = [&in = m_pending.player.inertia_factor] { in = std::max(in - keymods_choose(0.01f, 0.05f, 0.1f), 0.0f); }
 	});
-	m_ui.emplace<numeric_input_widget<float, 4, "{:.2f}">>(T_INERTIA_FACTOR_C,
-		tweened_position{INERTIA_FACTOR_START_POS, {875.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.player.inertia_factor,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[](float v) { return std::clamp(v, 0.0f, 0.99f); }
-	);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.2f}">>(T_INERTIA_FACTOR_C, {
+		.animation = {INERTIA_FACTOR_START_POS, {875.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.player.inertia_factor,
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.validation = [](float v) { return std::clamp(v, 0.0f, 0.99f); }
+	});
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_I, {
 		.animation = {INERTIA_FACTOR_START_POS, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,

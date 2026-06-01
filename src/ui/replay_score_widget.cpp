@@ -108,21 +108,20 @@ static void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 co
 
 ////////////////////////////////////////////////////////////// SCORE WIDGET ///////////////////////////////////////////////////////////////
 
-score_widget::score_widget(tweened_position pos, tr::align alignment, ticks unhide_time, enum type type, usize rank,
-						   tr::opt_ref<const ::score_entry> score)
+score_widget::score_widget(const properties& properties)
 	: text_widget{
-		  pos,
-		  alignment,
-		  unhide_time,
-		  constant_text{format_score_tooltip(score)},
-		  constant_text(format_score_text(score, type, rank)),
+		  properties.animation,
+		  properties.alignment,
+		  properties.unhide_time,
+		  constant_text{format_score_tooltip(properties.score)},
+		  constant_text(format_score_text(properties.score, properties.type, properties.rank)),
 		  font::LANGUAGE,
 		  tr::sys::ttf_style::NORMAL,
 		  48,
 		  tr::sys::UNLIMITED_WIDTH,
 	  }
-	, m_empty{!score.has_ref()}
-	, m_flags{score.has_ref() ? score->flags : score_flags{}}
+	, m_empty{!properties.score.has_ref()}
+	, m_flags{properties.score.has_ref() ? properties.score->flags : score_flags{}}
 {
 }
 
@@ -154,28 +153,27 @@ void score_widget::add_to_renderer()
 
 ////////////////////////////////////////////////////////////// REPLAY_WIDGET //////////////////////////////////////////////////////////////
 
-replay_widget::replay_widget(tweened_position pos, tr::align alignment, ticks unhide_time, replays_state& state,
-							 std::optional<replay_map::const_iterator> replay_it)
-	: replay_widget_data{state, replay_it}
-	, text_button_widget{pos,
-						 alignment,
-						 unhide_time,
-						 constant_text{replay_it.has_value() ? format_score_tooltip((*replay_it)->second) : ""},
-						 constant_text{format_replay_text(replay_it)},
-						 font::LANGUAGE,
-						 34,
-						 [this] { return m_parent_state.m_substate == replays_state::substate::IN_REPLAYS && m_replay_it.has_value(); },
-						 [this] {
-							 if (m_replay_it.has_value()) {
-								 m_parent_state.m_substate = replays_state::substate::STARTING_REPLAY;
-								 m_parent_state.m_elapsed = 0;
-								 m_parent_state.set_up_exit_animation();
-								 g_audio.fade_song_out(0.5s);
-								 m_parent_state.m_next_state =
-									 make_game_state_async<replay_game>(replay_game_data{}, replay{(*m_replay_it)->first});
-							 }
-						 },
-						 sound::CONFIRM}
+replay_widget::replay_widget(const properties& properties)
+	: replay_widget_data{properties.state, properties.replay_it}
+	, text_button_widget{{
+		  .animation = properties.animation,
+		  .alignment = properties.alignment,
+		  .unhide_time = properties.unhide_time,
+		  .tooltip_text = constant_text{properties.replay_it.has_value() ? format_score_tooltip((*properties.replay_it)->second) : ""},
+		  .text = constant_text{format_replay_text(properties.replay_it)},
+		  .font_size = 34,
+		  .status = [this] { return m_parent_state.m_substate == replays_state::substate::IN_REPLAYS && m_replay_it.has_value(); },
+		  .action =
+			  [this] {
+				  if (m_replay_it.has_value()) {
+					  m_parent_state.m_substate = replays_state::substate::STARTING_REPLAY;
+					  m_parent_state.m_elapsed = 0;
+					  m_parent_state.set_up_exit_animation();
+					  g_audio.fade_song_out(0.5s);
+					  m_parent_state.m_next_state = make_game_state_async<replay_game>(replay_game_data{}, replay{(*m_replay_it)->first});
+				  }
+			  },
+	  }}
 {
 }
 

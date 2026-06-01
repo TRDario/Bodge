@@ -79,8 +79,8 @@ constexpr std::array<u16, 48> FAST_SPEED_INDICES{
 
 ///////////////////////////////////////////////////// REPLAY PLAYBACK INDICATOR WIDGET ////////////////////////////////////////////////////
 
-replay_playback_indicator_widget::replay_playback_indicator_widget(tweened_position pos, tr::align alignment, ticks unhide_time)
-	: widget{pos, alignment, unhide_time, localized_text{"replay_tt"}}
+replay_playback_indicator_widget::replay_playback_indicator_widget(const properties& properties)
+	: widget{properties.animation, properties.alignment, properties.unhide_time, localized_text{"replay_tt"}}
 {
 }
 

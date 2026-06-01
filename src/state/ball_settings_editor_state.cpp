@@ -125,16 +125,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.starting_count > 0; },
 		.action = [&sc = m_pending.ball.starting_count] { sc = u8(std::max(sc - keymods_choose(1, 5, 10), 1)); }
 	});
-	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_COUNT_C,
-		tweened_position{STARTING_COUNT_START_POS, {875.5f, STARTING_COUNT_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.ball.starting_count,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[&mc = m_pending.ball.max_count](int v) { return u8(std::clamp(v, 0, int(mc))); }
-	);
+	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_COUNT_C, {
+		.animation = {STARTING_COUNT_START_POS, {875.5f, STARTING_COUNT_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.ball.starting_count,
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.validation = [&mc = m_pending.ball.max_count](int v) { return u8(std::clamp(v, 0, int(mc))); }
+	});
 	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_I, {
 		.animation = {STARTING_COUNT_START_POS, {985, STARTING_COUNT_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -147,16 +144,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.max_count > std::max(1_u8, m_pending.ball.starting_count); },
 		.action = [&balls = m_pending.ball] { balls.max_count = u8(std::max({1, int(balls.starting_count), balls.max_count - keymods_choose(1, 5, 10)})); }
 	});
-	m_ui.emplace<numeric_input_widget<u8, 3>>(T_MAX_COUNT_C,
-		tweened_position{MAX_COUNT_START_POS, {875.5f, MAX_COUNT_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.ball.max_count,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[&sc = m_pending.ball.starting_count](int v) { return u8(std::clamp(v, std::max(int(sc), 1), 255)); }
-	);
+	m_ui.emplace<numeric_input_widget<u8, 3>>(T_MAX_COUNT_C, {
+		.animation = {MAX_COUNT_START_POS, {875.5f, MAX_COUNT_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.ball.max_count,
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.validation = [&sc = m_pending.ball.starting_count](int v) { return u8(std::clamp(v, std::max(int(sc), 1), 255)); }
+	});
 	m_ui.emplace<arrow_widget>(T_MAX_COUNT_I, {
 		.animation = {MAX_COUNT_START_POS, {985, MAX_COUNT_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -169,16 +163,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.spawn_interval > 1.0_s; },
 		.action = [&si = m_pending.ball.spawn_interval] { si = ticks(std::max(int(si - keymods_choose(0.1_s, 1_s, 10_s)), int(1_s))); }
 	});
-	m_ui.emplace<interval_input_widget<4>>(T_SPAWN_INTERVAL_C,
-		tweened_position{SPAWN_INTERVAL_START_POS, {875.5f, SPAWN_INTERVAL_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.ball.spawn_interval,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[](ticks v) { return std::clamp(v, 1_s, 60_s); }
-	);
+	m_ui.emplace<interval_input_widget<4>>(T_SPAWN_INTERVAL_C, {
+		.animation = {SPAWN_INTERVAL_START_POS, {875.5f, SPAWN_INTERVAL_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.ball.spawn_interval,
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.validation = [](ticks v) { return std::clamp(v, 1_s, 60_s); }
+	});
 	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_I, {
 		.animation = {SPAWN_INTERVAL_START_POS, {985, SPAWN_INTERVAL_START_POS.y}, 0.5_s}, 
 		.type = arrow_type::RIGHT,
@@ -191,16 +182,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size > 10; },
 		.action = [&is = m_pending.ball.initial_size] { is = std::max(is - keymods_choose(1, 5, 10), 10.0f); }
 	});
-	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_SIZE_C,
-		tweened_position{INITIAL_SIZE_START_POS, {875.5f, INITIAL_SIZE_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.ball.initial_size,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[](float v) { return std::clamp(v, 10.0f, 100.0f); }
-	);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_SIZE_C, {
+		.animation{INITIAL_SIZE_START_POS, {875.5f, INITIAL_SIZE_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.ball.initial_size,
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.validation = [](float v) { return std::clamp(v, 10.0f, 100.0f); }
+	});
 	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_I, {
 		.animation = {INITIAL_SIZE_START_POS, {985, INITIAL_SIZE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -213,15 +201,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.size_step > 0; },
 		.action = [&ss = m_pending.ball.size_step] { ss = std::max(ss - keymods_choose(0.1f, 1.0f, 2.5f), 0.0f); }
 	});
-	m_ui.emplace<numeric_input_widget<float, 4, "{:.1f}">>(T_SIZE_STEP_C,
-		tweened_position{SIZE_STEP_START_POS, {875.5f, SIZE_STEP_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.ball.size_step, [this] { return m_substate == substate::IN_EDITOR; },
-		[](float v) { return std::clamp(v, 0.0f, 10.0f); }
-	);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.1f}">>(T_SIZE_STEP_C, {
+		.animation = {SIZE_STEP_START_POS, {875.5f, SIZE_STEP_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.ball.size_step,
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.validation = [](float v) { return std::clamp(v, 0.0f, 10.0f); }
+	});
 	m_ui.emplace<arrow_widget>(T_SIZE_STEP_I, {
 		.animation = {SIZE_STEP_START_POS, {985, SIZE_STEP_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -234,16 +220,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_velocity > 100; },
 		.action = [&iv = m_pending.ball.initial_velocity] { iv = std::max(iv - keymods_choose(1, 10, 100), 100.0f); }
 	});
-	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_VELOCITY_C,
-		tweened_position{INITIAL_VELOCITY_START_POS, {875.5f, INITIAL_VELOCITY_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.ball.initial_velocity,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[](float v) { return std::clamp(v, 100.0f, 5000.0f); }
-	);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_VELOCITY_C, {
+		.animation = {INITIAL_VELOCITY_START_POS, {875.5f, INITIAL_VELOCITY_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.ball.initial_velocity,
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.validation = [](float v) { return std::clamp(v, 100.0f, 5000.0f); }
+	});
 	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_I, {
 		.animation = {INITIAL_VELOCITY_START_POS, {985, INITIAL_VELOCITY_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -256,16 +239,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.velocity_step > 0; },
 		.action = [&vs = m_pending.ball.velocity_step] { vs = std::max(vs - keymods_choose(1, 10, 100), 0.0f); }
 	});
-	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_VELOCITY_STEP_C,
-		tweened_position{VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s},
-		tr::align::CENTER,
-		0.5_s,
-		48,
-		m_ui,
-		m_pending.ball.velocity_step,
-		[this] { return m_substate == substate::IN_EDITOR; },
-		[](float v) { return std::clamp(v, 0.0f, 1000.0f); }
-	);
+	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_VELOCITY_STEP_C, {
+		.animation = {VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s},
+		.ui = m_ui,
+		.variable = m_pending.ball.velocity_step,
+		.status = [this] { return m_substate == substate::IN_EDITOR; },
+		.validation = [](float v) { return std::clamp(v, 0.0f, 1000.0f); }
+	});
 	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_I, {
 		.animation = {VELOCITY_STEP_START_POS, {985, VELOCITY_STEP_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
