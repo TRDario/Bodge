@@ -71,7 +71,7 @@ tr::sys::signal initialize()
 	g_audio.initialize();
 	open_window();
 	g_renderer.emplace();
-	g_scorefile.name.empty() ? g_state_machine.emplace<name_entry_state>() : g_state_machine.emplace<title_state>();
+	g_scorefile.name.empty() ? g_state.emplace<name_entry_state>() : g_state.emplace<title_state>();
 	tr::sys::show_window();
 	return tr::sys::signal::CONTINUE;
 }
@@ -79,7 +79,7 @@ tr::sys::signal initialize()
 tr::sys::signal handle_event(tr::sys::event& event)
 {
 	event | tr::match{
-				[](tr::sys::quit_event) { g_state_machine.clear(); },
+				[](tr::sys::quit_event) { g_state.clear(); },
 				[](tr::sys::window_gain_focus_event) { tr::sys::set_mouse_relative_mode(true); },
 				[](tr::sys::window_lose_focus_event) { tr::sys::set_mouse_relative_mode(false); },
 				[](tr::one_of<tr::sys::key_down_event, tr::sys::key_up_event> auto event) { g_held_keymods = event.mods; },
@@ -95,20 +95,20 @@ tr::sys::signal handle_event(tr::sys::event& event)
 				[](tr::sys::mouse_up_event event) { g_held_buttons &= ~event.button; },
 				[](auto) {},
 			};
-	g_state_machine.handle_event(event);
-	return !g_state_machine.empty() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
+	g_state.handle_event(event);
+	return !g_state.empty() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
 }
 
 tr::sys::signal tick()
 {
-	g_state_machine.tick();
-	return !g_state_machine.empty() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
+	g_state.tick();
+	return !g_state.empty() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
 }
 
 tr::sys::signal draw()
 {
 	g_renderer->start_benchmark();
-	g_state_machine.draw();
+	g_state.draw();
 	g_renderer->draw_cursor();
 	g_renderer->draw_benchmarks();
 	g_renderer->stop_benchmark();

@@ -16,7 +16,7 @@
 //  • g_rng                - Global RNG (games use their own RNG for gameplay).                                                          //
 //  • g_scorefile          - Player scorefile.                                                                                           //
 //  • g_settings           - Game settings.                                                                                              //
-//  • g_state_machine      - Container for the current state.                                                                            //
+//  • g_state              - Container for the current state.                                                                            //
 //  • g_text_engine        - Text rendering subsystem.                                                                                   //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

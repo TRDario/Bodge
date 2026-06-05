@@ -92,7 +92,7 @@ void renderer::draw_layers(const tr::gfx::render_target& target)
 void renderer::draw_cursor()
 {
 	tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
-	if (g_state_machine.get<state>().transparent_cursor()) {
+	if (g_state.get<state>().transparent_cursor()) {
 		color.a = 160;
 	}
 
@@ -138,9 +138,9 @@ void renderer::fetch_benchmark()
 void renderer::draw_benchmarks()
 {
 	if (m_extra.has_value()) {
-		m_extra->debug.write_right(g_state_machine.tick_benchmark(), "Tick:", 1.0s / 1_s);
+		m_extra->debug.write_right(g_state.tick_benchmark(), "Tick:", 1.0s / 1_s);
 		m_extra->debug.newline_right();
-		m_extra->debug.write_right(g_state_machine.draw_benchmark(), "Render (CPU):", 1.0s / g_cli_settings.refresh_rate);
+		m_extra->debug.write_right(g_state.draw_benchmark(), "Render (CPU):", 1.0s / g_cli_settings.refresh_rate);
 		m_extra->debug.newline_right();
 		m_extra->debug.write_right(g_renderer->m_extra->benchmark, "Render (GPU):", 1.0s / g_cli_settings.refresh_rate);
 		m_extra->debug.draw();

@@ -123,12 +123,12 @@ void settings::apply(const settings& new_settings)
 
 	*this = new_settings;
 	if (restart_required) {
-		auto temp{std::move(g_state_machine)};
+		auto temp{std::move(g_state)};
 		g_renderer.reset();
 		tr::sys::close_window();
 		open_window();
 		g_renderer.emplace();
-		g_state_machine = std::move(temp);
+		g_state = std::move(temp);
 		tr::sys::show_window();
 	}
 	else if (vsync != previous.vsync) {
