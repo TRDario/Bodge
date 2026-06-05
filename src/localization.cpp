@@ -38,11 +38,11 @@ void load_languages()
 
 void load_localization()
 {
-	if (!g_languages.contains(g_settings.language)) {
+	if (!g_languages.contains(active_settings::instance()->language)) {
 		return;
 	}
 
-	const std::string_view name{g_settings.language.data(), 2};
+	const std::string_view name{active_settings::instance()->language.data(), 2};
 	tr::localization_map old{std::move(g_loc)};
 	try {
 		const std::string filename{TR_FMT::format("localization/{}.txt", name)};

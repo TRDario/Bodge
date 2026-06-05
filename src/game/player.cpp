@@ -73,7 +73,7 @@ void player::add_to_renderer_alive(ticks time_since_start, const decrementing_ti
 		try_loading_skin();
 	}
 
-	const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+	const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(std::abs(tr::turns(4.0f * m_invincibility_timer.elapsed_ratio()).cos()))};
 	const tr::angle rotation{270_deg * time_since_start / 1_s};
 	const float size_offset{3.0f * tr::turns(time_since_start / 2_sf).sin()};
@@ -105,7 +105,7 @@ void player::add_to_renderer_dead(ticks time_since_game_over) const
 void player::try_loading_skin() const
 {
 	try {
-		tr::bitmap image{tr::load_bitmap_file(g_cli_settings.user_directory / "skins" / g_settings.player_skin)};
+		tr::bitmap image{tr::load_bitmap_file(g_cli_settings.user_directory / "skins" / active_settings::instance()->player_skin)};
 		if (image.format() == tr::pixel_format::R8) {
 			image = tr::bitmap{image, tr::pixel_format::RGBA32};
 		}
@@ -186,7 +186,7 @@ void player::add_death_wave_to_renderer(ticks time_since_game_over) const
 {
 	const float t{(time_since_game_over + 1) / 0.5_sf};
 	const float scale{std::sqrt(t) * 200};
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(0.5f * (1 - t))};
 
 	g_renderer->circle.add_circle(layer::PLAYER_TRAIL, {m_hitbox.c, scale}, tr::rgba8{color, opacity});
@@ -195,7 +195,7 @@ void player::add_death_wave_to_renderer(ticks time_since_game_over) const
 void player::add_death_fragments_to_renderer(ticks time_since_game_over) const
 {
 	const float t{(time_since_game_over + 1) / 0.5_sf};
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t))};
 	const float length{2 * m_hitbox.r * (30_deg).tan()};
 

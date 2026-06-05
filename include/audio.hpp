@@ -43,7 +43,7 @@ inline class audio {
 	// Initializes the audio manager.
 	void initialize();
 	// Applies audio settings.
-	void apply_settings();
+	void apply_settings(float sfx_volume, float music_volume);
 	// Shuts down the audio manager.
 	void shut_down();
 

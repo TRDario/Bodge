@@ -130,7 +130,7 @@ void playerless_game::add_border_to_renderer() const
 {
 	const tr::gfx::simple_color_mesh_ref border{g_renderer->basic.new_color_outline(layer::BORDER, 4)};
 	tr::fill_rectangle_outline_vertices(border.positions, {{2, 2}, {996, 996}}, 4);
-	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{float(g_settings.secondary_hue), 1, 1}));
+	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->secondary_hue), 1, 1}));
 }
 
 void playerless_game::add_to_renderer() const
@@ -558,7 +558,7 @@ void game::add_lives_to_renderer() const
 {
 	const float life_size{m_lives_left > (m_hit_animation_timer.active() ? MAX_LARGE_LIVES - 1 : MAX_LARGE_LIVES) ? SMALL_LIFE_SIZE
 																												  : LARGE_LIFE_SIZE};
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 	const u8 opacity{u8(192 - 148 * m_lives_hover_timer.accumulated() / m_lives_hover_timer.max())};
 	const tr::angle rotation{120_deg * m_elapsed_time / 1_s};
 

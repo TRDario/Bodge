@@ -115,14 +115,14 @@ void title_state::set_up_ui()
 		.unhide_time = 2.5_s,
 		.priority = 1,
 		.file = "logo_overlay",
-		.hue = g_settings.primary_hue
+		.hue = active_settings::instance()->primary_hue
 	});
 	m_ui.emplace<image_widget>(T_LOGO_BALL, {
 		.animation = {{-180, 644}, {327, 217}, 2.5_s},
 		.unhide_time = 2.5_s,
 		.priority = 2,
 		.file = "logo_ball",
-		.hue = g_settings.secondary_hue
+		.hue = active_settings::instance()->secondary_hue
 	});
 
 	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, {

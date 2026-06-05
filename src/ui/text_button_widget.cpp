@@ -34,7 +34,7 @@ void text_button_widget::tick()
 			m_tint.change(GRAY, 0.1_s);
 		}
 		else if (m_tint.done() && (m_hovered || m_selected) && !m_held && !m_action_animation_timer.active()) {
-			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
+			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->primary_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
 		}
 	}
 	else {

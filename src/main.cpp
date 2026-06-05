@@ -63,7 +63,6 @@ tr::sys::signal initialize()
 	tr::sys::set_draw_frequency(g_cli_settings.refresh_rate);
 	tr::sys::set_tick_frequency(240);
 
-	g_settings.load_from_file();
 	g_scorefile.load_from_file();
 	g_loaded_userdata = true;
 	load_languages();
@@ -114,6 +113,5 @@ void shut_down()
 	g_text_engine.unload_fonts();
 	if (g_loaded_userdata) {
 		g_scorefile.save_to_file();
-		g_settings.save_to_file();
 	}
 }

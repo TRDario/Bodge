@@ -325,7 +325,7 @@ class image_widget final : public widget {
 		// Name of the image file.
 		std::string_view file;
 		// Hue of the image (untinted if nullopt).
-		tr::opt_ref<u16> hue{std::nullopt};
+		tr::opt_ref<const u16> hue{std::nullopt};
 	};
 
 	// Creates an image widget.
@@ -341,7 +341,7 @@ class image_widget final : public widget {
 	// The image texture, don't immediately load into a GPU texture to ensure it can be asynchronously loaded.
 	std::variant<tr::bitmap, tr::gfx::texture> m_texture;
 	// Optional reference to a hue the image takes on.
-	tr::opt_ref<u16> m_hue;
+	tr::opt_ref<const u16> m_hue;
 	// The drawing priority of the widget.
 	int m_priority;
 };
@@ -407,7 +407,7 @@ class color_preview_widget final : public widget {
 		// Amount of time it takes to unhide the widget.
 		ticks unhide_time{0.5_s};
 		// Reference to the hue color.
-		u16& hue;
+		const u16& hue;
 	};
 
 	// Creates a color preview widget.
@@ -421,7 +421,7 @@ class color_preview_widget final : public widget {
 
   private:
 	// Reference to the hue of the color to display.
-	u16& m_hue;
+	const u16& m_hue;
 };
 
 /////////////////////////////////////////////////////////////// ARROW WIDGET //////////////////////////////////////////////////////////////

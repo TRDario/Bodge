@@ -50,7 +50,7 @@ template <usize MaxChars> void text_input_widget<MaxChars>::tick()
 		}
 		// Slowly cycle between gray and a slight primary hue tint if hovered/selected.
 		else if (m_tint.done() && (m_hovered || m_selected) && !m_held) {
-			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
+			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->primary_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
 		}
 	}
 	else {

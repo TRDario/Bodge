@@ -94,7 +94,7 @@ void renderer::draw_cursor()
 {
 	const glm::vec2 mouse_pos{input::instance().mouse_pos};
 
-	tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+	tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 	if (g_state.get<state>().transparent_cursor()) {
 		color.a = 160;
 	}

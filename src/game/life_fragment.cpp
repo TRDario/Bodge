@@ -83,7 +83,7 @@ void life_fragment::add_to_renderer() const
 		return;
 	}
 
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
+	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 
 	float raw_factor;
 	float eased_factor;

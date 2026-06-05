@@ -74,8 +74,8 @@ void text_engine::load_fonts()
 {
 	m_standard_fonts.emplace(load_font("charge_vector_b.otf"), load_font("linux_biolinum_rb.ttf"));
 	try {
-		std::string language_font_file{g_languages.contains(g_settings.language) ? g_languages.at(g_settings.language).font
-																				 : std::string{}};
+		const language_code active_language{active_settings::instance()->language};
+		std::string language_font_file{g_languages.contains(active_language) ? g_languages.at(active_language).font : std::string{}};
 		if (language_font_file.empty() || language_font_file == "charge_vector_b.otf") {
 			m_language_font.state = optional_font::state::USE_DEFAULT;
 		}

@@ -46,7 +46,7 @@ struct input::event_handler {
 	{
 		if (tr::sys::window_has_focus()) {
 			const float scale{g_renderer->scale() * tr::sys::window_pixel_density()};
-			const float multiplier{g_settings.mouse_sensitivity / 100.0f / scale};
+			const float multiplier{active_settings::instance()->mouse_sensitivity / 100.0f / scale};
 			const glm::vec2 delta{event.delta * multiplier};
 			input.mouse_pos = glm::clamp(input.mouse_pos + delta, 0.0f, 1000.0f);
 		}

@@ -63,8 +63,8 @@ void audio::initialize()
 	try {
 		tr::audio::initialize();
 		tr::audio::set_master_gain(2);
-		tr::audio::set_class_gain(0, g_settings.sfx_volume / 100.0f);
-		tr::audio::set_class_gain(1, g_settings.music_volume / 100.0f);
+		tr::audio::set_class_gain(0, active_settings::instance()->sfx_volume / 100.0f);
+		tr::audio::set_class_gain(1, active_settings::instance()->music_volume / 100.0f);
 		for (int i = 0; i < int(sound::COUNT); ++i) {
 			m_sounds[i] = try_loading_audio_file(SFX_FILENAMES[i]);
 		}
@@ -76,11 +76,11 @@ void audio::initialize()
 	}
 }
 
-void audio::apply_settings()
+void audio::apply_settings(float sfx_volume, float music_volume)
 {
 	if (tr::audio::active()) {
-		tr::audio::set_class_gain(0, g_settings.sfx_volume / 100.0f);
-		tr::audio::set_class_gain(1, g_settings.music_volume / 100.0f);
+		tr::audio::set_class_gain(0, sfx_volume / 100.0f);
+		tr::audio::set_class_gain(1, music_volume / 100.0f);
 	}
 }
 

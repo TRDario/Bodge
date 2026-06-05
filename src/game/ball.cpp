@@ -101,7 +101,7 @@ void ball::tick()
 
 void ball::add_to_renderer() const
 {
-	const tr::rgb8 tint{tr::color_cast<tr::rgb8>(tr::hsv{float(g_settings.secondary_hue), 1, 1})};
+	const tr::rgb8 tint{tr::color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->secondary_hue), 1, 1})};
 	const float raw_age_factor{std::min(float(m_age) / BALL_SPAWN_ANIMATION_TIME, 1.0f)};
 	const float eased_age_factor{raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor)};
 	const float size{m_hitbox.r * (5 - 4 * eased_age_factor)};

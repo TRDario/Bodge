@@ -48,8 +48,8 @@ enum class display_mode : bool {
 // Sentinel denoting that multisampling is disabled.
 constexpr u8 NO_MSAA{0};
 
-// Program settings.
-inline struct settings {
+// Application settings.
+struct settings {
 	// Size of the window (only used if display_mode == WINDOWED).
 	u16 window_size{800};
 	// Active display mode.
@@ -72,18 +72,34 @@ inline struct settings {
 	language_code language{'e', 'n'};
 
 	bool operator==(const settings&) const = default;
+};
 
-	// Loads settings from a file.
-	void load_from_file();
-	// Saves settings to a file.
-	void save_to_file() const;
+// Active application settings singleton class.
+class active_settings {
+  public:
+	// Gets the active settings singleton.
+	static active_settings& instance();
+
+	// Gets the active settings values.
+	operator const settings&() const;
+	// Gets the active settings values.
+	const settings* operator->() const;
 
 	// Determines whether releasing graphical resources ahead of applying settings is necessary.
 	bool releasing_graphical_resources_required_to_apply(const settings& new_settings) const;
+
 	// Applies new settings.
 	void apply(const settings& new_settings);
 
   private:
+	// The active settings structure.
+	settings m_settings;
+
+	// Loads the active settings from file.
+	active_settings();
+	// Saves the active settings to file.
+	~active_settings();
+
 	// Loads settings from a file without validation.
 	void raw_load_from_file();
 	// Validates loaded settings.
@@ -91,4 +107,4 @@ inline struct settings {
 
 	// Determines whether a restart is necessary to apply new settings.
 	bool restart_required_to_apply(const settings& new_settings) const;
-} g_settings{}; // Global copy of the settings.
+};

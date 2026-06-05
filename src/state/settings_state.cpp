@@ -155,7 +155,7 @@ std::vector<std::string> find_skins()
 settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_SETTINGS}
-	, m_pending{g_settings}
+	, m_pending(active_settings::instance())
 	, m_player_skins{find_skins()}
 {
 	// clang-format off
@@ -352,13 +352,13 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		sound sound;
 	};
 	const std::array<bottom_button_parameters, BOTTOM_BUTTONS.size()> bottom_button_parameters{{
-		{[this] { return m_substate != substate::EXITING && m_pending != g_settings; },
+		{[this] { return m_substate != substate::EXITING && m_pending != active_settings::instance(); },
 		 [this] { on_revert(); },
 		 sound::CONFIRM},
-		{[this] { return m_substate != substate::EXITING && m_pending != g_settings; },
+		{[this] { return m_substate != substate::EXITING && m_pending != active_settings::instance(); },
 		 [this] { on_apply(); },
 		 sound::CONFIRM},
-		{[this] { return m_substate != substate::EXITING && m_pending == g_settings; },
+		{[this] { return m_substate != substate::EXITING && m_pending == active_settings::instance(); },
 		 [this] { on_exit(); },
 		 sound::CANCEL},
 	}};
@@ -448,7 +448,7 @@ void settings_state::on_change_language()
 
 void settings_state::on_revert()
 {
-	m_pending = g_settings;
+	m_pending = active_settings::instance();
 	g_text_engine.reload_language_preview_font(m_pending);
 	const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? GRAY : DISABLED_GRAY};
 	m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(window_size_color, 0.1_s);
@@ -457,10 +457,10 @@ void settings_state::on_revert()
 
 void settings_state::on_apply()
 {
-	if (g_settings.releasing_graphical_resources_required_to_apply(m_pending)) {
+	if (active_settings::instance().releasing_graphical_resources_required_to_apply(m_pending)) {
 		m_ui.release_graphical_resources();
 	}
-	g_settings.apply(m_pending);
+	active_settings::instance().apply(m_pending);
 }
 
 void settings_state::on_exit()

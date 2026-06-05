@@ -2,20 +2,20 @@
 //                                                                                                                                       //
 // Provides various functionality used throughout the codebase.                                                                          //
 //                                                                                                                                       //
-// Globals:                                                                                                                              //
-//  • g_audio              - Audio subsystem.                                                                                            //
-//  • g_cli_settings       - Command-line settings.                                                                                      //
-//  • input::instance()    - Input manager.                                                                                              //
-//  • g_languages          - List of available languages.                                                                                //
-//  • g_loaded_userdata    - Flag denoting whether userdata globals (scorefile, settings) have been loaded.                              //
-//  • g_loc                - Localization map.                                                                                           //
-//  • g_new_gamemode_draft - Saved draft of an unfinished new gamemode.                                                                  //
-//  • g_renderer           - Rendering subsystem.                                                                                        //
-//  • g_rng                - Global RNG (games use their own RNG for gameplay).                                                          //
-//  • g_scorefile          - Player scorefile.                                                                                           //
-//  • g_settings           - Game settings.                                                                                              //
-//  • g_state              - Container for the current state.                                                                            //
-//  • g_text_engine        - Text rendering subsystem.                                                                                   //
+// Globals & Singletons:                                                                                                                 //
+//  • active_settings::instance() - Active application settings.                                                                         //
+//  • g_audio                     - Audio subsystem.                                                                                     //
+//  • g_cli_settings              - Command-line settings.                                                                               //
+//  • input::instance()           - Input manager.                                                                                       //
+//  • g_languages                 - List of available languages.                                                                         //
+//  • g_loaded_userdata           - Flag denoting whether userdata globals (scorefile, settings) have been loaded.                       //
+//  • g_loc                       - Localization map.                                                                                    //
+//  • g_new_gamemode_draft        - Saved draft of an unfinished new gamemode.                                                           //
+//  • g_renderer                  - Rendering subsystem.                                                                                 //
+//  • g_rng                       - Global RNG (games use their own RNG for gameplay).                                                   //
+//  • g_scorefile                 - Player scorefile.                                                                                    //
+//  • g_state                     - Container for the current state.                                                                     //
+//  • g_text_engine               - Text rendering subsystem.                                                                            //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

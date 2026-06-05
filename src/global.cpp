@@ -55,13 +55,13 @@ void fragment::tick()
 void open_window()
 {
 	const tr::gfx::properties gfx{.multisamples = tr::sys::max_msaa()};
-	if (g_settings.display_mode == display_mode::FULLSCREEN) {
+	if (active_settings::instance()->display_mode == display_mode::FULLSCREEN) {
 		tr::sys::open_fullscreen_window("Bodge", tr::sys::NOT_RESIZABLE, gfx);
 	}
 	else {
-		tr::sys::open_window("Bodge", glm::ivec2{g_settings.window_size}, tr::sys::NOT_RESIZABLE, gfx);
+		tr::sys::open_window("Bodge", glm::ivec2{active_settings::instance()->window_size}, tr::sys::NOT_RESIZABLE, gfx);
 	}
 	tr::sys::set_window_icon(tr::load_bitmap_file(g_cli_settings.data_directory / "graphics" / "icon.qoi"));
-	tr::sys::set_window_vsync(g_settings.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
+	tr::sys::set_window_vsync(active_settings::instance()->vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
 	tr::sys::raise_window();
 }
