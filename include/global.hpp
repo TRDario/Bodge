@@ -5,7 +5,7 @@
 // Globals & Singletons:                                                                                                                 //
 //  • active_settings::instance() - Active application settings.                                                                         //
 //  • g_audio                     - Audio subsystem.                                                                                     //
-//  • g_cli_settings              - Command-line settings.                                                                               //
+//  • debug_settings::instance()  - Active debug settings.                                                                               //
 //  • input::instance()           - Input manager.                                                                                       //
 //  • g_languages                 - List of available languages.                                                                         //
 //  • g_loaded_userdata           - Flag denoting whether userdata globals (scorefile, settings) have been loaded.                       //

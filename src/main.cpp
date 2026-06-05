@@ -8,60 +8,15 @@
 
 tr::sys::signal parse_command_line(std::span<tr::cstring_view> args)
 {
-	for (auto arg_it = args.begin(); arg_it != args.end(); ++arg_it) {
-		if (*arg_it == "--datadir" && ++arg_it < args.end()) {
-			g_cli_settings.data_directory = std::filesystem::canonical(std::filesystem::path{*arg_it});
-		}
-		else if (*arg_it == "--userdir" && ++arg_it < args.end()) {
-			const std::filesystem::path userdir_path{std::filesystem::path{*arg_it}};
-			if (!std::filesystem::exists(userdir_path)) {
-				std::filesystem::create_directory(userdir_path);
-			}
-			g_cli_settings.user_directory = std::filesystem::canonical(userdir_path);
-		}
-		else if (*arg_it == "--refreshrate" && ++arg_it < args.end()) {
-			std::from_chars(*arg_it, *arg_it + std::strlen(*arg_it), g_cli_settings.refresh_rate);
-		}
-		else if (*arg_it == "--gamespeed" && ++arg_it < args.end()) {
-			std::from_chars(*arg_it, *arg_it + std::strlen(*arg_it), g_cli_settings.game_speed);
-		}
-		else if (*arg_it == "--showperf") {
-			g_cli_settings.show_perf = true;
-		}
-		else if (*arg_it == "--help") {
-			std::cout << "Bodge " VERSION_STRING " by TRDario, 2025-2026.\n"
-						 "Supported arguments:\n"
-						 "--datadir <path>       - Overrides the data directory.\n"
-						 "--userdir <path>       - Overrides the user directory.\n"
-						 "--refreshrate <number> - Overrides the refresh rate.\n"
-						 "--gamespeed <factor>   - Overrides the speed multiplier.\n"
-						 "--showperf             - Shows performance information.\n";
-			return tr::sys::signal::SUCCESS;
-		}
-	}
-	return tr::sys::signal::CONTINUE;
+	return debug_settings::instance().parse(args);
 }
 
 tr::sys::signal initialize()
 {
 	tr::sys::set_app_information("TRDario", "Bodge", VERSION_STRING);
-	if (g_cli_settings.data_directory.empty()) {
-		g_cli_settings.data_directory = tr::sys::executable_dir() / "data";
-	}
-	if (g_cli_settings.user_directory.empty()) {
-		g_cli_settings.user_directory = tr::sys::user_dir();
-	}
-	constexpr std::array<tr::cstring_view, 5> DIRECTORIES{"localization", "fonts", "music", "replays", "gamemodes"};
-	for (tr::cstring_view directory : DIRECTORIES) {
-		const std::filesystem::path path{g_cli_settings.user_directory / directory};
-		if (!std::filesystem::is_directory(path)) {
-			std::filesystem::create_directory(path);
-		}
-	}
-
-	g_cli_settings.refresh_rate = std::clamp(g_cli_settings.refresh_rate, 1.0f, tr::sys::refresh_rate());
-	tr::sys::set_draw_frequency(g_cli_settings.refresh_rate);
-	tr::sys::set_tick_frequency(240);
+	debug_settings::instance().validate();
+	tr::sys::set_draw_frequency(debug_settings::instance().refresh_rate());
+	tr::sys::set_tick_frequency(240 * debug_settings::instance().game_speed());
 
 	g_scorefile.load_from_file();
 	g_loaded_userdata = true;

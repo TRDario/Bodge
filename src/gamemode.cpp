@@ -134,11 +134,11 @@ std::string gamemode::description_loc_with_fallback() const
 
 void gamemode::save_to_file() const
 {
-	std::filesystem::path path{g_cli_settings.user_directory / "gamemodes" / TR_FMT::format("{}.gmd", name)};
+	std::filesystem::path path{debug_settings::instance().user_directory() / "gamemodes" / TR_FMT::format("{}.gmd", name)};
 	if (std::filesystem::exists(path)) {
 		int index{0};
 		do {
-			path = g_cli_settings.user_directory / "gamemodes" / TR_FMT::format("{}({}).gmd", name, index++);
+			path = debug_settings::instance().user_directory() / "gamemodes" / TR_FMT::format("{}({}).gmd", name, index++);
 		} while (std::filesystem::exists(path));
 	}
 
@@ -202,7 +202,7 @@ std::vector<gamemode_with_path> load_gamemodes()
 		for (const gamemode& builtin : BUILTIN_GAMEMODES) {
 			gamemodes.emplace_back(std::string{}, builtin);
 		}
-		const std::filesystem::path gamemode_dir{g_cli_settings.user_directory / "gamemodes"};
+		const std::filesystem::path gamemode_dir{debug_settings::instance().user_directory() / "gamemodes"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{gamemode_dir}) {
 			const std::filesystem::path path{file};
 			try {

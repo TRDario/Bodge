@@ -2,7 +2,8 @@
 //                                                                                                                                       //
 // Provides settings structures and functionality.                                                                                       //
 //                                                                                                                                       //
-// Command-line settings are parsed on program start-up and are used for advanced settings that most players will never need to change.  //
+// Debug settings are parsed from command-line arguments on program start-up and are used for advanced settings that most players will   //
+// never need to change.                                                                                                                 //
 //                                                                                                                                       //
 // Regular settings are loaded from and saved to <USER DIRECTORY>/settings.dat (a binary file) and are modifiable in-game.               //
 //                                                                                                                                       //
@@ -11,26 +12,53 @@
 #pragma once
 #include "localization.hpp"
 
-////////////////////////////////////////////////////////////// CLI SETTINGS ///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////// DEBUG SETTINGS //////////////////////////////////////////////////////////////
 
-// Settings passed by command-line arguments.
-inline struct cli_settings {
-	// Path to the program data directory.
-	std::filesystem::path data_directory;
-	// Path to the user data directory.
-	std::filesystem::path user_directory;
-	// The rate at which frames are drawn.
-	float refresh_rate{+INFINITY};
-	// The speed multiplier of the game.
-	float game_speed{1.0f};
 #ifdef TR_ENABLE_ASSERTS
-	// Whether to display performance statistics.
-	bool show_perf{true};
+#define BODGE_SHOW_PERF_DEFAULT 1
 #else
-	// Whether to display performance statistics.
-	bool show_perf{false};
+#define BODGE_SHOW_PERF_DEFAULT 0
 #endif
-} g_cli_settings{}; // Global copy of the command-line settings.
+
+// Debug settings singleton.
+class debug_settings {
+  public:
+	// Gets the debug settings singleton.
+	static debug_settings& instance();
+
+	// Parses command-line arguments.
+	tr::sys::signal parse(std::span<tr::cstring_view> args);
+	// Validates command-line arguments.
+	void validate();
+
+	// Gets the path to the program data directory.
+	const std::filesystem::path& data_directory() const;
+	// Gets the path to the user data directory.
+	const std::filesystem::path& user_directory() const;
+	// Gets the rate at which frames are drawn.
+	float refresh_rate() const;
+	// Gets the speed multiplier of the game.
+	float game_speed() const;
+	// Gets whether the game speed is modified.
+	bool modified_game_speed() const;
+	// Gets whether to display performance statistics.
+	bool show_performance_overlay() const;
+
+  private:
+	// Path to the program data directory.
+	std::filesystem::path m_data_directory;
+	// Path to the user data directory.
+	std::filesystem::path m_user_directory;
+	// Rate at which frames are drawn.
+	float m_refresh_rate{+INFINITY};
+	// Speed multiplier of the game.
+	float m_game_speed{1.0f};
+	// Whether to display performance statistics.
+	bool m_show_perf{BODGE_SHOW_PERF_DEFAULT};
+
+	// Constructs default command-line argumnt settings.
+	debug_settings() = default;
+};
 
 //////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
 

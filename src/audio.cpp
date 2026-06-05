@@ -12,9 +12,9 @@
 // Tries to find a path to a song given a filename.
 static std::filesystem::path try_finding_song_path(std::string_view name)
 {
-	std::filesystem::path path{g_cli_settings.data_directory / "music" / TR_FMT::format("{}.ogg", name)};
+	std::filesystem::path path{debug_settings::instance().data_directory() / "music" / TR_FMT::format("{}.ogg", name)};
 	if (!std::filesystem::exists(path)) {
-		path = g_cli_settings.user_directory / "music" / TR_FMT::format("{}.ogg", name);
+		path = debug_settings::instance().user_directory() / "music" / TR_FMT::format("{}.ogg", name);
 		if (!std::filesystem::exists(path)) {
 			return {};
 		}
@@ -26,7 +26,7 @@ static std::filesystem::path try_finding_song_path(std::string_view name)
 static std::optional<tr::audio::buffer> try_loading_audio_file(const char* filename)
 {
 	try {
-		return tr::audio::load_file(g_cli_settings.data_directory / "sounds" / filename);
+		return tr::audio::load_file(debug_settings::instance().data_directory() / "sounds" / filename);
 	}
 	catch (tr::audio::file_open_error&) {
 		return std::nullopt;
@@ -39,7 +39,7 @@ std::vector<std::string> create_available_song_list()
 {
 	std::vector<std::string> songs{"classic", "chonk", "swarm", "variety"};
 	try {
-		const std::filesystem::path userdir{g_cli_settings.user_directory / "music"};
+		const std::filesystem::path userdir{debug_settings::instance().user_directory() / "music"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{userdir}) {
 			if (file.is_regular_file() && file.path().extension() == ".ogg") {
 				songs.push_back(file.path().stem().string());

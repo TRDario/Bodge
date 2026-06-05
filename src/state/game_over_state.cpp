@@ -252,7 +252,7 @@ void game_over_state::on_save_and_restart()
 
 void game_over_state::on_restart()
 {
-	const score_flags score_flags{false, g_cli_settings.game_speed != 1};
+	const score_flags score_flags{false, debug_settings::instance().modified_game_speed()};
 	const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 
 	m_elapsed = 0;
@@ -272,7 +272,7 @@ void game_over_state::on_save_and_exit()
 
 void game_over_state::on_exit()
 {
-	const score_flags score_flags{false, g_cli_settings.game_speed != 1};
+	const score_flags score_flags{false, debug_settings::instance().modified_game_speed()};
 	const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 
 	m_elapsed = 0;

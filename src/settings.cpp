@@ -14,6 +14,104 @@
 // Settings file version identifier.
 constexpr u8 SETTINGS_VERSION{3};
 
+/////////////////////////////////////////////////////////////// CLI SETTINGS //////////////////////////////////////////////////////////////
+
+debug_settings& debug_settings::instance()
+{
+	static debug_settings instance{};
+	return instance;
+}
+
+//
+
+tr::sys::signal debug_settings::parse(std::span<tr::cstring_view> args)
+{
+	for (auto arg_it = args.begin(); arg_it != args.end(); ++arg_it) {
+		if (*arg_it == "--datadir" && ++arg_it < args.end()) {
+			m_data_directory = std::filesystem::canonical(std::filesystem::path{*arg_it});
+		}
+		else if (*arg_it == "--userdir" && ++arg_it < args.end()) {
+			const std::filesystem::path userdir_path{std::filesystem::path{*arg_it}};
+			if (!std::filesystem::exists(userdir_path)) {
+				std::filesystem::create_directory(userdir_path);
+			}
+			m_data_directory = std::filesystem::canonical(userdir_path);
+		}
+		else if (*arg_it == "--refreshrate" && ++arg_it < args.end()) {
+			std::from_chars(*arg_it, *arg_it + std::strlen(*arg_it), m_refresh_rate);
+		}
+		else if (*arg_it == "--gamespeed" && ++arg_it < args.end()) {
+			std::from_chars(*arg_it, *arg_it + std::strlen(*arg_it), m_game_speed);
+		}
+		else if (*arg_it == "--showperf") {
+			m_show_perf = true;
+		}
+		else if (*arg_it == "--help") {
+			std::cout << "Bodge " VERSION_STRING " by TRDario, 2025-2026.\n"
+						 "Supported arguments:\n"
+						 "--datadir <path>       - Overrides the data directory.\n"
+						 "--userdir <path>       - Overrides the user directory.\n"
+						 "--refreshrate <number> - Overrides the refresh rate.\n"
+						 "--gamespeed <factor>   - Overrides the speed multiplier.\n"
+						 "--showperf             - Shows performance information.\n";
+			return tr::sys::signal::SUCCESS;
+		}
+	}
+	return tr::sys::signal::CONTINUE;
+}
+
+void debug_settings::validate()
+{
+	if (m_data_directory.empty()) {
+		m_data_directory = tr::sys::executable_dir() / "data";
+	}
+	if (m_user_directory.empty()) {
+		m_user_directory = tr::sys::user_dir();
+	}
+
+	constexpr std::array<tr::cstring_view, 5> DIRECTORIES{"localization", "fonts", "music", "replays", "gamemodes"};
+	for (tr::cstring_view directory : DIRECTORIES) {
+		const std::filesystem::path path{m_user_directory / directory};
+		if (!std::filesystem::is_directory(path)) {
+			std::filesystem::create_directory(path);
+		}
+	}
+
+	m_refresh_rate = std::clamp(m_refresh_rate, 1.0f, tr::sys::refresh_rate());
+}
+
+//
+
+const std::filesystem::path& debug_settings::data_directory() const
+{
+	return m_data_directory;
+}
+
+const std::filesystem::path& debug_settings::user_directory() const
+{
+	return m_user_directory;
+}
+
+float debug_settings::refresh_rate() const
+{
+	return m_refresh_rate;
+}
+
+float debug_settings::game_speed() const
+{
+	return m_game_speed;
+}
+
+bool debug_settings::modified_game_speed() const
+{
+	return m_game_speed != 1.0f;
+}
+
+bool debug_settings::show_performance_overlay() const
+{
+	return m_show_perf;
+}
+
 //////////////////////////////////////////////////////////////// SETTINGS /////////////////////////////////////////////////////////////////
 
 template <> struct tr::binary_reader<settings> {
@@ -58,7 +156,7 @@ u16 max_window_size()
 
 void active_settings::raw_load_from_file()
 {
-	const std::filesystem::path path{g_cli_settings.user_directory / "settings.dat"};
+	const std::filesystem::path path{debug_settings::instance().user_directory() / "settings.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
@@ -91,7 +189,7 @@ active_settings::active_settings()
 active_settings::~active_settings()
 {
 	try {
-		std::ofstream file{tr::open_file_w(g_cli_settings.user_directory / "settings.dat", std::ios::binary)};
+		std::ofstream file{tr::open_file_w(debug_settings::instance().user_directory() / "settings.dat", std::ios::binary)};
 		std::ostringstream buffer;
 		tr::binary_write(buffer, SETTINGS_VERSION);
 		tr::binary_write(buffer, m_settings);
@@ -142,12 +240,10 @@ void active_settings::apply(const settings& new_settings)
 
 	m_settings = new_settings;
 	if (restart_required) {
-		auto temp{std::move(g_state)};
 		g_renderer.reset();
 		tr::sys::close_window();
 		open_window();
 		g_renderer.emplace();
-		g_state = std::move(temp);
 		tr::sys::show_window();
 	}
 	else if (m_settings.vsync != old.vsync) {

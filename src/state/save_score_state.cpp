@@ -42,7 +42,11 @@ save_score_state::save_score_state(std::shared_ptr<game> game, glm::vec2 mouse_p
 	, m_substate{substate_base::SAVING_SCORE | flags}
 	, m_start_mouse_pos{mouse_pos}
 	, m_score{
-		  {}, current_timestamp(), m_game->final_score(), m_game->final_time(), {!m_game->game_over(), g_cli_settings.game_speed != 1.0f},
+		  {},
+		  current_timestamp(),
+		  m_game->final_score(),
+		  m_game->final_time(),
+		  {!m_game->game_over(), debug_settings::instance().modified_game_speed()},
 	  }
 {
 	set_up_ui();
@@ -52,7 +56,11 @@ save_score_state::save_score_state(std::shared_ptr<game> game, save_screen_flags
 	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), update_game::YES}
 	, m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
 	, m_score{
-		  {}, current_timestamp(), m_game->final_score(), m_game->final_time(), {!m_game->game_over(), g_cli_settings.game_speed != 1.0f},
+		  {},
+		  current_timestamp(),
+		  m_game->final_score(),
+		  m_game->final_time(),
+		  {!m_game->game_over(), debug_settings::instance().modified_game_speed()},
 	  }
 {
 	set_up_ui();

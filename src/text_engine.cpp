@@ -12,12 +12,12 @@
 // Loads a font given a filename.
 static tr::sys::ttfont load_font(std::string_view name)
 {
-	std::filesystem::path path{g_cli_settings.data_directory / "fonts" / name};
+	std::filesystem::path path{debug_settings::instance().data_directory() / "fonts" / name};
 	if (std::filesystem::is_regular_file(path)) {
 		tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
 		return font;
 	}
-	path = g_cli_settings.user_directory / "fonts" / name;
+	path = debug_settings::instance().user_directory() / "fonts" / name;
 	if (std::filesystem::is_regular_file(path)) {
 		tr::sys::ttfont font{tr::sys::load_ttfont_file(path, 48)};
 		return font;

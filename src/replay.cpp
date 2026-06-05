@@ -58,7 +58,7 @@ replay::replay(const std::string& filename)
 {
 	std::vector<std::byte> encrypted;
 	std::vector<std::byte> decrypted;
-	std::ifstream file{tr::open_file_r(g_cli_settings.user_directory / "replays" / filename, std::ios::binary)};
+	std::ifstream file{tr::open_file_r(debug_settings::instance().user_directory() / "replays" / filename, std::ios::binary)};
 
 	std::ignore = tr::binary_read<u8>(file);
 
@@ -94,7 +94,7 @@ void replay::save_to_file() const
 {
 	try {
 		std::string filename{to_filename(m_header.name)};
-		std::filesystem::path path{g_cli_settings.user_directory / "replays" / TR_FMT::format("{}.dat", filename)};
+		std::filesystem::path path{debug_settings::instance().user_directory() / "replays" / TR_FMT::format("{}.dat", filename)};
 		std::ofstream file;
 		if (!std::filesystem::exists(path)) {
 			file = tr::open_file_w(path, std::ios::binary);
@@ -102,7 +102,7 @@ void replay::save_to_file() const
 		else {
 			int index{0};
 			do {
-				path = g_cli_settings.user_directory / "replays" / TR_FMT::format("{}({}).dat", filename, index++);
+				path = debug_settings::instance().user_directory() / "replays" / TR_FMT::format("{}({}).dat", filename, index++);
 			} while (std::filesystem::exists(path));
 			file = tr::open_file_w(path, std::ios::binary);
 		}
@@ -152,7 +152,7 @@ replay_map load_replay_headers()
 {
 	replay_map replays;
 	try {
-		const std::filesystem::path replay_dir{g_cli_settings.user_directory / "replays"};
+		const std::filesystem::path replay_dir{debug_settings::instance().user_directory() / "replays"};
 		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{replay_dir}) {
 			if (!file.is_regular_file() || file.path().extension() != ".dat") {
 				continue;

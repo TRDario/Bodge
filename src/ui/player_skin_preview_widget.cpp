@@ -31,7 +31,7 @@ void player_skin_preview_widget::update_skin()
 	}
 
 	try {
-		tr::bitmap image{tr::load_bitmap_file(g_cli_settings.user_directory / "skins" / m_pending_settings.player_skin)};
+		tr::bitmap image{tr::load_bitmap_file(debug_settings::instance().user_directory() / "skins" / m_pending_settings.player_skin)};
 		if (image.format() == tr::pixel_format::R8) {
 			image = tr::bitmap{image, tr::pixel_format::RGBA32};
 		}

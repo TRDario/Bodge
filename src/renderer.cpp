@@ -33,7 +33,7 @@ static tr::gfx::render_target setup_screen()
 renderer::renderer()
 	: screen{setup_screen()}, circle{scale()}, blur{screen.size().x}, tooltip{basic}
 {
-	if (g_cli_settings.show_perf) {
+	if (debug_settings::instance().show_performance_overlay()) {
 		m_extra.emplace();
 	}
 
@@ -143,9 +143,9 @@ void renderer::draw_benchmarks()
 	if (m_extra.has_value()) {
 		m_extra->debug.write_right(g_state.tick_benchmark(), "Tick:", 1.0s / 1_s);
 		m_extra->debug.newline_right();
-		m_extra->debug.write_right(g_state.draw_benchmark(), "Render (CPU):", 1.0s / g_cli_settings.refresh_rate);
+		m_extra->debug.write_right(g_state.draw_benchmark(), "Render (CPU):", 1.0s / debug_settings::instance().refresh_rate());
 		m_extra->debug.newline_right();
-		m_extra->debug.write_right(g_renderer->m_extra->benchmark, "Render (GPU):", 1.0s / g_cli_settings.refresh_rate);
+		m_extra->debug.write_right(g_renderer->m_extra->benchmark, "Render (GPU):", 1.0s / debug_settings::instance().refresh_rate());
 		m_extra->debug.draw();
 	}
 }

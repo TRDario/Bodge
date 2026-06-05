@@ -65,7 +65,7 @@ void tr::binary_writer<score_category>::write_to_stream(std::ostream& os, const 
 
 void scorefile::load_from_file()
 {
-	const std::filesystem::path path{g_cli_settings.user_directory / "scorefile.dat"};
+	const std::filesystem::path path{debug_settings::instance().user_directory() / "scorefile.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const u8 version{tr::binary_read<u8>(file)};
@@ -90,7 +90,7 @@ void scorefile::save_to_file() const
 		return;
 	}
 
-	const std::filesystem::path path{g_cli_settings.user_directory / "scorefile.dat"};
+	const std::filesystem::path path{debug_settings::instance().user_directory() / "scorefile.dat"};
 	try {
 		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
 		std::ostringstream buffer;

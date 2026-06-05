@@ -153,7 +153,7 @@ void save_replay_state::set_up_exit_animation()
 
 void save_replay_state::on_save()
 {
-	const score_flags flags{!m_game->game_over(), g_cli_settings.game_speed != 1.0f};
+	const score_flags flags{!m_game->game_over(), debug_settings::instance().modified_game_speed()};
 	const std::string_view description{m_ui.as<multiline_input_widget<255>>(T_DESCRIPTION_INPUT).contents()};
 	const std::string_view name{m_ui.as<line_input_widget<20>>("name_input").contents()};
 	active_game& game{(active_game&)*m_game};

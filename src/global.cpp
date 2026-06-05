@@ -61,7 +61,7 @@ void open_window()
 	else {
 		tr::sys::open_window("Bodge", glm::ivec2{active_settings::instance()->window_size}, tr::sys::NOT_RESIZABLE, gfx);
 	}
-	tr::sys::set_window_icon(tr::load_bitmap_file(g_cli_settings.data_directory / "graphics" / "icon.qoi"));
+	tr::sys::set_window_icon(tr::load_bitmap_file(debug_settings::instance().data_directory() / "graphics" / "icon.qoi"));
 	tr::sys::set_window_vsync(active_settings::instance()->vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
 	tr::sys::raise_window();
 }

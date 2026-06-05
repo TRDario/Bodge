@@ -12,7 +12,7 @@
 // Loads language information from file.
 static void load_language(const std::filesystem::path& entry)
 {
-	const std::string stem{std::filesystem::path{entry}.stem().string()};
+	const std::string stem{entry.stem().string()};
 	if (std::filesystem::is_regular_file(entry) && entry.extension() == ".txt" && stem.size() == 2) {
 		language_code code{stem[0], stem[1]};
 		tr::localization_map temp;
@@ -28,8 +28,9 @@ static void load_language(const std::filesystem::path& entry)
 void load_languages()
 {
 	try {
-		std::ranges::for_each(std::filesystem::directory_iterator{g_cli_settings.data_directory / "localization"}, load_language);
-		std::ranges::for_each(std::filesystem::directory_iterator{g_cli_settings.user_directory / "localization"}, load_language);
+		using std::filesystem::directory_iterator;
+		std::ranges::for_each(directory_iterator{debug_settings::instance().data_directory() / "localization"}, load_language);
+		std::ranges::for_each(directory_iterator{debug_settings::instance().user_directory() / "localization"}, load_language);
 	}
 	catch (std::exception&) {
 		g_languages.clear();
@@ -46,9 +47,9 @@ void load_localization()
 	tr::localization_map old{std::move(g_loc)};
 	try {
 		const std::string filename{TR_FMT::format("localization/{}.txt", name)};
-		std::filesystem::path path{g_cli_settings.data_directory / filename};
+		std::filesystem::path path{debug_settings::instance().data_directory() / filename};
 		if (!std::filesystem::exists(path)) {
-			path = g_cli_settings.user_directory / filename;
+			path = debug_settings::instance().user_directory() / filename;
 		}
 		g_loc.load(path);
 	}
