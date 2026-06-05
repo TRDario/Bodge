@@ -5,6 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../include/renderer.hpp"
+#include "../include/input.hpp"
 #include "../include/settings.hpp"
 #include "../include/state.hpp"
 
@@ -91,22 +92,24 @@ void renderer::draw_layers(const tr::gfx::render_target& target)
 
 void renderer::draw_cursor()
 {
+	const glm::vec2 mouse_pos{input::instance().mouse_pos};
+
 	tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(g_settings.primary_hue), 1, 1})};
 	if (g_state.get<state>().transparent_cursor()) {
 		color.a = 160;
 	}
 
 	tr::gfx::simple_color_mesh_ref quad{basic.new_color_fan(layer::CURSOR, 4)};
-	tr::fill_rectangle_vertices(quad.positions, {{g_mouse_pos.x - 12, g_mouse_pos.y - 1}, {8, 2}});
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
 	std::ranges::fill(quad.colors, color);
 	quad = basic.new_color_fan(layer::CURSOR, 4);
-	tr::fill_rectangle_vertices(quad.positions, {{g_mouse_pos.x + 4, g_mouse_pos.y - 1}, {8, 2}});
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x + 4, mouse_pos.y - 1}, {8, 2}});
 	std::ranges::fill(quad.colors, color);
 	quad = basic.new_color_fan(layer::CURSOR, 4);
-	tr::fill_rectangle_vertices(quad.positions, {{g_mouse_pos.x - 1, g_mouse_pos.y - 12}, {2, 8}});
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 1, mouse_pos.y - 12}, {2, 8}});
 	std::ranges::fill(quad.colors, color);
 	quad = basic.new_color_fan(layer::CURSOR, 4);
-	tr::fill_rectangle_vertices(quad.positions, {{g_mouse_pos.x - 1, g_mouse_pos.y + 4}, {2, 8}});
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 1, mouse_pos.y + 4}, {2, 8}});
 	std::ranges::fill(quad.colors, color);
 
 	basic.draw(screen);

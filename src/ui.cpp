@@ -6,6 +6,7 @@
 
 #include "../include/ui.hpp"
 #include "../include/audio.hpp"
+#include "../include/input.hpp"
 #include "../include/renderer.hpp"
 
 /////////////////////////////////////////////////////////////// UI MANAGER ////////////////////////////////////////////////////////////////
@@ -263,7 +264,7 @@ void ui_manager::handle_mouse_motion_event()
 	tr::opt_ref<kv_pair> new_hovered;
 	for (kv_pair& kv : m_widgets) {
 		const tr::frect2 hitbox{kv.second->tl(), kv.second->size()};
-		if (!kv.second->hidden() && hitbox.contains(g_mouse_pos)) {
+		if (!kv.second->hidden() && hitbox.contains(input::instance().mouse_pos)) {
 			new_hovered = kv;
 			break;
 		}
@@ -271,14 +272,14 @@ void ui_manager::handle_mouse_motion_event()
 
 	if (m_hovered != new_hovered) {
 		if (m_hovered.has_ref()) {
-			if (g_held_buttons == tr::sys::mouse_button::LEFT && m_hovered->second->interactible()) {
+			if (input::instance().held(tr::sys::mouse_button::LEFT) && m_hovered->second->interactible()) {
 				m_hovered->second->on_unheld();
 			}
 			m_hovered->second->on_unhover();
 		}
 		if (new_hovered.has_ref()) {
 			new_hovered->second->on_hover();
-			if (g_held_buttons == tr::sys::mouse_button::LEFT && new_hovered->second->interactible()) {
+			if (input::instance().held(tr::sys::mouse_button::LEFT) && new_hovered->second->interactible()) {
 				new_hovered->second->on_held();
 			}
 		}
@@ -298,7 +299,7 @@ void ui_manager::handle_mouse_down_event(const tr::sys::mouse_down_event& event)
 		tr::opt_ref<kv_pair> new_hovered;
 		for (kv_pair& kv : m_widgets) {
 			const tr::frect2 hitbox{kv.second->tl(), kv.second->size()};
-			if (!kv.second->hidden() && hitbox.contains(g_mouse_pos)) {
+			if (!kv.second->hidden() && hitbox.contains(input::instance().mouse_pos)) {
 				new_hovered = kv;
 				break;
 			}
@@ -405,7 +406,7 @@ void ui_manager::handle_key_down_event(const tr::sys::key_down_event& event)
 void ui_manager::handle_text_input_event(const tr::sys::text_input_event& event)
 {
 	if (m_selection.has_ref() && m_selection->second->interactible() && m_selection->second->writable() &&
-		!(g_held_keymods & tr::sys::keymod::CTRL)) {
+		!input::instance().held(tr::sys::keymod::CTRL)) {
 		m_selection->second->on_write(event.text);
 	}
 }
@@ -444,7 +445,7 @@ void ui_manager::add_to_renderer()
 		if (m_hovered->second->tooltip_text) {
 			const std::string tooltip{m_hovered->second->tooltip_text()};
 			if (!tooltip.empty()) {
-				g_renderer->tooltip.add(tooltip);
+				g_renderer->tooltip.add(input::instance().mouse_pos, tooltip);
 			}
 		}
 	}

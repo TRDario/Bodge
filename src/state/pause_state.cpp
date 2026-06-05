@@ -4,6 +4,7 @@
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "../../include/input.hpp"
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -101,7 +102,7 @@ tr::next_state pause_state::tick()
 		if (!std::holds_alternative<replay_game_data>(m_data)) {
 			float ratio{m_elapsed / 0.5_sf};
 			ratio = ratio < 0.5 ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
-			g_mouse_pos = m_end_mouse_pos + (m_start_mouse_pos - m_end_mouse_pos) * ratio;
+			input::instance().mouse_pos = m_end_mouse_pos + (m_start_mouse_pos - m_end_mouse_pos) * ratio;
 		}
 
 		if (m_elapsed >= 0.5_s) {
@@ -265,7 +266,7 @@ void pause_state::on_unpause()
 {
 	m_elapsed = 0;
 	m_substate = substate::UNPAUSING;
-	m_end_mouse_pos = g_mouse_pos;
+	m_end_mouse_pos = input::instance().mouse_pos;
 	set_up_exit_animation();
 	g_audio.play_sound(sound::UNPAUSE, 0.8f, 0.0f);
 	m_next_state = make_async<game_state>(m_game, m_data, fade_in::NO);

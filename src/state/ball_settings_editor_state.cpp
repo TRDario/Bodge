@@ -4,6 +4,7 @@
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "../../include/input.hpp"
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -123,7 +124,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.animation = {STARTING_COUNT_START_POS, {765, STARTING_COUNT_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.starting_count > 0; },
-		.action = [&sc = m_pending.ball.starting_count] { sc = u8(std::max(sc - keymods_choose(1, 5, 10), 1)); }
+		.action = [&sc = m_pending.ball.starting_count] { sc = u8(std::max(sc - input::instance().choose(1, 5, 10), 1)); }
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_COUNT_C, {
 		.animation = {STARTING_COUNT_START_POS, {875.5f, STARTING_COUNT_START_POS.y}, 0.5_s},
@@ -136,13 +137,17 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.animation = {STARTING_COUNT_START_POS, {985, STARTING_COUNT_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.starting_count < m_pending.ball.max_count; },
-		.action = [&balls = m_pending.ball] { balls.starting_count = u8(std::min(balls.starting_count + keymods_choose(1, 5, 10), int(balls.max_count))); }
+		.action = [&balls = m_pending.ball] {
+			balls.starting_count = u8(std::min(balls.starting_count + input::instance().choose(1, 5, 10), int(balls.max_count)));
+		}
 	});
 	m_ui.emplace<arrow_widget>(T_MAX_COUNT_D, {
 		.animation = {MAX_COUNT_START_POS, {765, MAX_COUNT_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.max_count > std::max(1_u8, m_pending.ball.starting_count); },
-		.action = [&balls = m_pending.ball] { balls.max_count = u8(std::max({1, int(balls.starting_count), balls.max_count - keymods_choose(1, 5, 10)})); }
+		.action = [&balls = m_pending.ball] {
+			balls.max_count = u8(std::max({1, int(balls.starting_count), balls.max_count - input::instance().choose(1, 5, 10)}));
+		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_MAX_COUNT_C, {
 		.animation = {MAX_COUNT_START_POS, {875.5f, MAX_COUNT_START_POS.y}, 0.5_s},
@@ -155,13 +160,15 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.animation = {MAX_COUNT_START_POS, {985, MAX_COUNT_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.max_count < 255; },
-		.action = [&mc = m_pending.ball.max_count] { mc = u8(std::min(mc + keymods_choose(1, 5, 10), 255)); }
+		.action = [&mc = m_pending.ball.max_count] { mc = u8(std::min(mc + input::instance().choose(1, 5, 10), 255)); }
 	});
 	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_D, {
 		.animation = {SPAWN_INTERVAL_START_POS, {765, SPAWN_INTERVAL_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.spawn_interval > 1.0_s; },
-		.action = [&si = m_pending.ball.spawn_interval] { si = ticks(std::max(int(si - keymods_choose(0.1_s, 1_s, 10_s)), int(1_s))); }
+		.action = [&si = m_pending.ball.spawn_interval] {
+			si = ticks(std::max(int(si - input::instance().choose(0.1_s, 1_s, 10_s)), int(1_s)));
+		}
 	});
 	m_ui.emplace<interval_input_widget<4>>(T_SPAWN_INTERVAL_C, {
 		.animation = {SPAWN_INTERVAL_START_POS, {875.5f, SPAWN_INTERVAL_START_POS.y}, 0.5_s},
@@ -174,13 +181,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.animation = {SPAWN_INTERVAL_START_POS, {985, SPAWN_INTERVAL_START_POS.y}, 0.5_s}, 
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.spawn_interval < 60_s; },
-		.action = [&si = m_pending.ball.spawn_interval] { si = std::min(si + keymods_choose(0.1_s, 1_s, 10_s), 60_s); }
+		.action = [&si = m_pending.ball.spawn_interval] { si = std::min(si + input::instance().choose(0.1_s, 1_s, 10_s), 60_s); }
 	});
 	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_D, {
 		.animation = {INITIAL_SIZE_START_POS, {765, INITIAL_SIZE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size > 10; },
-		.action = [&is = m_pending.ball.initial_size] { is = std::max(is - keymods_choose(1, 5, 10), 10.0f); }
+		.action = [&is = m_pending.ball.initial_size] { is = std::max(is - input::instance().choose(1, 5, 10), 10.0f); }
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_SIZE_C, {
 		.animation{INITIAL_SIZE_START_POS, {875.5f, INITIAL_SIZE_START_POS.y}, 0.5_s},
@@ -193,13 +200,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.animation = {INITIAL_SIZE_START_POS, {985, INITIAL_SIZE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size < 100.0f; },
-		.action = [&is = m_pending.ball.initial_size] { is = std::min(is + keymods_choose(1, 5, 10), 100.0f); }
+		.action = [&is = m_pending.ball.initial_size] { is = std::min(is + input::instance().choose(1, 5, 10), 100.0f); }
 	});
 	m_ui.emplace<arrow_widget>(T_SIZE_STEP_D, {
 		.animation = {SIZE_STEP_START_POS, {765, SIZE_STEP_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.size_step > 0; },
-		.action = [&ss = m_pending.ball.size_step] { ss = std::max(ss - keymods_choose(0.1f, 1.0f, 2.5f), 0.0f); }
+		.action = [&ss = m_pending.ball.size_step] { ss = std::max(ss - input::instance().choose(0.1f, 1.0f, 2.5f), 0.0f); }
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.1f}">>(T_SIZE_STEP_C, {
 		.animation = {SIZE_STEP_START_POS, {875.5f, SIZE_STEP_START_POS.y}, 0.5_s},
@@ -212,13 +219,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.animation = {SIZE_STEP_START_POS, {985, SIZE_STEP_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.size_step < 10.0f; },
-		.action = [&ss = m_pending.ball.size_step] { ss = std::min(ss + keymods_choose(0.1f, 1.0f, 2.5f), 10.0f); }
+		.action = [&ss = m_pending.ball.size_step] { ss = std::min(ss + input::instance().choose(0.1f, 1.0f, 2.5f), 10.0f); }
 	});
 	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_D, {
 		.animation = {INITIAL_VELOCITY_START_POS, {765, INITIAL_VELOCITY_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_velocity > 100; },
-		.action = [&iv = m_pending.ball.initial_velocity] { iv = std::max(iv - keymods_choose(1, 10, 100), 100.0f); }
+		.action = [&iv = m_pending.ball.initial_velocity] { iv = std::max(iv - input::instance().choose(1, 10, 100), 100.0f); }
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_VELOCITY_C, {
 		.animation = {INITIAL_VELOCITY_START_POS, {875.5f, INITIAL_VELOCITY_START_POS.y}, 0.5_s},
@@ -231,13 +238,13 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.animation = {INITIAL_VELOCITY_START_POS, {985, INITIAL_VELOCITY_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_velocity < 5000.0f; },
-		.action = [&iv = m_pending.ball.initial_velocity] { iv = std::min(iv + keymods_choose(1, 10, 100), 5000.0f); }
+		.action = [&iv = m_pending.ball.initial_velocity] { iv = std::min(iv + input::instance().choose(1, 10, 100), 5000.0f); }
 	});
 	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_D, {
 		.animation = {VELOCITY_STEP_START_POS, {765, VELOCITY_STEP_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.velocity_step > 0; },
-		.action = [&vs = m_pending.ball.velocity_step] { vs = std::max(vs - keymods_choose(1, 10, 100), 0.0f); }
+		.action = [&vs = m_pending.ball.velocity_step] { vs = std::max(vs - input::instance().choose(1, 10, 100), 0.0f); }
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_VELOCITY_STEP_C, {
 		.animation = {VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s},
@@ -250,7 +257,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<playerles
 		.animation = {VELOCITY_STEP_START_POS, {985, VELOCITY_STEP_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.velocity_step < 1000.0f; },
-		.action = [&vs = m_pending.ball.velocity_step] { vs = std::min(vs + keymods_choose(1, 10, 100), 1000.0f); }
+		.action = [&vs = m_pending.ball.velocity_step] { vs = std::min(vs + input::instance().choose(1, 10, 100), 1000.0f); }
 	});
 
 	for (usize i = 0; i < LABELS.size(); ++i) {

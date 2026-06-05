@@ -4,6 +4,7 @@
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "../../include/input.hpp"
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -103,7 +104,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.animation = {STARTING_LIVES_START_POS, {765, STARTING_LIVES_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives > 0; },
-		.action = [&sl = m_pending.player.starting_lives] { sl = u8(std::max(int(sl - keymods_choose(1, 5, 10)), 0)); }
+		.action = [&sl = m_pending.player.starting_lives] { sl = u8(std::max(int(sl - input::instance().choose(1, 5, 10)), 0)); }
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_LIVES_C, {
 		.animation = {STARTING_LIVES_START_POS, {875.5f, STARTING_LIVES_START_POS.y}, 0.5_s},
@@ -116,7 +117,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.animation = {STARTING_LIVES_START_POS, {985, STARTING_LIVES_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives < 255; },
-		.action = [&sl = m_pending.player.starting_lives] { sl = u8(std::min(sl + keymods_choose(1, 5, 10), 255)); }
+		.action = [&sl = m_pending.player.starting_lives] { sl = u8(std::min(sl + input::instance().choose(1, 5, 10), 255)); }
 	});
 	m_ui.emplace<text_button_widget>(T_SPAWN_LIFE_FRAGMENTS_C, {
 		.animation = {SPAWN_LIFE_FRAGMENTS_START_POS, {875.5f, SPAWN_LIFE_FRAGMENTS_START_POS.y}, 0.5_s},
@@ -131,7 +132,9 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 			return m_substate == substate::IN_EDITOR && m_pending.player.spawn_life_fragments &&
 				   m_pending.player.life_fragment_spawn_interval > 15_s;
 		},
-		.action = [&lfsi = m_pending.player.life_fragment_spawn_interval] { lfsi = std::max(lfsi - keymods_choose(0.1_s, 1_s, 10_s), 15_s); }
+		.action = [&lfsi = m_pending.player.life_fragment_spawn_interval] {
+			lfsi = std::max(lfsi - input::instance().choose(0.1_s, 1_s, 10_s), 15_s);
+		}
 	});
 	m_ui.emplace<interval_input_widget<4>>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_C, {
 		.animation = {LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {875.5f, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s},
@@ -147,13 +150,15 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 			return m_substate == substate::IN_EDITOR && m_pending.player.spawn_life_fragments &&
 				m_pending.player.life_fragment_spawn_interval < 90_s;
 		},
-		.action = [&lfsi = m_pending.player.life_fragment_spawn_interval] { lfsi = std::min(lfsi + keymods_choose(0.1_s, 1_s, 10_s), 90_s); }
+		.action = [&lfsi = m_pending.player.life_fragment_spawn_interval] {
+			lfsi = std::min(lfsi + input::instance().choose(0.1_s, 1_s, 10_s), 90_s);
+		}
 	});
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, {
 		.animation = {HITBOX_RADIUS_START_POS, {765, HITBOX_RADIUS_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius > 1.0f; },
-		.action = [&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - keymods_choose(1, 5, 10), 1.0f); }
+		.action = [&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - input::instance().choose(1, 5, 10), 1.0f); }
 	});
 	m_ui.emplace<numeric_input_widget<float, 3, "{:.0f}">>(T_HITBOX_RADIUS_C, {
 		.animation = {HITBOX_RADIUS_START_POS, {875.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s},
@@ -166,13 +171,13 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.animation = {HITBOX_RADIUS_START_POS, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius < 100.0f; },
-		.action = [&hr = m_pending.player.hitbox_radius] { hr = std::min(hr + keymods_choose(1, 5, 10), 100.0f); }
+		.action = [&hr = m_pending.player.hitbox_radius] { hr = std::min(hr + input::instance().choose(1, 5, 10), 100.0f); }
 	});
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_D, {
 		.animation = {INERTIA_FACTOR_START_POS, {765, INERTIA_FACTOR_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.inertia_factor > 0.0f; },
-		.action = [&in = m_pending.player.inertia_factor] { in = std::max(in - keymods_choose(0.01f, 0.05f, 0.1f), 0.0f); }
+		.action = [&in = m_pending.player.inertia_factor] { in = std::max(in - input::instance().choose(0.01f, 0.05f, 0.1f), 0.0f); }
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.2f}">>(T_INERTIA_FACTOR_C, {
 		.animation = {INERTIA_FACTOR_START_POS, {875.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s},
@@ -185,7 +190,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.animation = {INERTIA_FACTOR_START_POS, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.inertia_factor < 0.99f; },
-		.action = [&in = m_pending.player.inertia_factor] { in = std::min(in + keymods_choose(0.01f, 0.05f, 0.1f), 0.99f); }
+		.action = [&in = m_pending.player.inertia_factor] { in = std::min(in + input::instance().choose(0.01f, 0.05f, 0.1f), 0.99f); }
 	});
 
 	for (usize i = 0; i < LABELS.size(); ++i) {

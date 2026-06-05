@@ -30,7 +30,7 @@ void tooltip_manager::render_text(std::string_view text_string)
 	m_texture.set_region({}, render.sub({{}, scaled_last_size}));
 }
 
-void tooltip_manager::add(std::string_view text_string)
+void tooltip_manager::add(glm::vec2 tl, std::string_view text_string)
 {
 	if (m_last_text != text_string) {
 		render_text(text_string);
@@ -38,7 +38,7 @@ void tooltip_manager::add(std::string_view text_string)
 
 	constexpr float BORDER{2};
 	constexpr float PADDING{4};
-	const glm::vec2 tl{glm::min(g_mouse_pos, 1000.0f - m_last_size - 2 * BORDER - 2 * PADDING)};
+	tl = glm::min(tl, 1000.0f - m_last_size - 2 * BORDER - 2 * PADDING);
 
 	const tr::gfx::simple_color_mesh_ref outline{g_renderer->basic.new_color_outline(layer::TOOLTIP, 4)};
 	tr::fill_rectangle_outline_vertices(outline.positions, {tl + BORDER / 2, m_last_size + BORDER + 2 * PADDING}, BORDER);

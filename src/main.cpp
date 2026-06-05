@@ -1,4 +1,5 @@
 #include "../include/audio.hpp"
+#include "../include/input.hpp"
 #include "../include/renderer.hpp"
 #include "../include/score.hpp"
 #include "../include/settings.hpp"
@@ -78,23 +79,10 @@ tr::sys::signal initialize()
 
 tr::sys::signal handle_event(tr::sys::event& event)
 {
-	event | tr::match{
-				[](tr::sys::quit_event) { g_state.clear(); },
-				[](tr::sys::window_gain_focus_event) { tr::sys::set_mouse_relative_mode(true); },
-				[](tr::sys::window_lose_focus_event) { tr::sys::set_mouse_relative_mode(false); },
-				[](tr::one_of<tr::sys::key_down_event, tr::sys::key_up_event> auto event) { g_held_keymods = event.mods; },
-				[](tr::sys::mouse_motion_event event) {
-					if (tr::sys::window_has_focus()) {
-						const float scale{g_renderer->scale() * tr::sys::window_pixel_density()};
-						const float multiplier{g_settings.mouse_sensitivity / 100.0f / scale};
-						const glm::vec2 delta{event.delta * multiplier};
-						g_mouse_pos = glm::clamp(g_mouse_pos + delta, 0.0f, 1000.0f);
-					}
-				},
-				[](tr::sys::mouse_down_event event) { g_held_buttons |= event.button; },
-				[](tr::sys::mouse_up_event event) { g_held_buttons &= ~event.button; },
-				[](auto) {},
-			};
+	if (event.is<tr::sys::quit_event>()) {
+		g_state.clear();
+	}
+	input::instance().handle_event(event);
 	g_state.handle_event(event);
 	return !g_state.empty() ? tr::sys::signal::CONTINUE : tr::sys::signal::SUCCESS;
 }

@@ -6,6 +6,7 @@
 
 #include "../include/game.hpp"
 #include "../include/audio.hpp"
+#include "../include/input.hpp"
 #include "../include/renderer.hpp"
 #include "../include/score.hpp"
 #include "../include/text_engine.hpp"
@@ -662,10 +663,11 @@ active_game::active_game(::gamemode gamemode, u64 seed)
 
 void active_game::tick()
 {
-	const bool is_game_over{game_over()};
-	game::tick(g_mouse_pos);
-	if (!is_game_over) {
-		replay.append(g_mouse_pos);
+	const bool was_game_over{game_over()};
+	const glm::vec2 input{input::instance().mouse_pos};
+	game::tick(input);
+	if (!was_game_over) {
+		replay.append(input);
 	}
 }
 

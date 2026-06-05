@@ -4,6 +4,7 @@
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "../../include/input.hpp"
 #include "../../include/ui/widget.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
@@ -96,13 +97,13 @@ void replay_playback_indicator_widget::add_to_renderer()
 	tr::gfx::color_mesh_ref mesh{};
 	const auto shift_indices{[&](u16 i) -> u16 { return i + mesh.base_index; }};
 
-	if (g_held_keymods & tr::sys::keymod::SHIFT) {
+	if (input::instance().held(tr::sys::keymod::SHIFT)) {
 		mesh = g_renderer->basic.new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
 		std::ranges::copy(SLOW_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
-	else if (g_held_keymods & tr::sys::keymod::CTRL) {
+	else if (input::instance().held(tr::sys::keymod::CTRL)) {
 		mesh = g_renderer->basic.new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size());
 		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(FAST_SPEED_COLORS, mesh.colors.begin());

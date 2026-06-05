@@ -5,12 +5,10 @@
 // Globals:                                                                                                                              //
 //  • g_audio              - Audio subsystem.                                                                                            //
 //  • g_cli_settings       - Command-line settings.                                                                                      //
-//  • g_held_buttons       - Currently held mouse buttons.                                                                               //
-//  • g_held_keymods       - Currently held keyboard modifiers.                                                                          //
+//  • input::instance()    - Input manager.                                                                                              //
 //  • g_languages          - List of available languages.                                                                                //
 //  • g_loaded_userdata    - Flag denoting whether userdata globals (scorefile, settings) have been loaded.                              //
 //  • g_loc                - Localization map.                                                                                           //
-//  • g_mouse_pos          - Current mouse position in normalized screen coordinates.                                                    //
 //  • g_new_gamemode_draft - Saved draft of an unfinished new gamemode.                                                                  //
 //  • g_renderer           - Rendering subsystem.                                                                                        //
 //  • g_rng                - Global RNG (games use their own RNG for gameplay).                                                          //
@@ -118,22 +116,6 @@ inline constexpr glm::vec2 BOTTOM_START_POS{500, 1050};
 // Final position for screen titles.
 inline constexpr glm::vec2 TITLE_POS{500, 0};
 
-////////////////////////////////////////////////////////////////// INPUT //////////////////////////////////////////////////////////////////
-//                                                                                                                                       //
-// Globals storing input state and helper functions.                                                                                     //
-//                                                                                                                                       //
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// The held keyboard modifiers.
-inline tr::sys::keymod g_held_keymods{tr::sys::keymod::NONE};
-// The position of the mouse.
-inline glm::vec2 g_mouse_pos{500, 500};
-// The held mouse buttons.
-inline tr::sys::mouse_button g_held_buttons{};
-
-// Chooses one of three values based on the currently held keymods.
-template <class T> T keymods_choose(T min, T mid, T max);
-
 ////////////////////////////////////////////////////////////// MISCELLANEOUS //////////////////////////////////////////////////////////////
 
 // Fragment used in some animations.
@@ -187,11 +169,4 @@ consteval float operator""_sf(long double seconds)
 consteval ticks beats_bpm(int beats, int bpm)
 {
 	return beats * 60_s / bpm;
-}
-
-//
-
-template <class T> T keymods_choose(T min, T mid, T max)
-{
-	return g_held_keymods & tr::sys::keymod::CTRL ? max : g_held_keymods & tr::sys::keymod::SHIFT ? mid : min;
 }

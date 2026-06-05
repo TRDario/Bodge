@@ -5,6 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../../include/audio.hpp"
+#include "../../include/input.hpp"
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
 
@@ -189,7 +190,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 			return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN &&
 			       m_pending.window_size > MIN_WINDOW_SIZE;
 		},
-		.action = [&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, u16(ws - keymods_choose(1, 10, 100))); }
+		.action = [&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, u16(ws - input::instance().choose(1, 10, 100))); }
 	});
 	m_ui.emplace<numeric_input_widget<u16, 4>>(T_WINDOW_SIZE_C, {
 		.animation = {WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s},
@@ -205,7 +206,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 			return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN &&
 				   m_pending.window_size < max_window_size();
 		},
-		.action = [&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + keymods_choose(1, 10, 100))); }
+		.action = [&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + input::instance().choose(1, 10, 100))); }
 	});
 	m_ui.emplace<text_button_widget>(T_VSYNC_C, {
 		.animation = {VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s},
@@ -218,7 +219,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {MOUSE_SENSITIVITY_START_POS, {765, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity > 25; },
-		.action = [&ms = m_pending.mouse_sensitivity] { ms = u8(std::max(ms - keymods_choose(1, 10, 25), 25)); }
+		.action = [&ms = m_pending.mouse_sensitivity] { ms = u8(std::max(ms - input::instance().choose(1, 10, 25), 25)); }
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C, {
 		.animation = {MOUSE_SENSITIVITY_START_POS, {875, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s},
@@ -231,7 +232,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {MOUSE_SENSITIVITY_START_POS, {985, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s}, 
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity < 250; },
-		.action = [&ms = m_pending.mouse_sensitivity] { ms = u8(std::min(ms + keymods_choose(1, 10, 25), 250)); }
+		.action = [&ms = m_pending.mouse_sensitivity] { ms = u8(std::min(ms + input::instance().choose(1, 10, 25), 250)); }
 	});
 	m_ui.emplace<text_button_widget>(T_PLAYER_SKIN_C, {
 		.animation = {PLAYER_SKIN_START_POS, {930, PLAYER_SKIN_START_POS.y}, 0.5_s},
@@ -254,7 +255,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING; },
-		.action = [&ph = m_pending.primary_hue] { ph = u16((ph - keymods_choose(1, 10, 100) + 360) % 360); }
+		.action = [&ph = m_pending.primary_hue] { ph = u16((ph - input::instance().choose(1, 10, 100) + 360) % 360); }
 	});
 	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C, {
 		.animation = {PRIMARY_HUE_START_POS, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s},
@@ -267,7 +268,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {PRIMARY_HUE_START_POS, {930, PRIMARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING; },
-		.action = [&ph = m_pending.primary_hue] { ph = u16((ph + keymods_choose(1, 10, 100)) % 360); }
+		.action = [&ph = m_pending.primary_hue] { ph = u16((ph + input::instance().choose(1, 10, 100)) % 360); }
 	});
 	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, {
 		.animation = {PRIMARY_HUE_START_POS, {985, PRIMARY_HUE_START_POS.y}, 0.5_s},
@@ -278,7 +279,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {SECONDARY_HUE_START_POS, {745, SECONDARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING; },
-		.action = [&sh = m_pending.secondary_hue] { sh = u16((sh - keymods_choose(1, 10, 100) + 360) % 360); }
+		.action = [&sh = m_pending.secondary_hue] { sh = u16((sh - input::instance().choose(1, 10, 100) + 360) % 360); }
 	});
 	m_ui.emplace<numeric_input_widget<u16, 3>>(T_SECONDARY_HUE_C, {
 		.animation = {SECONDARY_HUE_START_POS, {837.5, SECONDARY_HUE_START_POS.y}, 0.5_s},
@@ -291,7 +292,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {SECONDARY_HUE_START_POS, {930, SECONDARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING; },
-		.action = [&sh = m_pending.secondary_hue] { sh = u16((sh + keymods_choose(1, 10, 100)) % 360); }
+		.action = [&sh = m_pending.secondary_hue] { sh = u16((sh + input::instance().choose(1, 10, 100)) % 360); }
 	});
 	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, {
 		.animation = {SECONDARY_HUE_START_POS, {985, SECONDARY_HUE_START_POS.y}, 0.5_s},
@@ -302,7 +303,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {SFX_VOLUME_START_POS, {765, SFX_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.sfx_volume > 0; },
-		.action = [&sv = m_pending.sfx_volume] { sv = u8(std::max(sv - keymods_choose(1, 10, 25), 0)); }
+		.action = [&sv = m_pending.sfx_volume] { sv = u8(std::max(sv - input::instance().choose(1, 10, 25), 0)); }
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, {
 		.animation = {SFX_VOLUME_START_POS, {875, SFX_VOLUME_START_POS.y}, 0.5_s},
@@ -315,13 +316,13 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {SFX_VOLUME_START_POS, {985, SFX_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.sfx_volume < 100; },
-		.action = [&sv = m_pending.sfx_volume] { sv = u8(std::min(sv + keymods_choose(1, 10, 25), 100)); }
+		.action = [&sv = m_pending.sfx_volume] { sv = u8(std::min(sv + input::instance().choose(1, 10, 25), 100)); }
 	});
 	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_D, {
 		.animation = {MUSIC_VOLUME_START_POS, {765, MUSIC_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.music_volume > 0; },
-		.action = [&mv = m_pending.music_volume] { mv = u8(std::max(mv - keymods_choose(1, 10, 25), 0)); }
+		.action = [&mv = m_pending.music_volume] { mv = u8(std::max(mv - input::instance().choose(1, 10, 25), 0)); }
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, {
 		.animation = {MUSIC_VOLUME_START_POS, {875, MUSIC_VOLUME_START_POS.y}, 0.5_s},
@@ -334,7 +335,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {MUSIC_VOLUME_START_POS, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.music_volume < 100; },
-		.action = [&mv = m_pending.music_volume] { mv = u8(std::min(mv + keymods_choose(1, 10, 25), 100)); }
+		.action = [&mv = m_pending.music_volume] { mv = u8(std::min(mv + input::instance().choose(1, 10, 25), 100)); }
 	});
 	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, {
 		.animation = {LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s},

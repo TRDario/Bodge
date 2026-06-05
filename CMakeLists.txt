@@ -16,6 +16,7 @@ add_executable(
     src/game/trail.cpp
     src/gamemode.cpp
     src/global.cpp
+    src/input.cpp
     src/localization.cpp
     src/main.cpp
     src/renderer.cpp

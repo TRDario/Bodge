@@ -4,6 +4,7 @@
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "../../include/input.hpp"
 #include "../../include/renderer.hpp"
 #include "../../include/state.hpp"
 #include "../../include/ui/widget.hpp"
@@ -52,7 +53,7 @@ tr::next_state game_state::handle_event(const tr::sys::event& event)
 	if (m_substate != substate::FADING_IN && event.is<tr::sys::key_down_event>() && event.as<tr::sys::key_down_event>().key == "Escape"_k) {
 		g_audio.play_sound(sound::PAUSE, 0.8f, 0.0f);
 		g_audio.pause_song();
-		return std::make_unique<pause_state>(m_game, m_data, g_mouse_pos, blur_in::YES);
+		return std::make_unique<pause_state>(m_game, m_data, input::instance().mouse_pos, blur_in::YES);
 	}
 	else {
 		return tr::KEEP_STATE;
@@ -73,13 +74,13 @@ tr::next_state game_state::tick()
 		return tr::KEEP_STATE;
 	case substate::ONGOING:
 		if (std::holds_alternative<replay_game_data>(m_data)) {
-			if (g_held_keymods & tr::sys::keymod::SHIFT) {
+			if (input::instance().held(tr::sys::keymod::SHIFT)) {
 				if (m_elapsed % 4 == 0) {
 					m_game->tick();
 				}
 				set_song_speed_if_needed(0.25f);
 			}
-			else if (g_held_keymods & tr::sys::keymod::CTRL) {
+			else if (input::instance().held(tr::sys::keymod::CTRL)) {
 				for (int i = 0; i < 4; ++i) {
 					m_game->tick();
 					if (((replay_game&)*m_game).done()) {

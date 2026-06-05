@@ -16,7 +16,7 @@ class tooltip_manager {
 	tooltip_manager(tr::gfx::renderer_2d& basic);
 
 	// Adds the tooltip to the renderer.
-	void add(std::string_view text_string);
+	void add(glm::vec2 tl, std::string_view text_string);
 
   private:
 	// Cached text texture.
