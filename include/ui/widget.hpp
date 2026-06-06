@@ -7,7 +7,7 @@
 #pragma once
 #include "../audio.hpp"
 #include "../replay.hpp"
-#include "../text_engine.hpp"
+#include "../settings.hpp"
 #include "../timer.hpp"
 #include "widget_base.hpp"
 

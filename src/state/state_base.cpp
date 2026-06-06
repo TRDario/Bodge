@@ -65,10 +65,10 @@ tr::next_state main_menu_state::tick()
 void main_menu_state::draw()
 {
 	m_game->add_to_renderer();
-	g_renderer->add_menu_game_overlay();
+	renderer::instance().add_menu_game_overlay();
 	m_ui.add_to_renderer();
-	g_renderer->add_fade_overlay(fade_overlay_opacity());
-	g_renderer->draw_layers(g_renderer->screen);
+	renderer::instance().add_fade_overlay(fade_overlay_opacity());
+	renderer::instance().draw_layers(renderer::instance().screen());
 }
 
 ///////////////////////////////////////////////////////////// GAME MENU STATE /////////////////////////////////////////////////////////////
@@ -92,12 +92,12 @@ void game_menu_state::draw()
 {
 	if (m_update_game) {
 		m_game->add_to_renderer();
-		g_renderer->draw_layers(g_renderer->blur.input());
+		renderer::instance().draw_layers(renderer::instance().blur().input());
 	}
-	g_renderer->blur.draw(saturation_factor(), blur_strength());
+	renderer::instance().blur().draw(saturation_factor(), blur_strength());
 	m_ui.add_to_renderer();
-	g_renderer->add_fade_overlay(fade_overlay_opacity());
-	g_renderer->draw_layers(g_renderer->screen);
+	renderer::instance().add_fade_overlay(fade_overlay_opacity());
+	renderer::instance().draw_layers(renderer::instance().screen());
 }
 
 float game_menu_state::saturation_factor()

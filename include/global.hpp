@@ -8,11 +8,10 @@
 //  • debug_settings::instance()  - Active debug settings.                                                                               //
 //  • input::instance()           - Input manager.                                                                                       //
 //  • localization::instance()    - Localization manager.                                                                                //
-//  • g_renderer                  - Rendering subsystem.                                                                                 //
+//  • renderer::instance()        - Windowing and renderer manager.                                                                      //
 //  • g_rng                       - Global RNG (games use their own RNG for gameplay).                                                   //
 //  • savefile::instance()        - Active savefile.                                                                                     //
 //  • g_state                     - Container for the current state.                                                                     //
-//  • g_text_engine               - Text rendering subsystem.                                                                            //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -135,9 +134,6 @@ inline tr::xorshiftr_128p g_rng;
 
 // Gets the current UNIX timestamp.
 i64 current_timestamp();
-
-// Opens the game window.
-void open_window();
 
 ////////////////////////////////////////////////////////////// IMPLEMENTAION //////////////////////////////////////////////////////////////
 

@@ -5,7 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "settings.hpp"
+#include "../global.hpp"
 
 /////////////////////////////////////////////////////////////// TEXT ENGINE ///////////////////////////////////////////////////////////////
 
@@ -38,16 +38,17 @@ struct text {
 };
 
 // Text engine class.
-inline class text_engine {
+class text_engine {
   public:
-	// Loads all required fonts.
-	void load_fonts();
+	// Constructs a text engine.
+	text_engine(std::string language_font_name);
+	// Destroys the text engine.
+	~text_engine();
+
 	// Sets the previous language preview font as the current language font.
 	void set_language_font();
 	// Reloads the language preview font if necessary.
-	void reload_language_preview_font(const ::settings& pending);
-	// Unloads all loaded fonts.
-	void unload_fonts();
+	void reload_language_preview_font(std::string font_name);
 
 	// Determines an appropriate font for a string of text.
 	font determine_font(std::string_view text, font preferred = font::LANGUAGE);
@@ -108,4 +109,4 @@ inline class text_engine {
 
 	// Converts a font name into an actual font reference.
 	tr::sys::ttfont& find_font(font font);
-} g_text_engine; // Global text engine.
+};

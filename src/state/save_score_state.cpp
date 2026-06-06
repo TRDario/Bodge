@@ -99,7 +99,7 @@ save_screen_flags to_flags(save_score_state::substate state)
 
 void save_score_state::set_up_ui()
 {
-	const float label_h{296 - g_text_engine.line_skip(font::LANGUAGE, 32)};
+	const float label_h{296 - renderer::instance().text_engine.line_skip(font::LANGUAGE, 32)};
 
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {

@@ -445,7 +445,7 @@ void ui_manager::add_to_renderer()
 		if (m_hovered->second->tooltip_text) {
 			const std::string tooltip{m_hovered->second->tooltip_text()};
 			if (!tooltip.empty()) {
-				g_renderer->tooltip.add(input::instance().mouse_pos, tooltip);
+				renderer::instance().add_tooltip(input::instance().mouse_pos, tooltip);
 			}
 		}
 	}

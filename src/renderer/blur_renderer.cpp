@@ -62,7 +62,7 @@ tr::gfx::render_target blur_renderer::input()
 
 void blur_renderer::draw(float saturation, float strength)
 {
-	strength = std::max(std::round(strength * g_renderer->scale()), 2.0f);
+	strength = std::max(std::round(strength * renderer::instance().scale()), 2.0f);
 
 	tr::gfx::active_renderer = BLUR_RENDERER_ID;
 	tr::gfx::set_shader_pipeline(m_pipeline);
@@ -78,6 +78,6 @@ void blur_renderer::draw(float saturation, float strength)
 	tr::gfx::draw(tr::gfx::primitive::TRI_FAN, 0, 4);
 	m_pipeline.fragment_shader().set_uniform(0, m_auxiliary_texture);
 	m_pipeline.fragment_shader().set_uniform(4, 1);
-	tr::gfx::set_render_target(g_renderer->screen);
+	tr::gfx::set_render_target(renderer::instance().screen());
 	tr::gfx::draw(tr::gfx::primitive::TRI_FAN, 0, 4);
 }

@@ -98,19 +98,19 @@ void replay_playback_indicator_widget::add_to_renderer()
 	const auto shift_indices{[&](u16 i) -> u16 { return i + mesh.base_index; }};
 
 	if (input::instance().held(tr::sys::keymod::SHIFT)) {
-		mesh = g_renderer->basic.new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
+		mesh = renderer::instance().basic().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
 		std::ranges::copy(SLOW_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
 	else if (input::instance().held(tr::sys::keymod::CTRL)) {
-		mesh = g_renderer->basic.new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size());
+		mesh = renderer::instance().basic().new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size());
 		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(FAST_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(FAST_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
 	else {
-		mesh = g_renderer->basic.new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
+		mesh = renderer::instance().basic().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
 		std::ranges::copy(NORMAL_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());

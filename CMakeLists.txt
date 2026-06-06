@@ -21,6 +21,7 @@ add_executable(
     src/main.cpp
     src/renderer.cpp
     src/renderer/blur_renderer.cpp
+    src/renderer/text_engine.cpp
     src/renderer/tooltip_manager.cpp
     src/replay.cpp
     src/score.cpp
@@ -44,7 +45,6 @@ add_executable(
     src/state/state_base.cpp
     src/state/start_game_state.cpp
     src/state/title_state.cpp
-    src/text_engine.cpp
     src/ui.cpp
     src/ui/arrow_widget.cpp
     src/ui/color_preview_widget.cpp

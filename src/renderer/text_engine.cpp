@@ -4,8 +4,7 @@
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "../include/text_engine.hpp"
-#include "../include/renderer.hpp"
+#include "../../include/renderer.hpp"
 
 ///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
 
@@ -70,22 +69,18 @@ tr::sys::ttfont& text_engine::find_font(font font)
 
 //
 
-void text_engine::load_fonts()
+text_engine::text_engine(std::string language_font_name)
 {
 	m_standard_fonts.emplace(load_font("charge_vector_b.otf"), load_font("linux_biolinum_rb.ttf"));
 	try {
-		const language_code active_language{active_settings::instance()->language};
-		std::string language_font_file{localization::instance().available_languages.contains(active_language)
-										   ? localization::instance().available_languages.at(active_language).font
-										   : std::string{}};
-		if (language_font_file.empty() || language_font_file == "charge_vector_b.otf") {
+		if (language_font_name.empty() || language_font_name == "charge_vector_b.otf") {
 			m_language_font.state = optional_font::state::USE_DEFAULT;
 		}
-		else if (language_font_file == "linux_biolinum_rb.ttf") {
+		else if (language_font_name == "linux_biolinum_rb.ttf") {
 			m_language_font.state = optional_font::state::USE_FALLBACK;
 		}
 		else {
-			new (m_language_font.data) optional_font::base{load_font(language_font_file), std::move(language_font_file)};
+			new (m_language_font.data) optional_font::base{load_font(language_font_name), std::move(language_font_name)};
 			m_language_font.state = optional_font::state::USE_STORED;
 		}
 		m_language_preview_font.state = optional_font::state::USE_LANGUAGE;
@@ -114,21 +109,19 @@ void text_engine::set_language_font()
 	}
 }
 
-void text_engine::reload_language_preview_font(const ::settings& pending)
+void text_engine::reload_language_preview_font(std::string font_name)
 {
 	std::lock_guard font_lock{m_mutex};
 
 	const bool had_value{m_language_preview_font.state == optional_font::state::USE_STORED};
-	std::string new_font;
 	try {
-		new_font = localization::instance().available_languages.at(pending.language).font;
-		if (new_font.empty() || new_font == "charge_vector_b.otf") {
+		if (font_name.empty() || font_name == "charge_vector_b.otf") {
 			m_language_preview_font.state = optional_font::state::USE_DEFAULT;
 		}
-		else if (new_font == "linux_biolinum_rb.ttf") {
+		else if (font_name == "linux_biolinum_rb.ttf") {
 			m_language_preview_font.state = optional_font::state::USE_FALLBACK;
 		}
-		else if (m_language_font.state == optional_font::state::USE_STORED && new_font == m_language_font->name) {
+		else if (m_language_font.state == optional_font::state::USE_STORED && font_name == m_language_font->name) {
 			m_language_preview_font.state = optional_font::state::USE_LANGUAGE;
 		}
 		else {
@@ -139,15 +132,15 @@ void text_engine::reload_language_preview_font(const ::settings& pending)
 		m_language_preview_font.state = optional_font::state::USE_FALLBACK;
 	}
 
-	if (had_value && (m_language_preview_font.state != optional_font::state::USE_STORED || new_font != m_language_preview_font->name)) {
+	if (had_value && (m_language_preview_font.state != optional_font::state::USE_STORED || font_name != m_language_preview_font->name)) {
 		m_language_preview_font->~base();
 		if (m_language_preview_font.state == optional_font::state::USE_STORED) {
-			new (m_language_preview_font.data) optional_font::base{load_font(new_font), std::move(new_font)};
+			new (m_language_preview_font.data) optional_font::base{load_font(font_name), std::move(font_name)};
 		}
 	}
 }
 
-void text_engine::unload_fonts()
+text_engine::~text_engine()
 {
 	std::lock_guard font_lock{m_mutex};
 
@@ -180,47 +173,47 @@ float text_engine::line_skip(font font, float size)
 	std::lock_guard font_lock{m_mutex};
 
 	tr::sys::ttfont& font_ref{find_font(font)};
-	font_ref.resize(size * g_renderer->scale());
-	return font_ref.line_skip() / g_renderer->scale();
+	font_ref.resize(size * renderer::instance().scale());
+	return font_ref.line_skip() / renderer::instance().scale();
 }
 
 glm::vec2 text_engine::text_size(const text& text)
 {
 	std::lock_guard font_lock{m_mutex};
 
-	const int scaled_outline{int(text.outline * g_renderer->scale())};
+	const int scaled_outline{int(text.outline * renderer::instance().scale())};
 	float max_width{text.max_width};
 	int outline_max_width{tr::sys::UNLIMITED_WIDTH};
 	if (text.max_width != tr::sys::UNLIMITED_WIDTH) {
-		max_width = (text.max_width - 2 * text.outline) * g_renderer->scale();
+		max_width = (text.max_width - 2 * text.outline) * renderer::instance().scale();
 		outline_max_width = int(max_width + 2 * scaled_outline);
 	}
 
 	tr::sys::ttfont& font_ref{find_font(text.font)};
-	font_ref.resize(text.size * g_renderer->scale());
+	font_ref.resize(text.size * renderer::instance().scale());
 	font_ref.set_style(text.style);
 	font_ref.set_outline(scaled_outline);
 	glm::ivec2 text_size{0, font_ref.text_size(text.string, outline_max_width).y};
 	for (std::string_view line : split_into_lines(text.string, font_ref, outline_max_width)) {
 		text_size.x = std::max(text_size.x, font_ref.measure_text(line, outline_max_width).size);
 	}
-	return glm::vec2{text_size} / g_renderer->scale();
+	return glm::vec2{text_size} / renderer::instance().scale();
 }
 
 usize text_engine::count_lines(const text& text)
 {
 	std::lock_guard font_lock{m_mutex};
 
-	const int scaled_outline{int(text.outline * g_renderer->scale())};
+	const int scaled_outline{int(text.outline * renderer::instance().scale())};
 	float max_width{text.max_width};
 	int outline_max_width{tr::sys::UNLIMITED_WIDTH};
 	if (text.max_width != tr::sys::UNLIMITED_WIDTH) {
-		max_width = (text.max_width - 2 * text.outline) * g_renderer->scale();
+		max_width = (text.max_width - 2 * text.outline) * renderer::instance().scale();
 		outline_max_width = int(max_width + 2 * scaled_outline);
 	}
 
 	tr::sys::ttfont& font_ref{find_font(text.font)};
-	font_ref.resize(text.size * g_renderer->scale());
+	font_ref.resize(text.size * renderer::instance().scale());
 	font_ref.set_style(text.style);
 	font_ref.set_outline(scaled_outline);
 	return tr::sys::split_into_lines(text.string, font_ref, outline_max_width).size();
@@ -230,16 +223,16 @@ tr::bitmap text_engine::render_text(const text& text, tr::halign align)
 {
 	std::lock_guard font_lock{m_mutex};
 
-	const int scaled_outline{int(text.outline * g_renderer->scale())};
+	const int scaled_outline{int(text.outline * renderer::instance().scale())};
 	float max_width{text.max_width};
 	int outline_max_width{tr::sys::UNLIMITED_WIDTH};
 	if (text.max_width != tr::sys::UNLIMITED_WIDTH) {
-		max_width = (text.max_width - 2 * text.outline) * g_renderer->scale();
+		max_width = (text.max_width - 2 * text.outline) * renderer::instance().scale();
 		outline_max_width = int(max_width + 2 * scaled_outline);
 	}
 
 	tr::sys::ttfont& font_ref{find_font(text.font)};
-	font_ref.resize(text.size * g_renderer->scale());
+	font_ref.resize(text.size * renderer::instance().scale());
 	font_ref.set_style(text.style);
 	font_ref.set_outline(scaled_outline);
 	tr::bitmap render{font_ref.render(text.string, outline_max_width, align, DARK_GRAY)};
@@ -253,10 +246,10 @@ tr::bitmap text_engine::render_gradient_glyph(u32 glyph, font font, tr::sys::ttf
 {
 	std::lock_guard font_lock{m_mutex};
 
-	const int scaled_outline{int(outline * g_renderer->scale())};
+	const int scaled_outline{int(outline * renderer::instance().scale())};
 
 	tr::sys::ttfont& font_ref{find_font(font)};
-	font_ref.resize(size * g_renderer->scale());
+	font_ref.resize(size * renderer::instance().scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
 	tr::bitmap render{font_ref.render(glyph, "00000080"_rgba8)};

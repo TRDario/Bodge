@@ -9,7 +9,6 @@
 #include "../include/input.hpp"
 #include "../include/renderer.hpp"
 #include "../include/score.hpp"
-#include "../include/text_engine.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -58,7 +57,7 @@ static tr::gfx::bitmap_atlas<char> create_number_atlas()
 {
 	std::unordered_map<char, tr::bitmap> glyphs;
 	for (char chr : std::string_view{"0123456789:-"}) {
-		glyphs.emplace(chr, g_text_engine.render_gradient_glyph(chr, font::DEFAULT, tr::sys::ttf_style::NORMAL, 64, 5));
+		glyphs.emplace(chr, renderer::instance().text_engine.render_gradient_glyph(chr, font::DEFAULT, tr::sys::ttf_style::NORMAL, 64, 5));
 	}
 	return tr::gfx::build_bitmap_atlas(glyphs);
 }
@@ -121,14 +120,14 @@ void playerless_game::tick()
 void playerless_game::add_ball_trail_overlay_to_renderer() const
 {
 	const tr::gfx::simple_color_mesh_ref overlay{
-		g_renderer->basic.new_color_fan(layer::BALL_TRAILS, 4, TRANSFORM, tr::gfx::REVERSE_ALPHA_BLENDING)};
+		renderer::instance().basic().new_color_fan(layer::BALL_TRAILS, 4, TRANSFORM, tr::gfx::REVERSE_ALPHA_BLENDING)};
 	std::ranges::copy(OVERLAY_POSITIONS, overlay.positions.begin());
 	std::ranges::fill(overlay.colors, "00000000"_rgba8);
 }
 
 void playerless_game::add_border_to_renderer() const
 {
-	const tr::gfx::simple_color_mesh_ref border{g_renderer->basic.new_color_outline(layer::BORDER, 4)};
+	const tr::gfx::simple_color_mesh_ref border{renderer::instance().basic().new_color_outline(layer::BORDER, 4)};
 	tr::fill_rectangle_outline_vertices(border.positions, {{2, 2}, {996, 996}}, 4);
 	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->secondary_hue), 1, 1}));
 }
@@ -266,7 +265,7 @@ void game::update_life_fragments()
 
 void game::check_if_timer_obstructed()
 {
-	const glm::vec2 size{text_size(format_time(m_elapsed_time), 1 / g_renderer->scale()) * 0.95f};
+	const glm::vec2 size{text_size(format_time(m_elapsed_time), 1 / renderer::instance().scale()) * 0.95f};
 	const tr::frect2 base_bounds{TIMER_TEXT_POS - size / 2.0f - 8.0f, size + 16.0f};
 
 	const tr::circle player_hitbox{m_player.hitbox()};
@@ -314,7 +313,7 @@ void game::check_if_lives_obstructed()
 
 void game::check_if_score_obstructed()
 {
-	const glm::vec2 size{text_size(format_score(m_score), 1 / g_renderer->scale()) * 0.75f};
+	const glm::vec2 size{text_size(format_score(m_score), 1 / renderer::instance().scale()) * 0.75f};
 	const tr::frect2 base_bounds{tl(SCORE_TEXT_POS, size, tr::align::TOP_RIGHT), size};
 
 	const tr::circle player_hitbox{m_player.hitbox()};
@@ -480,7 +479,7 @@ void game::set_screen_shake() const
 {
 	if (m_screen_shake_timer.active()) {
 		const glm::vec2 tl{tr::magth(40 * (1 - m_screen_shake_timer.elapsed_ratio()), g_rng.generate_angle())};
-		g_renderer->set_default_transform(tr::ortho(tr::frect2{tl, glm::vec2{1000}}));
+		renderer::instance().set_default_transform(tr::ortho(tr::frect2{tl, glm::vec2{1000}}));
 	}
 }
 
@@ -492,7 +491,7 @@ glm::vec2 game::text_size(const std::string& text, float scale) const
 
 	glm::vec2 text_size{};
 	for (char chr : text) {
-		const glm::vec2 char_size{glm::vec2{atlas.unnormalized(chr).size} / g_renderer->scale() * scale};
+		const glm::vec2 char_size{glm::vec2{atlas.unnormalized(chr).size} / renderer::instance().scale() * scale};
 		text_size = {text_size.x + char_size.x - 5, std::max<float>(text_size.y, char_size.y)};
 	}
 	return text_size;
@@ -544,9 +543,9 @@ void game::add_timer_to_renderer() const
 
 	glm::vec2 tl{TIMER_TEXT_POS - text_size(text, scale) / 2.0f};
 	for (char chr : text) {
-		const glm::vec2 size{glm::vec2{atlas.unnormalized(chr).size} / g_renderer->scale() * scale};
+		const glm::vec2 size{glm::vec2{atlas.unnormalized(chr).size} / renderer::instance().scale() * scale};
 
-		const tr::gfx::simple_textured_mesh_ref character{g_renderer->basic.new_textured_fan(layer::GAME_OVERLAY, 4)};
+		const tr::gfx::simple_textured_mesh_ref character{renderer::instance().basic().new_textured_fan(layer::GAME_OVERLAY, 4)};
 		tr::fill_rectangle_vertices(character.positions, {tl, size});
 		tr::fill_rectangle_vertices(character.uvs, atlas[chr]);
 		std::ranges::fill(character.tints, tint);
@@ -570,7 +569,7 @@ void game::add_lives_to_renderer() const
 		const glm::ivec2 grid_pos{i % LIVES_PER_LINE, i / LIVES_PER_LINE};
 		const glm::vec2 pos{(glm::vec2{grid_pos} + 0.5f) * 2.5f * life_size + 8.0f};
 
-		const tr::gfx::simple_color_mesh_ref outline{g_renderer->basic.new_color_outline(layer::GAME_OVERLAY, 6)};
+		const tr::gfx::simple_color_mesh_ref outline{renderer::instance().basic().new_color_outline(layer::GAME_OVERLAY, 6)};
 		tr::fill_regular_polygon_outline_vertices(outline.positions, {pos, life_size}, rotation, 2.0f);
 		std::ranges::fill(outline.colors, tr::rgba8{color, opacity});
 	}
@@ -594,7 +593,7 @@ void game::add_appearing_life_to_renderer(tr::rgb8 color, u8 base_opacity) const
 	const tr::angle rotation{120_deg * m_elapsed_time / 1_s};
 	const u8 opacity{u8(base_opacity * std::pow(raw_age_factor, 1 / 3.0f))};
 
-	const tr::gfx::simple_color_mesh_ref outline{g_renderer->basic.new_color_outline(layer::GAME_OVERLAY, 6)};
+	const tr::gfx::simple_color_mesh_ref outline{renderer::instance().basic().new_color_outline(layer::GAME_OVERLAY, 6)};
 	tr::fill_regular_polygon_outline_vertices(outline.positions, {pos, life_size * size_factor}, rotation, 2.0f * size_factor);
 	std::ranges::fill(outline.colors, tr::rgba8{color, opacity});
 }
@@ -605,7 +604,7 @@ void game::add_shattering_life_to_renderer(tr::rgb8 color, u8 base_opacity) cons
 	const float length{2 * life_size * (30_deg).tan()};
 	const u8 opacity{u8(base_opacity - base_opacity * m_hit_animation_timer.elapsed_ratio())};
 	for (const fragment& fragment : m_shattered_life_fragments) {
-		const tr::gfx::simple_color_mesh_ref mesh{g_renderer->basic.new_color_fan(layer::GAME_OVERLAY, 4)};
+		const tr::gfx::simple_color_mesh_ref mesh{renderer::instance().basic().new_color_fan(layer::GAME_OVERLAY, 4)};
 		tr::fill_rectangle_vertices(mesh.positions, fragment.pos, {length / 2, 1}, {length, 2}, fragment.rot);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
@@ -619,9 +618,9 @@ void game::add_score_to_renderer() const
 
 	glm::vec2 tl{tr::tl(SCORE_TEXT_POS, text_size(text, scale), tr::align::TOP_RIGHT)};
 	for (char chr : text) {
-		const glm::vec2 size{glm::vec2{atlas.unnormalized(chr).size} / g_renderer->scale() * scale};
+		const glm::vec2 size{glm::vec2{atlas.unnormalized(chr).size} / renderer::instance().scale() * scale};
 
-		const tr::gfx::simple_textured_mesh_ref character{g_renderer->basic.new_textured_fan(layer::GAME_OVERLAY, 4)};
+		const tr::gfx::simple_textured_mesh_ref character{renderer::instance().basic().new_textured_fan(layer::GAME_OVERLAY, 4)};
 		tr::fill_rectangle_vertices(character.positions, {tl, size});
 		tr::fill_rectangle_vertices(character.uvs, atlas[chr]);
 		std::ranges::fill(character.tints, tint);
@@ -636,7 +635,7 @@ void game::add_to_renderer() const
 		tr::gfx::bitmap_atlas<char> source{std::move(*number_atlas_bitmap)};
 		tr::gfx::dyn_atlas<char>& atlas{m_number_atlas.emplace<tr::gfx::dyn_atlas<char>>(std::move(source))};
 		atlas.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
-		g_renderer->basic.set_default_layer_texture(layer::GAME_OVERLAY, atlas);
+		renderer::instance().basic().set_default_layer_texture(layer::GAME_OVERLAY, atlas);
 	}
 
 	playerless_game::add_to_renderer();

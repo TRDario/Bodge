@@ -103,7 +103,7 @@ tr::next_state save_replay_state::tick()
 {
 	game_menu_state::tick();
 	if (m_elapsed >= 0.5_s && to_base(m_substate) == substate_base::EXITING) {
-		g_renderer->set_default_transform(TRANSFORM);
+		renderer::instance().set_default_transform(TRANSFORM);
 		return m_next_state.get();
 	}
 	else {

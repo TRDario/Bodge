@@ -112,7 +112,7 @@ void player::try_loading_skin() const
 		}
 		tr::gfx::texture& skin_texture{m_skin.emplace<tr::gfx::texture>(image, true)};
 		skin_texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
-		g_renderer->basic.set_default_layer_texture(layer::PLAYER, skin_texture);
+		renderer::instance().basic().set_default_layer_texture(layer::PLAYER, skin_texture);
 	}
 	catch (...) {
 		m_skin.emplace<no_skin>();
@@ -121,7 +121,7 @@ void player::try_loading_skin() const
 
 void player::add_skin_to_renderer(u8 opacity, tr::angle rotation, float size) const
 {
-	const tr::gfx::simple_textured_mesh_ref skin{g_renderer->basic.new_textured_fan(layer::PLAYER, 4)};
+	const tr::gfx::simple_textured_mesh_ref skin{renderer::instance().basic().new_textured_fan(layer::PLAYER, 4)};
 	tr::fill_rectangle_vertices(skin.positions.begin(), m_hitbox.c, glm::vec2{size / 2}, glm::vec2{size}, rotation);
 	tr::fill_rectangle_vertices(skin.uvs.begin(), {{0, 0}, {1, 1}});
 	std::ranges::fill(skin.tints, tr::rgba8{255, 255, 255, opacity});
@@ -129,14 +129,14 @@ void player::add_skin_to_renderer(u8 opacity, tr::angle rotation, float size) co
 
 void player::add_fill_to_renderer(u8 opacity, tr::angle rotation, float size) const
 {
-	const tr::gfx::simple_color_mesh_ref fill{g_renderer->basic.new_color_fan(layer::PLAYER, 6)};
+	const tr::gfx::simple_color_mesh_ref fill{renderer::instance().basic().new_color_fan(layer::PLAYER, 6)};
 	tr::fill_regular_polygon_vertices(fill.positions, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, opacity});
 }
 
 void player::add_outline_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
 {
-	const tr::gfx::simple_color_mesh_ref outline{g_renderer->basic.new_color_outline(layer::PLAYER, 6)};
+	const tr::gfx::simple_color_mesh_ref outline{renderer::instance().basic().new_color_outline(layer::PLAYER, 6)};
 	tr::fill_regular_polygon_outline_vertices(outline.positions, {m_hitbox.c, size}, rotation, 4.0f);
 	std::fill_n(outline.colors.begin(), 6, tr::rgba8{tint, opacity});
 	std::fill_n(outline.colors.begin() + 6, 6, tr::rgba8{0, 0, 0, opacity});
@@ -147,7 +147,7 @@ void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation
 	constexpr usize VERTICES{6 * (TRAIL_SIZE + 1)};
 	constexpr usize INDICES{tr::polygon_outline_indices(6) * TRAIL_SIZE};
 
-	tr::gfx::color_mesh_ref trail_mesh{g_renderer->basic.new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
+	tr::gfx::color_mesh_ref trail_mesh{renderer::instance().basic().new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
 	tr::fill_regular_polygon_vertices(trail_mesh.positions.begin(), 6, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(trail_mesh.colors, tr::rgba8{tint, opacity});
 
@@ -180,7 +180,7 @@ void player::add_style_wave_to_renderer(tr::rgb8 tint, const decrementing_timer<
 	const float scale{m_hitbox.r + 10 + std::pow(t, 2.0f) * 40};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t) * 0.75f)};
 
-	g_renderer->circle.add_circle_outline(layer::PLAYER, {m_hitbox.c, scale}, 2, tr::rgba8{tint, opacity});
+	renderer::instance().circle().add_circle_outline(layer::PLAYER, {m_hitbox.c, scale}, 2, tr::rgba8{tint, opacity});
 }
 
 void player::add_death_wave_to_renderer(ticks time_since_game_over) const
@@ -190,7 +190,7 @@ void player::add_death_wave_to_renderer(ticks time_since_game_over) const
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(0.5f * (1 - t))};
 
-	g_renderer->circle.add_circle(layer::PLAYER_TRAIL, {m_hitbox.c, scale}, tr::rgba8{color, opacity});
+	renderer::instance().circle().add_circle(layer::PLAYER_TRAIL, {m_hitbox.c, scale}, tr::rgba8{color, opacity});
 }
 
 void player::add_death_fragments_to_renderer(ticks time_since_game_over) const
@@ -201,7 +201,7 @@ void player::add_death_fragments_to_renderer(ticks time_since_game_over) const
 	const float length{2 * m_hitbox.r * (30_deg).tan()};
 
 	for (const fragment& fragment : m_fragments) {
-		const tr::gfx::simple_color_mesh_ref mesh{g_renderer->basic.new_color_fan(layer::PLAYER, 4)};
+		const tr::gfx::simple_color_mesh_ref mesh{renderer::instance().basic().new_color_fan(layer::PLAYER, 4)};
 		tr::fill_rectangle_vertices(mesh.positions, fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}

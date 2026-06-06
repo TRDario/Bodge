@@ -129,10 +129,10 @@ text_widget::text_widget(tweened_position pos, tr::align alignment, ticks unhide
 	, m_max_width{max_width}
 	, m_text{text}
 	, m_last_text{text()}
-	, m_cache{g_text_engine.render_text(
+	, m_cache{renderer::instance().text_engine.render_text(
 		  ::text{
 			  m_last_text,
-			  g_text_engine.determine_font(m_last_text, m_font),
+			  renderer::instance().text_engine.determine_font(m_last_text, m_font),
 			  m_style,
 			  m_font_size,
 			  m_font_size / 12,
@@ -145,7 +145,7 @@ text_widget::text_widget(tweened_position pos, tr::align alignment, ticks unhide
 
 glm::vec2 text_widget::size() const
 {
-	return m_last_size / g_renderer->scale();
+	return m_last_size / renderer::instance().scale();
 }
 
 void text_widget::release_graphical_resources()
@@ -160,7 +160,7 @@ void text_widget::add_to_renderer_raw(tr::rgba8 tint)
 	tint.a *= opacity();
 
 	const tr::gfx::texture& texture{tr::get<tr::gfx::texture>(m_cache)};
-	const tr::gfx::simple_textured_mesh_ref quad{g_renderer->basic.new_textured_fan(layer::UI, 4, texture)};
+	const tr::gfx::simple_textured_mesh_ref quad{renderer::instance().basic().new_textured_fan(layer::UI, 4, texture)};
 	tr::fill_rectangle_vertices(quad.positions, {tl(), text_widget::size()});
 	tr::fill_rectangle_vertices(quad.uvs, {{}, m_last_size / glm::vec2{texture.size()}});
 	std::ranges::fill(quad.tints, tint);
@@ -170,9 +170,9 @@ void text_widget::update_cache() const
 {
 	std::string text_string{m_text()};
 	if (std::holds_alternative<std::monostate>(m_cache) || m_last_text != text_string) {
-		const font font{g_text_engine.determine_font(text_string, m_font)};
+		const font font{renderer::instance().text_engine.determine_font(text_string, m_font)};
 		const text text{text_string, font, m_style, m_font_size, m_font_size / 12, float(m_max_width)};
-		const tr::bitmap render{g_text_engine.render_text(text, tr::halign::CENTER)};
+		const tr::bitmap render{renderer::instance().text_engine.render_text(text, tr::halign::CENTER)};
 		tr::gfx::texture* const cache_texture{std::get_if<tr::gfx::texture>(&m_cache)};
 		if (cache_texture == nullptr || cache_too_small(*cache_texture, render)) {
 			tr::gfx::texture& texture{m_cache.emplace<tr::gfx::texture>(render)};

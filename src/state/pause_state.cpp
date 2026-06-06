@@ -68,7 +68,7 @@ pause_state::pause_state(std::shared_ptr<game> game, game_state_data data, glm::
 {
 	if (blur_in == blur_in::YES) {
 		m_game->add_to_renderer();
-		g_renderer->draw_layers(g_renderer->blur.input());
+		renderer::instance().draw_layers(renderer::instance().blur().input());
 	}
 
 	if (std::holds_alternative<regular_game_data>(m_data)) {
@@ -116,7 +116,7 @@ tr::next_state pause_state::tick()
 		if (m_elapsed < 0.5_s) {
 			return tr::KEEP_STATE;
 		}
-		g_renderer->set_default_transform(TRANSFORM);
+		renderer::instance().set_default_transform(TRANSFORM);
 		return m_next_state.get();
 	case substate::SAVING:
 		return next_state_if_after(0.5_s);
@@ -124,7 +124,7 @@ tr::next_state pause_state::tick()
 		if (m_elapsed < 0.5_s) {
 			return tr::KEEP_STATE;
 		}
-		g_renderer->set_default_transform(TRANSFORM);
+		renderer::instance().set_default_transform(TRANSFORM);
 		return m_next_state.get();
 	}
 }

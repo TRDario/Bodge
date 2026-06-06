@@ -52,8 +52,8 @@ game_over_state::game_over_state(std::shared_ptr<game> game, blur_in blur_in)
 	, m_substate{blur_in == blur_in::YES ? substate::BLURRING_IN : substate::GAME_OVER}
 {
 	const float result_h{(500 - (BUTTONS.size() - 0.75f) * 30) + 4};
-	const float label_h{result_h - g_text_engine.line_skip(font::LANGUAGE, 48) + 14};
-	const float best_h{result_h + g_text_engine.line_skip(font::LANGUAGE, 48) - 14};
+	const float label_h{result_h - renderer::instance().text_engine.line_skip(font::LANGUAGE, 48) + 14};
+	const float best_h{result_h + renderer::instance().text_engine.line_skip(font::LANGUAGE, 48) - 14};
 
 	const std::array<action_command, BUTTONS.size()> action_commands{
 		[this] { on_save_and_restart(); },

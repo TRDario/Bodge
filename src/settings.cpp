@@ -7,7 +7,7 @@
 #include "../include/settings.hpp"
 #include "../include/audio.hpp"
 #include "../include/renderer.hpp"
-#include "../include/text_engine.hpp"
+#include "../include/renderer/text_engine.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -240,11 +240,7 @@ void active_settings::apply(const settings& new_settings)
 
 	m_settings = new_settings;
 	if (restart_required) {
-		g_renderer.reset();
-		tr::sys::close_window();
-		open_window();
-		g_renderer.emplace();
-		tr::sys::show_window();
+		renderer::instance().reopen_window(new_settings);
 	}
 	else if (m_settings.vsync != old.vsync) {
 		tr::sys::set_window_vsync(m_settings.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
@@ -254,7 +250,7 @@ void active_settings::apply(const settings& new_settings)
 		localization::instance().reload(new_settings.language);
 	}
 	if (localization::instance().use_different_fonts(old.language, new_settings.language)) {
-		g_text_engine.set_language_font();
+		renderer::instance().text_engine.set_language_font();
 	}
 
 	audio::instance().set_volume(new_settings.sfx_volume, new_settings.music_volume);

@@ -6,7 +6,9 @@
 
 #pragma once
 #include "renderer/blur_renderer.hpp"
+#include "renderer/text_engine.hpp"
 #include "renderer/tooltip_manager.hpp"
+#include "settings.hpp"
 
 ///////////////////////////////////////////////////////////////// RENDERER ////////////////////////////////////////////////////////////////
 
@@ -28,26 +30,30 @@ enum layer {
 	CURSOR
 };
 
-// Rendering subsystem.
+// Renderer singleton.
 class renderer {
   public:
-	// The screen rendering target.
-	const tr::gfx::render_target screen;
+	// Gets the renderer instance.
+	static renderer& instance();
 
-	// Basic renderer.
-	tr::gfx::renderer_2d basic;
-	// Circle renderer.
-	tr::gfx::circle_renderer circle;
-	// Blur renderer.
-	blur_renderer blur;
-	// Tooltip manager.
-	tooltip_manager tooltip;
+	// Reopens the window according to settings.
+	void reopen_window(const settings& settings);
+	// Closes the window.
+	void close_window();
 
-	// Initializes the renderer.
-	renderer();
-
+	// Gets the screen rendering target.
+	const tr::gfx::render_target& screen() const;
 	// Gets the scale rendering is done at.
 	float scale() const;
+
+	// Gets the basic renderer.
+	tr::gfx::renderer_2d& basic();
+	// Gets the circle renderer.
+	tr::gfx::circle_renderer& circle();
+	// Gets the blur renderer.
+	blur_renderer& blur();
+	// Renderer text engine.
+	text_engine text_engine;
 
 	// Sets the default transformation matrix.
 	void set_default_transform(const glm::mat4& mat);
@@ -56,6 +62,8 @@ class renderer {
 	void add_menu_game_overlay();
 	// Adds the fade overlay to the renderer.
 	void add_fade_overlay(float opacity);
+	// Adds a tooltip to the renderer.
+	void add_tooltip(glm::vec2 tl, std::string_view text_string);
 
 	// Draws everything added to the renderer's layers.
 	void draw_layers(const tr::gfx::render_target& target);
@@ -72,16 +80,46 @@ class renderer {
 	void draw_benchmarks();
 
   private:
-	// Extra renderer components.
-	struct extra {
-		// Debug renderer for displaying performance statistics.
-		tr::gfx::debug_renderer debug;
-		// GPU benchmark measuring drawing performance.
-		tr::gfx::gpu_benchmark benchmark;
+	// Wrapper over tr window functions.
+	struct window {
+		// Opens a window.
+		window(const settings& settings);
+		// Closes the window.
+		~window();
 	};
 
-	// Optional extra components.
-	std::optional<extra> m_extra;
+	// Window-specific renderer components.
+	struct window_specific_components : window {
+		// Extra renderer components.
+		struct extra {
+			// Debug renderer for displaying performance statistics.
+			tr::gfx::debug_renderer debug;
+			// GPU benchmark measuring drawing performance.
+			tr::gfx::gpu_benchmark benchmark;
+		};
+
+		// Screen rendering target.
+		const tr::gfx::render_target screen;
+		// Basic renderer.
+		tr::gfx::renderer_2d basic_renderer;
+		// Circle renderer.
+		tr::gfx::circle_renderer circle_renderer;
+		// Blur renderer.
+		blur_renderer blur_renderer;
+		// Tooltip manager.
+		tooltip_manager tooltip_manager;
+		// Optional extra components.
+		std::optional<extra> extra;
+
+		// Creates window-specific components.
+		window_specific_components(const settings& settings);
+		// Destroys the window-specific components.
+		~window_specific_components();
+	};
+
+	// Window-dependent renderer components.
+	std::optional<window_specific_components> m_window_specific;
+
+	// Initializes the renderer.
+	renderer();
 };
-// Global renderer.
-inline std::optional<renderer> g_renderer;

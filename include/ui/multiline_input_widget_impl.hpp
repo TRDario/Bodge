@@ -14,7 +14,8 @@ template <usize MaxChars>
 multiline_input_widget<MaxChars>::multiline_input_widget(properties&& properties)
 	: text_input_widget<MaxChars * 4>{properties.animation, properties.alignment,  properties.unhide_time,      tr::sys::ttf_style::NORMAL,
 									  properties.font_size, int(properties.width), std::move(properties.status)}
-	, m_size{properties.width, g_text_engine.line_skip(font::LANGUAGE, properties.font_size) * properties.max_lines + 2 * OUTLINE_THICKNESS}
+	, m_size{properties.width, renderer::instance().text_engine.line_skip(font::LANGUAGE, properties.font_size) * properties.max_lines +
+								   2 * OUTLINE_THICKNESS}
 	, m_max_lines{properties.max_lines}
 {
 }
@@ -41,7 +42,7 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::on_write(std::s
 		this->m_buffer.append(input);
 
 		// Revert new addition if the new text is over the line limit.
-		if (g_text_engine.count_lines(this->text()) > m_max_lines) {
+		if (renderer::instance().text_engine.count_lines(this->text()) > m_max_lines) {
 			this->m_buffer.resize(this->m_buffer.size() - input.size());
 		}
 		else {
@@ -52,7 +53,7 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::on_write(std::s
 
 template <usize MaxChars> void multiline_input_widget<MaxChars>::on_enter()
 {
-	if (tr::utf8::length(this->m_buffer) < MaxChars && g_text_engine.count_lines(this->text()) < m_max_lines) {
+	if (tr::utf8::length(this->m_buffer) < MaxChars && renderer::instance().text_engine.count_lines(this->text()) < m_max_lines) {
 		this->m_buffer.append('\n');
 		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
@@ -74,7 +75,7 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::on_paste()
 			// Reject the new string if it goes over the line limit (I realize it's not the most elegant solution).
 			const text new_string_text{new_string,        font::LANGUAGE,         tr::sys::ttf_style::NORMAL,
 									   this->m_font_size, this->m_font_size / 12, m_size.x};
-			if (g_text_engine.count_lines(new_string_text) <= m_max_lines) {
+			if (renderer::instance().text_engine.count_lines(new_string_text) <= m_max_lines) {
 				this->m_buffer = new_string;
 			}
 			else {
@@ -94,14 +95,14 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::add_to_renderer
 	const tr::rgba8 tint{this->m_tint};
 	const float opacity{this->opacity()};
 
-	const tr::gfx::simple_color_mesh_ref background{g_renderer->basic.new_color_fan(layer::UI, 4)};
+	const tr::gfx::simple_color_mesh_ref background{renderer::instance().basic().new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(background.positions, {tl + OUTLINE_THICKNESS, size() - 2 * OUTLINE_THICKNESS});
 	std::ranges::fill(background.colors, tr::rgba8{0, 0, 0, u8(160 * opacity)});
 
 	text_widget::add_to_renderer_raw(this->m_buffer.empty() ? tr::rgba8{u8(tint.r / 2), u8(tint.g / 2), u8(tint.b / 2), 255} : tint);
 
 	const tr::rgba8 outline_color{tint.r, tint.g, tint.b, u8(tint.a * opacity)};
-	const tr::gfx::simple_color_mesh_ref outline{g_renderer->basic.new_color_outline(layer::UI, 4)};
+	const tr::gfx::simple_color_mesh_ref outline{renderer::instance().basic().new_color_outline(layer::UI, 4)};
 	tr::fill_rectangle_outline_vertices(outline.positions, {tl + OUTLINE_THICKNESS / 2, size() - OUTLINE_THICKNESS}, OUTLINE_THICKNESS);
 	std::ranges::fill(outline.colors, outline_color);
 }

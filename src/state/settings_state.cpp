@@ -453,13 +453,15 @@ void settings_state::on_change_language()
 		language_it = available_languages.begin();
 	}
 	m_pending.language = language_it->first;
-	g_text_engine.reload_language_preview_font(m_pending);
+	renderer::instance().text_engine.reload_language_preview_font(language_it->second.font);
 }
 
 void settings_state::on_revert()
 {
 	m_pending = active_settings::instance();
-	g_text_engine.reload_language_preview_font(m_pending);
+	const auto language_it{localization::instance().available_languages.find(m_pending.language)};
+	renderer::instance().text_engine.reload_language_preview_font(
+		language_it != localization::instance().available_languages.end() ? language_it->second.font : std::string{});
 	const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? GRAY : DISABLED_GRAY};
 	m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(window_size_color, 0.1_s);
 	m_ui.as<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW).update_skin();

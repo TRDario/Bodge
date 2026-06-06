@@ -61,7 +61,7 @@ static void emplace_label_widget(std::unordered_map<tag, std::unique_ptr<widget>
 // Creates a set of widgets for a different gamemode.
 static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const gamemode& selected, starting_side side)
 {
-	const float label_h{621 - g_text_engine.line_skip(font::LANGUAGE, 32)};
+	const float label_h{621 - renderer::instance().text_engine.line_skip(font::LANGUAGE, 32)};
 	const best_results best_results{savefile::instance().best_results(selected)};
 
 	// clang-format off
@@ -133,7 +133,7 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 		m_selected = last_selected_it;
 	}
 
-	const float label_h{621 - g_text_engine.line_skip(font::LANGUAGE, 32)};
+	const float label_h{621 - renderer::instance().text_engine.line_skip(font::LANGUAGE, 32)};
 	const best_results best_results{savefile::instance().best_results(m_selected->gamemode)};
 
 	// clang-format off
@@ -257,7 +257,7 @@ tr::next_state start_game_state::tick()
 
 void start_game_state::set_up_exit_animation()
 {
-	const float label_h{621 - g_text_engine.line_skip(font::LANGUAGE, 32)};
+	const float label_h{621 - renderer::instance().text_engine.line_skip(font::LANGUAGE, 32)};
 
 	m_ui[T_NAME].move_y_and_hide(300, 0.5_s);
 	m_ui[T_AUTHOR].move_x_and_hide(600, 0.5_s);

@@ -127,7 +127,7 @@ tr::next_state game_state::tick()
 	case substate::GAME_OVER:
 		m_game->tick();
 		if (m_elapsed >= 0.75_s) {
-			g_renderer->set_default_transform(TRANSFORM);
+			renderer::instance().set_default_transform(TRANSFORM);
 			switch (m_data.index()) {
 			case tr::type_index<regular_game_data, game_state_data>:
 				return m_next_state.get();
@@ -146,7 +146,7 @@ tr::next_state game_state::tick()
 		return tr::KEEP_STATE;
 	case substate::EXITING:
 		if (m_elapsed >= 1_s) {
-			g_renderer->set_default_transform(TRANSFORM);
+			renderer::instance().set_default_transform(TRANSFORM);
 			return m_next_state.get();
 		}
 		return tr::KEEP_STATE;
@@ -160,8 +160,8 @@ void game_state::draw()
 		m_ui.add_to_renderer();
 		add_replay_cursor_to_renderer(((replay_game&)*m_game).cursor_pos());
 	}
-	g_renderer->add_fade_overlay(fade_overlay_opacity());
-	g_renderer->draw_layers(g_renderer->screen);
+	renderer::instance().add_fade_overlay(fade_overlay_opacity());
+	renderer::instance().draw_layers(renderer::instance().screen());
 }
 
 //
@@ -193,10 +193,10 @@ void game_state::add_replay_cursor_to_renderer(glm::vec2 pos) const
 	const tr::rgb8 base_color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 	const tr::rgba8 color{base_color.r, base_color.g, base_color.b, 160};
 
-	tr::gfx::simple_color_mesh_ref quad{g_renderer->basic.new_color_fan(layer::UI, 4)};
+	tr::gfx::simple_color_mesh_ref quad{renderer::instance().basic().new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(quad.positions, pos, SIZE / 2.0f, SIZE, 45_deg);
 	std::ranges::fill(quad.colors, color);
-	quad = g_renderer->basic.new_color_fan(layer::UI, 4);
+	quad = renderer::instance().basic().new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(quad.positions, pos, SIZE / 2.0f, SIZE, -45_deg);
 	std::ranges::fill(quad.colors, color);
 }

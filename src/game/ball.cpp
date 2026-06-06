@@ -105,14 +105,14 @@ void ball::add_to_renderer() const
 	const float raw_age_factor{std::min(float(m_age) / BALL_SPAWN_ANIMATION_TIME, 1.0f)};
 	const float eased_age_factor{raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor)};
 	const float size{m_hitbox.r * (5 - 4 * eased_age_factor)};
-	const usize vertices{tr::smooth_polygon_vertices(size * g_renderer->scale())};
+	const usize vertices{tr::smooth_polygon_vertices(size * renderer::instance().scale())};
 	const u8 base_opacity{tr::norm_cast<u8>(raw_age_factor)};
 	const float thickness{
 		3 + 4 * std::max((float(BALL_COLLISION_ANIMATION_TIME) - m_time_since_last_collision) / BALL_COLLISION_ANIMATION_TIME, 0.0f),
 	};
 
-	g_renderer->circle.add_outlined_circle(layer::BALLS, {m_hitbox.c, size}, thickness, tr::rgba8{0, 0, 0, base_opacity},
-										   tr::rgba8{tint, base_opacity});
+	renderer::instance().circle().add_outlined_circle(layer::BALLS, {m_hitbox.c, size}, thickness, tr::rgba8{0, 0, 0, base_opacity},
+													  tr::rgba8{tint, base_opacity});
 
 	// Add the trail.
 	if (m_age > BALL_SPAWN_ANIMATION_TIME) {
@@ -126,7 +126,7 @@ void ball::add_to_renderer() const
 		const usize trail_vertices{drawn_trails * vertices};
 		const usize trail_indices{(drawn_trails - 1) * vertices * 6};
 
-		tr::gfx::color_mesh_ref trail{g_renderer->basic.new_color_mesh(layer::BALL_TRAILS, trail_vertices, trail_indices)};
+		tr::gfx::color_mesh_ref trail{renderer::instance().basic().new_color_mesh(layer::BALL_TRAILS, trail_vertices, trail_indices)};
 		tr::fill_circle_vertices(trail.positions.begin(), vertices, m_hitbox);
 		std::ranges::fill(trail.colors | std::views::take(vertices), tr::rgba8{tint, tr::norm_cast<u8>(0.4f)});
 		usize trail_index{1};
