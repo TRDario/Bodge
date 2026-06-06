@@ -8,12 +8,10 @@
 //  • debug_settings::instance()  - Active debug settings.                                                                               //
 //  • input::instance()           - Input manager.                                                                                       //
 //  • g_languages                 - List of available languages.                                                                         //
-//  • g_loaded_userdata           - Flag denoting whether userdata globals (scorefile, settings) have been loaded.                       //
 //  • g_loc                       - Localization map.                                                                                    //
-//  • g_new_gamemode_draft        - Saved draft of an unfinished new gamemode.                                                           //
 //  • g_renderer                  - Rendering subsystem.                                                                                 //
 //  • g_rng                       - Global RNG (games use their own RNG for gameplay).                                                   //
-//  • g_scorefile                 - Player scorefile.                                                                                    //
+//  • savefile::instance()        - Active savefile.                                                                                     //
 //  • g_state                     - Container for the current state.                                                                     //
 //  • g_text_engine               - Text rendering subsystem.                                                                            //
 //                                                                                                                                       //
@@ -133,8 +131,6 @@ struct fragment {
 	void tick();
 };
 
-// Flag denoting whether userdata globals (scorefile, settings) have been loaded.
-inline bool g_loaded_userdata{false};
 // The global RNG.
 inline tr::xorshiftr_128p g_rng;
 

@@ -105,6 +105,3 @@ struct gamemode_with_path {
 };
 // Loads all available gamemodes.
 std::vector<gamemode_with_path> load_gamemodes();
-
-// Saved draft of an unfinished new gamemode.
-inline gamemode g_new_gamemode_draft{};

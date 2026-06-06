@@ -10,8 +10,8 @@
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
-// Previous scorefile version identifier.
-constexpr u8 SCOREFILE_VERSION{1};
+// Savefile version identifier.
+constexpr u8 SAVEFILE_VERSION{2};
 
 ////////////////////////////////////////////////////////////////// SCORE //////////////////////////////////////////////////////////////////
 
@@ -61,21 +61,22 @@ void tr::binary_writer<score_category>::write_to_stream(std::ostream& os, const 
 	tr::binary_write(os, in.entries);
 }
 
-//////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// SAVEFILE ////////////////////////////////////////////////////////////////
 
-void scorefile::load_from_file()
+savefile::savefile()
 {
-	const std::filesystem::path path{debug_settings::instance().user_directory() / "scorefile.dat"};
+	const std::filesystem::path path{debug_settings::instance().user_directory() / "savefile.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const u8 version{tr::binary_read<u8>(file)};
-		if (version == SCOREFILE_VERSION) {
+		if (version == SAVEFILE_VERSION) {
 			const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 			std::span<const std::byte> data{raw};
-			data = tr::binary_read(data, name);
-			data = tr::binary_read(data, categories);
-			data = tr::binary_read(data, playtime);
-			data = tr::binary_read(data, last_selected);
+			data = tr::binary_read(data, m_name);
+			data = tr::binary_read(data, m_score_categories);
+			data = tr::binary_read(data, m_playtime);
+			data = tr::binary_read(data, gamemode_draft);
+			data = tr::binary_read(data, last_selected_gamemode);
 		}
 	}
 	catch (std::exception&) {
@@ -83,23 +84,24 @@ void scorefile::load_from_file()
 	}
 }
 
-void scorefile::save_to_file() const
+savefile::~savefile()
 {
-	// Don't save default scorefile.
-	if (name.empty()) {
+	// Don't save unnamed savefile.
+	if (unnamed()) {
 		return;
 	}
 
-	const std::filesystem::path path{debug_settings::instance().user_directory() / "scorefile.dat"};
+	const std::filesystem::path path{debug_settings::instance().user_directory() / "savefile.dat"};
 	try {
 		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
 		std::ostringstream buffer;
-		tr::binary_write(buffer, name);
-		tr::binary_write(buffer, categories);
-		tr::binary_write(buffer, playtime);
-		tr::binary_write(buffer, last_selected);
+		tr::binary_write(buffer, m_name);
+		tr::binary_write(buffer, m_score_categories);
+		tr::binary_write(buffer, m_playtime);
+		tr::binary_write(buffer, gamemode_draft);
+		tr::binary_write(buffer, last_selected_gamemode);
 		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), g_rng.generate<u8>())};
-		tr::binary_write(file, SCOREFILE_VERSION);
+		tr::binary_write(file, SAVEFILE_VERSION);
 		tr::binary_write(file, std::span{encrypted});
 	}
 	catch (std::exception&) {
@@ -107,31 +109,60 @@ void scorefile::save_to_file() const
 	}
 }
 
-//
-
-bests scorefile::bests(const gamemode& gm) const
+savefile& savefile::instance()
 {
-	std::vector<score_category>::const_iterator category_it{std::ranges::find(categories, gm, &score_category::gamemode)};
-	return category_it != categories.end() ? ::bests{category_it->best_score, category_it->best_time} : ::bests{0, 0};
-}
-
-std::string scorefile::format_player_info() const
-{
-	return TR_FMT::format("{} {}: {}", g_loc["total_playtime"], name, format_playtime(playtime));
+	static savefile instance{};
+	return instance;
 }
 
 //
 
-void scorefile::add_score(const gamemode& gm, const score_entry& s)
+bool savefile::unnamed() const
 {
-	std::vector<score_category>::iterator category_it{std::ranges::find_if(categories, [&](const auto& c) { return c.gamemode == gm; })};
-	if (category_it == categories.end()) {
-		category_it = categories.insert(category_it, {gm, s.score, s.time, {}});
+	return m_name.empty();
+}
+
+std::string_view savefile::name() const
+{
+	return m_name;
+}
+
+void savefile::rename(std::string_view name)
+{
+	m_name = name;
+}
+
+//
+
+const std::vector<score_category>& savefile::score_categories() const
+{
+	return m_score_categories;
+}
+
+best_results savefile::best_results(const gamemode& gm) const
+{
+	std::vector<score_category>::const_iterator category_it{std::ranges::find(m_score_categories, gm, &score_category::gamemode)};
+	return category_it != m_score_categories.end() ? ::best_results{category_it->best_score, category_it->best_time} : ::best_results{0, 0};
+}
+
+void savefile::add_score(const gamemode& gm, const score_entry& s)
+{
+	std::vector<score_category>::iterator category_it{
+		std::ranges::find_if(m_score_categories, [&](const auto& c) { return c.gamemode == gm; })};
+	if (category_it == m_score_categories.end()) {
+		category_it = m_score_categories.insert(category_it, {gm, s.score, s.time, {}});
 	}
 	else {
 		category_it->best_score = std::max(category_it->best_score, s.score);
 		category_it->best_time = std::max(category_it->best_time, s.time);
 	}
 	category_it->entries.emplace_back(s);
-	playtime += s.time;
+	m_playtime += s.time;
+}
+
+//
+
+std::string savefile::format_info() const
+{
+	return TR_FMT::format("{} {}: {}", g_loc["total_playtime"], m_name, format_playtime(m_playtime));
 }

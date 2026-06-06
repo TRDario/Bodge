@@ -288,7 +288,7 @@ void pause_state::on_restart()
 	if (std::holds_alternative<regular_game_data>(m_data)) {
 		const score_flags score_flags{true, debug_settings::instance().modified_game_speed()};
 		const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
-		g_scorefile.add_score(m_game->gamemode(), score);
+		savefile::instance().add_score(m_game->gamemode(), score);
 		m_next_state = make_game_state_async<active_game>(m_data, m_game->gamemode());
 	}
 	else if (std::holds_alternative<replay_game_data>(m_data)) {
@@ -315,7 +315,7 @@ void pause_state::on_quit()
 	if (std::holds_alternative<regular_game_data>(m_data)) {
 		const score_flags score_flags{true, debug_settings::instance().modified_game_speed()};
 		const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
-		g_scorefile.add_score(m_game->gamemode(), score);
+		savefile::instance().add_score(m_game->gamemode(), score);
 		m_next_state = make_async<title_state>();
 	}
 	else if (std::holds_alternative<replay_game_data>(m_data)) {

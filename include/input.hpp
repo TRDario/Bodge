@@ -12,7 +12,7 @@
 // Input manager singleton.
 class input {
   public:
-	// Gets the input singleton.
+	// Gets the input instance.
 	static input& instance();
 
 	// Position of the mouse in normalized screen coordinated.

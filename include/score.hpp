@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                                       //
-// Provides score structures and scorefile functionality.                                                                                //
+// Provides score structures and savefile functionality.                                                                                 //
 //                                                                                                                                       //
-// The scorefile is loaded from and saved to <USER DIRECTORY>/scorefile.dat (a binary file) and contains all player data.                //
+// The savefile is loaded from and saved to <USER DIRECTORY>/scorefile.dat (a binary file) and contains all player data.                 //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -68,37 +68,54 @@ template <> struct tr::binary_writer<score_category> {
 	static void write_to_stream(std::ostream& os, const score_category& in);
 };
 
-//////////////////////////////////////////////////////////////// SCOREFILE ////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// SAVEFILE ////////////////////////////////////////////////////////////////
 
-// Structure returned by scorefile::bests() containing the best results for a given category.
-struct bests {
+// Structure returned by savefile::best_results() containing the best results for a given category.
+struct best_results {
 	// The best score result.
 	i64 score;
 	// The best time result.
 	ticks time;
 };
 
-// Player scorefile.
-inline struct scorefile {
-	// The name of the player the scorefile belongs to.
-	tr::static_string<20 * 4> name;
-	// List of score categories.
-	std::vector<score_category> categories;
-	// Total playtime.
-	ticks playtime{0};
-	// Copy of the last gamemode selected in the "start game" menu.
-	gamemode last_selected;
+// Savefile singleton.
+class savefile {
+  public:
+	// Gets the savefile instance.
+	static savefile& instance();
 
-	// Loads the scorefile.
-	void load_from_file();
-	// Saves the scorefile.
-	void save_to_file() const;
+	// Gets whether the savefile is unnamed.
+	bool unnamed() const;
+	// Gets the savefile name.
+	std::string_view name() const;
+	// Renames the savefile.
+	void rename(std::string_view name);
 
+	// Gets the list of score categories.
+	const std::vector<score_category>& score_categories() const;
 	// Gets the best results for a specific gamemode.
-	bests bests(const gamemode& gm) const;
-	// Formats the player info into a string to be displayed.
-	std::string format_player_info() const;
-
-	// Adds a score entry to the scorefile.
+	best_results best_results(const gamemode& gm) const;
+	// Adds a score entry to the savefile.
 	void add_score(const gamemode& gm, const score_entry& s);
-} g_scorefile{}; // Global copy of the scorefile.
+
+	// Formats the savefile info into a string to be displayed.
+	std::string format_info() const;
+
+	// Saved draft of an unfinished new gamemode.
+	gamemode gamemode_draft;
+	// Copy of the last gamemode selected in the "start game" menu.
+	gamemode last_selected_gamemode;
+
+  private:
+	// Savefile name.
+	tr::static_string<20 * 4> m_name{};
+	// List of score categories.
+	std::vector<score_category> m_score_categories;
+	// Total playtime.
+	ticks m_playtime{0};
+
+	// Loads the savefile.
+	savefile();
+	// Saves the savefile.
+	~savefile();
+};

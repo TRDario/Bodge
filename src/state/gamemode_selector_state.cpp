@@ -106,7 +106,8 @@ void clone_gamemode_selector::on_gamemode_selected(gamemode_selector_state& stat
 
 void edit_gamemode_selector::filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const
 {
-	std::erase_if(gamemodes, [](const gamemode_with_path& gp) { return gp.gamemode.builtin || gp.gamemode.author != g_scorefile.name; });
+	std::erase_if(gamemodes,
+				  [](const gamemode_with_path& gp) { return gp.gamemode.builtin || gp.gamemode.author != savefile::instance().name(); });
 }
 
 localized_text edit_gamemode_selector::subtitle_text() const

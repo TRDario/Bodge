@@ -49,7 +49,7 @@ void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const r
 replay::replay(const gamemode& gamemode, u64 seed)
 	: m_header{}
 {
-	m_header.player = g_scorefile.name;
+	m_header.player = savefile::instance().name();
 	m_header.gamemode = gamemode;
 	m_header.seed = seed;
 }

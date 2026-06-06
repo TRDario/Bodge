@@ -48,7 +48,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, {500, 64}, 0.5_s} : tweened_position{{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,
-		.text = constant_text{g_scorefile.format_player_info()},
+		.text = constant_text{savefile::instance().format_info()},
 		.font_size = 32
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {

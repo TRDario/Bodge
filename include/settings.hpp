@@ -23,7 +23,7 @@
 // Debug settings singleton.
 class debug_settings {
   public:
-	// Gets the debug settings singleton.
+	// Gets the debug settings instance.
 	static debug_settings& instance();
 
 	// Parses command-line arguments.
@@ -105,7 +105,7 @@ struct settings {
 // Active application settings singleton class.
 class active_settings {
   public:
-	// Gets the active settings singleton.
+	// Gets the active settings instance.
 	static active_settings& instance();
 
 	// Gets the active settings values.

@@ -18,15 +18,13 @@ tr::sys::signal initialize()
 	tr::sys::set_draw_frequency(debug_settings::instance().refresh_rate());
 	tr::sys::set_tick_frequency(240 * debug_settings::instance().game_speed());
 
-	g_scorefile.load_from_file();
-	g_loaded_userdata = true;
 	load_languages();
 	load_localization();
 	g_text_engine.load_fonts();
 	g_audio.initialize();
 	open_window();
 	g_renderer.emplace();
-	g_scorefile.name.empty() ? g_state.emplace<name_entry_state>() : g_state.emplace<title_state>();
+	savefile::instance().unnamed() ? g_state.emplace<name_entry_state>() : g_state.emplace<title_state>();
 	tr::sys::show_window();
 	return tr::sys::signal::CONTINUE;
 }
@@ -66,7 +64,4 @@ void shut_down()
 	tr::sys::close_window();
 	g_audio.shut_down();
 	g_text_engine.unload_fonts();
-	if (g_loaded_userdata) {
-		g_scorefile.save_to_file();
-	}
 }

@@ -135,7 +135,7 @@ tr::next_state game_over_state::tick()
 		}
 		[[fallthrough]];
 	case substate::GAME_OVER:
-		if (g_scorefile.bests(m_game->gamemode()).time < m_game->final_time()) {
+		if (savefile::instance().best_results(m_game->gamemode()).time < m_game->final_time()) {
 			if (m_elapsed % 0.5_s == 0) {
 				m_ui[T_BEST_TIME].hide();
 			}
@@ -143,7 +143,7 @@ tr::next_state game_over_state::tick()
 				m_ui[T_BEST_TIME].unhide();
 			}
 		}
-		if (g_scorefile.bests(m_game->gamemode()).score < m_game->final_score()) {
+		if (savefile::instance().best_results(m_game->gamemode()).score < m_game->final_score()) {
 			if (m_elapsed % 0.5_s == 0) {
 				m_ui[T_BEST_SCORE].hide();
 			}
@@ -202,25 +202,25 @@ float game_over_state::blur_strength()
 
 text_command game_over_state::best_time_text() const
 {
-	const bests& bests{g_scorefile.bests(m_game->gamemode())};
+	const ticks best_time{savefile::instance().best_results(m_game->gamemode()).time};
 
-	if (bests.time < m_game->final_time()) {
+	if (best_time < m_game->final_time()) {
 		return localized_text{"new_personal_best"};
 	}
 	else {
-		return constant_text{TR_FMT::format("{}: {}", g_loc["personal_best"], format_time(bests.time))};
+		return constant_text{TR_FMT::format("{}: {}", g_loc["personal_best"], format_time(best_time))};
 	}
 }
 
 text_command game_over_state::best_score_text() const
 {
-	const bests& bests{g_scorefile.bests(m_game->gamemode())};
+	const i64 best_score{savefile::instance().best_results(m_game->gamemode()).score};
 
-	if (bests.score < m_game->final_score()) {
+	if (best_score < m_game->final_score()) {
 		return localized_text{"new_personal_best"};
 	}
 	else {
-		return constant_text{TR_FMT::format("{}: {}", g_loc["personal_best"], bests.score)};
+		return constant_text{TR_FMT::format("{}: {}", g_loc["personal_best"], best_score)};
 	}
 }
 
@@ -257,7 +257,7 @@ void game_over_state::on_restart()
 
 	m_elapsed = 0;
 	m_substate = substate::RESTARTING;
-	g_scorefile.add_score(m_game->gamemode(), score);
+	savefile::instance().add_score(m_game->gamemode(), score);
 	set_up_exit_animation();
 	m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
 }
@@ -277,7 +277,7 @@ void game_over_state::on_exit()
 
 	m_elapsed = 0;
 	m_substate = substate::QUITTING;
-	g_scorefile.add_score(m_game->gamemode(), score);
+	savefile::instance().add_score(m_game->gamemode(), score);
 	set_up_exit_animation();
 	m_next_state = make_async<title_state>();
 }

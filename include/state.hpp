@@ -538,7 +538,7 @@ class scoreboard_state final : public main_menu_state {
 	// The currently open page.
 	int m_page;
 	// The currently selected gamemode.
-	std::vector<score_category>::iterator m_selected;
+	std::vector<score_category>::const_iterator m_selected;
 	// List of scores sorted by either score or time depending on the scoreboard.
 	std::vector<score_entry> m_sorted_scores;
 	// Holds the result of an asynchronously loaded new set of widgets.

@@ -502,7 +502,7 @@ struct game::timer_render_info game::timer_render_info() const
 {
 	if (game_over()) {
 		const ticks time{final_time()};
-		return {time, (time >= g_scorefile.bests(gamemode()).time) ? "00FF00"_rgba8 : "FF0000"_rgba8, 1};
+		return {time, (time >= savefile::instance().best_results(gamemode()).time) ? "00FF00"_rgba8 : "FF0000"_rgba8, 1};
 	}
 	else {
 		const float factor{std::min(m_elapsed_time % 1_s, 0.2_s) / 0.2_sf};
@@ -515,7 +515,7 @@ struct game::timer_render_info game::timer_render_info() const
 struct game::score_render_info game::score_render_info() const
 {
 	if (game_over()) {
-		return {(m_score >= g_scorefile.bests(gamemode()).score) ? "00FF00"_rgba8 : "FF0000"_rgba8, 0.85f};
+		return {(m_score >= savefile::instance().best_results(gamemode()).score) ? "00FF00"_rgba8 : "FF0000"_rgba8, 0.85f};
 	}
 	else {
 		constexpr float MAX{decltype(m_center_timer)::max() - MIN_SCORE_REGION_TIME + 0.5_sf};

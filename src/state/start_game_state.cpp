@@ -62,6 +62,7 @@ static void emplace_label_widget(std::unordered_map<tag, std::unique_ptr<widget>
 static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const gamemode& selected, starting_side side)
 {
 	const float label_h{621 - g_text_engine.line_skip(font::LANGUAGE, 32)};
+	const best_results best_results{savefile::instance().best_results(selected)};
 
 	// clang-format off
 	std::unordered_map<tag, std::unique_ptr<widget>> map;
@@ -95,7 +96,7 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(con
 	emplace_label_widget(map, T_BEST_TIME, {
 		.animation = {{side == starting_side::LEFT ? 75 : 525, 625}, {325, 625}, 0.25_s},
 		.unhide_time = 0.25_s,
-		.text = constant_text{format_time(g_scorefile.bests(selected).time)},
+		.text = constant_text{format_time(best_results.time)},
 		.font_size = 64,
 		.color = YELLOW
 	});
@@ -109,7 +110,7 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(con
 	emplace_label_widget(map, T_BEST_SCORE, {
 		.animation = {{side == starting_side::LEFT ? 425 : 925, 625}, {675, 625}, 0.25_s},
 		.unhide_time = 0.25_s,
-		.text = constant_text{format_score(g_scorefile.bests(selected).score)},
+		.text = constant_text{format_score(best_results.score)},
 		.font_size = 64,
 		.color = YELLOW
 	});
@@ -126,14 +127,14 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	, m_selected{m_gamemodes.begin()}
 {
 	std::vector<gamemode_with_path>::iterator last_selected_it{
-		std::ranges::find(m_gamemodes, g_scorefile.last_selected, &gamemode_with_path::gamemode),
+		std::ranges::find(m_gamemodes, savefile::instance().last_selected_gamemode, &gamemode_with_path::gamemode),
 	};
 	if (last_selected_it != m_gamemodes.end()) {
 		m_selected = last_selected_it;
 	}
 
 	const float label_h{621 - g_text_engine.line_skip(font::LANGUAGE, 32)};
-	const bests bests{g_scorefile.bests(m_selected->gamemode)};
+	const best_results best_results{savefile::instance().best_results(m_selected->gamemode)};
 
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
@@ -167,7 +168,7 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	});
 	m_ui.emplace<label_widget>(T_BEST_TIME, {
 		.animation = {{325, 725}, {325, 625}, 0.5_s},
-		.text = constant_text{format_time(bests.time)},
+		.text = constant_text{format_time(best_results.time)},
 		.font_size = 64,
 		.color = YELLOW
 	});
@@ -179,7 +180,7 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	});
 	m_ui.emplace<label_widget>(T_BEST_SCORE, {
 		.animation = {{675, 725}, {675, 625}, 0.5_s},
-		.text = constant_text{format_score(bests.score)},
+		.text = constant_text{format_score(best_results.score)},
 		.font_size = 64,
 		.color = YELLOW
 	});
@@ -303,7 +304,7 @@ void start_game_state::on_start()
 	m_substate = substate::STARTING_GAME;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	g_scorefile.last_selected = m_selected->gamemode;
+	savefile::instance().last_selected_gamemode = m_selected->gamemode;
 	g_audio.fade_song_out(0.5s);
 	m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_selected->gamemode);
 }
@@ -313,6 +314,6 @@ void start_game_state::on_exit()
 	m_substate = substate::EXITING_TO_TITLE;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	g_scorefile.last_selected = m_selected->gamemode;
+	savefile::instance().last_selected_gamemode = m_selected->gamemode;
 	m_next_state = make_async<title_state>(m_game);
 }

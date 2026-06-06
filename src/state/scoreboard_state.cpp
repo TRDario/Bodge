@@ -79,9 +79,9 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 	, m_substate{substate::IN_SCOREBOARD}
 	, m_scoreboard{scoreboard}
 	, m_page{0}
-	, m_selected{g_scorefile.categories.begin()}
+	, m_selected{savefile::instance().score_categories().begin()}
 {
-	if (!g_scorefile.categories.empty()) {
+	if (!savefile::instance().score_categories().empty()) {
 		m_sorted_scores = m_selected->entries;
 		std::ranges::sort(m_sorted_scores, scoreboard == scoreboard::SCORE ? compare_scores : compare_times);
 	}
@@ -98,7 +98,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		.animation = {{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0_s,
-		.text = constant_text{g_scorefile.format_player_info()},
+		.text = constant_text{savefile::instance().format_info()},
 		.font_size = 32
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
@@ -111,7 +111,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		.action_sound = sound::CANCEL
 	});
 
-	if (g_scorefile.categories.empty()) {
+	if (savefile::instance().score_categories().empty()) {
 		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, {
 			.animation = {{600, 500}, {500, 500}, 0.5_s},
 			.text = localized_text{T_NO_SCORES_FOUND},
@@ -134,7 +134,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		.animation = {{-50, 892.5}, {10, 892.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
 		.type = arrow_type::LEFT,
-		.status = [this] { return m_substate == substate::IN_SCOREBOARD && g_scorefile.categories.size() > 1; },
+		.status = [this] { return m_substate == substate::IN_SCOREBOARD && savefile::instance().score_categories().size() > 1; },
 		.action = [this] { on_gamemode_decrement(); }
 	});
 	m_ui.emplace<label_widget>(T_GAMEMODE_C, {
@@ -147,7 +147,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, scoreb
 		.animation = {{1050, 892.5}, {990, 892.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
 		.type = arrow_type::RIGHT,
-		.status = [this] { return m_substate == substate::IN_SCOREBOARD && g_scorefile.categories.size() > 1; },
+		.status = [this] { return m_substate == substate::IN_SCOREBOARD && savefile::instance().score_categories().size() > 1; },
 		.action = [this] { on_gamemode_increment(); }
 	});
 	m_ui.emplace<arrow_widget>(T_PAGE_D, {
@@ -214,7 +214,7 @@ void scoreboard_state::set_up_page_switch_animation()
 
 void scoreboard_state::set_up_exit_animation()
 {
-	if (g_scorefile.categories.empty()) {
+	if (savefile::instance().score_categories().empty()) {
 		m_ui[T_NO_SCORES_FOUND].move_x_and_hide(400, 0.5_s);
 	}
 	else {
@@ -245,8 +245,8 @@ void scoreboard_state::on_gamemode_decrement()
 	m_substate = substate::SWITCHING_PAGE;
 	m_elapsed = 0;
 	m_page = 0;
-	if (m_selected == g_scorefile.categories.begin()) {
-		m_selected = g_scorefile.categories.end();
+	if (m_selected == savefile::instance().score_categories().begin()) {
+		m_selected = savefile::instance().score_categories().end();
 	}
 	--m_selected;
 	set_up_page_switch_animation();
@@ -257,8 +257,8 @@ void scoreboard_state::on_gamemode_increment()
 	m_substate = substate::SWITCHING_PAGE;
 	m_elapsed = 0;
 	m_page = 0;
-	if (++m_selected == g_scorefile.categories.end()) {
-		m_selected = g_scorefile.categories.begin();
+	if (++m_selected == savefile::instance().score_categories().end()) {
+		m_selected = savefile::instance().score_categories().begin();
 	}
 	set_up_page_switch_animation();
 }

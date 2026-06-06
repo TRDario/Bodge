@@ -57,7 +57,7 @@ localized_text new_gamemode_editor::subtitle_text() const
 
 void new_gamemode_editor::on_save(gamemode_editor_state& state) const
 {
-	g_new_gamemode_draft = gamemode{};
+	savefile::instance().gamemode_draft = gamemode{};
 	state.m_pending.save_to_file();
 	state.m_next_state = make_async<title_state>(state.m_game);
 	state.set_up_exit_animation(animate_title::YES, animate_subtitle::YES);
@@ -65,7 +65,7 @@ void new_gamemode_editor::on_save(gamemode_editor_state& state) const
 
 void new_gamemode_editor::on_discard(gamemode_editor_state& state) const
 {
-	g_new_gamemode_draft = state.m_pending;
+	savefile::instance().gamemode_draft = state.m_pending;
 	state.m_next_state = make_async<gamemode_manager_state>(state.m_game, animate_title::NO);
 	state.set_up_exit_animation(animate_title::NO, animate_subtitle::YES);
 }
@@ -136,7 +136,7 @@ gamemode_editor_state::gamemode_editor_state(std::shared_ptr<playerless_game> ga
 	, m_available_songs{create_available_song_list()}
 	, m_pending{std::move(gamemode)}
 {
-	m_pending.author = g_scorefile.name;
+	m_pending.author = savefile::instance().name();
 
 	set_up_ui(animate_title::NO, animate_subtitle);
 }
@@ -210,7 +210,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	});
 	m_ui.emplace<label_widget>(T_AUTHOR, {
 		.animation = {{600, 315}, {500, 315}, 0.5_s},
-		.text = constant_text{TR_FMT::format("{}: {}", g_loc["by"], g_scorefile.name)},
+		.text = constant_text{TR_FMT::format("{}: {}", g_loc["by"], savefile::instance().name())},
 		.font_size = 32
 	});
 	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, {

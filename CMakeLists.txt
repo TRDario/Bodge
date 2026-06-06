@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30.0)
-project(Bodge VERSION 1.3.2 LANGUAGES C CXX)
+project(Bodge VERSION 1.3.3 LANGUAGES C CXX)
 
 include(FetchContent)
 

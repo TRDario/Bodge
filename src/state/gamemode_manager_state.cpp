@@ -120,7 +120,8 @@ void gamemode_manager_state::on_enter_new_gamemode()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<gamemode_editor_state>(m_game, new_gamemode_editor{}, g_new_gamemode_draft, animate_subtitle::YES);
+	m_next_state =
+		make_async<gamemode_editor_state>(m_game, new_gamemode_editor{}, savefile::instance().gamemode_draft, animate_subtitle::YES);
 }
 
 void gamemode_manager_state::on_enter_edit_gamemode()

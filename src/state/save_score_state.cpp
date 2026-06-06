@@ -188,7 +188,7 @@ void save_score_state::on_save()
 	m_substate = substate_base::RETURNING_OR_ENTERING_SAVE_REPLAY | to_flags(m_substate);
 	m_elapsed = 0;
 	set_up_exit_animation();
-	g_scorefile.add_score(m_game->gamemode(), m_score);
+	savefile::instance().add_score(m_game->gamemode(), m_score);
 	m_next_state = make_async<save_replay_state>(m_game, to_flags(m_substate));
 }
 
