@@ -26,6 +26,7 @@ add_executable(
     src/replay.cpp
     src/score.cpp
     src/settings.cpp
+    src/state.cpp
     src/state/ball_settings_editor_state.cpp
     src/state/credits_state.cpp
     src/state/game_over_state.cpp

@@ -21,6 +21,10 @@ bool state::transparent_cursor() const
 
 tr::next_state state::handle_event(const tr::sys::event& event)
 {
+	if (event.is<tr::sys::quit_event>()) {
+		return tr::DROP_STATE;
+	}
+
 	m_ui.handle_event(event);
 	return tr::KEEP_STATE;
 }

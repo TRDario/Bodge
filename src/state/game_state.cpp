@@ -49,6 +49,10 @@ bool game_state::transparent_cursor() const
 
 tr::next_state game_state::handle_event(const tr::sys::event& event)
 {
+	if (event.is<tr::sys::quit_event>()) {
+		return tr::DROP_STATE;
+	}
+
 	m_ui.handle_event(event);
 	if (m_substate != substate::FADING_IN && event.is<tr::sys::key_down_event>() && event.as<tr::sys::key_down_event>().key == "Escape"_k) {
 		audio::instance().play_sound(sound::PAUSE, 0.8f, 0.0f);

@@ -183,7 +183,7 @@ void renderer::draw_cursor()
 	const glm::vec2 mouse_pos{input::instance().mouse_pos};
 
 	tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
-	if (g_state.get<state>().transparent_cursor()) {
+	if (current_state::instance()->transparent_cursor()) {
 		color.a = 160;
 	}
 
@@ -230,9 +230,9 @@ void renderer::draw_benchmarks()
 {
 	if (m_window_specific->extra.has_value()) {
 		const tr::dsecs max_render_time{1.0s / debug_settings::instance().refresh_rate()};
-		m_window_specific->extra->debug.write_right(g_state.tick_benchmark(), "Tick:", 1.0s / 1_s);
+		m_window_specific->extra->debug.write_right(current_state::instance().tick_benchmark(), "Tick:", 1.0s / 1_s);
 		m_window_specific->extra->debug.newline_right();
-		m_window_specific->extra->debug.write_right(g_state.draw_benchmark(), "Render (CPU):", max_render_time);
+		m_window_specific->extra->debug.write_right(current_state::instance().draw_benchmark(), "Render (CPU):", max_render_time);
 		m_window_specific->extra->debug.newline_right();
 		m_window_specific->extra->debug.write_right(m_window_specific->extra->benchmark, "Render (GPU):", max_render_time);
 		m_window_specific->extra->debug.draw();

@@ -32,8 +32,27 @@ class gamemode_selector_state;
 
 ////////////////////////////////////////////////////////////// STATE MACHINE //////////////////////////////////////////////////////////////
 
-// The global state machine.
-inline tr::state_machine g_state;
+// Current state singleton.
+class current_state : public tr::state_machine {
+  public:
+	// Gets the current state instance.
+	static current_state& instance();
+
+	// Accesses the current state.
+	state* operator->();
+
+	// Handles an event and returns a signal.
+	tr::sys::signal handle_event(const tr::sys::event& event);
+	// Updates the state and returns a signal.
+	tr::sys::signal tick();
+
+  private:
+	using state_machine::handle_event;
+	using state_machine::tick;
+
+	// Creates an initial state.
+	current_state();
+};
 
 //////////////////////////////////////////////////////////// NAME ENTRY STATE /////////////////////////////////////////////////////////////
 

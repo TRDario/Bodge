@@ -5,13 +5,13 @@
 // Globals & Singletons:                                                                                                                 //
 //  • active_settings::instance() - Active application settings.                                                                         //
 //  • audio::instance()           - Audio subsystem.                                                                                     //
+//  • current_state::instance()   - Container for the current state.                                                                     //
 //  • debug_settings::instance()  - Active debug settings.                                                                               //
 //  • input::instance()           - Input manager.                                                                                       //
 //  • localization::instance()    - Localization manager.                                                                                //
 //  • renderer::instance()        - Windowing and renderer manager.                                                                      //
 //  • g_rng                       - Global RNG (games use their own RNG for gameplay).                                                   //
 //  • savefile::instance()        - Active savefile.                                                                                     //
-//  • g_state                     - Container for the current state.                                                                     //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
