@@ -43,5 +43,6 @@ tr::sys::signal draw()
 
 void shut_down()
 {
+	// Unfortunately necessary to call this manually because SDL_Quit gets called automatically before static destructors run.
 	renderer::instance().close_window();
 }
