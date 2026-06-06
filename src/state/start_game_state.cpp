@@ -305,7 +305,7 @@ void start_game_state::on_start()
 	m_elapsed = 0;
 	set_up_exit_animation();
 	savefile::instance().last_selected_gamemode = m_selected->gamemode;
-	g_audio.fade_song_out(0.5s);
+	audio::instance().fade_song_out(0.5s);
 	m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_selected->gamemode);
 }
 

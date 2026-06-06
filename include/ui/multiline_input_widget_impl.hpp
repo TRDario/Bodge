@@ -45,7 +45,7 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::on_write(std::s
 			this->m_buffer.resize(this->m_buffer.size() - input.size());
 		}
 		else {
-			g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+			audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 		}
 	}
 }
@@ -54,7 +54,7 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::on_enter()
 {
 	if (tr::utf8::length(this->m_buffer) < MaxChars && g_text_engine.count_lines(this->text()) < m_max_lines) {
 		this->m_buffer.append('\n');
-		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
@@ -78,7 +78,7 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::on_paste()
 				this->m_buffer = new_string;
 			}
 			else {
-				g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+				audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 			}
 		}
 	}

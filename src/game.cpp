@@ -101,7 +101,7 @@ void playerless_game::tick()
 
 	if (++m_time_since_last_ball >= m_gamemode.ball.spawn_interval && m_balls.size() < m_gamemode.ball.max_count) {
 		add_new_ball();
-		g_audio.play_sound(sound::BALL_SPAWN, 0.25f, (m_balls.back().hitbox().c.x - 500) / 500);
+		audio::instance().play_sound(sound::BALL_SPAWN, 0.25f, (m_balls.back().hitbox().c.x - 500) / 500);
 	}
 
 	for (auto ball_it = m_balls.begin(); ball_it != m_balls.end(); ++ball_it) {
@@ -206,7 +206,7 @@ void game::play_tick_sound_if_needed()
 
 	if (std::ranges::none_of(m_life_fragments, &life_fragment::collectible)) {
 		if (m_elapsed_time % 1_s == 0) {
-			g_audio.play_sound(sound::TICK, 0.33f, 0.0f, m_tock ? 0.75f : 1.0f);
+			audio::instance().play_sound(sound::TICK, 0.33f, 0.0f, m_tock ? 0.75f : 1.0f);
 			m_tock = !m_tock;
 		}
 		return;
@@ -217,7 +217,7 @@ void game::play_tick_sound_if_needed()
 						 : life_fragment_timer >= LIFE_FRAGMENT_SLOW_FLASH_START ? 0.2_s
 																				 : 0.5_s};
 	if (life_fragment_timer % interval == 0) {
-		g_audio.play_sound(sound::TICK_ALT, 0.75f, 0.0f, 1.0f);
+		audio::instance().play_sound(sound::TICK_ALT, 0.75f, 0.0f, 1.0f);
 	}
 }
 
@@ -260,7 +260,7 @@ void game::update_life_fragments()
 			}
 		}
 
-		g_audio.play_sound(sound::FRAGMENT_SPAWN, 1, 0);
+		audio::instance().play_sound(sound::FRAGMENT_SPAWN, 1, 0);
 	}
 }
 
@@ -344,14 +344,14 @@ void game::check_if_player_was_hit()
 			m_game_over_timer.start();
 			m_screen_shake_timer.start();
 			m_player.kill();
-			g_audio.play_sound(sound::GAME_OVER, 1, 0);
+			audio::instance().play_sound(sound::GAME_OVER, 1, 0);
 		}
 		else {
 			m_hit_animation_timer.start();
 			m_screen_shake_timer.start();
 			m_player.hit();
 			set_up_shattered_life_fragments();
-			g_audio.play_sound(sound::HIT, 1, 0);
+			audio::instance().play_sound(sound::HIT, 1, 0);
 		}
 	}
 }
@@ -383,9 +383,9 @@ void game::check_if_player_collected_life_fragments()
 				++m_lives_left;
 				m_1up_animation_timer.start();
 				add_to_score(150);
-				g_audio.play_sound(sound::ONE_UP, 1.25f, 0);
+				audio::instance().play_sound(sound::ONE_UP, 1.25f, 0);
 			}
-			g_audio.play_sound(sound::COLLECT, 0.65f, 0, COLLECT_PITCHES[collected_fragments - 1]);
+			audio::instance().play_sound(sound::COLLECT, 0.65f, 0, COLLECT_PITCHES[collected_fragments - 1]);
 		}
 	}
 }
@@ -471,7 +471,7 @@ void game::check_for_style_points()
 			const float pan{(m_player.hitbox().c.x - 500) / 500};
 			add_to_score(max_points);
 			m_style_cooldown_timer.start();
-			g_audio.play_sound(sound::STYLE, 0.25f, pan);
+			audio::instance().play_sound(sound::STYLE, 0.25f, pan);
 		}
 	}
 }

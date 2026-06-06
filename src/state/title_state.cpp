@@ -71,7 +71,7 @@ tr::next_state title_state::tick()
 	switch (m_substate) {
 	case substate::FADING_IN:
 		if (m_elapsed == 1) {
-			g_audio.play_song("menu", 1.0s);
+			audio::instance().play_song("menu", 1.0s);
 		}
 		else if (m_elapsed >= 1.0_s) {
 			m_elapsed = 0;
@@ -241,5 +241,5 @@ void title_state::on_exit()
 	m_substate = substate::EXITING_GAME;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	g_audio.fade_song_out(0.5s);
+	audio::instance().fade_song_out(0.5s);
 }

@@ -154,7 +154,7 @@ tr::next_state gamemode_editor_state::tick()
 	switch (m_substate) {
 	case substate::RETURNING_FROM_TEST_GAME:
 		if (m_elapsed == 1) {
-			g_audio.play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 1.0s);
+			audio::instance().play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 1.0s);
 		}
 		if (m_elapsed >= 0.5_s) {
 			m_substate = substate::IN_GAMEMODE_EDITOR;
@@ -339,7 +339,7 @@ void gamemode_editor_state::on_test()
 	m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).contents();
 	m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 	set_up_exit_animation(animate_title::YES, animate_subtitle::YES);
-	g_audio.fade_song_out(0.5s);
+	audio::instance().fade_song_out(0.5s);
 	m_next_state = make_game_state_async<active_game>(test_game_data{m_type}, m_pending);
 }
 

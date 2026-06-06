@@ -65,7 +65,7 @@ void ui_manager::change_selection(tr::opt_ref<kv_pair> new_selection)
 			new_selection->second->on_selected();
 		}
 		m_selection = new_selection;
-		g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
+		audio::instance().play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 	}
 }
 

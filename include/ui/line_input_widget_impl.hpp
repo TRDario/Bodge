@@ -32,14 +32,14 @@ template <usize MaxChars> void line_input_widget<MaxChars>::on_write(std::string
 {
 	if (tr::utf8::length(this->m_buffer) + tr::utf8::length(input) <= MaxChars) {
 		this->m_buffer.append(input);
-		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <usize MaxChars> void line_input_widget<MaxChars>::on_enter()
 {
 	m_enter_action();
-	g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
+	audio::instance().play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 
 template <usize MaxChars> void line_input_widget<MaxChars>::on_paste()
@@ -56,7 +56,7 @@ template <usize MaxChars> void line_input_widget<MaxChars>::on_paste()
 		const auto end{(overflow > 0) ? tr::utf8::next(clipboard.begin(), clipboard_length - overflow) : clipboard.end()};
 		this->m_buffer.append(clipboard.begin(), end);
 
-		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 

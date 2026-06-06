@@ -257,5 +257,5 @@ void active_settings::apply(const settings& new_settings)
 		g_text_engine.set_language_font();
 	}
 
-	g_audio.apply_settings(new_settings.sfx_volume, new_settings.music_volume);
+	audio::instance().set_volume(new_settings.sfx_volume, new_settings.music_volume);
 }

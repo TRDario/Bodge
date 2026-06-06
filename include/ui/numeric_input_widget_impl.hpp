@@ -83,14 +83,14 @@ template <class T, usize Digits, class Formatter> void basic_numeric_input_widge
 {
 	if (input.size() == 1 && (std::isdigit(input.front()) || input.front() == '.') && this->m_buffer.size() < Digits) {
 		this->m_buffer.append(input);
-		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_enter()
 {
 	this->m_ui.clear_selection();
-	g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
+	audio::instance().play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 
 //

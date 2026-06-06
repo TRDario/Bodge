@@ -65,7 +65,7 @@ tr::next_state name_entry_state::tick()
 	switch (m_substate) {
 	case substate::FADING_IN:
 		if (m_elapsed == 1) {
-			g_audio.play_song("menu", 1.0s);
+			audio::instance().play_song("menu", 1.0s);
 		}
 		else if (m_elapsed >= 1.0_s) {
 			m_elapsed = 0;

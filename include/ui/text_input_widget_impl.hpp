@@ -87,7 +87,7 @@ template <usize MaxChars> void text_input_widget<MaxChars>::on_hover()
 		m_hovered = true;
 		if (!m_selected) {
 			m_tint.change(WHITE, 0.1_s);
-			g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
+			audio::instance().play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }
@@ -125,7 +125,7 @@ template <usize MaxChars> void text_input_widget<MaxChars>::on_selected()
 			m_tint.change(WHITE, 0.1_s);
 		}
 		else {
-			g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
+			audio::instance().play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }
@@ -144,14 +144,14 @@ template <usize MaxChars> void text_input_widget<MaxChars>::on_erase()
 {
 	if (!this->m_buffer.empty()) {
 		tr::utf8::pop_back(this->m_buffer);
-		g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <usize MaxChars> void text_input_widget<MaxChars>::on_clear()
 {
 	this->m_buffer.clear();
-	g_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+	audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 }
 
 template <usize MaxChars> void text_input_widget<MaxChars>::on_copy()

@@ -148,7 +148,7 @@ void arrow_widget::on_action()
 	m_action();
 	m_action_animation_timer.start();
 	m_tint = WHITE;
-	g_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
+	audio::instance().play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 
 void arrow_widget::on_hover()
@@ -157,7 +157,7 @@ void arrow_widget::on_hover()
 		m_hovered = true;
 		if (!m_selected) {
 			m_tint.change(WHITE, 0.1_s);
-			g_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
+			audio::instance().play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }

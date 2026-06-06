@@ -1,4 +1,3 @@
-#include "../include/audio.hpp"
 #include "../include/input.hpp"
 #include "../include/renderer.hpp"
 #include "../include/score.hpp"
@@ -21,7 +20,6 @@ tr::sys::signal initialize()
 	load_languages();
 	load_localization();
 	g_text_engine.load_fonts();
-	g_audio.initialize();
 	open_window();
 	g_renderer.emplace();
 	savefile::instance().unnamed() ? g_state.emplace<name_entry_state>() : g_state.emplace<title_state>();
@@ -62,6 +60,5 @@ void shut_down()
 {
 	g_renderer.reset();
 	tr::sys::close_window();
-	g_audio.shut_down();
 	g_text_engine.unload_fonts();
 }

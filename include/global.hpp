@@ -4,7 +4,7 @@
 //                                                                                                                                       //
 // Globals & Singletons:                                                                                                                 //
 //  • active_settings::instance() - Active application settings.                                                                         //
-//  • g_audio                     - Audio subsystem.                                                                                     //
+//  • audio::instance()           - Audio subsystem.                                                                                     //
 //  • debug_settings::instance()  - Active debug settings.                                                                               //
 //  • input::instance()           - Input manager.                                                                                       //
 //  • g_languages                 - List of available languages.                                                                         //

@@ -51,8 +51,8 @@ tr::next_state game_state::handle_event(const tr::sys::event& event)
 {
 	m_ui.handle_event(event);
 	if (m_substate != substate::FADING_IN && event.is<tr::sys::key_down_event>() && event.as<tr::sys::key_down_event>().key == "Escape"_k) {
-		g_audio.play_sound(sound::PAUSE, 0.8f, 0.0f);
-		g_audio.pause_song();
+		audio::instance().play_sound(sound::PAUSE, 0.8f, 0.0f);
+		audio::instance().pause_song();
 		return std::make_unique<pause_state>(m_game, m_data, input::instance().mouse_pos, blur_in::YES);
 	}
 	else {
@@ -68,8 +68,8 @@ tr::next_state game_state::tick()
 		if (m_elapsed >= 0.5_s) {
 			m_substate = substate::ONGOING;
 			m_elapsed = 0;
-			g_audio.play_song(m_game->gamemode().song, 0.1s);
-			g_audio.play_sound(sound::BALL_SPAWN, 0.25f, 0);
+			audio::instance().play_song(m_game->gamemode().song, 0.1s);
+			audio::instance().play_sound(sound::BALL_SPAWN, 0.25f, 0);
 		}
 		return tr::KEEP_STATE;
 	case substate::ONGOING:
@@ -102,7 +102,7 @@ tr::next_state game_state::tick()
 					m_substate = substate::EXITING;
 					m_next_state = make_async<replays_state>();
 				}
-				g_audio.fade_song_out(0.5s);
+				audio::instance().fade_song_out(0.5s);
 				m_elapsed = 0;
 			}
 			else if (m_elapsed % 120 == 60) {
@@ -117,7 +117,7 @@ tr::next_state game_state::tick()
 			if (m_game->game_over()) {
 				m_substate = substate::GAME_OVER;
 				m_elapsed = 0;
-				g_audio.fade_song_out(0.5s);
+				audio::instance().fade_song_out(0.5s);
 				if (std::holds_alternative<regular_game_data>(m_data)) {
 					m_next_state = make_async<game_over_state>(m_game, blur_in::YES);
 				}
@@ -182,7 +182,7 @@ float game_state::fade_overlay_opacity() const
 void game_state::set_song_speed_if_needed(float speed)
 {
 	if (m_song_speed != speed) {
-		g_audio.set_song_speed(speed);
+		audio::instance().set_song_speed(speed);
 		m_song_speed = speed;
 	}
 }

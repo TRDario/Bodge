@@ -106,7 +106,7 @@ tr::next_state pause_state::tick()
 		}
 
 		if (m_elapsed >= 0.5_s) {
-			g_audio.unpause_song();
+			audio::instance().unpause_song();
 			return m_next_state.get();
 		}
 		else {
@@ -268,7 +268,7 @@ void pause_state::on_unpause()
 	m_substate = substate::UNPAUSING;
 	m_end_mouse_pos = input::instance().mouse_pos;
 	set_up_exit_animation();
-	g_audio.play_sound(sound::UNPAUSE, 0.8f, 0.0f);
+	audio::instance().play_sound(sound::UNPAUSE, 0.8f, 0.0f);
 	m_next_state = make_async<game_state>(m_game, m_data, fade_in::NO);
 }
 

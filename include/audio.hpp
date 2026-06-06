@@ -37,15 +37,14 @@ inline constexpr tr::fsecs SKIP_MENU_SONG_INTRO_TIMESTAMP{103769 / 44100.0f};
 // Creates a list of filenames of available songs.
 std::vector<std::string> create_available_song_list();
 
-// Audio manager class.
-inline class audio {
+// Audio manager singleton.
+class audio {
   public:
-	// Initializes the audio manager.
-	void initialize();
-	// Applies audio settings.
-	void apply_settings(float sfx_volume, float music_volume);
-	// Shuts down the audio manager.
-	void shut_down();
+	// Gets the audio manager instance.
+	static audio& instance();
+
+	// Sets the audio volume.
+	void set_volume(float sfx_volume, float music_volume);
 
 	// Plays a sound effect.
 	void play_sound(sound sound, float volume, float pan, float pitch = 1);
@@ -67,4 +66,9 @@ inline class audio {
 	std::array<std::optional<tr::audio::buffer>, int(sound::COUNT)> m_sounds;
 	// The currently playing song.
 	std::optional<tr::audio::source> m_current_song;
-} g_audio; // Global audio manager.
+
+	// Initializes the audio manager.
+	audio();
+	// Shuts down the audio manager.
+	~audio();
+};
