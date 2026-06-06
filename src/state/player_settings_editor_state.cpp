@@ -121,7 +121,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 	});
 	m_ui.emplace<text_button_widget>(T_SPAWN_LIFE_FRAGMENTS_C, {
 		.animation = {SPAWN_LIFE_FRAGMENTS_START_POS, {875.5f, SPAWN_LIFE_FRAGMENTS_START_POS.y}, 0.5_s},
-		.text = [&slf = m_pending.player.spawn_life_fragments] { return std::string{g_loc[slf ? "on" : "off"]}; },
+		.text = [&slf = m_pending.player.spawn_life_fragments] { return std::string{localization::instance()[slf ? "on" : "off"]}; },
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.action = [this] { on_toggle_life_fragments(); }
 	});

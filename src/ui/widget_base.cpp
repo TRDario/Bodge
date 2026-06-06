@@ -19,7 +19,7 @@ static bool cache_too_small(const tr::gfx::texture& cache, const tr::bitmap& ima
 
 std::string localized_text::operator()() const
 {
-	return std::string{g_loc[tag]};
+	return std::string{localization::instance()[tag]};
 }
 
 std::string constant_text::operator()() const

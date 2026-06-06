@@ -180,7 +180,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, {
 		.animation = {DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
-		.text = [this] { return std::string{g_loc[m_pending.display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
+		.text = [this] { return std::string{localization::instance()[m_pending.display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
 		.status = [this] { return m_substate != substate::EXITING; },
 		.action = [this] { on_change_display_mode(); }
 	});
@@ -212,7 +212,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	m_ui.emplace<text_button_widget>(T_VSYNC_C, {
 		.animation = {VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
-		.text = [&vsync = m_pending.vsync] { return std::string{g_loc[vsync ? "on" : "off"]}; },
+		.text = [&vsync = m_pending.vsync] { return std::string{localization::instance()[vsync ? "on" : "off"]}; },
 		.status = [this] { return m_substate != substate::EXITING; },
 		.action = [&vsync = m_pending.vsync] { vsync = !vsync; },
 	});
@@ -241,8 +241,8 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.text = [this] {
 			const bool valid_player_skin{std::ranges::find(m_player_skins, m_pending.player_skin) != m_player_skins.end()};
 			return valid_player_skin               ? m_pending.player_skin.substr(0, m_pending.player_skin.find_last_of('.'))
-				   : m_pending.player_skin.empty() ? std::string{g_loc["none"]}
-												   : std::string{g_loc["unknown"]};
+				   : m_pending.player_skin.empty() ? std::string{localization::instance()["none"]}
+												   : std::string{localization::instance()["unknown"]};
 		},
 		.status = [this] { return m_substate != substate::EXITING && (m_player_skins.size() > 0 || !m_pending.player_skin.empty()); },
 		.action = [this] { on_change_player_skin(); }
@@ -341,9 +341,16 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, {
 		.animation = {LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
-		.text = [this] { return g_languages.contains(m_pending.language) ? g_languages[m_pending.language].name : "???"; },
+		.text = [this] {
+			return localization::instance().available_languages.contains(m_pending.language)
+			       ? localization::instance().available_languages.at(m_pending.language).name
+				   : "???";
+		},
 		.font = font::LANGUAGE_PREVIEW,
-		.status = [this] { return m_substate != substate::EXITING && (g_languages.size() >= 2 - (!g_languages.contains(m_pending.language))); },
+		.status = [this] {
+			return m_substate != substate::EXITING &&
+			       (localization::instance().available_languages.size() >= 2 - (!localization::instance().available_languages.contains(m_pending.language)));
+		},
 		.action = [this] { on_change_language(); }
 	});
 
@@ -439,9 +446,11 @@ void settings_state::on_change_player_skin()
 
 void settings_state::on_change_language()
 {
-	std::map<language_code, language_info>::iterator language_it{g_languages.find(m_pending.language)};
-	if (language_it == g_languages.end() || ++language_it == g_languages.end()) {
-		language_it = g_languages.begin();
+	const std::map<language_code, language_info>& available_languages{localization::instance().available_languages};
+
+	std::map<language_code, language_info>::const_iterator language_it{available_languages.find(m_pending.language)};
+	if (language_it == available_languages.end() || ++language_it == available_languages.end()) {
+		language_it = available_languages.begin();
 	}
 	m_pending.language = language_it->first;
 	g_text_engine.reload_language_preview_font(m_pending);

@@ -118,18 +118,18 @@ const std::array<gamemode, 6> BUILTIN_GAMEMODES{{
 
 std::string_view gamemode::name_loc() const
 {
-	return builtin ? g_loc[name] : std::string_view{name};
+	return builtin ? localization::instance()[name] : std::string_view{name};
 }
 
 std::string_view gamemode::description_loc() const
 {
-	return builtin ? g_loc[description] : std::string_view{description};
+	return builtin ? localization::instance()[description] : std::string_view{description};
 }
 
 std::string gamemode::description_loc_with_fallback() const
 {
 	std::string_view base{description_loc()};
-	return std::string{base.empty() ? g_loc["no_description"] : base};
+	return std::string{base.empty() ? localization::instance()["no_description"] : base};
 }
 
 void gamemode::save_to_file() const

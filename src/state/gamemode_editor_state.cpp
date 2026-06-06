@@ -210,7 +210,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	});
 	m_ui.emplace<label_widget>(T_AUTHOR, {
 		.animation = {{600, 315}, {500, 315}, 0.5_s},
-		.text = constant_text{TR_FMT::format("{}: {}", g_loc["by"], savefile::instance().name())},
+		.text = constant_text{TR_FMT::format("{}: {}", localization::instance()["by"], savefile::instance().name())},
 		.font_size = 32
 	});
 	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, {
@@ -258,7 +258,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		 .status_command = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
 		 .action_command = [this] { on_test(); },
 		 .sound = sound::CONFIRM},
-		{.tooltip_text = [this] { return m_ui.as<line_input_widget<12>>(T_NAME).contents().empty() ? std::string{g_loc["save_gamemode_tt"]} : std::string{}; },
+		{.tooltip_text = [this] { return m_ui.as<line_input_widget<12>>(T_NAME).contents().empty() ? std::string{localization::instance()["save_gamemode_tt"]} : std::string{}; },
 		 .status_command = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR && !m_ui.as<line_input_widget<12>>(T_NAME).contents().empty(); },
 		 .action_command = [this] { on_save(); },
 		 .sound = sound::CONFIRM},

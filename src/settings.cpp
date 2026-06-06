@@ -7,7 +7,7 @@
 #include "../include/settings.hpp"
 #include "../include/audio.hpp"
 #include "../include/renderer.hpp"
-#include "../include/state.hpp"
+#include "../include/text_engine.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -227,8 +227,8 @@ bool active_settings::restart_required_to_apply(const settings& new_settings) co
 
 bool active_settings::releasing_graphical_resources_required_to_apply(const settings& new_settings) const
 {
-	return restart_required_to_apply(new_settings) || !g_languages.contains(m_settings.language) ||
-		   g_languages[m_settings.language].font != g_languages[new_settings.language].font;
+	return restart_required_to_apply(new_settings) ||
+		   localization::instance().use_different_fonts(m_settings.language, new_settings.language);
 }
 
 //
@@ -250,10 +250,10 @@ void active_settings::apply(const settings& new_settings)
 		tr::sys::set_window_vsync(m_settings.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
 	}
 
-	if (old.language != m_settings.language) {
-		load_localization();
+	if (old.language != new_settings.language) {
+		localization::instance().reload(new_settings.language);
 	}
-	if (!g_languages.contains(old.language) || g_languages[old.language].font != g_languages[m_settings.language].font) {
+	if (localization::instance().use_different_fonts(old.language, new_settings.language)) {
 		g_text_engine.set_language_font();
 	}
 

@@ -19,14 +19,28 @@ struct language_info {
 	std::string font;
 };
 
-///////////////////////////////////////////////////////////////// GLOBALS /////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////// LOCALIZATION //////////////////////////////////////////////////////////////
 
-// Global list of available languages.
-inline std::map<language_code, language_info> g_languages;
-// Loads available language information into g_languages.
-void load_languages();
+// Localization manager singleton.
+class localization {
+  public:
+	// Gets the localization manager instance.
+	static localization& instance();
 
-// Global localization map.
-inline tr::localization_map g_loc;
-// Loads localization into g_loc.
-void load_localization();
+	// List of available languages.
+	const std::map<language_code, language_info> available_languages;
+	// Gets whether two languages use different fonts.
+	bool use_different_fonts(language_code first, language_code second) const;
+
+	// Gets a localization value.
+	std::string_view operator[](std::string_view tag) const;
+	// Reloads the localization.
+	void reload(language_code language);
+
+  private:
+	// Underlying localization map.
+	tr::localization_map m_map;
+
+	// Loads the list of available languages and the initial localization.
+	localization();
+};

@@ -7,8 +7,7 @@
 //  • audio::instance()           - Audio subsystem.                                                                                     //
 //  • debug_settings::instance()  - Active debug settings.                                                                               //
 //  • input::instance()           - Input manager.                                                                                       //
-//  • g_languages                 - List of available languages.                                                                         //
-//  • g_loc                       - Localization map.                                                                                    //
+//  • localization::instance()    - Localization manager.                                                                                //
 //  • g_renderer                  - Rendering subsystem.                                                                                 //
 //  • g_rng                       - Global RNG (games use their own RNG for gameplay).                                                   //
 //  • savefile::instance()        - Active savefile.                                                                                     //

@@ -74,7 +74,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_fla
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.tooltip_text = [this] {
-			return m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty() ? std::string{g_loc["save_replay_tt"]} : std::string{};
+			return m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty() ? std::string{localization::instance()["save_replay_tt"]} : std::string{};
 		},
 		.text = localized_text{T_SAVE},
 		.status = [this] {

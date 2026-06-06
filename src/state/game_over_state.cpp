@@ -208,7 +208,7 @@ text_command game_over_state::best_time_text() const
 		return localized_text{"new_personal_best"};
 	}
 	else {
-		return constant_text{TR_FMT::format("{}: {}", g_loc["personal_best"], format_time(best_time))};
+		return constant_text{TR_FMT::format("{}: {}", localization::instance()["personal_best"], format_time(best_time))};
 	}
 }
 
@@ -220,7 +220,7 @@ text_command game_over_state::best_score_text() const
 		return localized_text{"new_personal_best"};
 	}
 	else {
-		return constant_text{TR_FMT::format("{}: {}", g_loc["personal_best"], best_score)};
+		return constant_text{TR_FMT::format("{}: {}", localization::instance()["personal_best"], best_score)};
 	}
 }
 

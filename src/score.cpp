@@ -164,5 +164,5 @@ void savefile::add_score(const gamemode& gm, const score_entry& s)
 
 std::string savefile::format_info() const
 {
-	return TR_FMT::format("{} {}: {}", g_loc["total_playtime"], m_name, format_playtime(m_playtime));
+	return TR_FMT::format("{} {}: {}", localization::instance()["total_playtime"], m_name, format_playtime(m_playtime));
 }

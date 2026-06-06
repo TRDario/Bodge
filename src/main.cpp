@@ -17,8 +17,6 @@ tr::sys::signal initialize()
 	tr::sys::set_draw_frequency(debug_settings::instance().refresh_rate());
 	tr::sys::set_tick_frequency(240 * debug_settings::instance().game_speed());
 
-	load_languages();
-	load_localization();
 	g_text_engine.load_fonts();
 	open_window();
 	g_renderer.emplace();

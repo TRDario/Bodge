@@ -75,7 +75,7 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(con
 	emplace_label_widget(map, T_AUTHOR, {
 		.animation = {{side == starting_side::LEFT ? 250 : 750, 475}, {500, 475}, 0.25_s},
 		.unhide_time = 0.25_s,
-		.text = constant_text{TR_FMT::format("{}: {}", g_loc["by"], selected.author)},
+		.text = constant_text{TR_FMT::format("{}: {}", localization::instance()["by"], selected.author)},
 		.font_size = 32
 	});
 	emplace_label_widget(map, T_DESCRIPTION, {
@@ -150,7 +150,7 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	});
 	m_ui.emplace<label_widget>(T_AUTHOR, {
 		.animation = {{400, 475}, {500, 475}, 0.5_s},
-		.text = constant_text{TR_FMT::format("{}: {}", g_loc["by"], m_selected->gamemode.author)},
+		.text = constant_text{TR_FMT::format("{}: {}", localization::instance()["by"], m_selected->gamemode.author)},
 		.font_size = 32
 	});
 	m_ui.emplace<label_widget>(T_DESCRIPTION, {

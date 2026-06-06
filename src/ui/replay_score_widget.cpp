@@ -27,13 +27,13 @@ static std::string format_score_tooltip(tr::opt_ref<const ::score_entry> score)
 			if (!str.empty()) {
 				str.push_back('\n');
 			}
-			str.append(g_loc["exited_prematurely"]);
+			str.append(localization::instance()["exited_prematurely"]);
 		}
 		if (flags.modified_game_speed) {
 			if (!str.empty()) {
 				str.push_back('\n');
 			}
-			str.append(g_loc["modified_game_speed"]);
+			str.append(localization::instance()["modified_game_speed"]);
 		}
 		return str;
 	}
@@ -62,7 +62,7 @@ static std::string format_replay_text(std::optional<replay_map::const_iterator> 
 	}
 
 	const replay_header& rpy{(*replay_it)->second};
-	return TR_FMT::format("{} ({}: {})\n{} | {} | {} | {}", rpy.name, g_loc["by"], rpy.player, rpy.gamemode.name_loc(),
+	return TR_FMT::format("{} ({}: {})\n{} | {} | {} | {}", rpy.name, localization::instance()["by"], rpy.player, rpy.gamemode.name_loc(),
 						  format_score(rpy.score), format_time_long(rpy.time), format_timestamp(rpy.timestamp));
 }
 

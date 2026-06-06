@@ -257,7 +257,7 @@ template <usize BufferSize> class text_input_widget : protected input_buffer<Buf
 
 template <usize S> std::string buffer_text<S>::operator()() const
 {
-	return buffer.empty() ? std::string{g_loc["empty"]} : std::string{buffer};
+	return buffer.empty() ? std::string{localization::instance()["empty"]} : std::string{buffer};
 }
 
 #include "text_input_widget_impl.hpp" // IWYU pragma: keep
