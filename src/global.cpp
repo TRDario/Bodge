@@ -49,19 +49,3 @@ void fragment::tick()
 	pos += vel / 1_sf;
 	rot += rotvel / 1_sf;
 }
-
-//
-
-void open_window()
-{
-	const tr::gfx::properties gfx{.multisamples = tr::sys::max_msaa()};
-	if (active_settings::instance()->display_mode == display_mode::FULLSCREEN) {
-		tr::sys::open_fullscreen_window("Bodge", tr::sys::NOT_RESIZABLE, gfx);
-	}
-	else {
-		tr::sys::open_window("Bodge", glm::ivec2{active_settings::instance()->window_size}, tr::sys::NOT_RESIZABLE, gfx);
-	}
-	tr::sys::set_window_icon(tr::load_bitmap_file(debug_settings::instance().data_directory() / "graphics" / "icon.qoi"));
-	tr::sys::set_window_vsync(active_settings::instance()->vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
-	tr::sys::raise_window();
-}

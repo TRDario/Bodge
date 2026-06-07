@@ -168,7 +168,7 @@ void renderer::add_fade_overlay(float opacity)
 
 void renderer::add_tooltip(glm::vec2 tl, std::string_view text_string)
 {
-	m_window_specific->tooltip_manager.add(tl, text_string);
+	m_window_specific->tooltip_manager.add(text_engine, basic(), scale(), tl, text_string);
 }
 
 //
