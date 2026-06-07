@@ -48,7 +48,7 @@ class label_widget final : public text_widget {
 	// Updates the widget.
 	void tick() override;
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 };
 
 //////////////////////////////////////////////////////////// TEXT BUTTON WIDGET ///////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ class text_button_widget : public text_widget {
 	// Updates the widget.
 	void tick() override;
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 
   private:
 	// Command used to determine whether the button is interactible.
@@ -181,7 +181,7 @@ class basic_numeric_input_widget final : private basic_numeric_input_widget_data
 	void on_enter() override;
 
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 };
 
 // Default numeric input widget formatter (uses std::from_chars and std::format).
@@ -248,7 +248,7 @@ template <usize MaxChars> class line_input_widget final : public text_input_widg
 	void on_paste() override;
 
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 
   private:
 	// Function called when enter is pressed while the widget is selected.
@@ -295,7 +295,7 @@ template <usize MaxChars> class multiline_input_widget final : public text_input
 	void on_paste() override;
 
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 
   private:
 	// The thickness of the outline of the widget.
@@ -335,7 +335,7 @@ class image_widget final : public widget {
 	glm::vec2 size() const override;
 
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 
   private:
 	// The image texture, don't immediately load into a GPU texture to ensure it can be asynchronously loaded.
@@ -377,7 +377,7 @@ class player_skin_preview_widget final : public widget {
 	// Updates the widget.
 	void tick() override;
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 
   private:
 	// Tag representing the lack of a skin.
@@ -417,7 +417,7 @@ class color_preview_widget final : public widget {
 	glm::vec2 size() const override;
 
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 
   private:
 	// Reference to the hue of the color to display.
@@ -478,7 +478,7 @@ class arrow_widget final : public widget {
 	// Updates the widget.
 	void tick() override;
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 
   protected:
 	// Command used to determine whether the arrow is interactible.
@@ -521,7 +521,7 @@ class replay_playback_indicator_widget final : public widget {
 	glm::vec2 size() const override;
 
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 };
 
 ///////////////////////////////////////////////////////////// GAMEMODE WIDGET /////////////////////////////////////////////////////////////
@@ -594,7 +594,7 @@ class score_widget final : public text_widget {
 	glm::vec2 size() const override;
 
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 
   private:
 	// Flag denoting whether the widget is for an empty score slot.
@@ -637,7 +637,7 @@ class replay_widget final : private replay_widget_data, public text_button_widge
 	glm::vec2 size() const override;
 
 	// Adds the widget to the renderer.
-	void add_to_renderer() override;
+	void add_to_renderer(renderer& renderer) override;
 };
 
 ////////////////////////////////////////////////////////////// IMPLEMENTATION /////////////////////////////////////////////////////////////

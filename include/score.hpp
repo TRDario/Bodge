@@ -8,6 +8,7 @@
 
 #pragma once
 #include "gamemode.hpp"
+#include "settings.hpp"
 
 /////////////////////////////////////////////////////////////// SCORE FLAGS ///////////////////////////////////////////////////////////////
 
@@ -78,11 +79,14 @@ struct best_results {
 	ticks time;
 };
 
-// Savefile singleton.
+// Savefile information.
 class savefile {
   public:
-	// Gets the savefile instance.
-	static savefile& instance();
+	// Loads a savefile.
+	savefile(const std::filesystem::path& path = debug_settings::instance().user_directory() / "savefile.dat");
+
+	// Saves the savefile.
+	void save_to_file(const std::filesystem::path& path = debug_settings::instance().user_directory() / "savefile.dat");
 
 	// Gets whether the savefile is unnamed.
 	bool unnamed() const;
@@ -113,9 +117,4 @@ class savefile {
 	std::vector<score_category> m_score_categories;
 	// Total playtime.
 	ticks m_playtime{0};
-
-	// Loads the savefile.
-	savefile();
-	// Saves the savefile.
-	~savefile();
 };

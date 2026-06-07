@@ -193,7 +193,7 @@ void title_state::on_start_game()
 	m_substate = substate::EXITING_TO_SUBMENU;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<start_game_state>(m_game);
+	m_next_state = make_async<start_game_state>(m_game, savefile{});
 }
 
 void title_state::on_gamemode_manager()
@@ -209,7 +209,7 @@ void title_state::on_scoreboards()
 	m_substate = substate::EXITING_TO_SUBMENU;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<scoreboard_selection_state>(m_game, animate_title::YES);
+	m_next_state = make_async<scoreboard_selection_state>(m_game, savefile{}, animate_title::YES);
 }
 
 void title_state::on_replays()

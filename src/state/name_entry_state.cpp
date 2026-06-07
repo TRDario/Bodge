@@ -97,7 +97,11 @@ void name_entry_state::on_exit()
 		m_ui[T_TITLE].move_and_hide(TOP_START_POS, 1.0_s);
 		m_ui[T_INPUT].hide(1.0_s);
 		m_ui[T_CONFIRM].move_and_hide(BOTTOM_START_POS, 1.0_s);
-		savefile::instance().rename(name);
+
+		savefile savefile;
+		savefile.rename(name);
+		savefile.save_to_file();
+
 		m_next_state = make_async<title_state>(m_game);
 	}
 }

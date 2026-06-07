@@ -22,7 +22,7 @@ void label_widget::tick()
 	tint.tick();
 }
 
-void label_widget::add_to_renderer()
+void label_widget::add_to_renderer(renderer& renderer)
 {
-	add_to_renderer_raw(tint);
+	add_to_renderer_raw(renderer, tint);
 }

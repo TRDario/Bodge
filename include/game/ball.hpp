@@ -7,6 +7,8 @@
 #pragma once
 #include "trail.hpp"
 
+class renderer;
+
 /////////////////////////////////////////////////////////////////// BALL //////////////////////////////////////////////////////////////////
 
 // Ball object.
@@ -28,7 +30,7 @@ class ball {
 	void tick();
 
 	// Adds the ball to the renderer.
-	void add_to_renderer() const;
+	void add_to_renderer(renderer& renderer) const;
 
   private:
 	// The ball's hitbox.

@@ -62,8 +62,10 @@ template <usize MaxChars> void line_input_widget<MaxChars>::on_paste()
 
 //
 
-template <usize MaxChars> void line_input_widget<MaxChars>::add_to_renderer()
+template <usize MaxChars> void line_input_widget<MaxChars>::add_to_renderer(renderer& renderer)
 {
-	const tr::rgba8 tint{this->m_tint};
-	text_widget::add_to_renderer_raw(this->m_buffer.empty() ? tr::rgba8{u8(tint.r / 2), u8(tint.g / 2), u8(tint.b / 2), 255} : tint);
+	const tr::rgba8 base_tint{this->m_tint};
+	const tr::rgba8 tint{this->m_buffer.empty() ? tr::rgba8{u8(base_tint.r / 2), u8(base_tint.g / 2), u8(base_tint.b / 2), 255}
+												: base_tint};
+	text_widget::add_to_renderer_raw(renderer, tint);
 }

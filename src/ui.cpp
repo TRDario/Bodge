@@ -438,14 +438,16 @@ void ui_manager::tick()
 	}
 }
 
-void ui_manager::add_to_renderer()
+void ui_manager::add_to_renderer(renderer& renderer)
 {
-	std::ranges::for_each(tr::deref(std::views::values(m_widgets)), &widget::add_to_renderer);
+	for (widget& widget : tr::deref(std::views::values(m_widgets))) {
+		widget.add_to_renderer(renderer);
+	}
 	if (m_hovered.has_ref()) {
 		if (m_hovered->second->tooltip_text) {
 			const std::string tooltip{m_hovered->second->tooltip_text()};
 			if (!tooltip.empty()) {
-				renderer::instance().add_tooltip(input::instance().mouse_pos, tooltip);
+				renderer.add_tooltip(input::instance().mouse_pos, tooltip);
 			}
 		}
 	}

@@ -32,7 +32,7 @@ class playerless_game {
 	void tick();
 
 	// Adds the game to the renderer.
-	void add_to_renderer() const;
+	void add_to_renderer(renderer& renderer) const;
 
   protected:
 	// The gamemode of the game.
@@ -56,18 +56,44 @@ class playerless_game {
 	void add_new_ball();
 
 	// Adds the ball trail overlay to the renderer.
-	void add_ball_trail_overlay_to_renderer() const;
+	void add_ball_trail_overlay_to_renderer(tr::gfx::renderer_2d& renderer) const;
 	// Adds the field border to the renderer.
-	void add_border_to_renderer() const;
+	void add_border_to_renderer(tr::gfx::renderer_2d& renderer) const;
 };
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
+
+// Results color picker for a run performed by the player to whom the savefile belongs.
+class same_player_result_color_picker {
+  public:
+	// Creates a same player result color picker.
+	same_player_result_color_picker(const best_results& best_results);
+
+	// Gets the color to tint a result time with.
+	tr::rgba8 time_color(ticks time) const;
+	// Gets the color to tint a result score with.
+	tr::rgba8 score_color(i64 score) const;
+
+  private:
+	// Cached best results of the player.
+	best_results m_best_results;
+};
+// Results color picker for a run performed by a player to whom the savefile doesn't belong to.
+class different_player_result_color_picker {
+  public:
+	// Gets the color to tint a result time with.
+	tr::rgba8 time_color(ticks time) const;
+	// Gets the color to tint a result score with.
+	tr::rgba8 score_color(i64 score) const;
+};
+// Generic results color picker.
+using results_color_picker = std::variant<same_player_result_color_picker, different_player_result_color_picker>;
 
 // Base game state (with a player).
 class game : private playerless_game {
   public:
 	// Creates a new game.
-	game(::gamemode gamemode, u64 rng_seed);
+	game(results_color_picker result_color_picker, ::gamemode gamemode, u64 rng_seed);
 	// Virtual destructor.
 	virtual ~game() = default;
 
@@ -84,7 +110,7 @@ class game : private playerless_game {
 	virtual void tick() = 0;
 
 	// Adds the game to the renderer.
-	void add_to_renderer() const;
+	void add_to_renderer(renderer& renderer) const;
 
   protected:
 	// Base update function taking in a player input.
@@ -110,6 +136,8 @@ class game : private playerless_game {
 
 	// Atlas holding the digits used by the timer and score displays.
 	mutable std::variant<tr::gfx::bitmap_atlas<char>, tr::gfx::dyn_atlas<char>> m_number_atlas;
+	// Game result color picker.
+	results_color_picker m_result_color_picker;
 	// Player state.
 	player m_player;
 	// List of collectible life fragments.
@@ -148,7 +176,7 @@ class game : private playerless_game {
 	bool m_tock;
 
 	// Gets the size of a string of text.
-	glm::vec2 text_size(const std::string& text, float scale) const;
+	glm::vec2 text_size(const std::string& text, float renderer_scale, float scale) const;
 	// Gets information needed for rendering the timer display.
 	timer_render_info timer_render_info() const;
 	// Gets information needed for rendering the score display.
@@ -161,11 +189,11 @@ class game : private playerless_game {
 	// Updates the collectible life fragments.
 	void update_life_fragments();
 	// Checks if the player is hovering over the timer display and increments or decrements the related timer based on the result.
-	void check_if_timer_obstructed();
+	void check_if_timer_obstructed(float renderer_scale);
 	// Checks if the player is hovering over the lives display and increments or decrements the related timer based on the result.
 	void check_if_lives_obstructed();
 	// Checks if the player is hovering over the score display and increments or decrements the related timer based on the result.
-	void check_if_score_obstructed();
+	void check_if_score_obstructed(float renderer_scale);
 	// Checks for and handles the player getting hit.
 	void check_if_player_was_hit();
 	// Sets up the fragments used for the shattered life animation.
@@ -181,18 +209,18 @@ class game : private playerless_game {
 	// Checks for and applies style points.
 	void check_for_style_points();
 	// Applies screenshake.
-	void set_screen_shake() const;
+	void set_screen_shake(renderer& renderer) const;
 
 	// Adds the timer display to the renderer.
-	void add_timer_to_renderer() const;
+	void add_timer_to_renderer(renderer& renderer) const;
 	// Adds the lives display to the renderer.
-	void add_lives_to_renderer() const;
+	void add_lives_to_renderer(tr::gfx::renderer_2d& renderer) const;
 	// Adds an appearing life from the lives display to the renderer.
-	void add_appearing_life_to_renderer(tr::rgb8 color, u8 base_opacity) const;
+	void add_appearing_life_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 color, u8 base_opacity) const;
 	// Adds a shattering life from the lives display to the renderer.
-	void add_shattering_life_to_renderer(tr::rgb8 color, u8 base_opacity) const;
+	void add_shattering_life_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 color, u8 base_opacity) const;
 	// Adds the score display to the renderer.
-	void add_score_to_renderer() const;
+	void add_score_to_renderer(renderer& renderer) const;
 };
 
 /////////////////////////////////////////////////////////////// ACTIVE GAME ///////////////////////////////////////////////////////////////
@@ -201,7 +229,7 @@ class game : private playerless_game {
 class active_game final : public game {
   public:
 	// Creates a new active game.
-	active_game(::gamemode gamemode, u64 seed = g_rng.generate<u64>());
+	active_game(savefile savefile, ::gamemode gamemode, u64 seed = g_rng.generate<u64>());
 
 	// Updates the game state.
 	void tick() override;

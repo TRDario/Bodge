@@ -95,7 +95,7 @@ template <class T, usize Digits, class Formatter> void basic_numeric_input_widge
 
 //
 
-template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::add_to_renderer()
+template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::add_to_renderer(renderer& renderer)
 {
-	text_widget::add_to_renderer_raw(this->m_tint);
+	text_widget::add_to_renderer_raw(renderer, this->m_tint);
 }

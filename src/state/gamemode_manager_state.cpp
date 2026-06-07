@@ -117,11 +117,12 @@ void gamemode_manager_state::set_up_exit_animation(animate_title animate_title)
 
 void gamemode_manager_state::on_enter_new_gamemode()
 {
+	savefile savefile;
+
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state =
-		make_async<gamemode_editor_state>(m_game, new_gamemode_editor{}, savefile::instance().gamemode_draft, animate_subtitle::YES);
+	m_next_state = make_async<gamemode_editor_state>(m_game, new_gamemode_editor{savefile}, savefile.gamemode_draft, animate_subtitle::YES);
 }
 
 void gamemode_manager_state::on_enter_edit_gamemode()
@@ -129,7 +130,7 @@ void gamemode_manager_state::on_enter_edit_gamemode()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<gamemode_selector_state>(m_game, edit_gamemode_selector{}, animate_subtitle::YES);
+	m_next_state = make_async<gamemode_selector_state>(m_game, edit_gamemode_selector{savefile{}.name()}, animate_subtitle::YES);
 }
 
 void gamemode_manager_state::on_enter_clone_gamemode()
@@ -137,7 +138,7 @@ void gamemode_manager_state::on_enter_clone_gamemode()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<gamemode_selector_state>(m_game, clone_gamemode_selector{}, animate_subtitle::YES);
+	m_next_state = make_async<gamemode_selector_state>(m_game, clone_gamemode_selector{savefile{}.name()}, animate_subtitle::YES);
 }
 
 void gamemode_manager_state::on_enter_delete_gamemode()

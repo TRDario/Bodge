@@ -67,10 +67,10 @@ void player::update_fragments()
 
 //
 
-void player::add_to_renderer_alive(ticks time_since_start, const decrementing_timer<0.1_s>& style_cooldown_timer) const
+void player::add_to_renderer_alive(renderer& renderer, ticks time_since_start, const decrementing_timer<0.1_s>& style_cooldown_timer) const
 {
 	if (std::holds_alternative<uninitialized_skin>(m_skin)) {
-		try_loading_skin();
+		try_loading_skin(renderer.basic());
 	}
 
 	const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
@@ -81,28 +81,28 @@ void player::add_to_renderer_alive(ticks time_since_start, const decrementing_ti
 
 	if (opacity != 0) {
 		if (std::holds_alternative<tr::gfx::texture>(m_skin)) {
-			add_skin_to_renderer(opacity, rotation, size * 2);
+			add_skin_to_renderer(renderer.basic(), opacity, rotation, size * 2);
 		}
 		else {
-			add_fill_to_renderer(opacity, rotation, size);
-			add_outline_to_renderer(tint, opacity, rotation, size);
-			add_trail_to_renderer(tint, opacity, rotation, size);
+			add_fill_to_renderer(renderer.basic(), opacity, rotation, size);
+			add_outline_to_renderer(renderer.basic(), tint, opacity, rotation, size);
+			add_trail_to_renderer(renderer.basic(), tint, opacity, rotation, size);
 		}
-		add_style_wave_to_renderer(tint, style_cooldown_timer);
+		add_style_wave_to_renderer(renderer.circle(), tint, style_cooldown_timer);
 	}
 }
 
-void player::add_to_renderer_dead(ticks time_since_game_over) const
+void player::add_to_renderer_dead(renderer& renderer, ticks time_since_game_over) const
 {
 	if (time_since_game_over < 0.5_s) {
-		add_death_wave_to_renderer(time_since_game_over);
-		add_death_fragments_to_renderer(time_since_game_over);
+		add_death_wave_to_renderer(renderer.circle(), time_since_game_over);
+		add_death_fragments_to_renderer(renderer.basic(), time_since_game_over);
 	}
 }
 
 //
 
-void player::try_loading_skin() const
+void player::try_loading_skin(tr::gfx::renderer_2d& renderer) const
 {
 	try {
 		tr::bitmap image{
@@ -112,42 +112,42 @@ void player::try_loading_skin() const
 		}
 		tr::gfx::texture& skin_texture{m_skin.emplace<tr::gfx::texture>(image, true)};
 		skin_texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
-		renderer::instance().basic().set_default_layer_texture(layer::PLAYER, skin_texture);
+		renderer.set_default_layer_texture(layer::PLAYER, skin_texture);
 	}
 	catch (...) {
 		m_skin.emplace<no_skin>();
 	}
 }
 
-void player::add_skin_to_renderer(u8 opacity, tr::angle rotation, float size) const
+void player::add_skin_to_renderer(tr::gfx::renderer_2d& renderer, u8 opacity, tr::angle rotation, float size) const
 {
-	const tr::gfx::simple_textured_mesh_ref skin{renderer::instance().basic().new_textured_fan(layer::PLAYER, 4)};
+	const tr::gfx::simple_textured_mesh_ref skin{renderer.new_textured_fan(layer::PLAYER, 4)};
 	tr::fill_rectangle_vertices(skin.positions.begin(), m_hitbox.c, glm::vec2{size / 2}, glm::vec2{size}, rotation);
 	tr::fill_rectangle_vertices(skin.uvs.begin(), {{0, 0}, {1, 1}});
 	std::ranges::fill(skin.tints, tr::rgba8{255, 255, 255, opacity});
 }
 
-void player::add_fill_to_renderer(u8 opacity, tr::angle rotation, float size) const
+void player::add_fill_to_renderer(tr::gfx::renderer_2d& renderer, u8 opacity, tr::angle rotation, float size) const
 {
-	const tr::gfx::simple_color_mesh_ref fill{renderer::instance().basic().new_color_fan(layer::PLAYER, 6)};
+	const tr::gfx::simple_color_mesh_ref fill{renderer.new_color_fan(layer::PLAYER, 6)};
 	tr::fill_regular_polygon_vertices(fill.positions, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, opacity});
 }
 
-void player::add_outline_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
+void player::add_outline_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
 {
-	const tr::gfx::simple_color_mesh_ref outline{renderer::instance().basic().new_color_outline(layer::PLAYER, 6)};
+	const tr::gfx::simple_color_mesh_ref outline{renderer.new_color_outline(layer::PLAYER, 6)};
 	tr::fill_regular_polygon_outline_vertices(outline.positions, {m_hitbox.c, size}, rotation, 4.0f);
 	std::fill_n(outline.colors.begin(), 6, tr::rgba8{tint, opacity});
 	std::fill_n(outline.colors.begin() + 6, 6, tr::rgba8{0, 0, 0, opacity});
 }
 
-void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
+void player::add_trail_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const
 {
 	constexpr usize VERTICES{6 * (TRAIL_SIZE + 1)};
 	constexpr usize INDICES{tr::polygon_outline_indices(6) * TRAIL_SIZE};
 
-	tr::gfx::color_mesh_ref trail_mesh{renderer::instance().basic().new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
+	tr::gfx::color_mesh_ref trail_mesh{renderer.new_color_mesh(layer::PLAYER_TRAIL, VERTICES, INDICES)};
 	tr::fill_regular_polygon_vertices(trail_mesh.positions.begin(), 6, {m_hitbox.c, size}, rotation);
 	std::ranges::fill(trail_mesh.colors, tr::rgba8{tint, opacity});
 
@@ -170,7 +170,7 @@ void player::add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation
 	}
 }
 
-void player::add_style_wave_to_renderer(tr::rgb8 tint, const decrementing_timer<0.1_s>& timer) const
+void player::add_style_wave_to_renderer(tr::gfx::circle_renderer& renderer, tr::rgb8 tint, const decrementing_timer<0.1_s>& timer) const
 {
 	if (!timer.active()) {
 		return;
@@ -180,20 +180,20 @@ void player::add_style_wave_to_renderer(tr::rgb8 tint, const decrementing_timer<
 	const float scale{m_hitbox.r + 10 + std::pow(t, 2.0f) * 40};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t) * 0.75f)};
 
-	renderer::instance().circle().add_circle_outline(layer::PLAYER, {m_hitbox.c, scale}, 2, tr::rgba8{tint, opacity});
+	renderer.add_circle_outline(layer::PLAYER, {m_hitbox.c, scale}, 2, tr::rgba8{tint, opacity});
 }
 
-void player::add_death_wave_to_renderer(ticks time_since_game_over) const
+void player::add_death_wave_to_renderer(tr::gfx::circle_renderer& renderer, ticks time_since_game_over) const
 {
 	const float t{(time_since_game_over + 1) / 0.5_sf};
 	const float scale{std::sqrt(t) * 200};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(0.5f * (1 - t))};
 
-	renderer::instance().circle().add_circle(layer::PLAYER_TRAIL, {m_hitbox.c, scale}, tr::rgba8{color, opacity});
+	renderer.add_circle(layer::PLAYER_TRAIL, {m_hitbox.c, scale}, tr::rgba8{color, opacity});
 }
 
-void player::add_death_fragments_to_renderer(ticks time_since_game_over) const
+void player::add_death_fragments_to_renderer(tr::gfx::renderer_2d& renderer, ticks time_since_game_over) const
 {
 	const float t{(time_since_game_over + 1) / 0.5_sf};
 	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
@@ -201,7 +201,7 @@ void player::add_death_fragments_to_renderer(ticks time_since_game_over) const
 	const float length{2 * m_hitbox.r * (30_deg).tan()};
 
 	for (const fragment& fragment : m_fragments) {
-		const tr::gfx::simple_color_mesh_ref mesh{renderer::instance().basic().new_color_fan(layer::PLAYER, 4)};
+		const tr::gfx::simple_color_mesh_ref mesh{renderer.new_color_fan(layer::PLAYER, 4)};
 		tr::fill_rectangle_vertices(mesh.positions, fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}

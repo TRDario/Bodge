@@ -68,18 +68,18 @@ tr::next_state main_menu_state::tick()
 
 void main_menu_state::draw()
 {
-	m_game->add_to_renderer();
+	m_game->add_to_renderer(renderer::instance());
 	renderer::instance().add_menu_game_overlay();
-	m_ui.add_to_renderer();
+	m_ui.add_to_renderer(renderer::instance());
 	renderer::instance().add_fade_overlay(fade_overlay_opacity());
 	renderer::instance().draw_layers(renderer::instance().screen());
 }
 
 ///////////////////////////////////////////////////////////// GAME MENU STATE /////////////////////////////////////////////////////////////
 
-game_menu_state::game_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<game> game,
+game_menu_state::game_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<game> game, savefile savefile,
 								 update_game update_game)
-	: state{selection_tree, shortcuts}, m_game{std::move(game)}, m_update_game{bool(update_game)}
+	: state{selection_tree, shortcuts}, m_game{std::move(game)}, m_savefile{std::move(savefile)}, m_update_game{bool(update_game)}
 {
 }
 
@@ -95,11 +95,11 @@ tr::next_state game_menu_state::tick()
 void game_menu_state::draw()
 {
 	if (m_update_game) {
-		m_game->add_to_renderer();
-		renderer::instance().draw_layers(renderer::instance().blur().input());
+		m_game->add_to_renderer(renderer::instance());
+		renderer::instance().draw_layers(renderer::instance().blur_input());
 	}
-	renderer::instance().blur().draw(saturation_factor(), blur_strength());
-	m_ui.add_to_renderer();
+	renderer::instance().draw_blurred(saturation_factor(), blur_strength());
+	m_ui.add_to_renderer(renderer::instance());
 	renderer::instance().add_fade_overlay(fade_overlay_opacity());
 	renderer::instance().draw_layers(renderer::instance().screen());
 }

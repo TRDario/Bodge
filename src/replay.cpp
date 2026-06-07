@@ -5,7 +5,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../include/replay.hpp"
-#include "../include/settings.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -46,19 +45,19 @@ void tr::binary_writer<replay_header>::write_to_stream(std::ostream& os, const r
 
 ///////////////////////////////////////////////////////////////// REPLAY //////////////////////////////////////////////////////////////////
 
-replay::replay(const gamemode& gamemode, u64 seed)
+replay::replay(std::string_view player, const gamemode& gamemode, u64 seed)
 	: m_header{}
 {
-	m_header.player = savefile::instance().name();
+	m_header.player = player;
 	m_header.gamemode = gamemode;
 	m_header.seed = seed;
 }
 
-replay::replay(const std::string& filename)
+replay::replay(const std::filesystem::path& path)
 {
 	std::vector<std::byte> encrypted;
 	std::vector<std::byte> decrypted;
-	std::ifstream file{tr::open_file_r(debug_settings::instance().user_directory() / "replays" / filename, std::ios::binary)};
+	std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 
 	std::ignore = tr::binary_read<u8>(file);
 
@@ -90,11 +89,11 @@ void replay::set_header(const score_entry& header, std::string_view name)
 	m_header.name = name;
 }
 
-void replay::save_to_file() const
+void replay::save_to_directory(const std::filesystem::path& directory) const
 {
 	try {
 		std::string filename{to_filename(m_header.name)};
-		std::filesystem::path path{debug_settings::instance().user_directory() / "replays" / TR_FMT::format("{}.dat", filename)};
+		std::filesystem::path path{directory / TR_FMT::format("{}.dat", filename)};
 		std::ofstream file;
 		if (!std::filesystem::exists(path)) {
 			file = tr::open_file_w(path, std::ios::binary);
@@ -102,7 +101,7 @@ void replay::save_to_file() const
 		else {
 			int index{0};
 			do {
-				path = debug_settings::instance().user_directory() / "replays" / TR_FMT::format("{}({}).dat", filename, index++);
+				path = directory / TR_FMT::format("{}({}).dat", filename, index++);
 			} while (std::filesystem::exists(path));
 			file = tr::open_file_w(path, std::ios::binary);
 		}
@@ -148,12 +147,11 @@ glm::vec2 replay::prev_input() const
 	return done() ? *std::prev(m_next_it) : *m_next_it;
 }
 
-replay_map load_replay_headers()
+replay_map load_replay_headers(const std::filesystem::path& directory)
 {
 	replay_map replays;
 	try {
-		const std::filesystem::path replay_dir{debug_settings::instance().user_directory() / "replays"};
-		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{replay_dir}) {
+		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{directory}) {
 			if (!file.is_regular_file() || file.path().extension() != ".dat") {
 				continue;
 			}
@@ -162,8 +160,7 @@ replay_map load_replay_headers()
 				std::ifstream is{tr::open_file_r(file, std::ios::binary)};
 				const u8 version{tr::binary_read<u8>(is)};
 				if (version == REPLAY_VERSION) {
-					replays.emplace(file.path().filename().string(),
-									tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
+					replays.emplace(file.path(), tr::binary_read<replay_header>(tr::decrypt(tr::binary_read<std::vector<std::byte>>(is))));
 				}
 			}
 			catch (std::exception&) {

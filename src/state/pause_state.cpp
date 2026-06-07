@@ -58,17 +58,17 @@ constexpr shortcut_table SHORTCUTS_SPECIAL{
 // clang-format on
 /////////////////////////////////////////////////////////////// PAUSE STATE ///////////////////////////////////////////////////////////////
 
-pause_state::pause_state(std::shared_ptr<game> game, game_state_data data, glm::vec2 mouse_pos, blur_in blur_in)
+pause_state::pause_state(std::shared_ptr<game> game, savefile savefile, game_state_data data, glm::vec2 mouse_pos, blur_in blur_in)
 	: game_menu_state{std::holds_alternative<regular_game_data>(m_data) ? SELECTION_TREE_REGULAR : SELECTION_TREE_SPECIAL,
 					  std::holds_alternative<regular_game_data>(m_data) ? SHORTCUTS_REGULAR : SHORTCUTS_SPECIAL, std::move(game),
-					  update_game::NO}
+					  std::move(savefile), update_game::NO}
 	, m_substate{(blur_in == blur_in::YES ? substate::PAUSING : substate::PAUSED)}
 	, m_data{std::move(data)}
 	, m_start_mouse_pos{mouse_pos}
 {
 	if (blur_in == blur_in::YES) {
-		m_game->add_to_renderer();
-		renderer::instance().draw_layers(renderer::instance().blur().input());
+		m_game->add_to_renderer(renderer::instance());
+		renderer::instance().draw_layers(renderer::instance().blur_input());
 	}
 
 	if (std::holds_alternative<regular_game_data>(m_data)) {
@@ -277,7 +277,7 @@ void pause_state::on_save_and_restart()
 	m_elapsed = 0;
 	m_substate = substate::SAVING;
 	set_up_exit_animation();
-	m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::RESTARTING);
+	m_next_state = make_async<save_score_state>(m_game, m_savefile, m_start_mouse_pos, save_screen_flags::RESTARTING);
 }
 
 void pause_state::on_restart()
@@ -288,14 +288,15 @@ void pause_state::on_restart()
 	if (std::holds_alternative<regular_game_data>(m_data)) {
 		const score_flags score_flags{true, debug_settings::instance().modified_game_speed()};
 		const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
-		savefile::instance().add_score(m_game->gamemode(), score);
-		m_next_state = make_game_state_async<active_game>(m_data, m_game->gamemode());
+		m_savefile.add_score(m_game->gamemode(), score);
+		m_savefile.save_to_file();
+		m_next_state = make_game_state_async<active_game>(m_data, m_savefile, m_game->gamemode());
 	}
 	else if (std::holds_alternative<replay_game_data>(m_data)) {
 		m_next_state = make_game_state_async<replay_game>(m_data, (replay_game&)*m_game);
 	}
 	else {
-		m_next_state = make_game_state_async<active_game>(m_data, m_game->gamemode());
+		m_next_state = make_game_state_async<active_game>(m_data, m_savefile, m_game->gamemode());
 	}
 }
 
@@ -304,7 +305,7 @@ void pause_state::on_save_and_quit()
 	m_elapsed = 0;
 	m_substate = substate::SAVING;
 	set_up_exit_animation();
-	m_next_state = make_async<save_score_state>(m_game, m_start_mouse_pos, save_screen_flags::NONE);
+	m_next_state = make_async<save_score_state>(m_game, m_savefile, m_start_mouse_pos, save_screen_flags::NONE);
 }
 
 void pause_state::on_quit()
@@ -315,7 +316,8 @@ void pause_state::on_quit()
 	if (std::holds_alternative<regular_game_data>(m_data)) {
 		const score_flags score_flags{true, debug_settings::instance().modified_game_speed()};
 		const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
-		savefile::instance().add_score(m_game->gamemode(), score);
+		m_savefile.add_score(m_game->gamemode(), score);
+		m_savefile.save_to_file();
 		m_next_state = make_async<title_state>();
 	}
 	else if (std::holds_alternative<replay_game_data>(m_data)) {

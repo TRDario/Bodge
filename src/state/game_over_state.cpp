@@ -47,8 +47,8 @@ constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
 // clang-format on
 ///////////////////////////////////////////////////////////// GAME OVER STATE /////////////////////////////////////////////////////////////
 
-game_over_state::game_over_state(std::shared_ptr<game> game, blur_in blur_in)
-	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), update_game::YES}
+game_over_state::game_over_state(std::shared_ptr<game> game, savefile savefile, blur_in blur_in)
+	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), std::move(savefile), update_game::YES}
 	, m_substate{blur_in == blur_in::YES ? substate::BLURRING_IN : substate::GAME_OVER}
 {
 	const float result_h{(500 - (BUTTONS.size() - 0.75f) * 30) + 4};
@@ -126,6 +126,8 @@ bool game_over_state::transparent_cursor() const
 
 tr::next_state game_over_state::tick()
 {
+	const best_results& best_results{m_savefile.best_results(m_game->gamemode())};
+
 	game_menu_state::tick();
 	switch (m_substate) {
 	case substate::BLURRING_IN:
@@ -135,7 +137,7 @@ tr::next_state game_over_state::tick()
 		}
 		[[fallthrough]];
 	case substate::GAME_OVER:
-		if (savefile::instance().best_results(m_game->gamemode()).time < m_game->final_time()) {
+		if (best_results.time < m_game->final_time()) {
 			if (m_elapsed % 0.5_s == 0) {
 				m_ui[T_BEST_TIME].hide();
 			}
@@ -143,7 +145,7 @@ tr::next_state game_over_state::tick()
 				m_ui[T_BEST_TIME].unhide();
 			}
 		}
-		if (savefile::instance().best_results(m_game->gamemode()).score < m_game->final_score()) {
+		if (best_results.score < m_game->final_score()) {
 			if (m_elapsed % 0.5_s == 0) {
 				m_ui[T_BEST_SCORE].hide();
 			}
@@ -202,7 +204,7 @@ float game_over_state::blur_strength()
 
 text_command game_over_state::best_time_text() const
 {
-	const ticks best_time{savefile::instance().best_results(m_game->gamemode()).time};
+	const ticks best_time{m_savefile.best_results(m_game->gamemode()).time};
 
 	if (best_time < m_game->final_time()) {
 		return localized_text{"new_personal_best"};
@@ -214,7 +216,7 @@ text_command game_over_state::best_time_text() const
 
 text_command game_over_state::best_score_text() const
 {
-	const i64 best_score{savefile::instance().best_results(m_game->gamemode()).score};
+	const i64 best_score{m_savefile.best_results(m_game->gamemode()).score};
 
 	if (best_score < m_game->final_score()) {
 		return localized_text{"new_personal_best"};
@@ -247,7 +249,7 @@ void game_over_state::on_save_and_restart()
 	m_elapsed = 0;
 	m_substate = substate::SAVING;
 	set_up_exit_animation();
-	m_next_state = make_async<save_score_state>(m_game, save_screen_flags::RESTARTING);
+	m_next_state = make_async<save_score_state>(m_game, m_savefile, save_screen_flags::RESTARTING);
 }
 
 void game_over_state::on_restart()
@@ -257,9 +259,10 @@ void game_over_state::on_restart()
 
 	m_elapsed = 0;
 	m_substate = substate::RESTARTING;
-	savefile::instance().add_score(m_game->gamemode(), score);
+	m_savefile.add_score(m_game->gamemode(), score);
+	m_savefile.save_to_file();
 	set_up_exit_animation();
-	m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
+	m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_savefile, m_game->gamemode());
 }
 
 void game_over_state::on_save_and_exit()
@@ -267,7 +270,7 @@ void game_over_state::on_save_and_exit()
 	m_elapsed = 0;
 	m_substate = substate::SAVING;
 	set_up_exit_animation();
-	m_next_state = make_async<save_score_state>(m_game, save_screen_flags::NONE);
+	m_next_state = make_async<save_score_state>(m_game, m_savefile, save_screen_flags::NONE);
 }
 
 void game_over_state::on_exit()
@@ -277,7 +280,8 @@ void game_over_state::on_exit()
 
 	m_elapsed = 0;
 	m_substate = substate::QUITTING;
-	savefile::instance().add_score(m_game->gamemode(), score);
+	m_savefile.add_score(m_game->gamemode(), score);
+	m_savefile.save_to_file();
 	set_up_exit_animation();
 	m_next_state = make_async<title_state>();
 }

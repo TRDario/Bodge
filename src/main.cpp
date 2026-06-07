@@ -33,7 +33,8 @@ tr::sys::signal draw()
 	renderer::instance().start_benchmark();
 	current_state::instance().draw();
 	renderer::instance().draw_cursor();
-	renderer::instance().draw_benchmarks();
+	renderer::instance().draw_benchmarks(debug_settings::instance().refresh_rate(), current_state::instance().tick_benchmark(),
+										 current_state::instance().draw_benchmark());
 	renderer::instance().stop_benchmark();
 	tr::gfx::flip_backbuffer();
 	tr::gfx::clear_backbuffer();

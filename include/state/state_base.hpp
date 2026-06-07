@@ -84,7 +84,8 @@ enum class update_game : bool {
 class game_menu_state : public state {
   public:
 	// Creates a game menu state.
-	game_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<game> game, update_game update_game);
+	game_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<game> game, savefile savefile,
+					update_game update_game);
 
 	// Updates the state.
 	tr::next_state tick() override;
@@ -94,6 +95,8 @@ class game_menu_state : public state {
   protected:
 	// Background game.
 	std::shared_ptr<game> m_game;
+	// Cached copy of the savefile.
+	savefile m_savefile;
 
   private:
 	// Flag denoting whether to update the game in the background.

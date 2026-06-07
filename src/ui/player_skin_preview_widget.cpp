@@ -55,7 +55,7 @@ void player_skin_preview_widget::tick()
 	m_rotation += 0.25_turns / SECOND_TICKS;
 }
 
-void player_skin_preview_widget::add_to_renderer()
+void player_skin_preview_widget::add_to_renderer(renderer& renderer)
 {
 	tr::bitmap* const skin_bitmap{std::get_if<tr::bitmap>(&m_skin)};
 	if (skin_bitmap != nullptr) {
@@ -66,7 +66,7 @@ void player_skin_preview_widget::add_to_renderer()
 
 	tr::gfx::texture* const skin_texture{std::get_if<tr::gfx::texture>(&m_skin)};
 	if (skin_texture != nullptr) {
-		const tr::gfx::simple_textured_mesh_ref skin{renderer::instance().basic().new_textured_fan(layer::UI, 4, *skin_texture)};
+		const tr::gfx::simple_textured_mesh_ref skin{renderer.basic().new_textured_fan(layer::UI, 4, *skin_texture)};
 		tr::fill_rectangle_vertices(skin.positions.begin(), tl() + 24.0f, glm::vec2{24}, glm::vec2{48}, m_rotation);
 		tr::fill_rectangle_vertices(skin.uvs.begin(), {{0, 0}, {1, 1}});
 		std::ranges::fill(skin.tints, tr::rgba8{255, 255, 255, tr::norm_cast<u8>(opacity())});
@@ -76,11 +76,11 @@ void player_skin_preview_widget::add_to_renderer()
 		tr::rgba8 color{tr::color_cast<tr::rgba8>(tr::hsv{float(m_pending_settings.primary_hue), 1, 1})};
 		color.a = tr::norm_cast<u8>(opacity());
 
-		const tr::gfx::simple_color_mesh_ref fill{renderer::instance().basic().new_color_fan(layer::UI, 6)};
+		const tr::gfx::simple_color_mesh_ref fill{renderer.basic().new_color_fan(layer::UI, 6)};
 		tr::fill_regular_polygon_vertices(fill.positions, circle, m_rotation);
 		std::ranges::fill(fill.colors, tr::rgba8{0, 0, 0, color.a});
 
-		const tr::gfx::simple_color_mesh_ref outline{renderer::instance().basic().new_color_outline(layer::UI, 6)};
+		const tr::gfx::simple_color_mesh_ref outline{renderer.basic().new_color_outline(layer::UI, 6)};
 		tr::fill_regular_polygon_outline_vertices(outline.positions, circle, m_rotation, 4.0f);
 		std::fill_n(outline.colors.begin(), 6, color);
 		std::fill_n(outline.colors.begin() + 6, 6, tr::rgba8{0, 0, 0, color.a});

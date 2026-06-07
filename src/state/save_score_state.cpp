@@ -37,8 +37,8 @@ constexpr shortcut_table SHORTCUTS{
 // clang-format on
 //////////////////////////////////////////////////////////// SAVE SCORE STATE /////////////////////////////////////////////////////////////
 
-save_score_state::save_score_state(std::shared_ptr<game> game, glm::vec2 mouse_pos, save_screen_flags flags)
-	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), update_game::NO}
+save_score_state::save_score_state(std::shared_ptr<game> game, savefile savefile, glm::vec2 mouse_pos, save_screen_flags flags)
+	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), std::move(savefile), update_game::NO}
 	, m_substate{substate_base::SAVING_SCORE | flags}
 	, m_start_mouse_pos{mouse_pos}
 	, m_score{
@@ -52,8 +52,8 @@ save_score_state::save_score_state(std::shared_ptr<game> game, glm::vec2 mouse_p
 	set_up_ui();
 }
 
-save_score_state::save_score_state(std::shared_ptr<game> game, save_screen_flags flags)
-	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), update_game::YES}
+save_score_state::save_score_state(std::shared_ptr<game> game, savefile savefile, save_screen_flags flags)
+	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), std::move(savefile), update_game::YES}
 	, m_substate{substate_base::SAVING_SCORE | (flags | save_screen_flags::GAME_OVER)}
 	, m_score{
 		  {},
@@ -188,8 +188,9 @@ void save_score_state::on_save()
 	m_substate = substate_base::RETURNING_OR_ENTERING_SAVE_REPLAY | to_flags(m_substate);
 	m_elapsed = 0;
 	set_up_exit_animation();
-	savefile::instance().add_score(m_game->gamemode(), m_score);
-	m_next_state = make_async<save_replay_state>(m_game, to_flags(m_substate));
+	m_savefile.add_score(m_game->gamemode(), m_score);
+	m_savefile.save_to_file();
+	m_next_state = make_async<save_replay_state>(m_game, m_savefile, to_flags(m_substate));
 }
 
 void save_score_state::on_cancel()
@@ -198,9 +199,9 @@ void save_score_state::on_cancel()
 	m_elapsed = 0;
 	set_up_exit_animation();
 	if (to_flags(m_substate) & save_screen_flags::GAME_OVER) {
-		m_next_state = make_async<game_over_state>(m_game, blur_in::NO);
+		m_next_state = make_async<game_over_state>(m_game, m_savefile, blur_in::NO);
 	}
 	else {
-		m_next_state = make_async<pause_state>(m_game, regular_game_data{}, m_start_mouse_pos, blur_in::NO);
+		m_next_state = make_async<pause_state>(m_game, m_savefile, regular_game_data{}, m_start_mouse_pos, blur_in::NO);
 	}
 }

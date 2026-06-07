@@ -59,10 +59,11 @@ static void emplace_label_widget(std::unordered_map<tag, std::unique_ptr<widget>
 }
 
 // Creates a set of widgets for a different gamemode.
-static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const gamemode& selected, starting_side side)
+static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const savefile& savefile, const gamemode& selected,
+																			 starting_side side)
 {
 	const float label_h{621 - renderer::instance().text_engine.line_skip(font::LANGUAGE, 32)};
-	const best_results best_results{savefile::instance().best_results(selected)};
+	const best_results best_results{savefile.best_results(selected)};
 
 	// clang-format off
 	std::unordered_map<tag, std::unique_ptr<widget>> map;
@@ -120,21 +121,22 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(con
 
 //////////////////////////////////////////////////////////// START GAME WIDGET ////////////////////////////////////////////////////////////
 
-start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
+start_game_state::start_game_state(std::shared_ptr<playerless_game> game, savefile savefile)
 	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::ENTERING_START_GAME}
+	, m_savefile{std::move(savefile)}
 	, m_gamemodes{load_gamemodes()}
 	, m_selected{m_gamemodes.begin()}
 {
 	std::vector<gamemode_with_path>::iterator last_selected_it{
-		std::ranges::find(m_gamemodes, savefile::instance().last_selected_gamemode, &gamemode_with_path::gamemode),
+		std::ranges::find(m_gamemodes, m_savefile.last_selected_gamemode, &gamemode_with_path::gamemode),
 	};
 	if (last_selected_it != m_gamemodes.end()) {
 		m_selected = last_selected_it;
 	}
 
 	const float label_h{621 - renderer::instance().text_engine.line_skip(font::LANGUAGE, 32)};
-	const best_results best_results{savefile::instance().best_results(m_selected->gamemode)};
+	const best_results best_results{m_savefile.best_results(m_selected->gamemode)};
 
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
@@ -214,6 +216,11 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game)
 	// clang-format on
 }
 
+start_game_state::~start_game_state()
+{
+	m_savefile.save_to_file();
+}
+
 //
 
 float start_game_state::fade_overlay_opacity()
@@ -283,7 +290,8 @@ void start_game_state::on_previous_gamemode()
 	for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
 		m_ui[GAMEMODE_WIDGETS[i]].move_x_and_hide(GAMEMODE_WIDGETS_BASE_X[i] + 250, 0.25_s);
 	}
-	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, m_selected->gamemode, starting_side::LEFT);
+	m_next_widgets =
+		std::async(std::launch::async, prepare_next_widgets, std::cref(m_savefile), std::cref(m_selected->gamemode), starting_side::LEFT);
 }
 
 void start_game_state::on_next_gamemode()
@@ -296,7 +304,8 @@ void start_game_state::on_next_gamemode()
 	for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
 		m_ui[GAMEMODE_WIDGETS[i]].move_x_and_hide(GAMEMODE_WIDGETS_BASE_X[i] - 250, 0.25_s);
 	}
-	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, m_selected->gamemode, starting_side::RIGHT);
+	m_next_widgets =
+		std::async(std::launch::async, prepare_next_widgets, std::cref(m_savefile), std::cref(m_selected->gamemode), starting_side::RIGHT);
 }
 
 void start_game_state::on_start()
@@ -304,9 +313,9 @@ void start_game_state::on_start()
 	m_substate = substate::STARTING_GAME;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	savefile::instance().last_selected_gamemode = m_selected->gamemode;
+	m_savefile.last_selected_gamemode = m_selected->gamemode;
 	audio::instance().fade_song_out(0.5s);
-	m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_selected->gamemode);
+	m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_savefile, m_selected->gamemode);
 }
 
 void start_game_state::on_exit()
@@ -314,6 +323,6 @@ void start_game_state::on_exit()
 	m_substate = substate::EXITING_TO_TITLE;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	savefile::instance().last_selected_gamemode = m_selected->gamemode;
+	m_savefile.last_selected_gamemode = m_selected->gamemode;
 	m_next_state = make_async<title_state>(m_game);
 }

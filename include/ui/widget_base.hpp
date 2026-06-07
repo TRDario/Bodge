@@ -144,7 +144,7 @@ class widget {
 	// Releases the widget's graphical resources.
 	virtual void release_graphical_resources() {}
 	// Adds the widget to the renderer.
-	virtual void add_to_renderer() = 0;
+	virtual void add_to_renderer(renderer& renderer) = 0;
 
   private:
 	// The alignment of the widget.
@@ -186,9 +186,9 @@ class text_widget : public widget {
 	mutable glm::vec2 m_last_size;
 
 	// Updates the text cache.
-	void update_cache() const;
+	void update_cache(text_engine& text_engine) const;
 	// Adds the widget to the renderer (must be further specialized by descendant classes).
-	void add_to_renderer_raw(tr::rgba8 tint);
+	void add_to_renderer_raw(renderer& renderer, tr::rgba8 tint);
 };
 
 //////////////////////////////////////////////////////////// TEXT INPUT WIDGET ////////////////////////////////////////////////////////////

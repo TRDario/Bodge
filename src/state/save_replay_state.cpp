@@ -35,8 +35,9 @@ constexpr shortcut_table SHORTCUTS{
 // clang-format on
 //////////////////////////////////////////////////////////// SAVE REPLAY STATE ////////////////////////////////////////////////////////////
 
-save_replay_state::save_replay_state(std::shared_ptr<game> game, save_screen_flags flags)
-	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), update_game(bool(flags & save_screen_flags::GAME_OVER))}
+save_replay_state::save_replay_state(std::shared_ptr<game> game, savefile savefile, save_screen_flags flags)
+	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), std::move(savefile),
+					  update_game(bool(flags & save_screen_flags::GAME_OVER))}
 	, m_substate{substate_base::SAVING_REPLAY | flags}
 	, m_replay{((active_game&)*m_game).replay.header()}
 {
@@ -162,12 +163,12 @@ void save_replay_state::on_save()
 	m_elapsed = 0;
 	set_up_exit_animation();
 	game.replay.set_header(score_entry{description, current_timestamp(), game.final_score(), game.final_time(), flags}, name);
-	game.replay.save_to_file();
+	game.replay.save_to_directory();
 	if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
 		m_next_state = make_async<title_state>();
 	}
 	else {
-		m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
+		m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_savefile, m_game->gamemode());
 	}
 }
 
@@ -180,6 +181,6 @@ void save_replay_state::on_discard()
 		m_next_state = make_async<title_state>();
 	}
 	else {
-		m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_game->gamemode());
+		m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_savefile, m_game->gamemode());
 	}
 }

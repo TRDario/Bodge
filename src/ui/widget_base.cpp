@@ -153,29 +153,29 @@ void text_widget::release_graphical_resources()
 	m_cache = std::monostate{};
 }
 
-void text_widget::add_to_renderer_raw(tr::rgba8 tint)
+void text_widget::add_to_renderer_raw(renderer& renderer, tr::rgba8 tint)
 {
-	update_cache();
+	update_cache(renderer.text_engine);
 
 	tint.a *= opacity();
 
 	const tr::gfx::texture& texture{tr::get<tr::gfx::texture>(m_cache)};
-	const tr::gfx::simple_textured_mesh_ref quad{renderer::instance().basic().new_textured_fan(layer::UI, 4, texture)};
+	const tr::gfx::simple_textured_mesh_ref quad{renderer.basic().new_textured_fan(layer::UI, 4, texture)};
 	tr::fill_rectangle_vertices(quad.positions, {tl(), text_widget::size()});
 	tr::fill_rectangle_vertices(quad.uvs, {{}, m_last_size / glm::vec2{texture.size()}});
 	std::ranges::fill(quad.tints, tint);
 }
 
-void text_widget::update_cache() const
+void text_widget::update_cache(text_engine& text_engine) const
 {
 	std::string text_string{m_text()};
 	if (std::holds_alternative<std::monostate>(m_cache) || m_last_text != text_string) {
-		const font font{renderer::instance().text_engine.determine_font(text_string, m_font)};
+		const font font{text_engine.determine_font(text_string, m_font)};
 		const text text{text_string, font, m_style, m_font_size, m_font_size / 12, float(m_max_width)};
-		const tr::bitmap render{renderer::instance().text_engine.render_text(text, tr::halign::CENTER)};
+		const tr::bitmap render{text_engine.render_text(text, tr::halign::CENTER)};
 		tr::gfx::texture* const cache_texture{std::get_if<tr::gfx::texture>(&m_cache)};
 		if (cache_texture == nullptr || cache_too_small(*cache_texture, render)) {
-			tr::gfx::texture& texture{m_cache.emplace<tr::gfx::texture>(render)};
+			[[maybe_unused]] tr::gfx::texture& texture{m_cache.emplace<tr::gfx::texture>(render)};
 			TR_SET_LABEL(texture, TR_FMT::format("(Bodge) Widget texture"));
 		}
 		else {
@@ -189,7 +189,7 @@ void text_widget::update_cache() const
 		tr::bitmap* const cache_bitmap{std::get_if<tr::bitmap>(&m_cache)};
 		if (cache_bitmap != nullptr) {
 			const tr::bitmap source{std::move(*cache_bitmap)};
-			tr::gfx::texture& texture{m_cache.emplace<tr::gfx::texture>(source)};
+			[[maybe_unused]] tr::gfx::texture& texture{m_cache.emplace<tr::gfx::texture>(source)};
 			TR_SET_LABEL(texture, TR_FMT::format("(Bodge) Widget texture"));
 		}
 	}

@@ -6,7 +6,6 @@
 
 #include "../include/score.hpp"
 #include "../include/gamemode.hpp"
-#include "../include/settings.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -63,9 +62,8 @@ void tr::binary_writer<score_category>::write_to_stream(std::ostream& os, const 
 
 ///////////////////////////////////////////////////////////////// SAVEFILE ////////////////////////////////////////////////////////////////
 
-savefile::savefile()
+savefile::savefile(const std::filesystem::path& path)
 {
-	const std::filesystem::path path{debug_settings::instance().user_directory() / "savefile.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const u8 version{tr::binary_read<u8>(file)};
@@ -84,14 +82,15 @@ savefile::savefile()
 	}
 }
 
-savefile::~savefile()
+//
+
+void savefile::save_to_file(const std::filesystem::path& path)
 {
 	// Don't save unnamed savefile.
 	if (unnamed()) {
 		return;
 	}
 
-	const std::filesystem::path path{debug_settings::instance().user_directory() / "savefile.dat"};
 	try {
 		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
 		std::ostringstream buffer;
@@ -107,12 +106,6 @@ savefile::~savefile()
 	catch (std::exception&) {
 		return;
 	}
-}
-
-savefile& savefile::instance()
-{
-	static savefile instance{};
-	return instance;
 }
 
 //

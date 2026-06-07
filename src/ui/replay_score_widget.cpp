@@ -69,39 +69,39 @@ static std::string format_replay_text(std::optional<replay_map::const_iterator> 
 //
 
 // Adds the "exited prematurely" icon to the renderer.
-static void add_exited_prematurely_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity)
+static void add_exited_prematurely_icon_to_renderer(tr::gfx::renderer_2d& renderer, glm::vec2 pos, tr::rgba8 color, float opacity)
 {
 	color = {color.r, color.g, color.b, u8(color.a * opacity)};
 
-	tr::gfx::simple_color_mesh_ref mesh{renderer::instance().basic().new_color_fan(layer::UI, 4)};
+	tr::gfx::simple_color_mesh_ref mesh{renderer.new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
 	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
-	mesh = renderer::instance().basic().new_color_outline(layer::UI, 4);
+	mesh = renderer.new_color_outline(layer::UI, 4);
 	tr::fill_rectangle_outline_vertices(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2.0f);
 	std::ranges::fill(mesh.colors, color);
-	mesh = renderer::instance().basic().new_color_fan(layer::UI, 4);
+	mesh = renderer.new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, 45_deg);
 	std::ranges::fill(mesh.colors, color);
-	mesh = renderer::instance().basic().new_color_fan(layer::UI, 4);
+	mesh = renderer.new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(mesh.positions, pos + glm::vec2{10, 10}, {7, 1}, {14, 2}, -45_deg);
 	std::ranges::fill(mesh.colors, color);
 }
 
 // Adds the "modified game speed" icon to the renderer.
-static void add_modified_game_speed_icon_to_renderer(glm::vec2 pos, tr::rgba8 color, float opacity)
+static void add_modified_game_speed_icon_to_renderer(tr::gfx::renderer_2d& renderer, glm::vec2 pos, tr::rgba8 color, float opacity)
 {
 	color = {color.r, color.g, color.b, u8(color.a * opacity)};
 
-	tr::gfx::simple_color_mesh_ref mesh{renderer::instance().basic().new_color_fan(layer::UI, 4)};
+	tr::gfx::simple_color_mesh_ref mesh{renderer.new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(mesh.positions, {pos + glm::vec2{2, 2}, {16, 16}});
 	std::ranges::fill(mesh.colors, tr::rgba8{0, 0, 0, tr::norm_cast<u8>(opacity)});
-	mesh = renderer::instance().basic().new_color_outline(layer::UI, 4);
+	mesh = renderer.new_color_outline(layer::UI, 4);
 	tr::fill_rectangle_outline_vertices(mesh.positions, {pos + glm::vec2{1, 1}, {18, 18}}, 2);
 	std::ranges::fill(mesh.colors, color);
-	mesh = renderer::instance().basic().new_color_outline(layer::UI, 8);
+	mesh = renderer.new_color_outline(layer::UI, 8);
 	tr::fill_regular_polygon_outline_vertices(mesh.positions, {pos + glm::vec2{10, 10}, 7}, 25_deg, 2);
 	std::ranges::fill(mesh.colors, color);
-	mesh = renderer::instance().basic().new_color_fan(layer::UI, 4);
+	mesh = renderer.new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(mesh.positions, {pos + glm::vec2{9, 5}, {2, 5}});
 	std::ranges::fill(mesh.colors, color);
 }
@@ -131,21 +131,21 @@ glm::vec2 score_widget::size() const
 	return icons != 0 ? text_widget::size() + glm::vec2{0, 20} : text_widget::size();
 }
 
-void score_widget::add_to_renderer()
+void score_widget::add_to_renderer(renderer& renderer)
 {
 	const tr::rgba8 color{m_empty ? DISABLED_GRAY : GRAY};
-	text_widget::add_to_renderer_raw(color);
+	text_widget::add_to_renderer_raw(renderer, color);
 	if (!m_empty) {
 		const glm::vec2 text_size{text_widget::size()};
 		const auto icons{m_flags.exited_prematurely + m_flags.modified_game_speed};
 		glm::vec2 offset{text_size.x / 2 - 15 * icons, text_size.y};
 
 		if (m_flags.exited_prematurely) {
-			add_exited_prematurely_icon_to_renderer(tl() + offset, color, opacity());
+			add_exited_prematurely_icon_to_renderer(renderer.basic(), tl() + offset, color, opacity());
 			offset.x += 30;
 		}
 		if (m_flags.modified_game_speed) {
-			add_modified_game_speed_icon_to_renderer(tl() + offset, color, opacity());
+			add_modified_game_speed_icon_to_renderer(renderer.basic(), tl() + offset, color, opacity());
 			offset.x += 30;
 		}
 	}
@@ -189,13 +189,13 @@ glm::vec2 replay_widget::size() const
 	return text_button_widget::size();
 }
 
-void replay_widget::add_to_renderer()
+void replay_widget::add_to_renderer(renderer& renderer)
 {
 	if (!m_replay_it.has_value()) {
-		text_widget::add_to_renderer_raw(DISABLED_GRAY);
+		text_widget::add_to_renderer_raw(renderer, DISABLED_GRAY);
 	}
 	else {
-		text_button_widget::add_to_renderer();
+		text_button_widget::add_to_renderer(renderer);
 	}
 
 	if (m_replay_it.has_value()) {
@@ -206,11 +206,11 @@ void replay_widget::add_to_renderer()
 		glm::vec2 offset{text_size.x / 2 - 15 * icons, text_size.y};
 
 		if (flags.exited_prematurely) {
-			add_exited_prematurely_icon_to_renderer(tl() + offset, color, opacity());
+			add_exited_prematurely_icon_to_renderer(renderer.basic(), tl() + offset, color, opacity());
 			offset.x += 30;
 		}
 		if (flags.modified_game_speed) {
-			add_modified_game_speed_icon_to_renderer(tl() + offset, color, opacity());
+			add_modified_game_speed_icon_to_renderer(renderer.basic(), tl() + offset, color, opacity());
 			offset.x += 30;
 		}
 	}

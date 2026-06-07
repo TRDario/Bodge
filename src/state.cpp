@@ -10,7 +10,7 @@
 
 current_state::current_state()
 {
-	savefile::instance().unnamed() ? emplace<name_entry_state>() : emplace<title_state>();
+	savefile{}.unnamed() ? emplace<name_entry_state>() : emplace<title_state>();
 }
 
 current_state& current_state::instance()

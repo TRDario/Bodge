@@ -53,11 +53,11 @@ constexpr glm::vec2 SCORE_TEXT_POS{990, -4};
 //////////////////////////////////////////////////////////// INTERNAL HELPERS /////////////////////////////////////////////////////////////
 
 // Creates the number atlas used for the timer and score text.
-static tr::gfx::bitmap_atlas<char> create_number_atlas()
+static tr::gfx::bitmap_atlas<char> create_number_atlas(text_engine& text_engine)
 {
 	std::unordered_map<char, tr::bitmap> glyphs;
 	for (char chr : std::string_view{"0123456789:-"}) {
-		glyphs.emplace(chr, renderer::instance().text_engine.render_gradient_glyph(chr, font::DEFAULT, tr::sys::ttf_style::NORMAL, 64, 5));
+		glyphs.emplace(chr, text_engine.render_gradient_glyph(chr, font::DEFAULT, tr::sys::ttf_style::NORMAL, 64, 5));
 	}
 	return tr::gfx::build_bitmap_atlas(glyphs);
 }
@@ -117,33 +117,65 @@ void playerless_game::tick()
 
 //
 
-void playerless_game::add_ball_trail_overlay_to_renderer() const
+void playerless_game::add_ball_trail_overlay_to_renderer(tr::gfx::renderer_2d& renderer) const
 {
-	const tr::gfx::simple_color_mesh_ref overlay{
-		renderer::instance().basic().new_color_fan(layer::BALL_TRAILS, 4, TRANSFORM, tr::gfx::REVERSE_ALPHA_BLENDING)};
+	const tr::gfx::simple_color_mesh_ref overlay{renderer.new_color_fan(layer::BALL_TRAILS, 4, TRANSFORM, tr::gfx::REVERSE_ALPHA_BLENDING)};
 	std::ranges::copy(OVERLAY_POSITIONS, overlay.positions.begin());
 	std::ranges::fill(overlay.colors, "00000000"_rgba8);
 }
 
-void playerless_game::add_border_to_renderer() const
+void playerless_game::add_border_to_renderer(tr::gfx::renderer_2d& renderer) const
 {
-	const tr::gfx::simple_color_mesh_ref border{renderer::instance().basic().new_color_outline(layer::BORDER, 4)};
+	const tr::gfx::simple_color_mesh_ref border{renderer.new_color_outline(layer::BORDER, 4)};
 	tr::fill_rectangle_outline_vertices(border.positions, {{2, 2}, {996, 996}}, 4);
 	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->secondary_hue), 1, 1}));
 }
 
-void playerless_game::add_to_renderer() const
+void playerless_game::add_to_renderer(renderer& renderer) const
 {
-	std::ranges::for_each(m_balls, &ball::add_to_renderer);
-	add_ball_trail_overlay_to_renderer();
-	add_border_to_renderer();
+	for (const ball& ball : m_balls) {
+		ball.add_to_renderer(renderer);
+	}
+	add_ball_trail_overlay_to_renderer(renderer.basic());
+	add_border_to_renderer(renderer.basic());
 }
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
 
-game::game(::gamemode gamemode, u64 rng_seed)
+// Creates a same player result color picker.
+same_player_result_color_picker::same_player_result_color_picker(const best_results& best_results)
+	: m_best_results{best_results}
+{
+}
+
+tr::rgba8 same_player_result_color_picker::time_color(ticks time) const
+{
+	return time >= m_best_results.time ? "00FF00"_rgba8 : "FF0000"_rgba8;
+}
+
+tr::rgba8 same_player_result_color_picker::score_color(i64 score) const
+{
+	return score >= m_best_results.score ? "00FF00"_rgba8 : "FF0000"_rgba8;
+}
+
+//
+
+tr::rgba8 different_player_result_color_picker::time_color(ticks) const
+{
+	return "FFFFFF"_rgba8;
+}
+
+tr::rgba8 different_player_result_color_picker::score_color(i64) const
+{
+	return "FFFFFF"_rgba8;
+}
+
+//
+
+game::game(results_color_picker results_color_picker, ::gamemode gamemode, u64 rng_seed)
 	: playerless_game{std::move(gamemode), rng_seed}
-	, m_number_atlas{create_number_atlas()}
+	, m_number_atlas{create_number_atlas(renderer::instance().text_engine)}
+	, m_result_color_picker{results_color_picker}
 	, m_player{m_gamemode.player}
 	, m_lives_left{int(m_gamemode.player.starting_lives)}
 	, m_score{0}
@@ -183,9 +215,9 @@ void game::tick(const glm::vec2& input)
 	update_life_fragments();
 	if (!game_over()) {
 		m_player.tick(input);
-		check_if_timer_obstructed();
+		check_if_timer_obstructed(renderer::instance().scale());
 		check_if_lives_obstructed();
-		check_if_score_obstructed();
+		check_if_score_obstructed(renderer::instance().scale());
 		check_if_player_was_hit();
 		check_if_player_collected_life_fragments();
 		check_for_score_ticks();
@@ -194,7 +226,7 @@ void game::tick(const glm::vec2& input)
 	else {
 		m_player.update_fragments();
 	}
-	set_screen_shake();
+	set_screen_shake(renderer::instance());
 }
 
 void game::play_tick_sound_if_needed()
@@ -263,9 +295,9 @@ void game::update_life_fragments()
 	}
 }
 
-void game::check_if_timer_obstructed()
+void game::check_if_timer_obstructed(float renderer_scale)
 {
-	const glm::vec2 size{text_size(format_time(m_elapsed_time), 1 / renderer::instance().scale()) * 0.95f};
+	const glm::vec2 size{text_size(format_time(m_elapsed_time), renderer_scale, 1.0f) * 0.95f};
 	const tr::frect2 base_bounds{TIMER_TEXT_POS - size / 2.0f - 8.0f, size + 16.0f};
 
 	const tr::circle player_hitbox{m_player.hitbox()};
@@ -311,9 +343,9 @@ void game::check_if_lives_obstructed()
 	m_lives_hover_timer.decrement();
 }
 
-void game::check_if_score_obstructed()
+void game::check_if_score_obstructed(float renderer_scale)
 {
-	const glm::vec2 size{text_size(format_score(m_score), 1 / renderer::instance().scale()) * 0.75f};
+	const glm::vec2 size{text_size(format_score(m_score), renderer_scale, 1.0f) * 0.75f};
 	const tr::frect2 base_bounds{tl(SCORE_TEXT_POS, size, tr::align::TOP_RIGHT), size};
 
 	const tr::circle player_hitbox{m_player.hitbox()};
@@ -475,23 +507,23 @@ void game::check_for_style_points()
 	}
 }
 
-void game::set_screen_shake() const
+void game::set_screen_shake(renderer& renderer) const
 {
 	if (m_screen_shake_timer.active()) {
 		const glm::vec2 tl{tr::magth(40 * (1 - m_screen_shake_timer.elapsed_ratio()), g_rng.generate_angle())};
-		renderer::instance().set_default_transform(tr::ortho(tr::frect2{tl, glm::vec2{1000}}));
+		renderer.set_default_transform(tr::ortho(tr::frect2{tl, glm::vec2{1000}}));
 	}
 }
 
 //
 
-glm::vec2 game::text_size(const std::string& text, float scale) const
+glm::vec2 game::text_size(const std::string& text, float renderer_scale, float scale) const
 {
 	const tr::gfx::dyn_atlas<char>& atlas{tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas)};
 
 	glm::vec2 text_size{};
 	for (char chr : text) {
-		const glm::vec2 char_size{glm::vec2{atlas.unnormalized(chr).size} / renderer::instance().scale() * scale};
+		const glm::vec2 char_size{glm::vec2{atlas.unnormalized(chr).size} / renderer_scale * scale};
 		text_size = {text_size.x + char_size.x - 5, std::max<float>(text_size.y, char_size.y)};
 	}
 	return text_size;
@@ -501,7 +533,7 @@ struct game::timer_render_info game::timer_render_info() const
 {
 	if (game_over()) {
 		const ticks time{final_time()};
-		return {time, (time >= savefile::instance().best_results(gamemode()).time) ? "00FF00"_rgba8 : "FF0000"_rgba8, 1};
+		return {time, std::visit([=](const auto& color_picker) { return color_picker.time_color(time); }, m_result_color_picker), 1.0f};
 	}
 	else {
 		const float factor{std::min(m_elapsed_time % 1_s, 0.2_s) / 0.2_sf};
@@ -514,7 +546,7 @@ struct game::timer_render_info game::timer_render_info() const
 struct game::score_render_info game::score_render_info() const
 {
 	if (game_over()) {
-		return {(m_score >= savefile::instance().best_results(gamemode()).score) ? "00FF00"_rgba8 : "FF0000"_rgba8, 0.85f};
+		return {std::visit([this](const auto& color_picker) { return color_picker.score_color(m_score); }, m_result_color_picker), 0.85f};
 	}
 	else {
 		constexpr float MAX{decltype(m_center_timer)::max() - MIN_SCORE_REGION_TIME + 0.5_sf};
@@ -535,17 +567,17 @@ struct game::score_render_info game::score_render_info() const
 	}
 }
 
-void game::add_timer_to_renderer() const
+void game::add_timer_to_renderer(renderer& renderer) const
 {
 	const tr::gfx::dyn_atlas<char>& atlas{tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas)};
 	const auto [time, tint, scale]{timer_render_info()};
 	const std::string text{format_time(time)};
 
-	glm::vec2 tl{TIMER_TEXT_POS - text_size(text, scale) / 2.0f};
+	glm::vec2 tl{TIMER_TEXT_POS - text_size(text, renderer.scale(), scale) / 2.0f};
 	for (char chr : text) {
-		const glm::vec2 size{glm::vec2{atlas.unnormalized(chr).size} / renderer::instance().scale() * scale};
+		const glm::vec2 size{glm::vec2{atlas.unnormalized(chr).size} / renderer.scale() * scale};
 
-		const tr::gfx::simple_textured_mesh_ref character{renderer::instance().basic().new_textured_fan(layer::GAME_OVERLAY, 4)};
+		const tr::gfx::simple_textured_mesh_ref character{renderer.basic().new_textured_fan(layer::GAME_OVERLAY, 4)};
 		tr::fill_rectangle_vertices(character.positions, {tl, size});
 		tr::fill_rectangle_vertices(character.uvs, atlas[chr]);
 		std::ranges::fill(character.tints, tint);
@@ -553,7 +585,7 @@ void game::add_timer_to_renderer() const
 	}
 }
 
-void game::add_lives_to_renderer() const
+void game::add_lives_to_renderer(tr::gfx::renderer_2d& renderer) const
 {
 	const float life_size{m_lives_left > (m_hit_animation_timer.active() ? MAX_LARGE_LIVES - 1 : MAX_LARGE_LIVES) ? SMALL_LIFE_SIZE
 																												  : LARGE_LIFE_SIZE};
@@ -569,20 +601,20 @@ void game::add_lives_to_renderer() const
 		const glm::ivec2 grid_pos{i % LIVES_PER_LINE, i / LIVES_PER_LINE};
 		const glm::vec2 pos{(glm::vec2{grid_pos} + 0.5f) * 2.5f * life_size + 8.0f};
 
-		const tr::gfx::simple_color_mesh_ref outline{renderer::instance().basic().new_color_outline(layer::GAME_OVERLAY, 6)};
+		const tr::gfx::simple_color_mesh_ref outline{renderer.new_color_outline(layer::GAME_OVERLAY, 6)};
 		tr::fill_regular_polygon_outline_vertices(outline.positions, {pos, life_size}, rotation, 2.0f);
 		std::ranges::fill(outline.colors, tr::rgba8{color, opacity});
 	}
 
 	if (m_hit_animation_timer.active()) {
-		add_shattering_life_to_renderer(color, opacity);
+		add_shattering_life_to_renderer(renderer, color, opacity);
 	}
 	else if (m_1up_animation_timer.active()) {
-		add_appearing_life_to_renderer(color, opacity);
+		add_appearing_life_to_renderer(renderer, color, opacity);
 	}
 }
 
-void game::add_appearing_life_to_renderer(tr::rgb8 color, u8 base_opacity) const
+void game::add_appearing_life_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 color, u8 base_opacity) const
 {
 	const float raw_age_factor{m_1up_animation_timer.elapsed_ratio()};
 	const float eased_age_factor{raw_age_factor == 1.0f ? raw_age_factor : 1.0f - std::pow(2.0f, -10.0f * raw_age_factor)};
@@ -593,34 +625,34 @@ void game::add_appearing_life_to_renderer(tr::rgb8 color, u8 base_opacity) const
 	const tr::angle rotation{120_deg * m_elapsed_time / 1_s};
 	const u8 opacity{u8(base_opacity * std::pow(raw_age_factor, 1 / 3.0f))};
 
-	const tr::gfx::simple_color_mesh_ref outline{renderer::instance().basic().new_color_outline(layer::GAME_OVERLAY, 6)};
+	const tr::gfx::simple_color_mesh_ref outline{renderer.new_color_outline(layer::GAME_OVERLAY, 6)};
 	tr::fill_regular_polygon_outline_vertices(outline.positions, {pos, life_size * size_factor}, rotation, 2.0f * size_factor);
 	std::ranges::fill(outline.colors, tr::rgba8{color, opacity});
 }
 
-void game::add_shattering_life_to_renderer(tr::rgb8 color, u8 base_opacity) const
+void game::add_shattering_life_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 color, u8 base_opacity) const
 {
 	const float life_size{m_lives_left > MAX_LARGE_LIVES - 1 ? SMALL_LIFE_SIZE : LARGE_LIFE_SIZE};
 	const float length{2 * life_size * (30_deg).tan()};
 	const u8 opacity{u8(base_opacity - base_opacity * m_hit_animation_timer.elapsed_ratio())};
 	for (const fragment& fragment : m_shattered_life_fragments) {
-		const tr::gfx::simple_color_mesh_ref mesh{renderer::instance().basic().new_color_fan(layer::GAME_OVERLAY, 4)};
+		const tr::gfx::simple_color_mesh_ref mesh{renderer.new_color_fan(layer::GAME_OVERLAY, 4)};
 		tr::fill_rectangle_vertices(mesh.positions, fragment.pos, {length / 2, 1}, {length, 2}, fragment.rot);
 		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 	}
 }
 
-void game::add_score_to_renderer() const
+void game::add_score_to_renderer(renderer& renderer) const
 {
 	const tr::gfx::dyn_atlas<char>& atlas{tr::get<tr::gfx::dyn_atlas<char>>(m_number_atlas)};
 	const auto [tint, scale]{score_render_info()};
 	const std::string text{format_score(m_score)};
 
-	glm::vec2 tl{tr::tl(SCORE_TEXT_POS, text_size(text, scale), tr::align::TOP_RIGHT)};
+	glm::vec2 tl{tr::tl(SCORE_TEXT_POS, text_size(text, renderer.scale(), scale), tr::align::TOP_RIGHT)};
 	for (char chr : text) {
-		const glm::vec2 size{glm::vec2{atlas.unnormalized(chr).size} / renderer::instance().scale() * scale};
+		const glm::vec2 size{glm::vec2{atlas.unnormalized(chr).size} / renderer.scale() * scale};
 
-		const tr::gfx::simple_textured_mesh_ref character{renderer::instance().basic().new_textured_fan(layer::GAME_OVERLAY, 4)};
+		const tr::gfx::simple_textured_mesh_ref character{renderer.basic().new_textured_fan(layer::GAME_OVERLAY, 4)};
 		tr::fill_rectangle_vertices(character.positions, {tl, size});
 		tr::fill_rectangle_vertices(character.uvs, atlas[chr]);
 		std::ranges::fill(character.tints, tint);
@@ -628,33 +660,36 @@ void game::add_score_to_renderer() const
 	}
 }
 
-void game::add_to_renderer() const
+void game::add_to_renderer(renderer& renderer) const
 {
 	tr::gfx::bitmap_atlas<char>* const number_atlas_bitmap{std::get_if<tr::gfx::bitmap_atlas<char>>(&m_number_atlas)};
 	if (number_atlas_bitmap != nullptr) {
 		tr::gfx::bitmap_atlas<char> source{std::move(*number_atlas_bitmap)};
 		tr::gfx::dyn_atlas<char>& atlas{m_number_atlas.emplace<tr::gfx::dyn_atlas<char>>(std::move(source))};
 		atlas.set_filtering(tr::gfx::min_filter::LINEAR, tr::gfx::mag_filter::LINEAR);
-		renderer::instance().basic().set_default_layer_texture(layer::GAME_OVERLAY, atlas);
+		renderer.basic().set_default_layer_texture(layer::GAME_OVERLAY, atlas);
 	}
 
-	playerless_game::add_to_renderer();
-	std::ranges::for_each(m_life_fragments, &life_fragment::add_to_renderer);
-	add_timer_to_renderer();
+	playerless_game::add_to_renderer(renderer);
+	for (const life_fragment& fragment : m_life_fragments) {
+		fragment.add_to_renderer(renderer);
+	}
+	add_timer_to_renderer(renderer);
 	if (game_over()) {
-		m_player.add_to_renderer_dead(m_game_over_timer.elapsed());
+		m_player.add_to_renderer_dead(renderer, m_game_over_timer.elapsed());
 	}
 	else {
-		m_player.add_to_renderer_alive(m_elapsed_time, m_style_cooldown_timer);
-		add_lives_to_renderer();
+		m_player.add_to_renderer_alive(renderer, m_elapsed_time, m_style_cooldown_timer);
+		add_lives_to_renderer(renderer.basic());
 	}
-	add_score_to_renderer();
+	add_score_to_renderer(renderer);
 }
 
 /////////////////////////////////////////////////////////////// ACTIVE GAME ///////////////////////////////////////////////////////////////
 
-active_game::active_game(::gamemode gamemode, u64 seed)
-	: game{std::move(gamemode), seed}, replay{this->gamemode(), seed}
+active_game::active_game(savefile savefile, ::gamemode gamemode, u64 seed)
+	: game{same_player_result_color_picker{savefile.best_results(gamemode)}, std::move(gamemode), seed}
+	, replay{savefile.name(), this->gamemode(), seed}
 {
 }
 
@@ -672,8 +707,21 @@ void active_game::tick()
 
 ////////////////////////////////////////////////////////////// REPLAY GAME ////////////////////////////////////////////////////////////////
 
+// Creates an appropriate results color picker for a replay.
+static results_color_picker replay_results_color_picker(const replay& replay)
+{
+	savefile savefile;
+
+	if (replay.header().player != savefile.name()) {
+		return same_player_result_color_picker{savefile.best_results(replay.header().gamemode)};
+	}
+	else {
+		return different_player_result_color_picker{};
+	}
+}
+
 replay_game::replay_game(replay&& replay)
-	: game{replay.header().gamemode, replay.header().seed}, m_replay{std::move(replay)}
+	: game{replay_results_color_picker(replay), replay.header().gamemode, replay.header().seed}, m_replay{std::move(replay)}
 {
 }
 

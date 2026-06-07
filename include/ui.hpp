@@ -60,7 +60,7 @@ class ui_manager {
 	// Updates the state of all widgets in the interface.
 	void tick();
 	// Adds all widgets of the interface to the renderer.
-	void add_to_renderer();
+	void add_to_renderer(renderer& renderer);
 
   private:
 	// Shorthand for the widget map value type.

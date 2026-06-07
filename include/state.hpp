@@ -145,7 +145,9 @@ class title_state final : public main_menu_state {
 class start_game_state final : public main_menu_state {
   public:
 	// Creates a start game state.
-	start_game_state(std::shared_ptr<playerless_game> game);
+	start_game_state(std::shared_ptr<playerless_game> game, savefile savefile);
+	// Destroys the state.
+	~start_game_state() override;
 
 	// Signals whether the cursor should be drawn transparent.
 	bool transparent_cursor() const override;
@@ -169,6 +171,8 @@ class start_game_state final : public main_menu_state {
 
 	// The current substate.
 	substate m_substate;
+	// Cached copy of the savefile.
+	savefile m_savefile;
 	// List of available gamemodes.
 	std::vector<gamemode_with_path> m_gamemodes;
 	// The currently selected gamemode.
@@ -235,12 +239,19 @@ class gamemode_manager_state final : public main_menu_state {
 // Data specific to a new gamemode editor.
 class new_gamemode_editor {
   public:
+	// Constructs new gamemode editor data.
+	new_gamemode_editor(savefile savefile);
+
 	// Gets the text command used for the subtitle of the gamemode editor.
 	localized_text subtitle_text() const;
 	// Function called by the gamemode editor state on save.
-	void on_save(gamemode_editor_state& state) const;
+	void on_save(gamemode_editor_state& state);
 	// Function called by the gamemode editor state on discard.
-	void on_discard(gamemode_editor_state& state) const;
+	void on_discard(gamemode_editor_state& state);
+
+  private:
+	// Cached copy of the savefile.
+	savefile m_savefile{};
 };
 // Data specific to a cloned gamemode editor.
 class cloned_gamemode_editor {
@@ -255,7 +266,7 @@ class cloned_gamemode_editor {
 // Data specific to an edited gamemode editor.
 class edited_gamemode_editor {
   public:
-	// Edited gmemode editor data.
+	// Constructs edited gamemode editor data.
 	edited_gamemode_editor(std::filesystem::path path);
 
 	// Gets the text command used for the subtitle of the gamemode editor.
@@ -407,25 +418,42 @@ class player_settings_editor_state final : public main_menu_state {
 ///////////////////////////////////////////////////////// GAMEMODE SELECTOR STATE /////////////////////////////////////////////////////////
 
 // Selector for cloning gamemodes.
-struct clone_gamemode_selector {
+class clone_gamemode_selector {
+  public:
+	// Creates a clone selector.
+	clone_gamemode_selector(tr::static_string<20 * 4> player_name);
+
 	// Filters gamemodes such that only clonable gamemodes remain.
 	void filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const;
 	// Gets the text command used for the subtitle of the gamemode selector.
 	localized_text subtitle_text() const;
 	// Function executed when a gamemode is selected.
 	void on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const;
+
+  private:
+	// Cached copy of the player's name.
+	tr::static_string<20 * 4> m_player_name;
 };
 // Selector for editing gamemodes.
-struct edit_gamemode_selector {
+class edit_gamemode_selector {
+  public:
+	// Creates an editor selector.
+	edit_gamemode_selector(tr::static_string<20 * 4> player_name);
+
 	// Filters gamemodes such that only editable gamemodes remain.
 	void filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const;
 	// Gets the text command used for the subtitle of the gamemode selector.
 	localized_text subtitle_text() const;
 	// Function executed when a gamemode is selected.
 	void on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const;
+
+  private:
+	// Cached copy of the player's name.
+	tr::static_string<20 * 4> m_player_name;
 };
 // Selector for deleting gamemodes.
-struct delete_gamemodes_selector {
+class delete_gamemodes_selector {
+  public:
 	// Filters gamemodes such that only deletable gamemodes remain.
 	void filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const;
 	// Gets the text command used for the subtitle of the gamemode selector.
@@ -483,9 +511,9 @@ class gamemode_selector_state final : public main_menu_state {
 	// Function called when the page is incremented.
 	void on_page_increment();
 
-	friend struct clone_gamemode_selector;
-	friend struct edit_gamemode_selector;
-	friend struct delete_gamemodes_selector;
+	friend class clone_gamemode_selector;
+	friend class edit_gamemode_selector;
+	friend class delete_gamemodes_selector;
 };
 
 //////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////
@@ -494,7 +522,7 @@ class gamemode_selector_state final : public main_menu_state {
 class scoreboard_selection_state final : public main_menu_state {
   public:
 	// Creates a scoreboard selection state.
-	scoreboard_selection_state(std::shared_ptr<playerless_game> game, animate_title animate_title);
+	scoreboard_selection_state(std::shared_ptr<playerless_game> game, savefile savefile, animate_title animate_title);
 
 	// Updates the state.
 	tr::next_state tick() override;
@@ -510,6 +538,8 @@ class scoreboard_selection_state final : public main_menu_state {
 
 	// The current substate.
 	substate m_substate;
+	// Cached copy of the savefile.
+	savefile m_savefile;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation(animate_title animate_title);
@@ -534,7 +564,7 @@ enum class scoreboard {
 class scoreboard_state final : public main_menu_state {
   public:
 	// Creates a scoreboard state.
-	scoreboard_state(std::shared_ptr<playerless_game> game, scoreboard scoreboard);
+	scoreboard_state(std::shared_ptr<playerless_game> game, savefile savefile, scoreboard scoreboard);
 
 	// Updates the state.
 	tr::next_state tick() override;
@@ -556,6 +586,8 @@ class scoreboard_state final : public main_menu_state {
 	scoreboard m_scoreboard;
 	// The currently open page.
 	int m_page;
+	// Cached copy of the savefile.
+	savefile m_savefile;
 	// The currently selected gamemode.
 	std::vector<score_category>::const_iterator m_selected;
 	// List of scores sorted by either score or time depending on the scoreboard.
@@ -802,7 +834,7 @@ enum class blur_in : bool {
 class pause_state final : public game_menu_state {
   public:
 	// Creates a test game pause state.
-	pause_state(std::shared_ptr<game> game, game_state_data data, glm::vec2 mouse_pos, blur_in blur_in);
+	pause_state(std::shared_ptr<game> game, savefile savefile, game_state_data data, glm::vec2 mouse_pos, blur_in blur_in);
 
 	// Signals whether the cursor should be drawn transparent.
 	bool transparent_cursor() const override;
@@ -867,7 +899,7 @@ class pause_state final : public game_menu_state {
 class game_over_state final : public game_menu_state {
   public:
 	// Creates a game over state.
-	game_over_state(std::shared_ptr<game> game, blur_in blur_in);
+	game_over_state(std::shared_ptr<game> game, savefile savefile, blur_in blur_in);
 
 	// Signals whether the cursor should be drawn transparent.
 	bool transparent_cursor() const override;
@@ -932,9 +964,9 @@ DEFINE_BITMASK_OPERATORS(save_screen_flags);
 class save_score_state final : public game_menu_state {
   public:
 	// Creates a save score state coming from the pause screen.
-	save_score_state(std::shared_ptr<game> game, glm::vec2 mouse_pos, save_screen_flags flags);
+	save_score_state(std::shared_ptr<game> game, savefile savefile, glm::vec2 mouse_pos, save_screen_flags flags);
 	// Creates a save score state coming from the game over screen.
-	save_score_state(std::shared_ptr<game> game, save_screen_flags flags);
+	save_score_state(std::shared_ptr<game> game, savefile savefile, save_screen_flags flags);
 
 	// Updates the state.
 	tr::next_state tick() override;
@@ -982,7 +1014,7 @@ class save_score_state final : public game_menu_state {
 class save_replay_state final : public game_menu_state {
   public:
 	// Creates the save replay state.
-	save_replay_state(std::shared_ptr<game> game, save_screen_flags flags);
+	save_replay_state(std::shared_ptr<game> game, savefile savefile, save_screen_flags flags);
 
 	// Signals whether the cursor should be drawn transparent.
 	bool transparent_cursor() const override;

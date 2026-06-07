@@ -88,6 +88,7 @@ renderer::renderer()
 					  : std::string{}}
 	, m_window_specific{active_settings::instance()}
 {
+	set_default_transform(TRANSFORM);
 }
 
 renderer& renderer::instance()
@@ -116,6 +117,11 @@ const tr::gfx::render_target& renderer::screen() const
 	return m_window_specific->screen;
 }
 
+tr::gfx::render_target renderer::blur_input()
+{
+	return m_window_specific->blur_renderer.input();
+}
+
 float renderer::scale() const
 {
 	return screen().size().x / 1000.0f;
@@ -131,11 +137,6 @@ tr::gfx::renderer_2d& renderer::basic()
 tr::gfx::circle_renderer& renderer::circle()
 {
 	return m_window_specific->circle_renderer;
-}
-
-blur_renderer& renderer::blur()
-{
-	return m_window_specific->blur_renderer;
 }
 
 //
@@ -172,6 +173,11 @@ void renderer::add_tooltip(glm::vec2 tl, std::string_view text_string)
 }
 
 //
+
+void renderer::draw_blurred(float saturation, float strength)
+{
+	m_window_specific->blur_renderer.draw(screen(), saturation, strength * scale());
+}
 
 void renderer::draw_layers(const tr::gfx::render_target& target)
 {
@@ -226,13 +232,13 @@ void renderer::fetch_benchmark()
 	}
 }
 
-void renderer::draw_benchmarks()
+void renderer::draw_benchmarks(float refresh_rate, const tr::benchmark& tick_benchmark, const tr::benchmark& draw_benchmark)
 {
 	if (m_window_specific->extra.has_value()) {
-		const tr::dsecs max_render_time{1.0s / debug_settings::instance().refresh_rate()};
-		m_window_specific->extra->debug.write_right(current_state::instance().tick_benchmark(), "Tick:", 1.0s / 1_s);
+		const tr::dsecs max_render_time{1.0s / refresh_rate};
+		m_window_specific->extra->debug.write_right(tick_benchmark, "Tick:", 1.0s / 1_s);
 		m_window_specific->extra->debug.newline_right();
-		m_window_specific->extra->debug.write_right(current_state::instance().draw_benchmark(), "Render (CPU):", max_render_time);
+		m_window_specific->extra->debug.write_right(draw_benchmark, "Render (CPU):", max_render_time);
 		m_window_specific->extra->debug.newline_right();
 		m_window_specific->extra->debug.write_right(m_window_specific->extra->benchmark, "Render (GPU):", max_render_time);
 		m_window_specific->extra->debug.draw();

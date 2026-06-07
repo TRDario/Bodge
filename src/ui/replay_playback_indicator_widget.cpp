@@ -90,7 +90,7 @@ glm::vec2 replay_playback_indicator_widget::size() const
 	return {48, 48};
 }
 
-void replay_playback_indicator_widget::add_to_renderer()
+void replay_playback_indicator_widget::add_to_renderer(renderer& renderer)
 {
 	const glm::vec2 tl{this->tl()};
 	const auto shift_positions{[=](glm::vec2 p) -> glm::vec2 { return p + tl; }};
@@ -98,19 +98,19 @@ void replay_playback_indicator_widget::add_to_renderer()
 	const auto shift_indices{[&](u16 i) -> u16 { return i + mesh.base_index; }};
 
 	if (input::instance().held(tr::sys::keymod::SHIFT)) {
-		mesh = renderer::instance().basic().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
+		mesh = renderer.basic().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
 		std::ranges::copy(SLOW_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
 	else if (input::instance().held(tr::sys::keymod::CTRL)) {
-		mesh = renderer::instance().basic().new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size());
+		mesh = renderer.basic().new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size());
 		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(FAST_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(FAST_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
 	else {
-		mesh = renderer::instance().basic().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
+		mesh = renderer.basic().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
 		std::ranges::copy(NORMAL_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());

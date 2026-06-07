@@ -57,7 +57,7 @@ tr::next_state game_state::handle_event(const tr::sys::event& event)
 	if (m_substate != substate::FADING_IN && event.is<tr::sys::key_down_event>() && event.as<tr::sys::key_down_event>().key == "Escape"_k) {
 		audio::instance().play_sound(sound::PAUSE, 0.8f, 0.0f);
 		audio::instance().pause_song();
-		return std::make_unique<pause_state>(m_game, m_data, input::instance().mouse_pos, blur_in::YES);
+		return std::make_unique<pause_state>(m_game, savefile{}, m_data, input::instance().mouse_pos, blur_in::YES);
 	}
 	else {
 		return tr::KEEP_STATE;
@@ -123,7 +123,7 @@ tr::next_state game_state::tick()
 				m_elapsed = 0;
 				audio::instance().fade_song_out(0.5s);
 				if (std::holds_alternative<regular_game_data>(m_data)) {
-					m_next_state = make_async<game_over_state>(m_game, blur_in::YES);
+					m_next_state = make_async<game_over_state>(m_game, savefile{}, blur_in::YES);
 				}
 			}
 		}
@@ -159,9 +159,9 @@ tr::next_state game_state::tick()
 
 void game_state::draw()
 {
-	m_game->add_to_renderer();
+	m_game->add_to_renderer(renderer::instance());
 	if (std::holds_alternative<replay_game_data>(m_data)) {
-		m_ui.add_to_renderer();
+		m_ui.add_to_renderer(renderer::instance());
 		add_replay_cursor_to_renderer(((replay_game&)*m_game).cursor_pos());
 	}
 	renderer::instance().add_fade_overlay(fade_overlay_opacity());

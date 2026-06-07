@@ -38,9 +38,9 @@ template <> struct tr::binary_writer<replay_header> {
 class replay {
   public:
 	// Creates an empty replay.
-	replay(const gamemode& gamemode, u64 seed);
+	replay(std::string_view player, const gamemode& gamemode, u64 seed);
 	// Loads a replay from file.
-	replay(const std::string& filename);
+	replay(const std::filesystem::path& path);
 	replay(const replay& r);
 	replay(replay&&) noexcept = default;
 
@@ -49,7 +49,7 @@ class replay {
 	// Sets the replay's header.
 	void set_header(const score_entry& score, std::string_view name);
 	// Saves the replay to a file based on its name.
-	void save_to_file() const;
+	void save_to_directory(const std::filesystem::path& directory = debug_settings::instance().user_directory() / "replays") const;
 
 	// Gets the replay's header.
 	const replay_header& header() const;
@@ -70,6 +70,6 @@ class replay {
 };
 
 // Map of available replays.
-using replay_map = std::map<std::string, replay_header>;
+using replay_map = std::map<std::filesystem::path, replay_header>;
 // Loads all available replay headers.
-std::map<std::string, replay_header> load_replay_headers();
+replay_map load_replay_headers(const std::filesystem::path& directory = debug_settings::instance().user_directory() / "replays");

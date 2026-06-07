@@ -6,7 +6,8 @@
 
 #pragma once
 #include "../global.hpp"
-#include "../timer.hpp"
+
+class renderer;
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -43,7 +44,7 @@ class life_fragment {
 	void tick();
 
 	// Adds the fragment to the renderer.
-	void add_to_renderer() const;
+	void add_to_renderer(renderer& renderer) const;
 
   private:
 	// States the fragment can be in.
@@ -66,7 +67,7 @@ class life_fragment {
 	ticks m_elapsed{0};
 
 	// Adds the pulsing effect to the renderer.
-	void add_pulse_to_renderer(tr::rgb8 color) const;
+	void add_pulse_to_renderer(tr::gfx::circle_renderer& renderer, tr::rgb8 color) const;
 	// Adds the initial spawn wave to the renderer.
-	void add_spawn_wave_to_renderer(tr::rgb8 color) const;
+	void add_spawn_wave_to_renderer(tr::gfx::circle_renderer& renderer, tr::rgb8 color) const;
 };

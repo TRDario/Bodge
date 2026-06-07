@@ -11,7 +11,6 @@
 //  • localization::instance()    - Localization manager.                                                                                //
 //  • renderer::instance()        - Windowing and renderer manager.                                                                      //
 //  • g_rng                       - Global RNG (games use their own RNG for gameplay).                                                   //
-//  • savefile::instance()        - Active savefile.                                                                                     //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -18,7 +18,7 @@ struct blur_renderer {
 	tr::gfx::render_target input();
 
 	// Draws the blurred version of the image last renderered onto input to the backbuffer.
-	void draw(float saturation, float strength);
+	void draw(const tr::gfx::render_target& screen, float saturation, float strength);
 
   private:
 	// Texture used as the input in the drawing process.

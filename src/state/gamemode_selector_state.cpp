@@ -80,6 +80,11 @@ constexpr shortcut_table SHORTCUTS{
 // clang-format on
 //////////////////////////////////////////////////////////// GAMEMODE SELECTOR ////////////////////////////////////////////////////////////
 
+clone_gamemode_selector::clone_gamemode_selector(tr::static_string<20 * 4> player_name)
+	: m_player_name{player_name}
+{
+}
+
 void clone_gamemode_selector::filter_gamemodes(std::vector<gamemode_with_path>&) const {}
 
 localized_text clone_gamemode_selector::subtitle_text() const
@@ -94,6 +99,7 @@ void clone_gamemode_selector::on_gamemode_selected(gamemode_selector_state& stat
 	state.set_up_exit_animation(animate_subtitle::NO);
 
 	::gamemode clone{gp.gamemode};
+	clone.author = m_player_name;
 	if (clone.builtin) {
 		clone.name = clone.name_loc();
 		clone.description = clone.description_loc();
@@ -104,10 +110,14 @@ void clone_gamemode_selector::on_gamemode_selected(gamemode_selector_state& stat
 
 //
 
+edit_gamemode_selector::edit_gamemode_selector(tr::static_string<20 * 4> player_name)
+	: m_player_name{player_name}
+{
+}
+
 void edit_gamemode_selector::filter_gamemodes(std::vector<gamemode_with_path>& gamemodes) const
 {
-	std::erase_if(gamemodes,
-				  [](const gamemode_with_path& gp) { return gp.gamemode.builtin || gp.gamemode.author != savefile::instance().name(); });
+	std::erase_if(gamemodes, [this](const gamemode_with_path& gp) { return gp.gamemode.builtin || gp.gamemode.author != m_player_name; });
 }
 
 localized_text edit_gamemode_selector::subtitle_text() const

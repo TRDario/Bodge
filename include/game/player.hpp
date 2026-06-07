@@ -9,6 +9,8 @@
 #include "../timer.hpp"
 #include "trail.hpp"
 
+class renderer;
+
 ////////////////////////////////////////////////////////////////// PLAYER /////////////////////////////////////////////////////////////////
 
 // Player object.
@@ -32,9 +34,9 @@ class player {
 	void update_fragments();
 
 	// Adds the living player to the renderer.
-	void add_to_renderer_alive(ticks time_since_start, const decrementing_timer<0.1_s>& style_cooldown_timer) const;
+	void add_to_renderer_alive(renderer& renderer, ticks time_since_start, const decrementing_timer<0.1_s>& style_cooldown_timer) const;
 	// Adds the dead player to the renderer.
-	void add_to_renderer_dead(ticks time_since_game_over) const;
+	void add_to_renderer_dead(renderer& renderer, ticks time_since_game_over) const;
 
   private:
 	// Tag representing an uninitialized skin.
@@ -56,19 +58,19 @@ class player {
 	decrementing_timer<2_s> m_invincibility_timer;
 
 	// Tries to load a player skin from "player.png" in the user directory.
-	void try_loading_skin() const;
+	void try_loading_skin(tr::gfx::renderer_2d& renderer) const;
 	// Adds the player's skin to the renderer.
-	void add_skin_to_renderer(u8 opacity, tr::angle rotation, float size) const;
+	void add_skin_to_renderer(tr::gfx::renderer_2d& renderer, u8 opacity, tr::angle rotation, float size) const;
 	// Adds the skinless player visual's fill to the renderer.
-	void add_fill_to_renderer(u8 opacity, tr::angle rotation, float size) const;
+	void add_fill_to_renderer(tr::gfx::renderer_2d& renderer, u8 opacity, tr::angle rotation, float size) const;
 	// Adds the skinless player visual's outline to the renderer.
-	void add_outline_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const;
+	void add_outline_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const;
 	// Adds the player's trail to the renderer.
-	void add_trail_to_renderer(tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const;
+	void add_trail_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 tint, u8 opacity, tr::angle rotation, float size) const;
 	// Adds the wave emitted after getting style points to the renderer.
-	void add_style_wave_to_renderer(tr::rgb8 tint, const decrementing_timer<0.1_s>& timer) const;
+	void add_style_wave_to_renderer(tr::gfx::circle_renderer& renderer, tr::rgb8 tint, const decrementing_timer<0.1_s>& timer) const;
 	// Adds the player's death wave to the renderer.
-	void add_death_wave_to_renderer(ticks time_since_game_over) const;
+	void add_death_wave_to_renderer(tr::gfx::circle_renderer& renderer, ticks time_since_game_over) const;
 	// Adds the player's death fragments to the renderer.
-	void add_death_fragments_to_renderer(ticks time_since_game_over) const;
+	void add_death_fragments_to_renderer(tr::gfx::renderer_2d& renderer, ticks time_since_game_over) const;
 };

@@ -89,20 +89,22 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::on_paste()
 
 //
 
-template <usize MaxChars> void multiline_input_widget<MaxChars>::add_to_renderer()
+template <usize MaxChars> void multiline_input_widget<MaxChars>::add_to_renderer(renderer& renderer)
 {
 	const glm::vec2 tl{this->tl()};
-	const tr::rgba8 tint{this->m_tint};
+	const tr::rgba8 base_tint{this->m_tint};
+	const tr::rgba8 tint{this->m_buffer.empty() ? tr::rgba8{u8(base_tint.r / 2), u8(base_tint.g / 2), u8(base_tint.b / 2), 255}
+												: base_tint};
 	const float opacity{this->opacity()};
 
-	const tr::gfx::simple_color_mesh_ref background{renderer::instance().basic().new_color_fan(layer::UI, 4)};
+	const tr::gfx::simple_color_mesh_ref background{renderer.basic().new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(background.positions, {tl + OUTLINE_THICKNESS, size() - 2 * OUTLINE_THICKNESS});
 	std::ranges::fill(background.colors, tr::rgba8{0, 0, 0, u8(160 * opacity)});
 
-	text_widget::add_to_renderer_raw(this->m_buffer.empty() ? tr::rgba8{u8(tint.r / 2), u8(tint.g / 2), u8(tint.b / 2), 255} : tint);
+	text_widget::add_to_renderer_raw(renderer, tint);
 
-	const tr::rgba8 outline_color{tint.r, tint.g, tint.b, u8(tint.a * opacity)};
-	const tr::gfx::simple_color_mesh_ref outline{renderer::instance().basic().new_color_outline(layer::UI, 4)};
+	const tr::rgba8 outline_color{base_tint.r, base_tint.g, base_tint.b, u8(base_tint.a * opacity)};
+	const tr::gfx::simple_color_mesh_ref outline{renderer.basic().new_color_outline(layer::UI, 4)};
 	tr::fill_rectangle_outline_vertices(outline.positions, {tl + OUTLINE_THICKNESS / 2, size() - OUTLINE_THICKNESS}, OUTLINE_THICKNESS);
 	std::ranges::fill(outline.colors, outline_color);
 }

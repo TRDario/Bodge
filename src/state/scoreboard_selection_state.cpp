@@ -33,8 +33,11 @@ constexpr shortcut_table SHORTCUTS{
 // clang-format on
 //////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////
 
-scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerless_game> game, animate_title animate_title)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_SCOREBOARD_SELECTION}
+scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerless_game> game, savefile savefile,
+													   animate_title animate_title)
+	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+	, m_substate{substate::IN_SCOREBOARD_SELECTION}
+	, m_savefile{std::move(savefile)}
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
@@ -48,7 +51,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, {500, 64}, 0.5_s} : tweened_position{{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,
-		.text = constant_text{savefile::instance().format_info()},
+		.text = constant_text{m_savefile.format_info()},
 		.font_size = 32
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
@@ -108,7 +111,7 @@ void scoreboard_selection_state::on_view_times()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<scoreboard_state>(m_game, scoreboard::TIME);
+	m_next_state = make_async<scoreboard_state>(m_game, m_savefile, scoreboard::TIME);
 }
 
 void scoreboard_selection_state::on_view_scores()
@@ -116,7 +119,7 @@ void scoreboard_selection_state::on_view_scores()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<scoreboard_state>(m_game, scoreboard::SCORE);
+	m_next_state = make_async<scoreboard_state>(m_game, m_savefile, scoreboard::SCORE);
 }
 
 void scoreboard_selection_state::on_exit()

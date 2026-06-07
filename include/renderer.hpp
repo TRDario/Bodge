@@ -43,6 +43,8 @@ class renderer {
 
 	// Gets the screen rendering target.
 	const tr::gfx::render_target& screen() const;
+	// Gets the blur rendering input render target.
+	tr::gfx::render_target blur_input();
 	// Gets the scale rendering is done at.
 	float scale() const;
 
@@ -50,8 +52,6 @@ class renderer {
 	tr::gfx::renderer_2d& basic();
 	// Gets the circle renderer.
 	tr::gfx::circle_renderer& circle();
-	// Gets the blur renderer.
-	blur_renderer& blur();
 	// Renderer text engine.
 	text_engine text_engine;
 
@@ -65,6 +65,8 @@ class renderer {
 	// Adds a tooltip to the renderer.
 	void add_tooltip(glm::vec2 tl, std::string_view text_string);
 
+	// Draws everything drawn to blur_input() with a gaussian blur effect.
+	void draw_blurred(float saturation, float strength);
 	// Draws everything added to the renderer's layers.
 	void draw_layers(const tr::gfx::render_target& target);
 	// Draws the cursor.
@@ -77,7 +79,7 @@ class renderer {
 	// Fetches a benchmark.
 	void fetch_benchmark();
 	// Draws tick and render benchmarks.
-	void draw_benchmarks();
+	void draw_benchmarks(float refresh_rate, const tr::benchmark& tick_benchmark, const tr::benchmark& draw_benchmark);
 
   private:
 	// Wrapper over tr window functions.

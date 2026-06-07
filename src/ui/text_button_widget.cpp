@@ -49,14 +49,14 @@ void text_button_widget::tick()
 	m_action_animation_timer.tick();
 }
 
-void text_button_widget::add_to_renderer()
+void text_button_widget::add_to_renderer(renderer& renderer)
 {
 	if (m_action_animation_timer.active()) {
-		text_widget::add_to_renderer_raw(std::fmod(m_action_animation_timer.elapsed_ratio(), 1.0f / 3.0f) >= 1.0f / 6.0f ? WHITE
-																														 : DISABLED_GRAY);
+		const tr::rgba8 tint{std::fmod(m_action_animation_timer.elapsed_ratio(), 1.0f / 3.0f) >= 1.0f / 6.0f ? WHITE : DISABLED_GRAY};
+		text_widget::add_to_renderer_raw(renderer, tint);
 	}
 	else {
-		text_widget::add_to_renderer_raw(m_tint);
+		text_widget::add_to_renderer_raw(renderer, m_tint);
 	}
 }
 

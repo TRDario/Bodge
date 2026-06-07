@@ -77,7 +77,7 @@ void life_fragment::tick()
 	}
 }
 
-void life_fragment::add_to_renderer() const
+void life_fragment::add_to_renderer(renderer& renderer) const
 {
 	if (m_state == state::INACTIVE || m_state == state::INACTIVE_COLLECTED) {
 		return;
@@ -108,36 +108,36 @@ void life_fragment::add_to_renderer() const
 		}
 
 		if (m_elapsed >= LIFE_FRAGMENT_SPAWN_ANIMATION_TIME) {
-			add_pulse_to_renderer(color);
+			add_pulse_to_renderer(renderer.circle(), color);
 		}
 		else {
-			add_spawn_wave_to_renderer(color);
+			add_spawn_wave_to_renderer(renderer.circle(), color);
 		}
 	}
 
-	const tr::gfx::simple_color_mesh_ref mesh{renderer::instance().basic().new_color_fan(layer::LIFE_FRAGMENTS, 4)};
+	const tr::gfx::simple_color_mesh_ref mesh{renderer.basic().new_color_fan(layer::LIFE_FRAGMENTS, 4)};
 	tr::fill_rectangle_vertices(mesh.positions, m_position, size / 2.0f, size, m_rotation);
 	std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
 }
 
-void life_fragment::add_pulse_to_renderer(tr::rgb8 color) const
+void life_fragment::add_pulse_to_renderer(tr::gfx::circle_renderer& renderer, tr::rgb8 color) const
 {
 	const float t{(m_elapsed - LIFE_FRAGMENT_SPAWN_ANIMATION_TIME + 1) % 1_s / float(1_s)};
 	const float scale{std::pow(t, 1 / 2.5f) * 75};
 	const u8 opacity{tr::norm_cast<u8>(std::max(0.75f - std::sqrt(0.75f * t), 0.0f))};
 
 	if (opacity > 0 && scale > 0) {
-		renderer::instance().circle().add_circle_outline(layer::LIFE_FRAGMENTS, {m_position, scale}, 2, tr::rgba8{color, opacity});
+		renderer.add_circle_outline(layer::LIFE_FRAGMENTS, {m_position, scale}, 2, tr::rgba8{color, opacity});
 	}
 }
 
-void life_fragment::add_spawn_wave_to_renderer(tr::rgb8 color) const
+void life_fragment::add_spawn_wave_to_renderer(tr::gfx::circle_renderer& renderer, tr::rgb8 color) const
 {
 	const float t{m_elapsed / float(LIFE_FRAGMENT_SPAWN_ANIMATION_TIME)};
 	const float scale{std::pow(t, 2.0f) * 200};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t))};
 
 	if (opacity > 0 && scale > 0) {
-		renderer::instance().circle().add_circle_outline(layer::LIFE_FRAGMENTS, {m_position, scale}, 2, tr::rgba8{color, opacity});
+		renderer.add_circle_outline(layer::LIFE_FRAGMENTS, {m_position, scale}, 2, tr::rgba8{color, opacity});
 	}
 }
