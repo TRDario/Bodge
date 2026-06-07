@@ -87,9 +87,9 @@ clone_gamemode_selector::clone_gamemode_selector(tr::static_string<20 * 4> playe
 
 void clone_gamemode_selector::filter_gamemodes(std::vector<gamemode_with_path>&) const {}
 
-localized_text clone_gamemode_selector::subtitle_text() const
+localized_text clone_gamemode_selector::subtitle_text(const localization& localization) const
 {
-	return localized_text{"clone_gamemode"};
+	return localized_text{localization, "clone_gamemode"};
 }
 
 void clone_gamemode_selector::on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const
@@ -101,11 +101,12 @@ void clone_gamemode_selector::on_gamemode_selected(gamemode_selector_state& stat
 	::gamemode clone{gp.gamemode};
 	clone.author = m_player_name;
 	if (clone.builtin) {
-		clone.name = clone.name_loc();
-		clone.description = clone.description_loc();
+		clone.name = clone.localized_name(state.m_subsystems->localization);
+		clone.description = clone.localized_description(state.m_subsystems->localization);
 		clone.builtin = false;
 	}
-	state.m_next_state = make_async<gamemode_editor_state>(state.m_game, cloned_gamemode_editor{}, std::move(clone), animate_subtitle::NO);
+	state.m_next_state = make_async<gamemode_editor_state>(state.m_subsystems, state.m_game, cloned_gamemode_editor{}, std::move(clone),
+														   animate_subtitle::NO);
 }
 
 //
@@ -120,9 +121,9 @@ void edit_gamemode_selector::filter_gamemodes(std::vector<gamemode_with_path>& g
 	std::erase_if(gamemodes, [this](const gamemode_with_path& gp) { return gp.gamemode.builtin || gp.gamemode.author != m_player_name; });
 }
 
-localized_text edit_gamemode_selector::subtitle_text() const
+localized_text edit_gamemode_selector::subtitle_text(const localization& localization) const
 {
-	return localized_text{"edit_gamemode"};
+	return localized_text{localization, "edit_gamemode"};
 }
 
 void edit_gamemode_selector::on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const
@@ -131,8 +132,8 @@ void edit_gamemode_selector::on_gamemode_selected(gamemode_selector_state& state
 	state.m_elapsed = 0;
 	state.set_up_exit_animation(animate_subtitle::NO);
 
-	state.m_next_state =
-		make_async<gamemode_editor_state>(state.m_game, edited_gamemode_editor{gp.path}, gp.gamemode, animate_subtitle::NO);
+	state.m_next_state = make_async<gamemode_editor_state>(state.m_subsystems, state.m_game, edited_gamemode_editor{gp.path}, gp.gamemode,
+														   animate_subtitle::NO);
 }
 
 //
@@ -142,9 +143,9 @@ void delete_gamemodes_selector::filter_gamemodes(std::vector<gamemode_with_path>
 	std::erase_if(gamemodes, [](const gamemode_with_path& gp) { return gp.gamemode.builtin; });
 }
 
-localized_text delete_gamemodes_selector::subtitle_text() const
+localized_text delete_gamemodes_selector::subtitle_text(const localization& localization) const
 {
-	return localized_text{"delete_gamemodes"};
+	return localized_text{localization, "delete_gamemodes"};
 }
 
 void delete_gamemodes_selector::on_gamemode_selected(gamemode_selector_state& state, const gamemode_with_path& gp) const
@@ -163,9 +164,9 @@ void delete_gamemodes_selector::on_gamemode_selected(gamemode_selector_state& st
 
 ///////////////////////////////////////////////////////// GAMEMODE SELECTOR STATE /////////////////////////////////////////////////////////
 
-gamemode_selector_state::gamemode_selector_state(std::shared_ptr<playerless_game> game, gamemode_selector selector,
-												 animate_subtitle animate_subtitle)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game,
+												 gamemode_selector selector, animate_subtitle animate_subtitle)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_GAMEMODE_SELECTOR}
 	, m_selector{selector}
 	, m_gamemodes{load_gamemodes()}
@@ -178,20 +179,20 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<playerless_game
 		.animation = TITLE_POS,
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0_s,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_SUBTITLE, {
 		.animation = bool(animate_subtitle) ? tweened_position{TOP_START_POS, {500, 64}, 0.5_s} : tweened_position{{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_subtitle) ? 0.5_s : 0_s,
-		.text = std::visit([](const auto& selector) { return selector.subtitle_text(); }, m_selector),
+		.text = std::visit([this](const auto& selector) { return selector.subtitle_text(m_subsystems->localization); }, m_selector),
 		.font_size = 32
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
-		.text = localized_text{T_EXIT},
+		.text = localized_text{m_subsystems->localization, T_EXIT},
 		.status = [this] { return m_substate == substate::IN_GAMEMODE_SELECTOR; },
 		.action = [this] { on_exit(); },
 		.action_sound = sound::CANCEL
@@ -200,7 +201,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<playerless_game
 		m_ui.emplace<label_widget>(T_NO_GAMEMODES_FOUND, {
 			.animation = tweened_position{{600, 467}, {500, 467}, 0.5_s},
 			.alignment = tr::align::TOP_CENTER,
-			.text = localized_text{T_NO_GAMEMODES_FOUND},
+			.text = localized_text{m_subsystems->localization, T_NO_GAMEMODES_FOUND},
 			.font_size = 64,
 			.color = DARK_GRAY
 		});
@@ -274,7 +275,7 @@ void gamemode_selector_state::on_exit()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_subtitle::YES);
-	m_next_state = make_async<gamemode_manager_state>(m_game, animate_title::NO);
+	m_next_state = make_async<gamemode_manager_state>(m_subsystems, m_game, animate_title::NO);
 }
 
 void gamemode_selector_state::on_page_decrement()

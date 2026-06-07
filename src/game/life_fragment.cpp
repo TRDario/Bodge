@@ -6,7 +6,6 @@
 
 #include "../../include/game/life_fragment.hpp"
 #include "../../include/renderer.hpp"
-#include "../../include/settings.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -77,13 +76,13 @@ void life_fragment::tick()
 	}
 }
 
-void life_fragment::add_to_renderer(renderer& renderer) const
+void life_fragment::add_to_renderer(renderer& renderer, float hue) const
 {
 	if (m_state == state::INACTIVE || m_state == state::INACTIVE_COLLECTED) {
 		return;
 	}
 
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
+	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{hue, 1, 1})};
 
 	float raw_factor;
 	float eased_factor;

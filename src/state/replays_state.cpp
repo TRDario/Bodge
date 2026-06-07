@@ -55,14 +55,17 @@ constexpr shortcut_table SHORTCUTS{
 // clang-format on
 ////////////////////////////////////////////////////////////// REPLAYS STATE //////////////////////////////////////////////////////////////
 
-replays_state::replays_state()
-	: main_menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::RETURNING_FROM_REPLAY}, m_page{0}, m_replays{load_replay_headers()}
+replays_state::replays_state(std::shared_ptr<subsystems> subsystems)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS}
+	, m_substate{substate::RETURNING_FROM_REPLAY}
+	, m_page{0}
+	, m_replays{load_replay_headers()}
 {
 	set_up_ui();
 }
 
-replays_state::replays_state(std::shared_ptr<playerless_game> game)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+replays_state::replays_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_REPLAYS}
 	, m_page{0}
 	, m_replays{load_replay_headers()}
@@ -132,6 +135,7 @@ std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_wid
 		const tweened_position animation{{i % 2 == 0 ? 600 : 400, 183 + 125 * i}, {500, 183 + 125 * i}, 0.25_s};
 		// clang-format off
 		map.emplace(REPLAY_TAGS[i], std::make_unique<replay_widget>(replay_widget::properties{
+			.localization = m_subsystems->localization,
 			.animation = animation,
 			.unhide_time = 0.25_s,
 			.state = *this,
@@ -148,13 +152,13 @@ void replays_state::set_up_ui()
 	m_ui.emplace<label_widget>(T_TITLE, {
 		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
-		.text = localized_text{T_EXIT},
+		.text = localized_text{m_subsystems->localization, T_EXIT},
 		.status = [this] { return m_substate == substate::IN_REPLAYS; },
 		.action = [this] { on_exit(); },
 		.action_sound = sound::CANCEL
@@ -163,7 +167,7 @@ void replays_state::set_up_ui()
 		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, {
 			.animation = {{600, 467}, {500, 467}, 0.5_s},
 			.alignment = tr::align::TOP_CENTER,
-			.text = localized_text{T_NO_REPLAYS_FOUND},
+			.text = localized_text{m_subsystems->localization, T_NO_REPLAYS_FOUND},
 			.font_size = 64,
 			.color = DARK_GRAY
 		});
@@ -172,6 +176,7 @@ void replays_state::set_up_ui()
 	replay_map::iterator replay_it{m_replays.begin()};
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], {
+			.localization = m_subsystems->localization,
 			.animation = {{i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s},
 			.state = *this,
 			.replay_it = replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt
@@ -237,7 +242,7 @@ void replays_state::on_exit()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<title_state>(m_game);
+	m_next_state = make_async<title_state>(m_subsystems, m_game);
 }
 
 void replays_state::on_page_decrement()

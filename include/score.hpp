@@ -103,7 +103,7 @@ class savefile {
 	void add_score(const gamemode& gm, const score_entry& s);
 
 	// Formats the savefile info into a string to be displayed.
-	std::string format_info() const;
+	std::string format_info(const localization& localization) const;
 
 	// Saved draft of an unfinished new gamemode.
 	gamemode gamemode_draft;

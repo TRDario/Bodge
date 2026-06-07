@@ -70,7 +70,7 @@ class renderer {
 	// Draws everything added to the renderer's layers.
 	void draw_layers(const tr::gfx::render_target& target);
 	// Draws the cursor.
-	void draw_cursor();
+	void draw_cursor(float hue, glm::vec2 mouse_pos);
 
 	// Marks the start of frame rendering.
 	void start_benchmark();

@@ -47,8 +47,8 @@ constexpr float TITLE_Y{500.0f - (BUTTONS.size() + 3) * 30};
 // clang-format on
 ///////////////////////////////////////////////////////////// GAME OVER STATE /////////////////////////////////////////////////////////////
 
-game_over_state::game_over_state(std::shared_ptr<game> game, savefile savefile, blur_in blur_in)
-	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), std::move(savefile), update_game::YES}
+game_over_state::game_over_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<game> game, savefile savefile, blur_in blur_in)
+	: game_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game), std::move(savefile), update_game::YES}
 	, m_substate{blur_in == blur_in::YES ? substate::BLURRING_IN : substate::GAME_OVER}
 {
 	const float result_h{(500 - (BUTTONS.size() - 0.75f) * 30) + 4};
@@ -65,12 +65,12 @@ game_over_state::game_over_state(std::shared_ptr<game> game, savefile savefile, 
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
 		.animation = {{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s},
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_TIME_LABEL, {
 		.animation = {{175, label_h}, {275, label_h}, 0.5_s},
-		.text = localized_text{T_TIME_LABEL},
+		.text = localized_text{m_subsystems->localization, T_TIME_LABEL},
 		.font_size = 24,
 		.color = YELLOW
 	});
@@ -88,7 +88,7 @@ game_over_state::game_over_state(std::shared_ptr<game> game, savefile savefile, 
 	});
 	m_ui.emplace<label_widget>(T_SCORE_LABEL, {
 		.animation = {{825, label_h}, {725, label_h}, 0.5_s},
-		.text = localized_text{T_SCORE_LABEL},
+		.text = localized_text{m_subsystems->localization, T_SCORE_LABEL},
 		.font_size = 24,
 		.color = YELLOW
 	});
@@ -109,7 +109,7 @@ game_over_state::game_over_state(std::shared_ptr<game> game, savefile savefile, 
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], {
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
-			.text = localized_text{BUTTONS[i]},
+			.text = localized_text{m_subsystems->localization, BUTTONS[i]},
 			.status = [this] { return m_substate == substate::BLURRING_IN || m_substate == substate::GAME_OVER; },
 			.action = std::move(action_commands[i]),
 		});
@@ -207,10 +207,10 @@ text_command game_over_state::best_time_text() const
 	const ticks best_time{m_savefile.best_results(m_game->gamemode()).time};
 
 	if (best_time < m_game->final_time()) {
-		return localized_text{"new_personal_best"};
+		return localized_text{m_subsystems->localization, "new_personal_best"};
 	}
 	else {
-		return constant_text{TR_FMT::format("{}: {}", localization::instance()["personal_best"], format_time(best_time))};
+		return constant_text{TR_FMT::format("{}: {}", m_subsystems->localization["personal_best"], format_time(best_time))};
 	}
 }
 
@@ -219,10 +219,10 @@ text_command game_over_state::best_score_text() const
 	const i64 best_score{m_savefile.best_results(m_game->gamemode()).score};
 
 	if (best_score < m_game->final_score()) {
-		return localized_text{"new_personal_best"};
+		return localized_text{m_subsystems->localization, "new_personal_best"};
 	}
 	else {
-		return constant_text{TR_FMT::format("{}: {}", localization::instance()["personal_best"], best_score)};
+		return constant_text{TR_FMT::format("{}: {}", m_subsystems->localization["personal_best"], best_score)};
 	}
 }
 
@@ -249,7 +249,7 @@ void game_over_state::on_save_and_restart()
 	m_elapsed = 0;
 	m_substate = substate::SAVING;
 	set_up_exit_animation();
-	m_next_state = make_async<save_score_state>(m_game, m_savefile, save_screen_flags::RESTARTING);
+	m_next_state = make_async<save_score_state>(m_subsystems, m_game, m_savefile, save_screen_flags::RESTARTING);
 }
 
 void game_over_state::on_restart()
@@ -262,7 +262,8 @@ void game_over_state::on_restart()
 	m_savefile.add_score(m_game->gamemode(), score);
 	m_savefile.save_to_file();
 	set_up_exit_animation();
-	m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_savefile, m_game->gamemode());
+	m_next_state =
+		make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_game->gamemode());
 }
 
 void game_over_state::on_save_and_exit()
@@ -270,7 +271,7 @@ void game_over_state::on_save_and_exit()
 	m_elapsed = 0;
 	m_substate = substate::SAVING;
 	set_up_exit_animation();
-	m_next_state = make_async<save_score_state>(m_game, m_savefile, save_screen_flags::NONE);
+	m_next_state = make_async<save_score_state>(m_subsystems, m_game, m_savefile, save_screen_flags::NONE);
 }
 
 void game_over_state::on_exit()

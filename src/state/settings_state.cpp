@@ -153,17 +153,17 @@ std::vector<std::string> find_skins()
 
 ////////////////////////////////////////////////////////////// SETTINGS STATE /////////////////////////////////////////////////////////////
 
-settings_state::settings_state(std::shared_ptr<playerless_game> game)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_SETTINGS}
-	, m_pending(active_settings::instance())
+	, m_pending{m_subsystems->settings}
 	, m_player_skins{find_skins()}
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
 		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 
@@ -171,8 +171,8 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		m_ui.emplace<label_widget>(LABELS[i].tag, {
 			.animation = {{-50, 121 + i * 75}, {15, 121 + i * 75}, 0.5_s},
 			.alignment = tr::align::CENTER_LEFT,
-			.tooltip_text = localized_text{LABELS[i].tooltip},
-			.text = localized_text{LABELS[i].tag},
+			.tooltip_text = localized_text{m_subsystems->localization, LABELS[i].tooltip},
+			.text = localized_text{m_subsystems->localization, LABELS[i].tag},
 			.color = LABELS[i].tag == T_WINDOW_SIZE && m_pending.display_mode == display_mode::FULLSCREEN ? DISABLED_GRAY : GRAY
 		});
 	}
@@ -180,7 +180,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, {
 		.animation = {DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
-		.text = [this] { return std::string{localization::instance()[m_pending.display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
+		.text = [this] { return std::string{m_subsystems->localization[m_pending.display_mode == display_mode::FULLSCREEN ? "fullscreen" : "windowed"]}; },
 		.status = [this] { return m_substate != substate::EXITING; },
 		.action = [this] { on_change_display_mode(); }
 	});
@@ -191,7 +191,9 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 			return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN &&
 			       m_pending.window_size > MIN_WINDOW_SIZE;
 		},
-		.action = [&ws = m_pending.window_size] { ws = std::max(MIN_WINDOW_SIZE, u16(ws - input::instance().choose(1, 10, 100))); }
+		.action = [this] {
+			m_pending.window_size = std::max(MIN_WINDOW_SIZE, u16(m_pending.window_size - m_subsystems->input.choose(1, 10, 100)));
+		}
 	});
 	m_ui.emplace<numeric_input_widget<u16, 4>>(T_WINDOW_SIZE_C, {
 		.animation = {WINDOW_SIZE_START_POS, {875, WINDOW_SIZE_START_POS.y}, 0.5_s},
@@ -207,12 +209,14 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 			return m_substate != substate::EXITING && m_pending.display_mode != display_mode::FULLSCREEN &&
 				   m_pending.window_size < max_window_size();
 		},
-		.action = [&ws = m_pending.window_size] { ws = std::min(max_window_size(), u16(ws + input::instance().choose(1, 10, 100))); }
+		.action = [this] {
+			m_pending.window_size = std::min(max_window_size(), u16(m_pending.window_size + m_subsystems->input.choose(1, 10, 100)));
+		}
 	});
 	m_ui.emplace<text_button_widget>(T_VSYNC_C, {
 		.animation = {VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
-		.text = [&vsync = m_pending.vsync] { return std::string{localization::instance()[vsync ? "on" : "off"]}; },
+		.text = [this] { return std::string{m_subsystems->localization[m_pending.vsync ? "on" : "off"]}; },
 		.status = [this] { return m_substate != substate::EXITING; },
 		.action = [&vsync = m_pending.vsync] { vsync = !vsync; },
 	});
@@ -220,7 +224,9 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {MOUSE_SENSITIVITY_START_POS, {765, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity > 25; },
-		.action = [&ms = m_pending.mouse_sensitivity] { ms = u8(std::max(ms - input::instance().choose(1, 10, 25), 25)); }
+		.action = [this] {
+			m_pending.mouse_sensitivity = u8(std::max(m_pending.mouse_sensitivity - m_subsystems->input.choose(1, 10, 25), 25));
+		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C, {
 		.animation = {MOUSE_SENSITIVITY_START_POS, {875, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s},
@@ -233,7 +239,9 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {MOUSE_SENSITIVITY_START_POS, {985, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s}, 
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.mouse_sensitivity < 250; },
-		.action = [&ms = m_pending.mouse_sensitivity] { ms = u8(std::min(ms + input::instance().choose(1, 10, 25), 250)); }
+		.action = [this] {
+			m_pending.mouse_sensitivity = u8(std::min(m_pending.mouse_sensitivity + m_subsystems->input.choose(1, 10, 25), 250));
+		}
 	});
 	m_ui.emplace<text_button_widget>(T_PLAYER_SKIN_C, {
 		.animation = {PLAYER_SKIN_START_POS, {930, PLAYER_SKIN_START_POS.y}, 0.5_s},
@@ -241,8 +249,8 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.text = [this] {
 			const bool valid_player_skin{std::ranges::find(m_player_skins, m_pending.player_skin) != m_player_skins.end()};
 			return valid_player_skin               ? m_pending.player_skin.substr(0, m_pending.player_skin.find_last_of('.'))
-				   : m_pending.player_skin.empty() ? std::string{localization::instance()["none"]}
-												   : std::string{localization::instance()["unknown"]};
+				   : m_pending.player_skin.empty() ? std::string{m_subsystems->localization["none"]}
+												   : std::string{m_subsystems->localization["unknown"]};
 		},
 		.status = [this] { return m_substate != substate::EXITING && (m_player_skins.size() > 0 || !m_pending.player_skin.empty()); },
 		.action = [this] { on_change_player_skin(); }
@@ -256,7 +264,9 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING; },
-		.action = [&ph = m_pending.primary_hue] { ph = u16((ph - input::instance().choose(1, 10, 100) + 360) % 360); }
+		.action = [this] {
+			m_pending.primary_hue = u16((m_pending.primary_hue - m_subsystems->input.choose(1, 10, 100) + 360) % 360);
+		}
 	});
 	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C, {
 		.animation = {PRIMARY_HUE_START_POS, {837.5, PRIMARY_HUE_START_POS.y}, 0.5_s},
@@ -269,7 +279,9 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {PRIMARY_HUE_START_POS, {930, PRIMARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING; },
-		.action = [&ph = m_pending.primary_hue] { ph = u16((ph + input::instance().choose(1, 10, 100)) % 360); }
+		.action = [this] {
+			m_pending.primary_hue = u16((m_pending.primary_hue + m_subsystems->input.choose(1, 10, 100)) % 360);
+		}
 	});
 	m_ui.emplace<color_preview_widget>(T_PRIMARY_HUE_PREVIEW, {
 		.animation = {PRIMARY_HUE_START_POS, {985, PRIMARY_HUE_START_POS.y}, 0.5_s},
@@ -280,7 +292,9 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {SECONDARY_HUE_START_POS, {745, SECONDARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING; },
-		.action = [&sh = m_pending.secondary_hue] { sh = u16((sh - input::instance().choose(1, 10, 100) + 360) % 360); }
+		.action = [this] {
+			m_pending.secondary_hue = u16((m_pending.secondary_hue - m_subsystems->input.choose(1, 10, 100) + 360) % 360);
+		}
 	});
 	m_ui.emplace<numeric_input_widget<u16, 3>>(T_SECONDARY_HUE_C, {
 		.animation = {SECONDARY_HUE_START_POS, {837.5, SECONDARY_HUE_START_POS.y}, 0.5_s},
@@ -293,7 +307,9 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {SECONDARY_HUE_START_POS, {930, SECONDARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING; },
-		.action = [&sh = m_pending.secondary_hue] { sh = u16((sh + input::instance().choose(1, 10, 100)) % 360); }
+		.action = [this] {
+			m_pending.secondary_hue = u16((m_pending.secondary_hue + m_subsystems->input.choose(1, 10, 100)) % 360);
+		}
 	});
 	m_ui.emplace<color_preview_widget>(T_SECONDARY_HUE_PREVIEW, {
 		.animation = {SECONDARY_HUE_START_POS, {985, SECONDARY_HUE_START_POS.y}, 0.5_s},
@@ -304,7 +320,9 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {SFX_VOLUME_START_POS, {765, SFX_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.sfx_volume > 0; },
-		.action = [&sv = m_pending.sfx_volume] { sv = u8(std::max(sv - input::instance().choose(1, 10, 25), 0)); }
+		.action = [this] {
+			m_pending.sfx_volume = u8(std::max(m_pending.sfx_volume - m_subsystems->input.choose(1, 10, 25), 0));
+		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, {
 		.animation = {SFX_VOLUME_START_POS, {875, SFX_VOLUME_START_POS.y}, 0.5_s},
@@ -317,13 +335,17 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {SFX_VOLUME_START_POS, {985, SFX_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.sfx_volume < 100; },
-		.action = [&sv = m_pending.sfx_volume] { sv = u8(std::min(sv + input::instance().choose(1, 10, 25), 100)); }
+		.action = [this] {
+			m_pending.sfx_volume = u8(std::min(m_pending.sfx_volume + m_subsystems->input.choose(1, 10, 25), 100));
+		}
 	});
 	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_D, {
 		.animation = {MUSIC_VOLUME_START_POS, {765, MUSIC_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.music_volume > 0; },
-		.action = [&mv = m_pending.music_volume] { mv = u8(std::max(mv - input::instance().choose(1, 10, 25), 0)); }
+		.action = [this] {
+			m_pending.music_volume = u8(std::max(m_pending.music_volume - m_subsystems->input.choose(1, 10, 25), 0));
+		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, {
 		.animation = {MUSIC_VOLUME_START_POS, {875, MUSIC_VOLUME_START_POS.y}, 0.5_s},
@@ -336,20 +358,22 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		.animation = {MUSIC_VOLUME_START_POS, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate != substate::EXITING && m_pending.music_volume < 100; },
-		.action = [&mv = m_pending.music_volume] { mv = u8(std::min(mv + input::instance().choose(1, 10, 25), 100)); }
+		.action = [this] {
+			m_pending.music_volume = u8(std::min(m_pending.music_volume + m_subsystems->input.choose(1, 10, 25), 100));
+		}
 	});
 	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, {
 		.animation = {LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
 		.text = [this] {
-			return localization::instance().available_languages.contains(m_pending.language)
-			       ? localization::instance().available_languages.at(m_pending.language).name
+			return m_subsystems->localization.available_languages.contains(m_pending.language)
+			       ? m_subsystems->localization.available_languages.at(m_pending.language).name
 				   : "???";
 		},
 		.font = font::LANGUAGE_PREVIEW,
 		.status = [this] {
 			return m_substate != substate::EXITING &&
-			       (localization::instance().available_languages.size() >= 2 - (!localization::instance().available_languages.contains(m_pending.language)));
+			       (m_subsystems->localization.available_languages.size() >= 2 - (!m_subsystems->localization.available_languages.contains(m_pending.language)));
 		},
 		.action = [this] { on_change_language(); }
 	});
@@ -360,13 +384,13 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		sound sound;
 	};
 	const std::array<bottom_button_parameters, BOTTOM_BUTTONS.size()> bottom_button_parameters{{
-		{[this] { return m_substate != substate::EXITING && m_pending != active_settings::instance(); },
+		{[this] { return m_substate != substate::EXITING && m_pending != m_subsystems->settings; },
 		 [this] { on_revert(); },
 		 sound::CONFIRM},
-		{[this] { return m_substate != substate::EXITING && m_pending != active_settings::instance(); },
+		{[this] { return m_substate != substate::EXITING && m_pending != m_subsystems->settings; },
 		 [this] { on_apply(); },
 		 sound::CONFIRM},
-		{[this] { return m_substate != substate::EXITING && m_pending == active_settings::instance(); },
+		{[this] { return m_substate != substate::EXITING && m_pending == m_subsystems->settings; },
 		 [this] { on_exit(); },
 		 sound::CANCEL},
 	}};
@@ -374,7 +398,7 @@ settings_state::settings_state(std::shared_ptr<playerless_game> game)
 		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], {
 			.animation = {BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s},
 			.alignment = tr::align::BOTTOM_CENTER,
-			.text = localized_text{BOTTOM_BUTTONS[i]},
+			.text = localized_text{m_subsystems->localization, BOTTOM_BUTTONS[i]},
 			.status = bottom_button_parameters[i].status,
 			.action = bottom_button_parameters[i].action,
 			.action_sound = bottom_button_parameters[i].sound
@@ -446,7 +470,7 @@ void settings_state::on_change_player_skin()
 
 void settings_state::on_change_language()
 {
-	const std::map<language_code, language_info>& available_languages{localization::instance().available_languages};
+	const std::map<language_code, language_info>& available_languages{m_subsystems->localization.available_languages};
 
 	std::map<language_code, language_info>::const_iterator language_it{available_languages.find(m_pending.language)};
 	if (language_it == available_languages.end() || ++language_it == available_languages.end()) {
@@ -458,10 +482,10 @@ void settings_state::on_change_language()
 
 void settings_state::on_revert()
 {
-	m_pending = active_settings::instance();
-	const auto language_it{localization::instance().available_languages.find(m_pending.language)};
+	m_pending = m_subsystems->settings;
+	const auto language_it{m_subsystems->localization.available_languages.find(m_pending.language)};
 	renderer::instance().text_engine.reload_language_preview_font(
-		language_it != localization::instance().available_languages.end() ? language_it->second.font : std::string{});
+		language_it != m_subsystems->localization.available_languages.end() ? language_it->second.font : std::string{});
 	const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? GRAY : DISABLED_GRAY};
 	m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(window_size_color, 0.1_s);
 	m_ui.as<player_skin_preview_widget>(T_PLAYER_SKIN_PREVIEW).update_skin();
@@ -469,10 +493,31 @@ void settings_state::on_revert()
 
 void settings_state::on_apply()
 {
-	if (active_settings::instance().releasing_graphical_resources_required_to_apply(m_pending)) {
+	const bool restart_required{m_subsystems->settings.restart_required_to_apply(m_pending)};
+	const bool use_different_fonts{m_subsystems->localization.use_different_fonts(m_subsystems->settings.language, m_pending.language)};
+
+	if (restart_required || use_different_fonts) {
 		m_ui.release_graphical_resources();
 	}
-	active_settings::instance().apply(m_pending);
+
+	if (restart_required) {
+		renderer::instance().reopen_window(m_pending);
+	}
+	else if (m_pending.vsync != m_subsystems->settings.vsync) {
+		tr::sys::set_window_vsync(m_pending.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
+	}
+	if (use_different_fonts) {
+		renderer::instance().text_engine.set_language_font();
+	}
+
+	if (m_subsystems->settings.language != m_pending.language) {
+		m_subsystems->localization.reload(m_pending.language);
+	}
+
+	audio::instance().set_volume(m_pending.sfx_volume, m_pending.music_volume);
+
+	m_subsystems->settings = m_pending;
+	m_subsystems->settings.save_to_file();
 }
 
 void settings_state::on_exit()
@@ -480,5 +525,5 @@ void settings_state::on_exit()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<title_state>(m_game);
+	m_next_state = make_async<title_state>(m_subsystems, m_game);
 }

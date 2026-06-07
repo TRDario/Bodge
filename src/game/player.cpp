@@ -6,13 +6,22 @@
 
 #include "../../include/game/player.hpp"
 #include "../../include/renderer.hpp"
-#include "../../include/settings.hpp"
 
 ////////////////////////////////////////////////////////////////// PLAYER /////////////////////////////////////////////////////////////////
 
-player::player(const player_settings& settings)
+player::player(const player_settings& settings, const std::filesystem::path& skin_path)
 	: m_hitbox{{500, 500}, settings.hitbox_radius}, m_trail{m_hitbox.c}, m_inertia{settings.inertia_factor}
 {
+	try {
+		tr::bitmap& skin{m_skin.emplace<tr::bitmap>(tr::load_bitmap_file(skin_path))};
+		if (skin.format() == tr::pixel_format::R8) {
+			skin = tr::bitmap{skin, tr::pixel_format::RGBA32};
+		}
+	}
+	catch (...) {
+		m_skin.emplace<no_skin>();
+	}
+
 	m_invincibility_timer.start();
 }
 
@@ -67,13 +76,14 @@ void player::update_fragments()
 
 //
 
-void player::add_to_renderer_alive(renderer& renderer, ticks time_since_start, const decrementing_timer<0.1_s>& style_cooldown_timer) const
+void player::add_to_renderer_alive(renderer& renderer, float hue, ticks time_since_start,
+								   const decrementing_timer<0.1_s>& style_cooldown_timer) const
 {
 	if (std::holds_alternative<uninitialized_skin>(m_skin)) {
 		try_loading_skin(renderer.basic());
 	}
 
-	const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
+	const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{hue, 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(std::abs(tr::turns(4.0f * m_invincibility_timer.elapsed_ratio()).cos()))};
 	const tr::angle rotation{270_deg * time_since_start / 1_s};
 	const float size_offset{3.0f * tr::turns(time_since_start / 2_sf).sin()};
@@ -92,11 +102,12 @@ void player::add_to_renderer_alive(renderer& renderer, ticks time_since_start, c
 	}
 }
 
-void player::add_to_renderer_dead(renderer& renderer, ticks time_since_game_over) const
+void player::add_to_renderer_dead(renderer& renderer, float hue, ticks time_since_game_over) const
 {
 	if (time_since_game_over < 0.5_s) {
-		add_death_wave_to_renderer(renderer.circle(), time_since_game_over);
-		add_death_fragments_to_renderer(renderer.basic(), time_since_game_over);
+		const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{hue, 1, 1})};
+		add_death_wave_to_renderer(renderer.circle(), tint, time_since_game_over);
+		add_death_fragments_to_renderer(renderer.basic(), tint, time_since_game_over);
 	}
 }
 
@@ -183,26 +194,24 @@ void player::add_style_wave_to_renderer(tr::gfx::circle_renderer& renderer, tr::
 	renderer.add_circle_outline(layer::PLAYER, {m_hitbox.c, scale}, 2, tr::rgba8{tint, opacity});
 }
 
-void player::add_death_wave_to_renderer(tr::gfx::circle_renderer& renderer, ticks time_since_game_over) const
+void player::add_death_wave_to_renderer(tr::gfx::circle_renderer& renderer, tr::rgb8 tint, ticks time_since_game_over) const
 {
 	const float t{(time_since_game_over + 1) / 0.5_sf};
 	const float scale{std::sqrt(t) * 200};
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(0.5f * (1 - t))};
 
-	renderer.add_circle(layer::PLAYER_TRAIL, {m_hitbox.c, scale}, tr::rgba8{color, opacity});
+	renderer.add_circle(layer::PLAYER_TRAIL, {m_hitbox.c, scale}, tr::rgba8{tint, opacity});
 }
 
-void player::add_death_fragments_to_renderer(tr::gfx::renderer_2d& renderer, ticks time_since_game_over) const
+void player::add_death_fragments_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 tint, ticks time_since_game_over) const
 {
 	const float t{(time_since_game_over + 1) / 0.5_sf};
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
 	const u8 opacity{tr::norm_cast<u8>(std::sqrt(1 - t))};
 	const float length{2 * m_hitbox.r * (30_deg).tan()};
 
 	for (const fragment& fragment : m_fragments) {
 		const tr::gfx::simple_color_mesh_ref mesh{renderer.new_color_fan(layer::PLAYER, 4)};
 		tr::fill_rectangle_vertices(mesh.positions, fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
-		std::ranges::fill(mesh.colors, tr::rgba8{color, opacity});
+		std::ranges::fill(mesh.colors, tr::rgba8{tint, opacity});
 	}
 }

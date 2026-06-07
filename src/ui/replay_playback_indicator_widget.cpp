@@ -81,7 +81,8 @@ constexpr std::array<u16, 48> FAST_SPEED_INDICES{
 ///////////////////////////////////////////////////// REPLAY PLAYBACK INDICATOR WIDGET ////////////////////////////////////////////////////
 
 replay_playback_indicator_widget::replay_playback_indicator_widget(const properties& properties)
-	: widget{properties.animation, properties.alignment, properties.unhide_time, localized_text{"replay_tt"}}
+	: widget{properties.animation, properties.alignment, properties.unhide_time, localized_text{properties.localization, "replay_tt"}}
+	, m_input{properties.input}
 {
 }
 
@@ -97,13 +98,13 @@ void replay_playback_indicator_widget::add_to_renderer(renderer& renderer)
 	tr::gfx::color_mesh_ref mesh{};
 	const auto shift_indices{[&](u16 i) -> u16 { return i + mesh.base_index; }};
 
-	if (input::instance().held(tr::sys::keymod::SHIFT)) {
+	if (m_input.held(tr::sys::keymod::SHIFT)) {
 		mesh = renderer.basic().new_color_mesh(layer::UI, 9, SLOW_NORMAL_SPEED_INDICES.size());
 		std::ranges::copy(SLOW_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_COLORS, mesh.colors.begin());
 		std::ranges::copy(SLOW_NORMAL_SPEED_INDICES | std::views::transform(shift_indices), mesh.indices.begin());
 	}
-	else if (input::instance().held(tr::sys::keymod::CTRL)) {
+	else if (m_input.held(tr::sys::keymod::CTRL)) {
 		mesh = renderer.basic().new_color_mesh(layer::UI, 19, FAST_SPEED_INDICES.size());
 		std::ranges::copy(FAST_SPEED_POSITIONS | std::views::transform(shift_positions), mesh.positions.begin());
 		std::ranges::copy(FAST_SPEED_COLORS, mesh.colors.begin());

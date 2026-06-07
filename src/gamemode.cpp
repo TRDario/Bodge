@@ -5,7 +5,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../include/gamemode.hpp"
-#include "../include/settings.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 // clang-format off
@@ -116,29 +115,29 @@ const std::array<gamemode, 6> BUILTIN_GAMEMODES{{
 // clang-format on
 //////////////////////////////////////////////////////////////// GAMEMODE /////////////////////////////////////////////////////////////////
 
-std::string_view gamemode::name_loc() const
+std::string_view gamemode::localized_name(const localization& localization) const
 {
-	return builtin ? localization::instance()[name] : std::string_view{name};
+	return builtin ? localization[name] : std::string_view{name};
 }
 
-std::string_view gamemode::description_loc() const
+std::string_view gamemode::localized_description(const localization& localization) const
 {
-	return builtin ? localization::instance()[description] : std::string_view{description};
+	return builtin ? localization[description] : std::string_view{description};
 }
 
-std::string gamemode::description_loc_with_fallback() const
+std::string gamemode::localized_description_with_fallback(const localization& localization) const
 {
-	std::string_view base{description_loc()};
-	return std::string{base.empty() ? localization::instance()["no_description"] : base};
+	std::string_view base{localized_description(localization)};
+	return std::string{base.empty() ? localization["no_description"] : base};
 }
 
-void gamemode::save_to_file() const
+void gamemode::save_to_directory(const std::filesystem::path& directory) const
 {
-	std::filesystem::path path{debug_settings::instance().user_directory() / "gamemodes" / TR_FMT::format("{}.gmd", name)};
+	std::filesystem::path path{directory / TR_FMT::format("{}.gmd", name)};
 	if (std::filesystem::exists(path)) {
 		int index{0};
 		do {
-			path = debug_settings::instance().user_directory() / "gamemodes" / TR_FMT::format("{}({}).gmd", name, index++);
+			path = directory / TR_FMT::format("{}({}).gmd", name, index++);
 		} while (std::filesystem::exists(path));
 	}
 
@@ -195,15 +194,14 @@ gamemode pick_menu_gamemode()
 	return MENU_GAMEMODES[g_rng.generate(MENU_GAMEMODES.size())];
 }
 
-std::vector<gamemode_with_path> load_gamemodes()
+std::vector<gamemode_with_path> load_gamemodes(const std::filesystem::path& directory)
 {
 	std::vector<gamemode_with_path> gamemodes;
 	try {
 		for (const gamemode& builtin : BUILTIN_GAMEMODES) {
 			gamemodes.emplace_back(std::string{}, builtin);
 		}
-		const std::filesystem::path gamemode_dir{debug_settings::instance().user_directory() / "gamemodes"};
-		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{gamemode_dir}) {
+		for (std::filesystem::directory_entry file : std::filesystem::directory_iterator{directory}) {
 			const std::filesystem::path path{file};
 			try {
 				if (!file.is_regular_file() || path.extension() != ".gmd") {

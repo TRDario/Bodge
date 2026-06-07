@@ -80,8 +80,9 @@ constexpr glm::vec2 INERTIA_FACTOR_START_POS{1050, HITBOX_RADIUS_START_POS.y + 7
 // clang-format on
 /////////////////////////////////////////////////////// PLAYER SETTINGS EDITOR STATE //////////////////////////////////////////////////////
 
-player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor data, gamemode gamemode)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game,
+														   gamemode_editor data, gamemode gamemode)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_EDITOR}
 	, m_data{std::move(data)}
 	, m_pending{std::move(gamemode)}
@@ -91,20 +92,22 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.animation = TITLE_POS,
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0_s,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_SUBTITLE, {
 		.animation = {TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
-		.text = localized_text{T_SUBTITLE},
+		.text = localized_text{m_subsystems->localization, T_SUBTITLE},
 		.font_size = 32
 	});
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, {
 		.animation = {STARTING_LIVES_START_POS, {765, STARTING_LIVES_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives > 0; },
-		.action = [&sl = m_pending.player.starting_lives] { sl = u8(std::max(int(sl - input::instance().choose(1, 5, 10)), 0)); }
+		.action = [this] {
+			m_pending.player.starting_lives = u8(std::max(int(m_pending.player.starting_lives - m_subsystems->input.choose(1, 5, 10)), 0));
+		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_LIVES_C, {
 		.animation = {STARTING_LIVES_START_POS, {875.5f, STARTING_LIVES_START_POS.y}, 0.5_s},
@@ -117,11 +120,13 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.animation = {STARTING_LIVES_START_POS, {985, STARTING_LIVES_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives < 255; },
-		.action = [&sl = m_pending.player.starting_lives] { sl = u8(std::min(sl + input::instance().choose(1, 5, 10), 255)); }
+		.action = [this] {
+			m_pending.player.starting_lives = u8(std::min(m_pending.player.starting_lives + m_subsystems->input.choose(1, 5, 10), 255));
+		}
 	});
 	m_ui.emplace<text_button_widget>(T_SPAWN_LIFE_FRAGMENTS_C, {
 		.animation = {SPAWN_LIFE_FRAGMENTS_START_POS, {875.5f, SPAWN_LIFE_FRAGMENTS_START_POS.y}, 0.5_s},
-		.text = [&slf = m_pending.player.spawn_life_fragments] { return std::string{localization::instance()[slf ? "on" : "off"]}; },
+		.text = [this] { return std::string{m_subsystems->localization[m_pending.player.spawn_life_fragments ? "on" : "off"]}; },
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.action = [this] { on_toggle_life_fragments(); }
 	});
@@ -132,8 +137,8 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 			return m_substate == substate::IN_EDITOR && m_pending.player.spawn_life_fragments &&
 				   m_pending.player.life_fragment_spawn_interval > 15_s;
 		},
-		.action = [&lfsi = m_pending.player.life_fragment_spawn_interval] {
-			lfsi = std::max(lfsi - input::instance().choose(0.1_s, 1_s, 10_s), 15_s);
+		.action = [this] {
+			m_pending.player.life_fragment_spawn_interval = std::max(m_pending.player.life_fragment_spawn_interval - m_subsystems->input.choose(0.1_s, 1_s, 10_s), 15_s);
 		}
 	});
 	m_ui.emplace<interval_input_widget<4>>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_C, {
@@ -150,15 +155,17 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 			return m_substate == substate::IN_EDITOR && m_pending.player.spawn_life_fragments &&
 				m_pending.player.life_fragment_spawn_interval < 90_s;
 		},
-		.action = [&lfsi = m_pending.player.life_fragment_spawn_interval] {
-			lfsi = std::min(lfsi + input::instance().choose(0.1_s, 1_s, 10_s), 90_s);
+		.action = [this] {
+			m_pending.player.life_fragment_spawn_interval = std::min(m_pending.player.life_fragment_spawn_interval + m_subsystems->input.choose(0.1_s, 1_s, 10_s), 90_s);
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, {
 		.animation = {HITBOX_RADIUS_START_POS, {765, HITBOX_RADIUS_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius > 1.0f; },
-		.action = [&hr = m_pending.player.hitbox_radius] { hr = std::max(hr - input::instance().choose(1, 5, 10), 1.0f); }
+		.action = [this] {
+			m_pending.player.hitbox_radius = std::max(m_pending.player.hitbox_radius - m_subsystems->input.choose(1, 5, 10), 1.0f);
+		}
 	});
 	m_ui.emplace<numeric_input_widget<float, 3, "{:.0f}">>(T_HITBOX_RADIUS_C, {
 		.animation = {HITBOX_RADIUS_START_POS, {875.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s},
@@ -171,13 +178,17 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.animation = {HITBOX_RADIUS_START_POS, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius < 100.0f; },
-		.action = [&hr = m_pending.player.hitbox_radius] { hr = std::min(hr + input::instance().choose(1, 5, 10), 100.0f); }
+		.action = [this] {
+			m_pending.player.hitbox_radius = std::min(m_pending.player.hitbox_radius + m_subsystems->input.choose(1, 5, 10), 100.0f);
+		}
 	});
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_D, {
 		.animation = {INERTIA_FACTOR_START_POS, {765, INERTIA_FACTOR_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.inertia_factor > 0.0f; },
-		.action = [&in = m_pending.player.inertia_factor] { in = std::max(in - input::instance().choose(0.01f, 0.05f, 0.1f), 0.0f); }
+		.action = [this] {
+			m_pending.player.inertia_factor = std::max(m_pending.player.inertia_factor - m_subsystems->input.choose(0.01f, 0.05f, 0.1f), 0.0f);
+		}
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.2f}">>(T_INERTIA_FACTOR_C, {
 		.animation = {INERTIA_FACTOR_START_POS, {875.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s},
@@ -190,22 +201,24 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<playe
 		.animation = {INERTIA_FACTOR_START_POS, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.inertia_factor < 0.99f; },
-		.action = [&in = m_pending.player.inertia_factor] { in = std::min(in + input::instance().choose(0.01f, 0.05f, 0.1f), 0.99f); }
+		.action = [this] {
+			m_pending.player.inertia_factor = std::min(m_pending.player.inertia_factor + m_subsystems->input.choose(0.01f, 0.05f, 0.1f), 0.99f);
+		}
 	});
 
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		m_ui.emplace<label_widget>(LABELS[i].tag, {
 			.animation = {{-50, 375 + i * 75}, {15, 375 + i * 75}, 0.5_s},
 			.alignment = tr::align::CENTER_LEFT,
-			.tooltip_text = localized_text{LABELS[i].tooltip},
-			.text = localized_text{LABELS[i].tag}
+			.tooltip_text = localized_text{m_subsystems->localization, LABELS[i].tooltip},
+			.text = localized_text{m_subsystems->localization, LABELS[i].tag}
 		});
 	}
 
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
-		.text = localized_text{T_EXIT},
+		.text = localized_text{m_subsystems->localization, T_EXIT},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.action = [this] { on_exit(); },
 		.action_sound = sound::CANCEL
@@ -258,5 +271,5 @@ void player_settings_editor_state::on_exit()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<gamemode_editor_state>(m_game, m_data, m_pending, animate_subtitle::YES);
+	m_next_state = make_async<gamemode_editor_state>(m_subsystems, m_game, m_data, m_pending, animate_subtitle::YES);
 }

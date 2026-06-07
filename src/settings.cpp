@@ -5,9 +5,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../include/settings.hpp"
-#include "../include/audio.hpp"
-#include "../include/renderer.hpp"
-#include "../include/renderer/text_engine.hpp"
 
 //////////////////////////////////////////////////////////////// CONSTANTS ////////////////////////////////////////////////////////////////
 
@@ -152,47 +149,39 @@ u16 max_window_size()
 	return u16(std::min(display_size.x, display_size.y));
 }
 
-///////////////////////////////////////////////////////////// ACTIVE SETTINGS /////////////////////////////////////////////////////////////
+//
 
-void active_settings::raw_load_from_file()
+settings::settings(const std::filesystem::path& path)
 {
-	const std::filesystem::path path{debug_settings::instance().user_directory() / "settings.dat"};
 	try {
 		std::ifstream file{tr::open_file_r(path, std::ios::binary)};
 		const std::vector<std::byte> raw{tr::decrypt(tr::flush_binary(file))};
 		std::span<const std::byte> data{raw};
 		if (tr::binary_read<u8>(data) == SETTINGS_VERSION) {
-			tr::binary_read<::settings>(data, m_settings);
+			tr::binary_read<::settings>(data, *this);
 		}
 	}
 	catch (std::exception&) {
 		return;
 	}
+
+	window_size = std::clamp(window_size, MIN_WINDOW_SIZE, max_window_size());
+	mouse_sensitivity = std::clamp(mouse_sensitivity, 50_u8, 200_u8);
+	primary_hue = u16(primary_hue % 360);
+	secondary_hue = u16(secondary_hue % 360);
+	sfx_volume = std::min(sfx_volume, 100_u8);
+	music_volume = std::min(music_volume, 100_u8);
 }
 
-void active_settings::validate()
-{
-	m_settings.window_size = std::clamp(m_settings.window_size, MIN_WINDOW_SIZE, max_window_size());
-	m_settings.mouse_sensitivity = std::clamp(m_settings.mouse_sensitivity, 50_u8, 200_u8);
-	m_settings.primary_hue = u16(m_settings.primary_hue % 360);
-	m_settings.secondary_hue = u16(m_settings.secondary_hue % 360);
-	m_settings.sfx_volume = std::min(m_settings.sfx_volume, 100_u8);
-	m_settings.music_volume = std::min(m_settings.music_volume, 100_u8);
-}
+//
 
-active_settings::active_settings()
-{
-	raw_load_from_file();
-	validate();
-}
-
-active_settings::~active_settings()
+void settings::save_to_file(const std::filesystem::path& path) const
 {
 	try {
-		std::ofstream file{tr::open_file_w(debug_settings::instance().user_directory() / "settings.dat", std::ios::binary)};
+		std::ofstream file{tr::open_file_w(path, std::ios::binary)};
 		std::ostringstream buffer;
 		tr::binary_write(buffer, SETTINGS_VERSION);
-		tr::binary_write(buffer, m_settings);
+		tr::binary_write(buffer, *this);
 		const std::vector<std::byte> encrypted{tr::encrypt(tr::range_bytes(buffer.view()), g_rng.generate<u8>())};
 		tr::binary_write(file, std::span{encrypted});
 	}
@@ -201,57 +190,9 @@ active_settings::~active_settings()
 	}
 }
 
-active_settings& active_settings::instance()
-{
-	static active_settings instance{};
-	return instance;
-}
-
 //
 
-active_settings::operator const settings&() const
+bool settings::restart_required_to_apply(const settings& new_settings) const
 {
-	return m_settings;
-}
-
-const settings* active_settings::operator->() const
-{
-	return &m_settings;
-}
-
-bool active_settings::restart_required_to_apply(const settings& new_settings) const
-{
-	return new_settings.display_mode != m_settings.display_mode ||
-		   (m_settings.display_mode == display_mode::WINDOWED && new_settings.window_size != m_settings.window_size);
-}
-
-bool active_settings::releasing_graphical_resources_required_to_apply(const settings& new_settings) const
-{
-	return restart_required_to_apply(new_settings) ||
-		   localization::instance().use_different_fonts(m_settings.language, new_settings.language);
-}
-
-//
-
-void active_settings::apply(const settings& new_settings)
-{
-	const bool restart_required{restart_required_to_apply(new_settings)};
-	const settings old{m_settings};
-
-	m_settings = new_settings;
-	if (restart_required) {
-		renderer::instance().reopen_window(new_settings);
-	}
-	else if (m_settings.vsync != old.vsync) {
-		tr::sys::set_window_vsync(m_settings.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
-	}
-
-	if (old.language != new_settings.language) {
-		localization::instance().reload(new_settings.language);
-	}
-	if (localization::instance().use_different_fonts(old.language, new_settings.language)) {
-		renderer::instance().text_engine.set_language_font();
-	}
-
-	audio::instance().set_volume(new_settings.sfx_volume, new_settings.music_volume);
+	return new_settings.display_mode != display_mode || (display_mode == display_mode::WINDOWED && new_settings.window_size != window_size);
 }

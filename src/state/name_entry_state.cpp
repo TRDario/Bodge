@@ -27,14 +27,14 @@ constexpr shortcut_table SHORTCUTS{
 //////////////////////////////////////////////////////////// NAME ENTRY STATE /////////////////////////////////////////////////////////////
 
 name_entry_state::name_entry_state()
-	: main_menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::FADING_IN}
+	: main_menu_state{std::make_shared<subsystems>(), SELECTION_TREE, SHORTCUTS}, m_substate{substate::FADING_IN}
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
 		.animation = {TOP_START_POS, TITLE_POS, 1.0_s},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 1.0_s,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<line_input_widget<20>>(T_INPUT, {
@@ -48,7 +48,7 @@ name_entry_state::name_entry_state()
 		.animation = {BOTTOM_START_POS, {500, 1000}, 1.0_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.unhide_time = 1.0_s,
-		.text = localized_text{T_CONFIRM},
+		.text = localized_text{m_subsystems->localization, T_CONFIRM},
 		.status = [this] { return m_substate != substate::EXITING && !m_ui.as<line_input_widget<20>>(T_INPUT).contents().empty(); },
 		.action = [this] { on_exit(); }
 	});
@@ -102,6 +102,6 @@ void name_entry_state::on_exit()
 		savefile.rename(name);
 		savefile.save_to_file();
 
-		m_next_state = make_async<title_state>(m_game);
+		m_next_state = make_async<title_state>(m_subsystems, m_game);
 	}
 }

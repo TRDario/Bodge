@@ -55,17 +55,17 @@ new_gamemode_editor::new_gamemode_editor(savefile savefile)
 {
 }
 
-localized_text new_gamemode_editor::subtitle_text() const
+localized_text new_gamemode_editor::subtitle_text(const localization& localization) const
 {
-	return localized_text{"new_gamemode"};
+	return localized_text{localization, "new_gamemode"};
 }
 
 void new_gamemode_editor::on_save(gamemode_editor_state& state)
 {
 	m_savefile.gamemode_draft = gamemode{};
 	m_savefile.save_to_file();
-	state.m_pending.save_to_file();
-	state.m_next_state = make_async<title_state>(state.m_game);
+	state.m_pending.save_to_directory();
+	state.m_next_state = make_async<title_state>(state.m_subsystems, state.m_game);
 	state.set_up_exit_animation(animate_title::YES, animate_subtitle::YES);
 }
 
@@ -73,7 +73,7 @@ void new_gamemode_editor::on_discard(gamemode_editor_state& state)
 {
 	m_savefile.gamemode_draft = state.m_pending;
 	m_savefile.save_to_file();
-	state.m_next_state = make_async<gamemode_manager_state>(state.m_game, animate_title::NO);
+	state.m_next_state = make_async<gamemode_manager_state>(state.m_subsystems, state.m_game, animate_title::NO);
 	state.set_up_exit_animation(animate_title::NO, animate_subtitle::YES);
 }
 
@@ -84,52 +84,52 @@ edited_gamemode_editor::edited_gamemode_editor(std::filesystem::path path)
 {
 }
 
-localized_text edited_gamemode_editor::subtitle_text() const
+localized_text edited_gamemode_editor::subtitle_text(const localization& localization) const
 {
-	return localized_text{"edit_gamemode"};
+	return localized_text{localization, "edit_gamemode"};
 }
 
 void edited_gamemode_editor::on_save(gamemode_editor_state& state) const
 {
 	std::filesystem::remove(m_path);
-	state.m_pending.save_to_file();
-	state.m_next_state =
-		make_async<gamemode_selector_state>(state.m_game, edit_gamemode_selector{state.m_pending.author}, animate_subtitle::NO);
+	state.m_pending.save_to_directory();
+	state.m_next_state = make_async<gamemode_selector_state>(state.m_subsystems, state.m_game,
+															 edit_gamemode_selector{state.m_pending.author}, animate_subtitle::NO);
 	state.set_up_exit_animation(animate_title::NO, animate_subtitle::NO);
 }
 
 void edited_gamemode_editor::on_discard(gamemode_editor_state& state) const
 {
-	state.m_next_state =
-		make_async<gamemode_selector_state>(state.m_game, edit_gamemode_selector{state.m_pending.author}, animate_subtitle::NO);
+	state.m_next_state = make_async<gamemode_selector_state>(state.m_subsystems, state.m_game,
+															 edit_gamemode_selector{state.m_pending.author}, animate_subtitle::NO);
 	state.set_up_exit_animation(animate_title::NO, animate_subtitle::NO);
 }
 
 //
 
-localized_text cloned_gamemode_editor::subtitle_text() const
+localized_text cloned_gamemode_editor::subtitle_text(const localization& localization) const
 {
-	return localized_text{"clone_gamemode"};
+	return localized_text{localization, "clone_gamemode"};
 }
 
 void cloned_gamemode_editor::on_save(gamemode_editor_state& state) const
 {
-	state.m_pending.save_to_file();
-	state.m_next_state = make_async<title_state>(state.m_game);
+	state.m_pending.save_to_directory();
+	state.m_next_state = make_async<title_state>(state.m_subsystems, state.m_game);
 	state.set_up_exit_animation(animate_title::YES, animate_subtitle::YES);
 }
 
 void cloned_gamemode_editor::on_discard(gamemode_editor_state& state) const
 {
-	state.m_next_state =
-		make_async<gamemode_selector_state>(state.m_game, clone_gamemode_selector{state.m_pending.author}, animate_subtitle::NO);
+	state.m_next_state = make_async<gamemode_selector_state>(state.m_subsystems, state.m_game,
+															 clone_gamemode_selector{state.m_pending.author}, animate_subtitle::NO);
 	state.set_up_exit_animation(animate_title::NO, animate_subtitle::NO);
 }
 
 ////////////////////////////////////////////////////////// GAMEMODE EDITOR STATE //////////////////////////////////////////////////////////
 
-gamemode_editor_state::gamemode_editor_state(gamemode_editor data, gamemode gamemode)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS}
+gamemode_editor_state::gamemode_editor_state(std::shared_ptr<subsystems> subsystems, gamemode_editor data, gamemode gamemode)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS}
 	, m_substate{substate::RETURNING_FROM_TEST_GAME}
 	, m_type{std::move(data)}
 	, m_available_songs{create_available_song_list()}
@@ -138,9 +138,9 @@ gamemode_editor_state::gamemode_editor_state(gamemode_editor data, gamemode game
 	set_up_ui(animate_title::YES, animate_subtitle::YES);
 }
 
-gamemode_editor_state::gamemode_editor_state(std::shared_ptr<playerless_game> game, gamemode_editor data, gamemode gamemode,
-											 animate_subtitle animate_subtitle)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+gamemode_editor_state::gamemode_editor_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game,
+											 gamemode_editor data, gamemode gamemode, animate_subtitle animate_subtitle)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_GAMEMODE_EDITOR}
 	, m_type{std::move(data)}
 	, m_available_songs{create_available_song_list()}
@@ -199,14 +199,14 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, TITLE_POS, 0.5_s} : tweened_position{TITLE_POS},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_SUBTITLE, {
 		.animation = bool(animate_subtitle) ? tweened_position{TOP_START_POS, {500, 64}, 0.5_s} : tweened_position{{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_subtitle) ? 0.5_s : 0,
-		.text = std::visit([](const auto& type) { return type.subtitle_text(); }, m_type),
+		.text = std::visit([this](const auto& type) { return type.subtitle_text(m_subsystems->localization); }, m_type),
 		.font_size = 32
 	});
 	m_ui.emplace<line_input_widget<12>>(T_NAME, {
@@ -218,7 +218,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	});
 	m_ui.emplace<label_widget>(T_AUTHOR, {
 		.animation = {{600, 315}, {500, 315}, 0.5_s},
-		.text = constant_text{TR_FMT::format("{}: {}", localization::instance()["by"], m_pending.author)},
+		.text = constant_text{TR_FMT::format("{}: {}", m_subsystems->localization["by"], m_pending.author)},
 		.font_size = 32
 	});
 	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, {
@@ -231,21 +231,21 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	});
 	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, {
 		.animation = {{600, 450}, {500, 450}, 0.5_s},
-		.text = localized_text{T_BALL_SETTINGS}, 
+		.text = localized_text{m_subsystems->localization, T_BALL_SETTINGS}, 
 		.font_size = 64,
 		.status = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
 		.action = [this] { on_enter_ball_settings(); }
 	});
 	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, {
 		.animation = {{400, 550}, {500, 550}, 0.5_s},
-		.text = localized_text{T_PLAYER_SETTINGS},
+		.text = localized_text{m_subsystems->localization, T_PLAYER_SETTINGS},
 		.font_size = 64,
 		.status = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
 		.action = [this] { on_enter_player_settings(); }
 	});
 	m_ui.emplace<label_widget>(T_SONG, {
 		.animation = {{600, 650}, {500, 650}, 0.5_s},
-		.text = localized_text{T_SONG}
+		.text = localized_text{m_subsystems->localization, T_SONG}
 	});
 	m_ui.emplace<text_button_widget>(T_SONG_C, {
 		.animation = {{400, 700}, {500, 700}, 0.5_s},
@@ -266,7 +266,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		 .status_command = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
 		 .action_command = [this] { on_test(); },
 		 .sound = sound::CONFIRM},
-		{.tooltip_text = [this] { return m_ui.as<line_input_widget<12>>(T_NAME).contents().empty() ? std::string{localization::instance()["save_gamemode_tt"]} : std::string{}; },
+		{.tooltip_text = [this] { return m_ui.as<line_input_widget<12>>(T_NAME).contents().empty() ? std::string{m_subsystems->localization["save_gamemode_tt"]} : std::string{}; },
 		 .status_command = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR && !m_ui.as<line_input_widget<12>>(T_NAME).contents().empty(); },
 		 .action_command = [this] { on_save(); },
 		 .sound = sound::CONFIRM},
@@ -280,7 +280,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 			.animation = {BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s},
 			.alignment = tr::align::BOTTOM_CENTER,
 			.tooltip_text = bottom_button_parameters[i].tooltip_text,
-			.text = localized_text{BOTTOM_BUTTONS[i]},
+			.text = localized_text{m_subsystems->localization, BOTTOM_BUTTONS[i]},
 			.status = bottom_button_parameters[i].status_command,
 			.action = bottom_button_parameters[i].action_command,
 			.action_sound = bottom_button_parameters[i].sound
@@ -318,7 +318,7 @@ void gamemode_editor_state::on_enter_player_settings()
 	m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).contents();
 	m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 	set_up_exit_animation(animate_title::NO, animate_subtitle::YES);
-	m_next_state = make_async<player_settings_editor_state>(m_game, m_type, m_pending);
+	m_next_state = make_async<player_settings_editor_state>(m_subsystems, m_game, m_type, m_pending);
 }
 
 void gamemode_editor_state::on_enter_ball_settings()
@@ -328,7 +328,7 @@ void gamemode_editor_state::on_enter_ball_settings()
 	m_pending.name = m_ui.as<line_input_widget<12>>(T_NAME).contents();
 	m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 	set_up_exit_animation(animate_title::NO, animate_subtitle::YES);
-	m_next_state = make_async<ball_settings_editor_state>(m_game, m_type, m_pending);
+	m_next_state = make_async<ball_settings_editor_state>(m_subsystems, m_game, m_type, m_pending);
 }
 
 void gamemode_editor_state::on_change_song()
@@ -348,7 +348,7 @@ void gamemode_editor_state::on_test()
 	m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 	set_up_exit_animation(animate_title::YES, animate_subtitle::YES);
 	audio::instance().fade_song_out(0.5s);
-	m_next_state = make_game_state_async<active_game>(test_game_data{m_type}, savefile{}, m_pending);
+	m_next_state = make_game_state_async<active_game>(m_subsystems, test_game_data{m_type}, m_subsystems->input, savefile{}, m_pending);
 }
 
 void gamemode_editor_state::on_save()

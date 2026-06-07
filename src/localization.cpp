@@ -44,16 +44,10 @@ static std::map<language_code, language_info> load_languages()
 
 //
 
-localization::localization()
+localization::localization(language_code initial_language)
 	: available_languages{load_languages()}
 {
-	reload(active_settings::instance()->language);
-}
-
-localization& localization::instance()
-{
-	static localization instance{};
-	return instance;
+	reload(initial_language);
 }
 
 //

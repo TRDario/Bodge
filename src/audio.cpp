@@ -52,7 +52,7 @@ std::vector<std::string> create_available_song_list()
 	return songs;
 }
 
-audio::audio()
+audio::audio(const settings& settings)
 {
 	constexpr std::array<const char*, int(sound::COUNT)> SFX_FILENAMES{
 		"hover.ogg",          "hold.ogg",    "confirm.ogg",  "cancel.ogg",     "type.ogg",      "pause.ogg",
@@ -63,8 +63,8 @@ audio::audio()
 	try {
 		tr::audio::initialize();
 		tr::audio::set_master_gain(2);
-		tr::audio::set_class_gain(0, active_settings::instance()->sfx_volume / 100.0f);
-		tr::audio::set_class_gain(1, active_settings::instance()->music_volume / 100.0f);
+		tr::audio::set_class_gain(0, settings.sfx_volume / 100.0f);
+		tr::audio::set_class_gain(1, settings.music_volume / 100.0f);
 		for (int i = 0; i < int(sound::COUNT); ++i) {
 			m_sounds[i] = try_loading_audio_file(SFX_FILENAMES[i]);
 		}

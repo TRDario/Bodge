@@ -4,14 +4,6 @@
 
 ////////////////////////////////////////////////////////////////// INPUT //////////////////////////////////////////////////////////////////
 
-input& input::instance()
-{
-	static input input{};
-	return input;
-}
-
-//
-
 bool input::held(tr::sys::keymod modifiers) const
 {
 	return bool(m_held_keymods & modifiers);

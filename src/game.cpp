@@ -124,20 +124,20 @@ void playerless_game::add_ball_trail_overlay_to_renderer(tr::gfx::renderer_2d& r
 	std::ranges::fill(overlay.colors, "00000000"_rgba8);
 }
 
-void playerless_game::add_border_to_renderer(tr::gfx::renderer_2d& renderer) const
+void playerless_game::add_border_to_renderer(tr::gfx::renderer_2d& renderer, float hue) const
 {
 	const tr::gfx::simple_color_mesh_ref border{renderer.new_color_outline(layer::BORDER, 4)};
 	tr::fill_rectangle_outline_vertices(border.positions, {{2, 2}, {996, 996}}, 4);
-	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->secondary_hue), 1, 1}));
+	std::ranges::fill(border.colors, color_cast<tr::rgba8>(tr::hsv{hue, 1, 1}));
 }
 
-void playerless_game::add_to_renderer(renderer& renderer) const
+void playerless_game::add_to_renderer(renderer& renderer, float secondary_hue) const
 {
 	for (const ball& ball : m_balls) {
-		ball.add_to_renderer(renderer);
+		ball.add_to_renderer(renderer, secondary_hue);
 	}
 	add_ball_trail_overlay_to_renderer(renderer.basic());
-	add_border_to_renderer(renderer.basic());
+	add_border_to_renderer(renderer.basic(), secondary_hue);
 }
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
@@ -585,11 +585,11 @@ void game::add_timer_to_renderer(renderer& renderer) const
 	}
 }
 
-void game::add_lives_to_renderer(tr::gfx::renderer_2d& renderer) const
+void game::add_lives_to_renderer(tr::gfx::renderer_2d& renderer, float hue) const
 {
 	const float life_size{m_lives_left > (m_hit_animation_timer.active() ? MAX_LARGE_LIVES - 1 : MAX_LARGE_LIVES) ? SMALL_LIFE_SIZE
 																												  : LARGE_LIFE_SIZE};
-	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
+	const tr::rgb8 color{color_cast<tr::rgb8>(tr::hsv{hue, 1, 1})};
 	const u8 opacity{u8(192 - 148 * m_lives_hover_timer.accumulated() / m_lives_hover_timer.max())};
 	const tr::angle rotation{120_deg * m_elapsed_time / 1_s};
 
@@ -660,7 +660,7 @@ void game::add_score_to_renderer(renderer& renderer) const
 	}
 }
 
-void game::add_to_renderer(renderer& renderer) const
+void game::add_to_renderer(renderer& renderer, float primary_hue, float secondary_hue) const
 {
 	tr::gfx::bitmap_atlas<char>* const number_atlas_bitmap{std::get_if<tr::gfx::bitmap_atlas<char>>(&m_number_atlas)};
 	if (number_atlas_bitmap != nullptr) {
@@ -670,7 +670,7 @@ void game::add_to_renderer(renderer& renderer) const
 		renderer.basic().set_default_layer_texture(layer::GAME_OVERLAY, atlas);
 	}
 
-	playerless_game::add_to_renderer(renderer);
+	playerless_game::add_to_renderer(renderer, secondary_hue);
 	for (const life_fragment& fragment : m_life_fragments) {
 		fragment.add_to_renderer(renderer);
 	}
@@ -680,16 +680,17 @@ void game::add_to_renderer(renderer& renderer) const
 	}
 	else {
 		m_player.add_to_renderer_alive(renderer, m_elapsed_time, m_style_cooldown_timer);
-		add_lives_to_renderer(renderer.basic());
+		add_lives_to_renderer(renderer.basic(), primary_hue);
 	}
 	add_score_to_renderer(renderer);
 }
 
 /////////////////////////////////////////////////////////////// ACTIVE GAME ///////////////////////////////////////////////////////////////
 
-active_game::active_game(savefile savefile, ::gamemode gamemode, u64 seed)
+active_game::active_game(const input& input, savefile savefile, ::gamemode gamemode, u64 seed)
 	: game{same_player_result_color_picker{savefile.best_results(gamemode)}, std::move(gamemode), seed}
 	, replay{savefile.name(), this->gamemode(), seed}
+	, m_input{input}
 {
 }
 
@@ -698,10 +699,9 @@ active_game::active_game(savefile savefile, ::gamemode gamemode, u64 seed)
 void active_game::tick()
 {
 	const bool was_game_over{game_over()};
-	const glm::vec2 input{input::instance().mouse_pos};
-	game::tick(input);
+	game::tick(m_input.mouse_pos);
 	if (!was_game_over) {
-		replay.append(input);
+		replay.append(m_input.mouse_pos);
 	}
 }
 

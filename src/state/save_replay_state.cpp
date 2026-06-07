@@ -35,9 +35,10 @@ constexpr shortcut_table SHORTCUTS{
 // clang-format on
 //////////////////////////////////////////////////////////// SAVE REPLAY STATE ////////////////////////////////////////////////////////////
 
-save_replay_state::save_replay_state(std::shared_ptr<game> game, savefile savefile, save_screen_flags flags)
-	: game_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game), std::move(savefile),
-					  update_game(bool(flags & save_screen_flags::GAME_OVER))}
+save_replay_state::save_replay_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<game> game, savefile savefile,
+									 save_screen_flags flags)
+	: game_menu_state{std::move(subsystems), SELECTION_TREE,      SHORTCUTS,
+					  std::move(game),       std::move(savefile), update_game(bool(flags & save_screen_flags::GAME_OVER))}
 	, m_substate{substate_base::SAVING_REPLAY | flags}
 	, m_replay{((active_game&)*m_game).replay.header()}
 {
@@ -45,12 +46,12 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, savefile savefi
 	m_ui.emplace<label_widget>(T_TITLE, {
 		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_NAME, {
 		.animation = {{400, 200}, {500, 200}, 0.5_s},
-		.text = localized_text{T_NAME}
+		.text = localized_text{m_subsystems->localization, T_NAME}
 	});
 	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, {
 		.animation = {{400, 235}, {500, 235}, 0.5_s},
@@ -61,7 +62,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, savefile savefi
 	});
 	m_ui.emplace<label_widget>(T_DESCRIPTION, {
 		.animation = {{600, 440}, {500, 440}, 0.5_s},
-		.text = localized_text{T_DESCRIPTION},
+		.text = localized_text{m_subsystems->localization, T_DESCRIPTION},
 	});
 	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, {
 		.animation = {{600, 475}, {500, 475}, 0.5_s},
@@ -75,9 +76,11 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, savefile savefi
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.tooltip_text = [this] {
-			return m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty() ? std::string{localization::instance()["save_replay_tt"]} : std::string{};
+			return m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty()
+			       ? std::string{m_subsystems->localization["save_replay_tt"]}
+				   : std::string{};
 		},
-		.text = localized_text{T_SAVE},
+		.text = localized_text{m_subsystems->localization, T_SAVE},
 		.status = [this] {
 			return to_base(m_substate) == substate_base::SAVING_REPLAY && !m_ui.as<line_input_widget<20>>(T_NAME_INPUT).contents().empty();
 		},
@@ -86,7 +89,7 @@ save_replay_state::save_replay_state(std::shared_ptr<game> game, savefile savefi
 	m_ui.emplace<text_button_widget>(T_DISCARD, {
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
-		.text = localized_text{T_DISCARD},
+		.text = localized_text{m_subsystems->localization, T_DISCARD},
 		.status = [this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; },
 		.action = [this] { on_discard(); }
 	});
@@ -168,7 +171,8 @@ void save_replay_state::on_save()
 		m_next_state = make_async<title_state>();
 	}
 	else {
-		m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_savefile, m_game->gamemode());
+		m_next_state =
+			make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_game->gamemode());
 	}
 }
 
@@ -181,6 +185,7 @@ void save_replay_state::on_discard()
 		m_next_state = make_async<title_state>();
 	}
 	else {
-		m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_savefile, m_game->gamemode());
+		m_next_state =
+			make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_game->gamemode());
 	}
 }

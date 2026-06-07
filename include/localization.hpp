@@ -21,11 +21,11 @@ struct language_info {
 
 /////////////////////////////////////////////////////////////// LOCALIZATION //////////////////////////////////////////////////////////////
 
-// Localization manager singleton.
+// Localization manager.
 class localization {
   public:
-	// Gets the localization manager instance.
-	static localization& instance();
+	// Loads the list of available languages and the initial localization.
+	localization(language_code initial_language);
 
 	// List of available languages.
 	const std::map<language_code, language_info> available_languages;
@@ -40,7 +40,4 @@ class localization {
   private:
 	// Underlying localization map.
 	tr::localization_map m_map;
-
-	// Loads the list of available languages and the initial localization.
-	localization();
 };

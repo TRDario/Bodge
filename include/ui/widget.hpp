@@ -11,8 +11,9 @@
 #include "../timer.hpp"
 #include "widget_base.hpp"
 
-class ui_manager;
+class input;
 class replays_state;
+class ui_manager;
 
 /////////////////////////////////////////////////////////////// LABEL WIDGET //////////////////////////////////////////////////////////////
 
@@ -506,6 +507,10 @@ class replay_playback_indicator_widget final : public widget {
   public:
 	// Replay playback indicator widget properties.
 	struct properties {
+		// Reference to the input manager.
+		const input& input;
+		// Reference to the localization manager.
+		const localization& localization;
 		// Initial animation of the widget.
 		tweened_position animation;
 		// Alignment of the widget.
@@ -522,6 +527,10 @@ class replay_playback_indicator_widget final : public widget {
 
 	// Adds the widget to the renderer.
 	void add_to_renderer(renderer& renderer) override;
+
+  private:
+	// Reference to the input manager.
+	const input& m_input;
 };
 
 ///////////////////////////////////////////////////////////// GAMEMODE WIDGET /////////////////////////////////////////////////////////////
@@ -573,6 +582,8 @@ class score_widget final : public text_widget {
 
 	// Score widget properties.
 	struct properties {
+		// Reference to the localization subsystem.
+		const localization& localization;
 		// Initial position (or animation) of the widget.
 		tweened_position animation;
 		// Alignment of the widget.
@@ -618,6 +629,8 @@ class replay_widget final : private replay_widget_data, public text_button_widge
   public:
 	// Replay widget properties.
 	struct properties {
+		// Reference to the localization subsystem.
+		const localization& localization;
 		// Initial position (or animation) of the widget.
 		tweened_position animation;
 		// Alignment of the widget.

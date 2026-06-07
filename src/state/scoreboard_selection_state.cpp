@@ -33,9 +33,9 @@ constexpr shortcut_table SHORTCUTS{
 // clang-format on
 //////////////////////////////////////////////////////// SCOREBOARD SELECTION STATE ///////////////////////////////////////////////////////
 
-scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerless_game> game, savefile savefile,
-													   animate_title animate_title)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game,
+													   savefile savefile, animate_title animate_title)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_SCOREBOARD_SELECTION}
 	, m_savefile{std::move(savefile)}
 {
@@ -44,35 +44,35 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<playerles
 		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, TITLE_POS, 0.5_s} : tweened_position{TITLE_POS},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_PLAYER_INFO, {
 		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, {500, 64}, 0.5_s} : tweened_position{{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,
-		.text = constant_text{m_savefile.format_info()},
+		.text = constant_text{m_savefile.format_info(m_subsystems->localization)},
 		.font_size = 32
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.animation = bool(animate_title) ? tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s} : tweened_position{{500, 1000}},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,
-		.text = localized_text{T_EXIT},
+		.text = localized_text{m_subsystems->localization, T_EXIT},
 		.status = [this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
 		.action = [this] { on_exit(); },
 		.action_sound = sound::CANCEL
 	});
 	m_ui.emplace<text_button_widget>(T_VIEW_TIMES, {
 		.animation = {{400, 450}, {500, 450}, 0.5_s},
-		.text = localized_text{T_VIEW_TIMES},
+		.text = localized_text{m_subsystems->localization, T_VIEW_TIMES},
 		.font_size = 64,
 		.status = [this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
 		.action = [this] { on_view_times(); }
 	});
 	m_ui.emplace<text_button_widget>(T_VIEW_SCORES, {
 		.animation = {{600, 550}, {500, 550}, 0.5_s},
-		.text = localized_text{T_VIEW_SCORES},
+		.text = localized_text{m_subsystems->localization, T_VIEW_SCORES},
 		.font_size = 64,
 		.status = [this] { return m_substate == substate::IN_SCOREBOARD_SELECTION; },
 		.action = [this] { on_view_scores(); }
@@ -111,7 +111,7 @@ void scoreboard_selection_state::on_view_times()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<scoreboard_state>(m_game, m_savefile, scoreboard::TIME);
+	m_next_state = make_async<scoreboard_state>(m_subsystems, m_game, m_savefile, scoreboard::TIME);
 }
 
 void scoreboard_selection_state::on_view_scores()
@@ -119,7 +119,7 @@ void scoreboard_selection_state::on_view_scores()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<scoreboard_state>(m_game, m_savefile, scoreboard::SCORE);
+	m_next_state = make_async<scoreboard_state>(m_subsystems, m_game, m_savefile, scoreboard::SCORE);
 }
 
 void scoreboard_selection_state::on_exit()
@@ -127,5 +127,5 @@ void scoreboard_selection_state::on_exit()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::YES);
-	m_next_state = make_async<title_state>(m_game);
+	m_next_state = make_async<title_state>(m_subsystems, m_game);
 }

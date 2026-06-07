@@ -41,6 +41,8 @@ template <class T> using validation_command = std::function<T(std::common_type_t
 inline const text_command NO_TOOLTIP{};
 // Common text command for text widgets: getting a localization string using a key.
 struct localized_text {
+	// Reference to the localization manager.
+	const localization& localization;
 	// The tag serving as the key for the localization lookup.
 	tag tag;
 
@@ -55,6 +57,8 @@ struct constant_text {
 };
 // Common text command for text widgets: copying from a buffer if non-empty or a localized "empty" otherwise.
 template <usize S> struct buffer_text {
+	// Reference to the localization manager.
+	const localization& localization;
 	// Reference to the text buffer.
 	tr::static_string<S>& buffer;
 
@@ -258,7 +262,7 @@ template <usize BufferSize> class text_input_widget : protected input_buffer<Buf
 
 template <usize S> std::string buffer_text<S>::operator()() const
 {
-	return buffer.empty() ? std::string{localization::instance()["empty"]} : std::string{buffer};
+	return buffer.empty() ? std::string{localization["empty"]} : std::string{buffer};
 }
 
 #include "text_input_widget_impl.hpp" // IWYU pragma: keep

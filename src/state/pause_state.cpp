@@ -58,10 +58,14 @@ constexpr shortcut_table SHORTCUTS_SPECIAL{
 // clang-format on
 /////////////////////////////////////////////////////////////// PAUSE STATE ///////////////////////////////////////////////////////////////
 
-pause_state::pause_state(std::shared_ptr<game> game, savefile savefile, game_state_data data, glm::vec2 mouse_pos, blur_in blur_in)
-	: game_menu_state{std::holds_alternative<regular_game_data>(m_data) ? SELECTION_TREE_REGULAR : SELECTION_TREE_SPECIAL,
-					  std::holds_alternative<regular_game_data>(m_data) ? SHORTCUTS_REGULAR : SHORTCUTS_SPECIAL, std::move(game),
-					  std::move(savefile), update_game::NO}
+pause_state::pause_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<game> game, savefile savefile, game_state_data data,
+						 glm::vec2 mouse_pos, blur_in blur_in)
+	: game_menu_state{std::move(subsystems),
+					  std::holds_alternative<regular_game_data>(m_data) ? SELECTION_TREE_REGULAR : SELECTION_TREE_SPECIAL,
+					  std::holds_alternative<regular_game_data>(m_data) ? SHORTCUTS_REGULAR : SHORTCUTS_SPECIAL,
+					  std::move(game),
+					  std::move(savefile),
+					  update_game::NO}
 	, m_substate{(blur_in == blur_in::YES ? substate::PAUSING : substate::PAUSED)}
 	, m_data{std::move(data)}
 	, m_start_mouse_pos{mouse_pos}
@@ -102,7 +106,7 @@ tr::next_state pause_state::tick()
 		if (!std::holds_alternative<replay_game_data>(m_data)) {
 			float ratio{m_elapsed / 0.5_sf};
 			ratio = ratio < 0.5 ? 4 * std::pow(ratio, 3.0f) : 1 - std::pow(-2 * ratio + 2, 3.0f) / 2;
-			input::instance().mouse_pos = m_end_mouse_pos + (m_start_mouse_pos - m_end_mouse_pos) * ratio;
+			m_subsystems->input.mouse_pos = m_end_mouse_pos + (m_start_mouse_pos - m_end_mouse_pos) * ratio;
 		}
 
 		if (m_elapsed >= 0.5_s) {
@@ -172,7 +176,7 @@ void pause_state::set_up_full_ui()
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
 	m_ui.emplace<label_widget>(T_PAUSED, {
 		.animation = {{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s},
-		.text = localized_text{T_PAUSED},
+		.text = localized_text{m_subsystems->localization, T_PAUSED},
 		.font_size = 64
 	});
 
@@ -197,7 +201,7 @@ void pause_state::set_up_full_ui()
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], {
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
-			.text = localized_text{BUTTONS_REGULAR[i]},
+			.text = localized_text{m_subsystems->localization, BUTTONS_REGULAR[i]},
 			.status = button_commands[i].status,
 			.action = button_commands[i].action
 		});
@@ -212,7 +216,7 @@ void pause_state::set_up_limited_ui()
 	const tag title_tag{std::holds_alternative<replay_game_data>(m_data) ? T_REPLAY_PAUSED : T_TEST_PAUSED};
 	m_ui.emplace<label_widget>(title_tag, {
 		.animation = {{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s},
-		.text = localized_text{title_tag},
+		.text = localized_text{m_subsystems->localization, title_tag},
 		.font_size = 64
 	});
 
@@ -233,7 +237,7 @@ void pause_state::set_up_limited_ui()
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], {
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
-			.text = localized_text{BUTTONS_SPECIAL[i]},
+			.text = localized_text{m_subsystems->localization, BUTTONS_SPECIAL[i]},
 			.status = button_commands[i].status,
 			.action = button_commands[i].action
 		});
@@ -266,10 +270,10 @@ void pause_state::on_unpause()
 {
 	m_elapsed = 0;
 	m_substate = substate::UNPAUSING;
-	m_end_mouse_pos = input::instance().mouse_pos;
+	m_end_mouse_pos = m_subsystems->input.mouse_pos;
 	set_up_exit_animation();
 	audio::instance().play_sound(sound::UNPAUSE, 0.8f, 0.0f);
-	m_next_state = make_async<game_state>(m_game, m_data, fade_in::NO);
+	m_next_state = make_async<game_state>(m_subsystems, m_game, m_data, fade_in::NO);
 }
 
 void pause_state::on_save_and_restart()
@@ -277,7 +281,7 @@ void pause_state::on_save_and_restart()
 	m_elapsed = 0;
 	m_substate = substate::SAVING;
 	set_up_exit_animation();
-	m_next_state = make_async<save_score_state>(m_game, m_savefile, m_start_mouse_pos, save_screen_flags::RESTARTING);
+	m_next_state = make_async<save_score_state>(m_subsystems, m_game, m_savefile, m_start_mouse_pos, save_screen_flags::RESTARTING);
 }
 
 void pause_state::on_restart()
@@ -290,13 +294,13 @@ void pause_state::on_restart()
 		const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 		m_savefile.add_score(m_game->gamemode(), score);
 		m_savefile.save_to_file();
-		m_next_state = make_game_state_async<active_game>(m_data, m_savefile, m_game->gamemode());
+		m_next_state = make_game_state_async<active_game>(m_subsystems, m_data, m_subsystems->input, m_savefile, m_game->gamemode());
 	}
 	else if (std::holds_alternative<replay_game_data>(m_data)) {
-		m_next_state = make_game_state_async<replay_game>(m_data, (replay_game&)*m_game);
+		m_next_state = make_game_state_async<replay_game>(m_subsystems, m_data, (replay_game&)*m_game);
 	}
 	else {
-		m_next_state = make_game_state_async<active_game>(m_data, m_savefile, m_game->gamemode());
+		m_next_state = make_game_state_async<active_game>(m_subsystems, m_data, m_subsystems->input, m_savefile, m_game->gamemode());
 	}
 }
 
@@ -305,7 +309,7 @@ void pause_state::on_save_and_quit()
 	m_elapsed = 0;
 	m_substate = substate::SAVING;
 	set_up_exit_animation();
-	m_next_state = make_async<save_score_state>(m_game, m_savefile, m_start_mouse_pos, save_screen_flags::NONE);
+	m_next_state = make_async<save_score_state>(m_subsystems, m_game, m_savefile, m_start_mouse_pos, save_screen_flags::NONE);
 }
 
 void pause_state::on_quit()
@@ -321,9 +325,9 @@ void pause_state::on_quit()
 		m_next_state = make_async<title_state>();
 	}
 	else if (std::holds_alternative<replay_game_data>(m_data)) {
-		m_next_state = make_async<replays_state>();
+		m_next_state = make_async<replays_state>(m_subsystems);
 	}
 	else {
-		m_next_state = make_async<gamemode_editor_state>(tr::get<test_game_data>(m_data).editor_data, m_game->gamemode());
+		m_next_state = make_async<gamemode_editor_state>(m_subsystems, tr::get<test_game_data>(m_data).editor_data, m_game->gamemode());
 	}
 }

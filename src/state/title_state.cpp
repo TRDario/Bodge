@@ -52,13 +52,13 @@ constexpr shortcut_table SHORTCUTS{
 /////////////////////////////////////////////////////////////// TITLE STATE ///////////////////////////////////////////////////////////////
 
 title_state::title_state()
-	: main_menu_state{SELECTION_TREE, SHORTCUTS}, m_substate{substate::FADING_IN}
+	: main_menu_state{std::make_unique<subsystems>(), SELECTION_TREE, SHORTCUTS}, m_substate{substate::FADING_IN}
 {
 	set_up_ui();
 }
 
-title_state::title_state(std::shared_ptr<playerless_game> game)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_TITLE}
+title_state::title_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_TITLE}
 {
 	set_up_ui();
 }
@@ -115,14 +115,14 @@ void title_state::set_up_ui()
 		.unhide_time = 2.5_s,
 		.priority = 1,
 		.file = "logo_overlay",
-		.hue = active_settings::instance()->primary_hue
+		.hue = m_subsystems->settings.primary_hue
 	});
 	m_ui.emplace<image_widget>(T_LOGO_BALL, {
 		.animation = {{-180, 644}, {327, 217}, 2.5_s},
 		.unhide_time = 2.5_s,
 		.priority = 2,
 		.file = "logo_ball",
-		.hue = active_settings::instance()->secondary_hue
+		.hue = m_subsystems->settings.secondary_hue
 	});
 
 	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, {
@@ -136,7 +136,7 @@ void title_state::set_up_ui()
 		.animation = {{996, 1000}},
 		.alignment = tr::align::TOP_RIGHT,
 		.unhide_time = 1_s,
-		.tooltip_text = localized_text{"version_tt"},
+		.tooltip_text = localized_text{m_subsystems->localization, "version_tt"},
 		.text = constant_text{T_VERSION},
 		.font_size = 24
 	})};
@@ -163,7 +163,7 @@ void title_state::set_up_ui()
 			.animation = {{end_pos.x + offset, end_pos.y}, end_pos, 1_s},
 			.alignment = tr::align::CENTER_RIGHT,
 			.unhide_time = 1_s,
-			.text = localized_text{BUTTONS[i]},
+			.text = localized_text{m_subsystems->localization, BUTTONS[i]},
 			.status = [this] { return m_substate == substate::IN_TITLE || m_substate == substate::FADING_IN; },
 			.action = button_parameters[i].action,
 			.action_sound = button_parameters[i].sound
@@ -193,7 +193,7 @@ void title_state::on_start_game()
 	m_substate = substate::EXITING_TO_SUBMENU;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<start_game_state>(m_game, savefile{});
+	m_next_state = make_async<start_game_state>(m_subsystems, m_game, savefile{});
 }
 
 void title_state::on_gamemode_manager()
@@ -201,7 +201,7 @@ void title_state::on_gamemode_manager()
 	m_substate = substate::EXITING_TO_SUBMENU;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<gamemode_manager_state>(m_game, animate_title::YES);
+	m_next_state = make_async<gamemode_manager_state>(m_subsystems, m_game, animate_title::YES);
 }
 
 void title_state::on_scoreboards()
@@ -209,7 +209,7 @@ void title_state::on_scoreboards()
 	m_substate = substate::EXITING_TO_SUBMENU;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<scoreboard_selection_state>(m_game, savefile{}, animate_title::YES);
+	m_next_state = make_async<scoreboard_selection_state>(m_subsystems, m_game, savefile{}, animate_title::YES);
 }
 
 void title_state::on_replays()
@@ -217,7 +217,7 @@ void title_state::on_replays()
 	m_substate = substate::EXITING_TO_SUBMENU;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<replays_state>(m_game);
+	m_next_state = make_async<replays_state>(m_subsystems, m_game);
 }
 
 void title_state::on_settings()
@@ -225,7 +225,7 @@ void title_state::on_settings()
 	m_substate = substate::EXITING_TO_SUBMENU;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<settings_state>(m_game);
+	m_next_state = make_async<settings_state>(m_subsystems, m_game);
 }
 
 void title_state::on_credits()
@@ -233,7 +233,7 @@ void title_state::on_credits()
 	m_substate = substate::EXITING_TO_SUBMENU;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<credits_state>(m_game);
+	m_next_state = make_async<credits_state>(m_subsystems, m_game);
 }
 
 void title_state::on_exit()

@@ -53,7 +53,7 @@ constexpr shortcut_table SHORTCUTS{
 ///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
 
 // Creates a set of widgets for a new page of scores.
-static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(enum score_widget::type type,
+static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const localization& localization, enum score_widget::type type,
 																			 const std::vector<score_entry>& scores, int page)
 {
 	std::unordered_map<tag, std::unique_ptr<widget>> map;
@@ -61,6 +61,7 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(enu
 		const usize rank{page * SCORES_PER_PAGE + i + 1};
 		// clang-format off
 		map.emplace(SCORE_TAGS[i], std::make_unique<score_widget>(score_widget::properties{
+			.localization = localization,
 			.animation = {{i % 2 == 0 ? 600 : 400, 173 + 86 * i}, {500, 173 + 86 * i}, 0.25_s},
 			.unhide_time = 0.25_s,
 			.type = type,
@@ -74,8 +75,9 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(enu
 
 ///////////////////////////////////////////////////////////// SCOREBOARD STATE ////////////////////////////////////////////////////////////
 
-scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, savefile savefile, scoreboard scoreboard)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game, savefile savefile,
+								   scoreboard scoreboard)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::IN_SCOREBOARD}
 	, m_scoreboard{scoreboard}
 	, m_page{0}
@@ -92,21 +94,21 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, savefi
 		.animation = TITLE_POS,
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0_s,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_PLAYER_INFO, {
 		.animation = {{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0_s,
-		.text = constant_text{m_savefile.format_info()},
+		.text = constant_text{m_savefile.format_info(m_subsystems->localization)},
 		.font_size = 32
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.animation = {{500, 1000}},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.unhide_time = 0_s,
-		.text = localized_text{T_EXIT},
+		.text = localized_text{m_subsystems->localization, T_EXIT},
 		.status = [this] { return m_substate == substate::IN_SCOREBOARD; },
 		.action = [this] { on_exit(); },
 		.action_sound = sound::CANCEL
@@ -115,7 +117,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, savefi
 	if (m_savefile.score_categories().empty()) {
 		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, {
 			.animation = {{600, 500}, {500, 500}, 0.5_s},
-			.text = localized_text{T_NO_SCORES_FOUND},
+			.text = localized_text{m_subsystems->localization, T_NO_SCORES_FOUND},
 			.font_size = 64,
 			.color = DARK_GRAY
 		});
@@ -124,6 +126,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, savefi
 
 	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
 		m_ui.emplace<score_widget>(SCORE_TAGS[i], {
+			.localization = m_subsystems->localization,
 			.animation = {{i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s},
 			.type = (enum score_widget::type)(m_scoreboard),
 			.rank = m_page * SCORES_PER_PAGE + i + 1,
@@ -141,8 +144,8 @@ scoreboard_state::scoreboard_state(std::shared_ptr<playerless_game> game, savefi
 	m_ui.emplace<label_widget>(T_GAMEMODE_C, {
 		.animation = {BOTTOM_START_POS, {500, 900}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
-		.tooltip_text = [this] { return std::string{m_selected->gamemode.description_loc()}; },
-		.text = [this] { return std::string{m_selected->gamemode.name_loc()}; }
+		.tooltip_text = [this] { return std::string{m_selected->gamemode.localized_description(m_subsystems->localization)}; },
+		.text = [this] { return std::string{m_selected->gamemode.localized_name(m_subsystems->localization)}; }
 	});
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_I, {
 		.animation = {{1050, 892.5}, {990, 892.5}, 0.5_s},
@@ -210,7 +213,8 @@ void scoreboard_state::set_up_page_switch_animation()
 	}
 	m_sorted_scores = m_selected->entries;
 	std::ranges::sort(m_sorted_scores, m_scoreboard == scoreboard::SCORE ? compare_scores : compare_times);
-	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, (enum score_widget::type)(m_scoreboard), m_sorted_scores, m_page);
+	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, m_subsystems->localization,
+								(enum score_widget::type)(m_scoreboard), m_sorted_scores, m_page);
 }
 
 void scoreboard_state::set_up_exit_animation()
@@ -238,7 +242,7 @@ void scoreboard_state::on_exit()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	m_next_state = make_async<scoreboard_selection_state>(m_game, m_savefile, animate_title::NO);
+	m_next_state = make_async<scoreboard_selection_state>(m_subsystems, m_game, m_savefile, animate_title::NO);
 }
 
 void scoreboard_state::on_gamemode_decrement()

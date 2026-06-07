@@ -99,40 +99,14 @@ struct settings {
 	// Active language.
 	language_code language{'e', 'n'};
 
+	// Loads settings from file.
+	settings(const std::filesystem::path& path = debug_settings::instance().user_directory() / "settings.dat");
+
+	// Saves the settings to file.
+	void save_to_file(const std::filesystem::path& path = debug_settings::instance().user_directory() / "settings.dat") const;
+
+	// Equality comparison.
 	bool operator==(const settings&) const = default;
-};
-
-// Active application settings singleton class.
-class active_settings {
-  public:
-	// Gets the active settings instance.
-	static active_settings& instance();
-
-	// Gets the active settings values.
-	operator const settings&() const;
-	// Gets the active settings values.
-	const settings* operator->() const;
-
-	// Determines whether releasing graphical resources ahead of applying settings is necessary.
-	bool releasing_graphical_resources_required_to_apply(const settings& new_settings) const;
-
-	// Applies new settings.
-	void apply(const settings& new_settings);
-
-  private:
-	// The active settings structure.
-	settings m_settings;
-
-	// Loads the active settings from file.
-	active_settings();
-	// Saves the active settings to file.
-	~active_settings();
-
-	// Loads settings from a file without validation.
-	void raw_load_from_file();
-	// Validates loaded settings.
-	void validate();
-
 	// Determines whether a restart is necessary to apply new settings.
 	bool restart_required_to_apply(const settings& new_settings) const;
 };

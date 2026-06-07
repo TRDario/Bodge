@@ -23,6 +23,8 @@
 #pragma once
 #include "ui/widget_base.hpp"
 
+class input;
+
 /////////////////////////////////////////////////////////////// UI MANAGER ////////////////////////////////////////////////////////////////
 
 // User interface manager.
@@ -56,11 +58,11 @@ class ui_manager {
 	void release_graphical_resources();
 
 	// Handles user interface events.
-	void handle_event(const tr::sys::event& event);
+	void handle_event(const input& input, const tr::sys::event& event);
 	// Updates the state of all widgets in the interface.
 	void tick();
 	// Adds all widgets of the interface to the renderer.
-	void add_to_renderer(renderer& renderer);
+	void add_to_renderer(renderer& renderer, glm::vec2 mouse_pos);
 
   private:
 	// Shorthand for the widget map value type.
@@ -105,15 +107,15 @@ class ui_manager {
 	void select_widget_to_the_right();
 
 	// Handles a mouse motion event.
-	void handle_mouse_motion_event();
+	void handle_mouse_motion_event(const input& input);
 	// Handles a mouse button press event.
-	void handle_mouse_down_event(const tr::sys::mouse_down_event& event);
+	void handle_mouse_down_event(glm::vec2 mouse_pos, const tr::sys::mouse_down_event& event);
 	// Handles a mouse button unpress event.
 	void handle_mouse_up_event(const tr::sys::mouse_up_event& event);
 	// Handles a keyboard key press event.
 	void handle_key_down_event(const tr::sys::key_down_event& event);
 	// Handles a text input event.
-	void handle_text_input_event(const tr::sys::text_input_event& event);
+	void handle_text_input_event(const input& input, const tr::sys::text_input_event& event);
 };
 
 ///////////////////////////////////////////////////////////// IMPLEMENTATION //////////////////////////////////////////////////////////////

@@ -5,7 +5,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../include/renderer.hpp"
-#include "../include/input.hpp"
 #include "../include/settings.hpp"
 #include "../include/state.hpp"
 
@@ -82,11 +81,10 @@ renderer::window_specific_components::~window_specific_components()
 
 //
 
-renderer::renderer()
-	: text_engine{localization::instance().available_languages.contains(active_settings::instance()->language)
-					  ? localization::instance().available_languages.at(active_settings::instance()->language).font
-					  : std::string{}}
-	, m_window_specific{active_settings::instance()}
+renderer::renderer(const localization& localization, const settings& settings)
+	: text_engine{localization.available_languages.contains(settings.language) ? localization.available_languages.at(settings.language).font
+																			   : std::string{}}
+	, m_window_specific{settings}
 {
 	set_default_transform(TRANSFORM);
 }
@@ -184,11 +182,9 @@ void renderer::draw_layers(const tr::gfx::render_target& target)
 	tr::gfx::draw_layer_range(layer::BALL_TRAILS, layer::FADE_OVERLAY, target, basic(), circle());
 }
 
-void renderer::draw_cursor()
+void renderer::draw_cursor(float hue, glm::vec2 mouse_pos)
 {
-	const glm::vec2 mouse_pos{input::instance().mouse_pos};
-
-	tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->primary_hue), 1, 1})};
+	tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{hue, 1, 1})};
 	if (current_state::instance()->transparent_cursor()) {
 		color.a = 160;
 	}

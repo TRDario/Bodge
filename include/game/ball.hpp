@@ -30,7 +30,7 @@ class ball {
 	void tick();
 
 	// Adds the ball to the renderer.
-	void add_to_renderer(renderer& renderer) const;
+	void add_to_renderer(renderer& renderer, float hue) const;
 
   private:
 	// The ball's hitbox.

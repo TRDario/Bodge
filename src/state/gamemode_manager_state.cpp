@@ -46,15 +46,16 @@ constexpr shortcut_table SHORTCUTS{
 // clang-format on
 ////////////////////////////////////////////////////////// GAMEMODE MANAGER STATE /////////////////////////////////////////////////////////
 
-gamemode_manager_state::gamemode_manager_state(std::shared_ptr<playerless_game> game, animate_title animate_title)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_GAMEMODE_MANAGER}
+gamemode_manager_state::gamemode_manager_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game,
+											   animate_title animate_title)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_GAMEMODE_MANAGER}
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
 		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, TITLE_POS, 0.5_s} : tweened_position{TITLE_POS},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_title) ? 0.5_s : 0,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 
@@ -68,8 +69,8 @@ gamemode_manager_state::gamemode_manager_state(std::shared_ptr<playerless_game> 
 		const float y{500.0f - ((CENTER_BUTTONS.size() - 1) * 50.0f) + i * 100};
 		m_ui.emplace<text_button_widget>(CENTER_BUTTONS[i].tag, {
 			.animation = {glm::vec2{i % 2 == 0 ? 600 : 400, y}, glm::vec2{500, y}, 0.5_s},
-			.tooltip_text = localized_text{CENTER_BUTTONS[i].tooltip},
-			.text = localized_text{CENTER_BUTTONS[i].tag},
+			.tooltip_text = localized_text{m_subsystems->localization, CENTER_BUTTONS[i].tooltip},
+			.text = localized_text{m_subsystems->localization, CENTER_BUTTONS[i].tag},
 			.font_size = 64,
 			.status = [this] { return m_substate == substate::IN_GAMEMODE_MANAGER; },
 			.action = center_actions[i],
@@ -79,7 +80,7 @@ gamemode_manager_state::gamemode_manager_state(std::shared_ptr<playerless_game> 
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
-		.text = localized_text{T_EXIT},
+		.text = localized_text{m_subsystems->localization, T_EXIT},
 		.status = [this] { return m_substate == substate::IN_GAMEMODE_MANAGER; },
 		.action = [this] { on_exit(); },
 		.action_sound = sound::CANCEL
@@ -122,7 +123,8 @@ void gamemode_manager_state::on_enter_new_gamemode()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<gamemode_editor_state>(m_game, new_gamemode_editor{savefile}, savefile.gamemode_draft, animate_subtitle::YES);
+	m_next_state = make_async<gamemode_editor_state>(m_subsystems, m_game, new_gamemode_editor{savefile}, savefile.gamemode_draft,
+													 animate_subtitle::YES);
 }
 
 void gamemode_manager_state::on_enter_edit_gamemode()
@@ -130,7 +132,8 @@ void gamemode_manager_state::on_enter_edit_gamemode()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<gamemode_selector_state>(m_game, edit_gamemode_selector{savefile{}.name()}, animate_subtitle::YES);
+	m_next_state =
+		make_async<gamemode_selector_state>(m_subsystems, m_game, edit_gamemode_selector{savefile{}.name()}, animate_subtitle::YES);
 }
 
 void gamemode_manager_state::on_enter_clone_gamemode()
@@ -138,7 +141,8 @@ void gamemode_manager_state::on_enter_clone_gamemode()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<gamemode_selector_state>(m_game, clone_gamemode_selector{savefile{}.name()}, animate_subtitle::YES);
+	m_next_state =
+		make_async<gamemode_selector_state>(m_subsystems, m_game, clone_gamemode_selector{savefile{}.name()}, animate_subtitle::YES);
 }
 
 void gamemode_manager_state::on_enter_delete_gamemode()
@@ -146,7 +150,7 @@ void gamemode_manager_state::on_enter_delete_gamemode()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::NO);
-	m_next_state = make_async<gamemode_selector_state>(m_game, delete_gamemodes_selector{}, animate_subtitle::YES);
+	m_next_state = make_async<gamemode_selector_state>(m_subsystems, m_game, delete_gamemodes_selector{}, animate_subtitle::YES);
 }
 
 void gamemode_manager_state::on_exit()
@@ -154,5 +158,5 @@ void gamemode_manager_state::on_exit()
 	m_substate = substate::EXITING;
 	m_elapsed = 0;
 	set_up_exit_animation(animate_title::YES);
-	m_next_state = make_async<title_state>(m_game);
+	m_next_state = make_async<title_state>(m_subsystems, m_game);
 }

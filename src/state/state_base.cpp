@@ -9,8 +9,15 @@
 
 ////////////////////////////////////////////////////////////////// STATE //////////////////////////////////////////////////////////////////
 
-state::state(selection_tree selection_tree, shortcut_table shortcuts)
-	: m_ui{selection_tree, shortcuts}, m_elapsed{0}
+state::subsystems::subsystems()
+	: localization{settings.language}
+{
+}
+
+//
+
+state::state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tree, shortcut_table shortcuts)
+	: m_subsystems{std::move(subsystems)}, m_ui{selection_tree, shortcuts}, m_elapsed{0}
 {
 }
 
@@ -25,7 +32,8 @@ tr::next_state state::handle_event(const tr::sys::event& event)
 		return tr::DROP_STATE;
 	}
 
-	m_ui.handle_event(event);
+	m_subsystems->input.handle_event(event);
+	m_ui.handle_event(m_subsystems->input, event);
 	return tr::KEEP_STATE;
 }
 
@@ -44,13 +52,15 @@ tr::next_state state::next_state_if_after(ticks timestamp)
 
 ///////////////////////////////////////////////////////////// MAIN MENU STATE /////////////////////////////////////////////////////////////
 
-main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts)
-	: state{selection_tree, shortcuts}, m_game{std::make_shared<playerless_game>(pick_menu_gamemode(), g_rng.generate<u64>())}
+main_menu_state::main_menu_state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tree, shortcut_table shortcuts)
+	: state{std::move(subsystems), selection_tree, shortcuts}
+	, m_game{std::make_shared<playerless_game>(pick_menu_gamemode(), g_rng.generate<u64>())}
 {
 }
 
-main_menu_state::main_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<playerless_game> game)
-	: state{selection_tree, shortcuts}, m_game{std::move(game)}
+main_menu_state::main_menu_state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tree, shortcut_table shortcuts,
+								 std::shared_ptr<playerless_game> game)
+	: state{std::move(subsystems), selection_tree, shortcuts}, m_game{std::move(game)}
 {
 }
 
@@ -70,16 +80,19 @@ void main_menu_state::draw()
 {
 	m_game->add_to_renderer(renderer::instance());
 	renderer::instance().add_menu_game_overlay();
-	m_ui.add_to_renderer(renderer::instance());
+	m_ui.add_to_renderer(renderer::instance(), m_subsystems->input.mouse_pos);
 	renderer::instance().add_fade_overlay(fade_overlay_opacity());
 	renderer::instance().draw_layers(renderer::instance().screen());
 }
 
 ///////////////////////////////////////////////////////////// GAME MENU STATE /////////////////////////////////////////////////////////////
 
-game_menu_state::game_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<game> game, savefile savefile,
-								 update_game update_game)
-	: state{selection_tree, shortcuts}, m_game{std::move(game)}, m_savefile{std::move(savefile)}, m_update_game{bool(update_game)}
+game_menu_state::game_menu_state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tree, shortcut_table shortcuts,
+								 std::shared_ptr<game> game, savefile savefile, update_game update_game)
+	: state{std::move(subsystems), selection_tree, shortcuts}
+	, m_game{std::move(game)}
+	, m_savefile{std::move(savefile)}
+	, m_update_game{bool(update_game)}
 {
 }
 
@@ -99,7 +112,7 @@ void game_menu_state::draw()
 		renderer::instance().draw_layers(renderer::instance().blur_input());
 	}
 	renderer::instance().draw_blurred(saturation_factor(), blur_strength());
-	m_ui.add_to_renderer(renderer::instance());
+	m_ui.add_to_renderer(renderer::instance(), m_subsystems->input.mouse_pos);
 	renderer::instance().add_fade_overlay(fade_overlay_opacity());
 	renderer::instance().draw_layers(renderer::instance().screen());
 }

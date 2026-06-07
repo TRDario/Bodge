@@ -7,7 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "global.hpp"
+#include "settings.hpp"
+
+class localization;
 
 ///////////////////////////////////////////////////////////// PLAYER SETTINGS /////////////////////////////////////////////////////////////
 
@@ -75,14 +77,14 @@ struct gamemode {
 	bool operator==(const gamemode&) const = default;
 
 	// Gets the localized name of the gamemode (differs from the name string for built-in gamemodes).
-	std::string_view name_loc() const;
+	std::string_view localized_name(const localization& localization) const;
 	// Gets the localized description of the gamemode (differs from the description string for built-in gamemodes).
-	std::string_view description_loc() const;
+	std::string_view localized_description(const localization& localization) const;
 	// Gets the localized description of the gamemode, falling back to a "no description" message if empty.
-	std::string description_loc_with_fallback() const;
+	std::string localized_description_with_fallback(const localization& localization) const;
 
 	// Saves the gamemode to a file based on its name.
-	void save_to_file() const;
+	void save_to_directory(const std::filesystem::path& directory = debug_settings::instance().user_directory() / "gamemodes") const;
 };
 template <> struct tr::binary_reader<gamemode> {
 	static std::span<const std::byte> read_from_span(std::span<const std::byte> span, gamemode& out);
@@ -104,4 +106,5 @@ struct gamemode_with_path {
 	bool operator==(const gamemode_with_path&) const = default;
 };
 // Loads all available gamemodes.
-std::vector<gamemode_with_path> load_gamemodes();
+std::vector<gamemode_with_path> load_gamemodes(const std::filesystem::path& directory = debug_settings::instance().user_directory() /
+																						"gamemodes");

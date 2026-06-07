@@ -17,7 +17,7 @@ class renderer;
 class player {
   public:
 	// Creates a player.
-	player(const player_settings& settings);
+	player(const player_settings& settings, const std::filesystem::path& skin_path);
 
 	// Gets whether the player is currently invincible.
 	bool invincible() const;
@@ -34,9 +34,10 @@ class player {
 	void update_fragments();
 
 	// Adds the living player to the renderer.
-	void add_to_renderer_alive(renderer& renderer, ticks time_since_start, const decrementing_timer<0.1_s>& style_cooldown_timer) const;
+	void add_to_renderer_alive(renderer& renderer, float hue, ticks time_since_start,
+							   const decrementing_timer<0.1_s>& style_cooldown_timer) const;
 	// Adds the dead player to the renderer.
-	void add_to_renderer_dead(renderer& renderer, ticks time_since_game_over) const;
+	void add_to_renderer_dead(renderer& renderer, float hue, ticks time_since_game_over) const;
 
   private:
 	// Tag representing an uninitialized skin.
@@ -45,7 +46,7 @@ class player {
 	struct no_skin {};
 
 	// Optional player skin.
-	mutable std::variant<uninitialized_skin, no_skin, tr::gfx::texture> m_skin;
+	mutable std::variant<uninitialized_skin, no_skin, tr::bitmap, tr::gfx::texture> m_skin;
 	// The player's hitbox.
 	tr::circle m_hitbox;
 	// The player's trail.
@@ -70,7 +71,7 @@ class player {
 	// Adds the wave emitted after getting style points to the renderer.
 	void add_style_wave_to_renderer(tr::gfx::circle_renderer& renderer, tr::rgb8 tint, const decrementing_timer<0.1_s>& timer) const;
 	// Adds the player's death wave to the renderer.
-	void add_death_wave_to_renderer(tr::gfx::circle_renderer& renderer, ticks time_since_game_over) const;
+	void add_death_wave_to_renderer(tr::gfx::circle_renderer& renderer, tr::rgb8 tint, ticks time_since_game_over) const;
 	// Adds the player's death fragments to the renderer.
-	void add_death_fragments_to_renderer(tr::gfx::renderer_2d& renderer, ticks time_since_game_over) const;
+	void add_death_fragments_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 tint, ticks time_since_game_over) const;
 };

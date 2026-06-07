@@ -44,7 +44,7 @@ class life_fragment {
 	void tick();
 
 	// Adds the fragment to the renderer.
-	void add_to_renderer(renderer& renderer) const;
+	void add_to_renderer(renderer& renderer, float hue) const;
 
   private:
 	// States the fragment can be in.

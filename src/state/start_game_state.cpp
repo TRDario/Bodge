@@ -59,8 +59,8 @@ static void emplace_label_widget(std::unordered_map<tag, std::unique_ptr<widget>
 }
 
 // Creates a set of widgets for a different gamemode.
-static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const savefile& savefile, const gamemode& selected,
-																			 starting_side side)
+static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const localization& localization, const savefile& savefile,
+																			 const gamemode& selected, starting_side side)
 {
 	const float label_h{621 - renderer::instance().text_engine.line_skip(font::LANGUAGE, 32)};
 	const best_results best_results{savefile.best_results(selected)};
@@ -70,19 +70,19 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(con
 	emplace_label_widget(map, T_NAME, {
 		.animation = {{side == starting_side::LEFT ? 250 : 750, 400}, {500, 400}, 0.25_s},
 		.unhide_time = 0.25_s,
-		.text = constant_text{std::string{selected.name_loc()}},
+		.text = constant_text{std::string{selected.localized_name(localization)}},
 		.font_size = 120
 	});
 	emplace_label_widget(map, T_AUTHOR, {
 		.animation = {{side == starting_side::LEFT ? 250 : 750, 475}, {500, 475}, 0.25_s},
 		.unhide_time = 0.25_s,
-		.text = constant_text{TR_FMT::format("{}: {}", localization::instance()["by"], selected.author)},
+		.text = constant_text{TR_FMT::format("{}: {}", localization["by"], selected.author)},
 		.font_size = 32
 	});
 	emplace_label_widget(map, T_DESCRIPTION, {
 		.animation = {{side == starting_side::LEFT ? 250 : 750, 525}, {500, 525}, 0.25_s},
 		.unhide_time = 0.25_s,
-		.text = constant_text{std::string{selected.description_loc_with_fallback()}},
+		.text = constant_text{std::string{selected.localized_description_with_fallback(localization)}},
 		.font_style = tr::sys::ttf_style::ITALIC,
 		.font_size = 32,
 		.color = DARK_GRAY
@@ -90,7 +90,7 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(con
 	emplace_label_widget(map, T_BEST_TIME_LABEL, {
 		.animation = {{side == starting_side::LEFT ? 75 : 525, label_h}, {325, label_h}, 0.25_s},
 		.unhide_time = 0.25_s,
-		.text = localized_text{T_BEST_TIME_LABEL},
+		.text = localized_text{localization, T_BEST_TIME_LABEL},
 		.font_size = 32,
 		.color = YELLOW
 	});
@@ -104,7 +104,7 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(con
 	emplace_label_widget(map, T_BEST_SCORE_LABEL, {
 		.animation = {{side == starting_side::LEFT ? 425 : 925, label_h}, {675, label_h}, 0.25_s},
 		.unhide_time = 0.25_s,
-		.text = localized_text{T_BEST_SCORE_LABEL},
+		.text = localized_text{localization, T_BEST_SCORE_LABEL},
 		.font_size = 32,
 		.color = YELLOW
 	});
@@ -121,8 +121,8 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(con
 
 //////////////////////////////////////////////////////////// START GAME WIDGET ////////////////////////////////////////////////////////////
 
-start_game_state::start_game_state(std::shared_ptr<playerless_game> game, savefile savefile)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}
+start_game_state::start_game_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game, savefile savefile)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}
 	, m_substate{substate::ENTERING_START_GAME}
 	, m_savefile{std::move(savefile)}
 	, m_gamemodes{load_gamemodes()}
@@ -142,29 +142,29 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game, savefi
 	m_ui.emplace<label_widget>(T_TITLE, {
 		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_NAME, {
 		.animation = {{500, 300}, {500, 400}, 0.5_s},
-		.text = constant_text{std::string{m_selected->gamemode.name_loc()}},
+		.text = constant_text{std::string{m_selected->gamemode.localized_name(m_subsystems->localization)}},
 		.font_size = 120
 	});
 	m_ui.emplace<label_widget>(T_AUTHOR, {
 		.animation = {{400, 475}, {500, 475}, 0.5_s},
-		.text = constant_text{TR_FMT::format("{}: {}", localization::instance()["by"], m_selected->gamemode.author)},
+		.text = constant_text{TR_FMT::format("{}: {}", m_subsystems->localization["by"], m_selected->gamemode.author)},
 		.font_size = 32
 	});
 	m_ui.emplace<label_widget>(T_DESCRIPTION, {
 		.animation = {{600, 525}, {500, 525}, 0.5_s},
-		.text = constant_text{m_selected->gamemode.description_loc_with_fallback()},
+		.text = constant_text{m_selected->gamemode.localized_description_with_fallback(m_subsystems->localization)},
 		.font_style = tr::sys::ttf_style::ITALIC,
 		.font_size = 32,
 		.color = DARK_GRAY
 	});
 	m_ui.emplace<label_widget>(T_BEST_TIME_LABEL, {
 		.animation = {{325, label_h + 100}, {325, label_h}, 0.5_s},
-		.text = localized_text{T_BEST_TIME_LABEL},
+		.text = localized_text{m_subsystems->localization, T_BEST_TIME_LABEL},
 		.font_size = 32,
 		.color = YELLOW
 	});
@@ -176,7 +176,7 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game, savefi
 	});
 	m_ui.emplace<label_widget>(T_BEST_SCORE_LABEL, {
 		.animation = {{675, label_h + 100}, {675, label_h}, 0.5_s},
-		.text = localized_text{T_BEST_SCORE_LABEL},
+		.text = localized_text{m_subsystems->localization, T_BEST_SCORE_LABEL},
 		.font_size = 32,
 		.color = YELLOW
 	});
@@ -201,14 +201,14 @@ start_game_state::start_game_state(std::shared_ptr<playerless_game> game, savefi
 	m_ui.emplace<text_button_widget>(T_START, {
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
-		.text = localized_text{T_START},
+		.text = localized_text{m_subsystems->localization, T_START},
 		.status = [this] { return m_substate == substate::IN_START_GAME || m_substate == substate::ENTERING_START_GAME; },
 		.action = [this] { on_start(); }
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
-		.text = localized_text{T_EXIT},
+		.text = localized_text{m_subsystems->localization, T_EXIT},
 		.status = [this] { return m_substate == substate::IN_START_GAME || m_substate == substate::ENTERING_START_GAME; },
 		.action = [this] { on_exit(); },
 		.action_sound = sound::CANCEL
@@ -290,8 +290,8 @@ void start_game_state::on_previous_gamemode()
 	for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
 		m_ui[GAMEMODE_WIDGETS[i]].move_x_and_hide(GAMEMODE_WIDGETS_BASE_X[i] + 250, 0.25_s);
 	}
-	m_next_widgets =
-		std::async(std::launch::async, prepare_next_widgets, std::cref(m_savefile), std::cref(m_selected->gamemode), starting_side::LEFT);
+	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, std::cref(m_subsystems->localization), std::cref(m_savefile),
+								std::cref(m_selected->gamemode), starting_side::LEFT);
 }
 
 void start_game_state::on_next_gamemode()
@@ -304,8 +304,8 @@ void start_game_state::on_next_gamemode()
 	for (usize i = 0; i < GAMEMODE_WIDGETS.size(); ++i) {
 		m_ui[GAMEMODE_WIDGETS[i]].move_x_and_hide(GAMEMODE_WIDGETS_BASE_X[i] - 250, 0.25_s);
 	}
-	m_next_widgets =
-		std::async(std::launch::async, prepare_next_widgets, std::cref(m_savefile), std::cref(m_selected->gamemode), starting_side::RIGHT);
+	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, std::cref(m_subsystems->localization), std::cref(m_savefile),
+								std::cref(m_selected->gamemode), starting_side::RIGHT);
 }
 
 void start_game_state::on_start()
@@ -315,7 +315,8 @@ void start_game_state::on_start()
 	set_up_exit_animation();
 	m_savefile.last_selected_gamemode = m_selected->gamemode;
 	audio::instance().fade_song_out(0.5s);
-	m_next_state = make_game_state_async<active_game>(regular_game_data{}, m_savefile, m_selected->gamemode);
+	m_next_state =
+		make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_selected->gamemode);
 }
 
 void start_game_state::on_exit()
@@ -324,5 +325,5 @@ void start_game_state::on_exit()
 	m_elapsed = 0;
 	set_up_exit_animation();
 	m_savefile.last_selected_gamemode = m_selected->gamemode;
-	m_next_state = make_async<title_state>(m_game);
+	m_next_state = make_async<title_state>(m_subsystems, m_game);
 }

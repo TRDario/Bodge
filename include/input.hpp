@@ -9,11 +9,11 @@
 
 ////////////////////////////////////////////////////////////////// INPUT //////////////////////////////////////////////////////////////////
 
-// Input manager singleton.
+// Input manager.
 class input {
   public:
-	// Gets the input instance.
-	static input& instance();
+	// Constructs an input manager.
+	input() = default;
 
 	// Position of the mouse in normalized screen coordinated.
 	glm::vec2 mouse_pos{500, 500};
@@ -32,9 +32,6 @@ class input {
 	tr::sys::keymod m_held_keymods{tr::sys::keymod::NONE};
 	// The held mouse buttons.
 	tr::sys::mouse_button m_held_buttons{};
-
-	// Constructs an input manager.
-	input() = default;
 
 	// Event handler visitor.
 	struct event_handler;

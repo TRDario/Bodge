@@ -259,12 +259,12 @@ void ui_manager::release_graphical_resources()
 
 //
 
-void ui_manager::handle_mouse_motion_event()
+void ui_manager::handle_mouse_motion_event(const input& input)
 {
 	tr::opt_ref<kv_pair> new_hovered;
 	for (kv_pair& kv : m_widgets) {
 		const tr::frect2 hitbox{kv.second->tl(), kv.second->size()};
-		if (!kv.second->hidden() && hitbox.contains(input::instance().mouse_pos)) {
+		if (!kv.second->hidden() && hitbox.contains(input.mouse_pos)) {
 			new_hovered = kv;
 			break;
 		}
@@ -272,14 +272,14 @@ void ui_manager::handle_mouse_motion_event()
 
 	if (m_hovered != new_hovered) {
 		if (m_hovered.has_ref()) {
-			if (input::instance().held(tr::sys::mouse_button::LEFT) && m_hovered->second->interactible()) {
+			if (input.held(tr::sys::mouse_button::LEFT) && m_hovered->second->interactible()) {
 				m_hovered->second->on_unheld();
 			}
 			m_hovered->second->on_unhover();
 		}
 		if (new_hovered.has_ref()) {
 			new_hovered->second->on_hover();
-			if (input::instance().held(tr::sys::mouse_button::LEFT) && new_hovered->second->interactible()) {
+			if (input.held(tr::sys::mouse_button::LEFT) && new_hovered->second->interactible()) {
 				new_hovered->second->on_held();
 			}
 		}
@@ -287,7 +287,7 @@ void ui_manager::handle_mouse_motion_event()
 	}
 }
 
-void ui_manager::handle_mouse_down_event(const tr::sys::mouse_down_event& event)
+void ui_manager::handle_mouse_down_event(glm::vec2 mouse_pos, const tr::sys::mouse_down_event& event)
 {
 	if (event.button == tr::sys::mouse_button::LEFT) {
 		if (m_selection.has_ref()) {
@@ -299,7 +299,7 @@ void ui_manager::handle_mouse_down_event(const tr::sys::mouse_down_event& event)
 		tr::opt_ref<kv_pair> new_hovered;
 		for (kv_pair& kv : m_widgets) {
 			const tr::frect2 hitbox{kv.second->tl(), kv.second->size()};
-			if (!kv.second->hidden() && hitbox.contains(input::instance().mouse_pos)) {
+			if (!kv.second->hidden() && hitbox.contains(mouse_pos)) {
 				new_hovered = kv;
 				break;
 			}
@@ -403,21 +403,21 @@ void ui_manager::handle_key_down_event(const tr::sys::key_down_event& event)
 	}
 }
 
-void ui_manager::handle_text_input_event(const tr::sys::text_input_event& event)
+void ui_manager::handle_text_input_event(const input& input, const tr::sys::text_input_event& event)
 {
 	if (m_selection.has_ref() && m_selection->second->interactible() && m_selection->second->writable() &&
-		!input::instance().held(tr::sys::keymod::CTRL)) {
+		!input.held(tr::sys::keymod::CTRL)) {
 		m_selection->second->on_write(event.text);
 	}
 }
 
-void ui_manager::handle_event(const tr::sys::event& event)
+void ui_manager::handle_event(const input& input, const tr::sys::event& event)
 {
 	if (event.is<tr::sys::mouse_motion_event>()) {
-		handle_mouse_motion_event();
+		handle_mouse_motion_event(input);
 	}
 	else if (event.is<tr::sys::mouse_down_event>()) {
-		handle_mouse_down_event(event.as<tr::sys::mouse_down_event>());
+		handle_mouse_down_event(input.mouse_pos, event.as<tr::sys::mouse_down_event>());
 	}
 	else if (event.is<tr::sys::mouse_up_event>()) {
 		handle_mouse_up_event(event.as<tr::sys::mouse_up_event>());
@@ -426,7 +426,7 @@ void ui_manager::handle_event(const tr::sys::event& event)
 		handle_key_down_event(event.as<tr::sys::key_down_event>());
 	}
 	else if (event.is<tr::sys::text_input_event>()) {
-		handle_text_input_event(event.as<tr::sys::text_input_event>());
+		handle_text_input_event(input, event.as<tr::sys::text_input_event>());
 	}
 }
 
@@ -438,7 +438,7 @@ void ui_manager::tick()
 	}
 }
 
-void ui_manager::add_to_renderer(renderer& renderer)
+void ui_manager::add_to_renderer(renderer& renderer, glm::vec2 mouse_pos)
 {
 	for (widget& widget : tr::deref(std::views::values(m_widgets))) {
 		widget.add_to_renderer(renderer);
@@ -447,7 +447,7 @@ void ui_manager::add_to_renderer(renderer& renderer)
 		if (m_hovered->second->tooltip_text) {
 			const std::string tooltip{m_hovered->second->tooltip_text()};
 			if (!tooltip.empty()) {
-				renderer.add_tooltip(input::instance().mouse_pos, tooltip);
+				renderer.add_tooltip(mouse_pos, tooltip);
 			}
 		}
 	}

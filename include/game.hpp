@@ -17,6 +17,8 @@
 #include "gamemode.hpp"
 #include "replay.hpp"
 
+class input;
+
 ///////////////////////////////////////////////////////////// PLAYERLESS_GAME /////////////////////////////////////////////////////////////
 
 // Base game state (no player).
@@ -32,7 +34,7 @@ class playerless_game {
 	void tick();
 
 	// Adds the game to the renderer.
-	void add_to_renderer(renderer& renderer) const;
+	void add_to_renderer(renderer& renderer, float secondary_hue) const;
 
   protected:
 	// The gamemode of the game.
@@ -58,7 +60,7 @@ class playerless_game {
 	// Adds the ball trail overlay to the renderer.
 	void add_ball_trail_overlay_to_renderer(tr::gfx::renderer_2d& renderer) const;
 	// Adds the field border to the renderer.
-	void add_border_to_renderer(tr::gfx::renderer_2d& renderer) const;
+	void add_border_to_renderer(tr::gfx::renderer_2d& renderer, float hue) const;
 };
 
 ////////////////////////////////////////////////////////////////// GAME ///////////////////////////////////////////////////////////////////
@@ -110,7 +112,7 @@ class game : private playerless_game {
 	virtual void tick() = 0;
 
 	// Adds the game to the renderer.
-	void add_to_renderer(renderer& renderer) const;
+	void add_to_renderer(renderer& renderer, float primary_hue, float secondary_hue) const;
 
   protected:
 	// Base update function taking in a player input.
@@ -214,7 +216,7 @@ class game : private playerless_game {
 	// Adds the timer display to the renderer.
 	void add_timer_to_renderer(renderer& renderer) const;
 	// Adds the lives display to the renderer.
-	void add_lives_to_renderer(tr::gfx::renderer_2d& renderer) const;
+	void add_lives_to_renderer(tr::gfx::renderer_2d& renderer, float hue) const;
 	// Adds an appearing life from the lives display to the renderer.
 	void add_appearing_life_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 color, u8 base_opacity) const;
 	// Adds a shattering life from the lives display to the renderer.
@@ -229,13 +231,17 @@ class game : private playerless_game {
 class active_game final : public game {
   public:
 	// Creates a new active game.
-	active_game(savefile savefile, ::gamemode gamemode, u64 seed = g_rng.generate<u64>());
+	active_game(const input& input, savefile savefile, ::gamemode gamemode, u64 seed = g_rng.generate<u64>());
 
 	// Updates the game state.
 	void tick() override;
 
 	// Replay recorded of the game.
 	replay replay;
+
+  private:
+	// Reference to the input manager.
+	const input& m_input;
 };
 
 /////////////////////////////////////////////////////////////// REPLAY GAME ///////////////////////////////////////////////////////////////

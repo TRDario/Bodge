@@ -35,14 +35,14 @@ constexpr shortcut_table SHORTCUTS{
 // clang-format on
 ////////////////////////////////////////////////////////////// CREDITS STATE //////////////////////////////////////////////////////////////
 
-credits_state::credits_state(std::shared_ptr<playerless_game> game)
-	: main_menu_state{SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_CREDITS}
+credits_state::credits_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS, std::move(game)}, m_substate{substate::IN_CREDITS}
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
 		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
-		.text = localized_text{T_TITLE},
+		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_BODGE, {
@@ -59,13 +59,13 @@ credits_state::credits_state(std::shared_ptr<playerless_game> game)
 	m_ui.emplace<label_widget>(T_DEVELOPED_BY, {
 		.animation = {{400, 385}},
 		.unhide_time = DONT_UNHIDE,
-		.text = localized_text{T_DEVELOPED_BY},
+		.text = localized_text{m_subsystems->localization, T_DEVELOPED_BY},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_TRDARIO, {
 		.animation = {{600, 445}},
 		.unhide_time = DONT_UNHIDE,
-		.tooltip_text = localized_text{"trdario_tt"},
+		.tooltip_text = localized_text{m_subsystems->localization, "trdario_tt"},
 		.text = constant_text{T_TRDARIO},
 		.color = "FF8080A0"_rgba8
 	});
@@ -78,7 +78,7 @@ credits_state::credits_state(std::shared_ptr<playerless_game> game)
 	m_ui.emplace<label_widget>(T_PLAYTESTERS, {
 		.animation = {{400, 685}},
 		.unhide_time = DONT_UNHIDE,
-		.text = localized_text{T_PLAYTESTERS},
+		.text = localized_text{m_subsystems->localization, T_PLAYTESTERS},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_STARSURGE, {
@@ -94,13 +94,13 @@ credits_state::credits_state(std::shared_ptr<playerless_game> game)
 	m_ui.emplace<label_widget>(T_ZER0, {
 		.animation = {{600, 845}},
 		.unhide_time = DONT_UNHIDE,
-		.tooltip_text = localized_text{"zer0_tt"},
+		.tooltip_text = localized_text{m_subsystems->localization, "zer0_tt"},
 		.text = constant_text{T_ZER0}
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
-		.text = localized_text{T_EXIT},
+		.text = localized_text{m_subsystems->localization, T_EXIT},
 		.status = [this] { return m_substate == substate::IN_CREDITS; },
 		.action = [this] { on_exit(); },
 		.action_sound = sound::CANCEL
@@ -165,5 +165,5 @@ void credits_state::on_exit()
 	m_ui[T_TOWELI].hide(0.5_s);
 	m_ui[T_ZER0].hide(0.5_s);
 	m_ui[T_EXIT].move_and_hide(BOTTOM_START_POS, 0.5_s);
-	m_next_state = make_async<title_state>(m_game);
+	m_next_state = make_async<title_state>(m_subsystems, m_game);
 }

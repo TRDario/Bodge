@@ -12,7 +12,7 @@
 ///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
 
 // Formats the tooltip for a score widget.
-static std::string format_score_tooltip(tr::opt_ref<const ::score_entry> score)
+static std::string format_score_tooltip(const localization& localization, tr::opt_ref<const ::score_entry> score)
 {
 	if (!score.has_ref()) {
 		return std::string{};
@@ -27,13 +27,13 @@ static std::string format_score_tooltip(tr::opt_ref<const ::score_entry> score)
 			if (!str.empty()) {
 				str.push_back('\n');
 			}
-			str.append(localization::instance()["exited_prematurely"]);
+			str.append(localization["exited_prematurely"]);
 		}
 		if (flags.modified_game_speed) {
 			if (!str.empty()) {
 				str.push_back('\n');
 			}
-			str.append(localization::instance()["modified_game_speed"]);
+			str.append(localization["modified_game_speed"]);
 		}
 		return str;
 	}
@@ -55,15 +55,16 @@ static std::string format_score_text(tr::opt_ref<const ::score_entry> score, sco
 }
 
 // Formats the text for a replay widget.
-static std::string format_replay_text(std::optional<replay_map::const_iterator> replay_it)
+static std::string format_replay_text(const localization& localization, std::optional<replay_map::const_iterator> replay_it)
 {
 	if (!replay_it.has_value()) {
 		return std::string{"-------------------------------------------------"};
 	}
 
 	const replay_header& rpy{(*replay_it)->second};
-	return TR_FMT::format("{} ({}: {})\n{} | {} | {} | {}", rpy.name, localization::instance()["by"], rpy.player, rpy.gamemode.name_loc(),
-						  format_score(rpy.score), format_time_long(rpy.time), format_timestamp(rpy.timestamp));
+	return TR_FMT::format("{} ({}: {})\n{} | {} | {} | {}", rpy.name, localization["by"], rpy.player,
+						  rpy.gamemode.localized_name(localization), format_score(rpy.score), format_time_long(rpy.time),
+						  format_timestamp(rpy.timestamp));
 }
 
 //
@@ -113,7 +114,7 @@ score_widget::score_widget(const properties& properties)
 		  properties.animation,
 		  properties.alignment,
 		  properties.unhide_time,
-		  constant_text{format_score_tooltip(properties.score)},
+		  constant_text{format_score_tooltip(properties.localization, properties.score)},
 		  constant_text(format_score_text(properties.score, properties.type, properties.rank)),
 		  font::LANGUAGE,
 		  tr::sys::ttf_style::NORMAL,
@@ -159,8 +160,10 @@ replay_widget::replay_widget(const properties& properties)
 		  .animation = properties.animation,
 		  .alignment = properties.alignment,
 		  .unhide_time = properties.unhide_time,
-		  .tooltip_text = constant_text{properties.replay_it.has_value() ? format_score_tooltip((*properties.replay_it)->second) : ""},
-		  .text = constant_text{format_replay_text(properties.replay_it)},
+		  .tooltip_text = constant_text{properties.replay_it.has_value()
+											? format_score_tooltip(properties.localization, (*properties.replay_it)->second)
+											: ""},
+		  .text = constant_text{format_replay_text(properties.localization, properties.replay_it)},
 		  .font_size = 34,
 		  .status = [this] { return m_parent_state.m_substate == replays_state::substate::IN_REPLAYS && m_replay_it.has_value(); },
 		  .action =
@@ -170,7 +173,8 @@ replay_widget::replay_widget(const properties& properties)
 					  m_parent_state.m_elapsed = 0;
 					  m_parent_state.set_up_exit_animation();
 					  audio::instance().fade_song_out(0.5s);
-					  m_parent_state.m_next_state = make_game_state_async<replay_game>(replay_game_data{}, replay{(*m_replay_it)->first});
+					  m_parent_state.m_next_state = make_game_state_async<replay_game>(m_parent_state.m_subsystems, replay_game_data{},
+																					   replay{(*m_replay_it)->first});
 				  }
 			  },
 	  }}

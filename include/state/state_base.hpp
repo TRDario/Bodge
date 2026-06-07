@@ -6,6 +6,7 @@
 
 #pragma once
 #include "../game.hpp"
+#include "../input.hpp"
 #include "../ui.hpp"
 #include <future>
 
@@ -14,8 +15,21 @@
 // Base class for all states.
 class state : public tr::state {
   public:
+	// Application subsystems.
+	struct subsystems {
+		// Initializes the application subsystems.
+		subsystems();
+
+		// Active settings.
+		settings settings;
+		// Input manager.
+		input input;
+		// Localization manager.
+		localization localization;
+	};
+
 	// Creates a state with an associated selection tree and shortcut table.
-	state(selection_tree selection_tree, shortcut_table shortcuts);
+	state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tree, shortcut_table shortcuts);
 
 	// Signals whether the cursor should be drawn transparent.
 	virtual bool transparent_cursor() const;
@@ -25,6 +39,8 @@ class state : public tr::state {
 	tr::next_state tick() override;
 
   protected:
+	// Application subsystems.
+	std::shared_ptr<subsystems> m_subsystems;
 	// State UI manager.
 	ui_manager m_ui;
 	// Time elapsed since the current substate began.
@@ -54,9 +70,10 @@ enum class animate_subtitle : bool {
 class main_menu_state : public state {
   public:
 	// Creates a main menu state with no prior background game.
-	main_menu_state(selection_tree selection_tree, shortcut_table shortcuts);
+	main_menu_state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tree, shortcut_table shortcuts);
 	// Creates a main menu state with an existing background game.
-	main_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<playerless_game> game);
+	main_menu_state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tree, shortcut_table shortcuts,
+					std::shared_ptr<playerless_game> game);
 
 	// Updates the state.
 	tr::next_state tick() override;
@@ -84,8 +101,8 @@ enum class update_game : bool {
 class game_menu_state : public state {
   public:
 	// Creates a game menu state.
-	game_menu_state(selection_tree selection_tree, shortcut_table shortcuts, std::shared_ptr<game> game, savefile savefile,
-					update_game update_game);
+	game_menu_state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tree, shortcut_table shortcuts,
+					std::shared_ptr<game> game, savefile savefile, update_game update_game);
 
 	// Updates the state.
 	tr::next_state tick() override;
