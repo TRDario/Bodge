@@ -129,11 +129,6 @@ game_over_state::game_over_state(std::shared_ptr<subsystems> subsystems, std::sh
 
 //
 
-bool game_over_state::transparent_cursor() const
-{
-	return m_substate == substate::RESTARTING;
-}
-
 tr::next_state game_over_state::tick()
 {
 	const best_results& best_results{m_savefile.best_results(m_game->gamemode())};
@@ -179,12 +174,7 @@ tr::next_state game_over_state::tick()
 
 //
 
-float game_over_state::fade_overlay_opacity()
-{
-	return m_substate == substate::RESTARTING || m_substate == substate::QUITTING ? m_elapsed / 0.5_sf : 0;
-}
-
-float game_over_state::saturation_factor()
+float game_over_state::saturation_factor() const
 {
 	switch (m_substate) {
 	case substate::GAME_OVER:
@@ -197,7 +187,7 @@ float game_over_state::saturation_factor()
 	}
 }
 
-float game_over_state::blur_strength()
+float game_over_state::blur_strength() const
 {
 	switch (m_substate) {
 	case substate::GAME_OVER:
@@ -208,6 +198,16 @@ float game_over_state::blur_strength()
 	case substate::BLURRING_IN:
 		return m_elapsed / 0.5_sf * 10;
 	}
+}
+
+float game_over_state::fade_overlay_opacity() const
+{
+	return m_substate == substate::RESTARTING || m_substate == substate::QUITTING ? m_elapsed / 0.5_sf : 0;
+}
+
+state::cursor_type game_over_state::cursor_type() const
+{
+	return m_substate == substate::RESTARTING ? cursor_type::transparent : cursor_type::opaque;
 }
 
 //
@@ -304,5 +304,5 @@ void game_over_state::on_exit()
 	m_savefile.add_score(m_game->gamemode(), score);
 	m_savefile.save_to_file();
 	set_up_exit_animation();
-	m_next_state = make_async<title_state>();
+	m_next_state = make_async<title_state>(m_subsystems);
 }

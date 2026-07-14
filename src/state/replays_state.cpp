@@ -75,11 +75,6 @@ replays_state::replays_state(std::shared_ptr<subsystems> subsystems, std::shared
 
 //
 
-bool replays_state::transparent_cursor() const
-{
-	return m_substate == substate::STARTING_REPLAY;
-}
-
 tr::next_state replays_state::tick()
 {
 	main_menu_state::tick();
@@ -112,7 +107,7 @@ tr::next_state replays_state::tick()
 
 //
 
-float replays_state::fade_overlay_opacity()
+float replays_state::fade_overlay_opacity() const
 {
 	switch (m_substate) {
 	case substate::RETURNING_FROM_REPLAY:
@@ -124,6 +119,11 @@ float replays_state::fade_overlay_opacity()
 	case substate::STARTING_REPLAY:
 		return m_elapsed / 0.5_sf;
 	}
+}
+
+state::cursor_type replays_state::cursor_type() const
+{
+	return m_substate == substate::STARTING_REPLAY ? cursor_type::transparent : cursor_type::opaque;
 }
 
 std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_widgets()

@@ -21,7 +21,7 @@ struct language_info {
 
 /////////////////////////////////////////////////////////////// LOCALIZATION //////////////////////////////////////////////////////////////
 
-// Localization manager.
+// Localization subsystem.
 class localization {
   public:
 	// Loads the list of available languages and the initial localization.

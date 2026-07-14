@@ -37,14 +37,20 @@ class state : public tr::state {
 	// Creates a state with an associated selection tree and shortcut table.
 	state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tree, shortcut_table shortcuts);
 
-	// Signals whether the cursor should be drawn transparent.
-	virtual bool transparent_cursor() const;
 	// Handles an event.
 	tr::next_state handle_event(const tr::sys::event& event) override;
 	// Updates the state.
 	tr::next_state tick() override;
+	// Draws the state.
+	void draw() override final;
 
   protected:
+	// Cursor types.
+	enum class cursor_type : bool {
+		opaque,
+		transparent
+	};
+
 	// Application subsystems.
 	std::shared_ptr<subsystems> m_subsystems;
 	// State UI manager.
@@ -56,6 +62,13 @@ class state : public tr::state {
 
 	// Returns the next state if the elapsed time is greater than the given timestamp, otherwise return tr::KEEP_STATE.
 	tr::next_state next_state_if_after(ticks timestamp);
+
+	// Adds the cursor to the renderer.
+	void add_cursor_to_renderer(cursor_type type);
+
+  private:
+	// Inner drawing function.
+	virtual void draw_game() = 0;
 };
 
 ///////////////////////////////////////////////////////////// MAIN MENU STATE /////////////////////////////////////////////////////////////
@@ -83,16 +96,19 @@ class main_menu_state : public state {
 
 	// Updates the state.
 	tr::next_state tick() override;
-	// Draws the state.
-	void draw() override;
 
   protected:
 	// Game playing in the background.
 	std::shared_ptr<playerless_game> m_game;
 
   private:
-	// The opacity of the fade overlay.
-	virtual float fade_overlay_opacity();
+	// Gets the opacity of the fade overlay.
+	virtual float fade_overlay_opacity() const;
+	// Gets the type of cursor to draw.
+	virtual cursor_type cursor_type() const;
+
+	// Draws the state.
+	void draw_game() override;
 };
 
 ///////////////////////////////////////////////////////////// GAME MENU STATE /////////////////////////////////////////////////////////////
@@ -112,8 +128,6 @@ class game_menu_state : public state {
 
 	// Updates the state.
 	tr::next_state tick() override;
-	// Draws the state.
-	void draw() override;
 
   protected:
 	// Background game.
@@ -125,12 +139,17 @@ class game_menu_state : public state {
 	// Flag denoting whether to update the game in the background.
 	bool m_update_game;
 
-	// The saturation of the background game.
-	virtual float saturation_factor();
-	// The strength of the background blur.
-	virtual float blur_strength();
-	// The opacity of the fade overlay.
-	virtual float fade_overlay_opacity();
+	// Gets the saturation of the background game.
+	virtual float saturation_factor() const;
+	// Gets the strength of the background blur.
+	virtual float blur_strength() const;
+	// Gets the opacity of the fade overlay.
+	virtual float fade_overlay_opacity() const;
+	// Gets the type of cursor to draw.
+	virtual cursor_type cursor_type() const;
+
+	// Draws the state.
+	void draw_game() override;
 };
 
 ///////////////////////////////////////////////////////////////// HELPERS /////////////////////////////////////////////////////////////////

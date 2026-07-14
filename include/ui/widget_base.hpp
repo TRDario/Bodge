@@ -174,6 +174,14 @@ class text_widget : public widget {
 	void release_graphical_resources() override;
 
   protected:
+	// Combines a texture with UV coordinates.
+	struct texture_with_uv {
+		// The text texture.
+		tr::gfx::texture texture;
+		// Size of the used texture region in normalized coordinates.
+		glm::vec2 size;
+	};
+
 	// The font used to draw the text.
 	font m_font;
 	// The style used to draw the text.
@@ -187,7 +195,7 @@ class text_widget : public widget {
 	// The last drawn string.
 	mutable std::string m_last_text;
 	// Cached resources.
-	mutable std::variant<std::monostate, tr::bitmap, tr::gfx::texture> m_cache;
+	mutable std::variant<std::monostate, tr::bitmap, texture_with_uv> m_cache;
 	// The size of the last drawn string.
 	mutable glm::vec2 m_last_size;
 

@@ -21,13 +21,6 @@ current_state& current_state::instance()
 
 //
 
-state* current_state::operator->()
-{
-	return &state_machine::get<state>();
-}
-
-//
-
 tr::sys::signal current_state::handle_event(const tr::sys::event& event)
 {
 	if (event.is<tr::sys::quit_event>()) {

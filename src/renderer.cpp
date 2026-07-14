@@ -61,6 +61,7 @@ renderer::window_specific_components::window_specific_components(const settings&
 		extra.emplace();
 	}
 
+	circle_renderer.set_default_transform(TRANSFORM);
 	basic_renderer.set_default_transform(TRANSFORM);
 	basic_renderer.set_default_layer_blend_mode(layer::BALL_TRAILS, tr::gfx::MAX_BLENDING);
 	basic_renderer.set_default_layer_blend_mode(layer::BALL_TRAILS_OVERLAY, tr::gfx::REVERSE_ALPHA_BLENDING);
@@ -68,8 +69,6 @@ renderer::window_specific_components::window_specific_components(const settings&
 		// Explicitly set default transform for these because the global default is modified by screenshake.
 		basic_renderer.set_default_layer_transform(layer, TRANSFORM);
 	}
-
-	basic_renderer.set_default_transform(TRANSFORM);
 
 	tr::sys::show_window();
 }
@@ -146,7 +145,7 @@ void renderer::add_menu_game_overlay()
 {
 	const tr::gfx::simple_color_mesh_ref fade_overlay{basic().new_color_fan(layer::GAME_OVERLAY, 4)};
 	tr::fill_rectangle_vertices(fade_overlay.positions, {{}, {1000, 1000}});
-	std::ranges::fill(fade_overlay.colors, MENU_GAME_OVERLAY_TINT);
+	std::ranges::fill(fade_overlay.colors, tr::rgba8{0, 0, 0, 160});
 }
 
 void renderer::add_fade_overlay(float opacity)
@@ -174,30 +173,7 @@ void renderer::draw_blurred(float saturation, float strength)
 
 void renderer::draw_layers(const tr::gfx::render_target& target)
 {
-	tr::gfx::draw_layer_range(layer::BALL_TRAILS, layer::FADE_OVERLAY, target, basic(), circle());
-}
-
-void renderer::draw_cursor(float hue, glm::vec2 mouse_pos)
-{
-	tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{hue, 1, 1})};
-	if (current_state::instance()->transparent_cursor()) {
-		color.a = 160;
-	}
-
-	tr::gfx::simple_color_mesh_ref quad{basic().new_color_fan(layer::CURSOR, 4)};
-	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
-	std::ranges::fill(quad.colors, color);
-	quad = basic().new_color_fan(layer::CURSOR, 4);
-	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x + 4, mouse_pos.y - 1}, {8, 2}});
-	std::ranges::fill(quad.colors, color);
-	quad = basic().new_color_fan(layer::CURSOR, 4);
-	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 1, mouse_pos.y - 12}, {2, 8}});
-	std::ranges::fill(quad.colors, color);
-	quad = basic().new_color_fan(layer::CURSOR, 4);
-	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 1, mouse_pos.y + 4}, {2, 8}});
-	std::ranges::fill(quad.colors, color);
-
-	basic().draw(screen());
+	tr::gfx::draw_layer_range(layer::BALL_TRAILS, layer::CURSOR, target, basic(), circle());
 }
 
 //

@@ -78,11 +78,6 @@ inline constexpr tr::rgba8 WHITE{"FFFFFF"_rgba8};
 // Transformation matrix used by game elements.
 inline const glm::mat4 TRANSFORM{tr::ortho(glm::vec2{1000.0f})};
 
-// Overlay used to dim the game in the main menu.
-inline constexpr std::array<glm::vec2, 4> OVERLAY_POSITIONS{{{0, 0}, {1000, 0}, {1000, 1000}, {0, 1000}}};
-// Tint used for the menu game overlay.
-inline constexpr tr::rgba8 MENU_GAME_OVERLAY_TINT{0, 0, 0, 160};
-
 ////////////////////////////////////////////////////////////// GAME CONSTANTS /////////////////////////////////////////////////////////////
 
 // Thickness of the field border.

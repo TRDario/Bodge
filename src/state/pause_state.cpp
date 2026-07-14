@@ -85,11 +85,6 @@ pause_state::pause_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr
 
 //
 
-bool pause_state::transparent_cursor() const
-{
-	return m_substate == substate::UNPAUSING || m_substate == substate::RESTARTING;
-}
-
 tr::next_state pause_state::tick()
 {
 	game_menu_state::tick();
@@ -135,12 +130,12 @@ tr::next_state pause_state::tick()
 
 //
 
-float pause_state::fade_overlay_opacity()
+float pause_state::fade_overlay_opacity() const
 {
 	return m_substate == substate::RESTARTING || m_substate == substate::QUITTING ? m_elapsed / 0.5_sf : 0;
 }
 
-float pause_state::saturation_factor()
+float pause_state::saturation_factor() const
 {
 	switch (m_substate) {
 	case substate::PAUSED:
@@ -155,7 +150,7 @@ float pause_state::saturation_factor()
 	}
 }
 
-float pause_state::blur_strength()
+float pause_state::blur_strength() const
 {
 	switch (m_substate) {
 	case substate::PAUSED:
@@ -168,6 +163,11 @@ float pause_state::blur_strength()
 	case substate::UNPAUSING:
 		return (1 - m_elapsed / 0.5_sf) * 10;
 	}
+}
+
+state::cursor_type pause_state::cursor_type() const
+{
+	return m_substate == substate::UNPAUSING || m_substate == substate::RESTARTING ? cursor_type::transparent : cursor_type::opaque;
 }
 
 void pause_state::set_up_full_ui()
@@ -354,7 +354,7 @@ void pause_state::on_quit()
 		const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 		m_savefile.add_score(m_game->gamemode(), score);
 		m_savefile.save_to_file();
-		m_next_state = make_async<title_state>();
+		m_next_state = make_async<title_state>(m_subsystems);
 	}
 	else if (std::holds_alternative<replay_game_data>(m_data)) {
 		m_next_state = make_async<replays_state>(m_subsystems);

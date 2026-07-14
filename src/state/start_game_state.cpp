@@ -249,14 +249,14 @@ start_game_state::~start_game_state()
 
 //
 
-float start_game_state::fade_overlay_opacity()
+float start_game_state::fade_overlay_opacity() const
 {
 	return m_substate == substate::STARTING_GAME ? m_elapsed / 0.5_sf : 0;
 }
 
-bool start_game_state::transparent_cursor() const
+state::cursor_type start_game_state::cursor_type() const
 {
-	return m_substate == substate::STARTING_GAME;
+	return m_substate == substate::STARTING_GAME ? cursor_type::transparent : cursor_type::opaque;
 }
 
 tr::next_state start_game_state::tick()

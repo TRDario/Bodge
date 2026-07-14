@@ -45,11 +45,6 @@ game_state::game_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<g
 
 //
 
-bool game_state::transparent_cursor() const
-{
-	return true;
-}
-
 tr::next_state game_state::handle_event(const tr::sys::event& event)
 {
 	if (event.is<tr::sys::quit_event>()) {
@@ -164,15 +159,17 @@ tr::next_state game_state::tick()
 	}
 }
 
-void game_state::draw()
+void game_state::draw_game()
 {
-	m_game->add_to_renderer(m_subsystems->renderer, m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
+	renderer& renderer{m_subsystems->renderer};
+	m_game->add_to_renderer(renderer, m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
 	if (std::holds_alternative<replay_game_data>(m_data)) {
-		m_ui.add_to_renderer(m_subsystems->renderer, m_subsystems->input.mouse_pos);
+		m_ui.add_to_renderer(renderer, m_subsystems->input.mouse_pos);
 		add_replay_cursor_to_renderer(((replay_game&)*m_game).cursor_pos());
 	}
-	m_subsystems->renderer.add_fade_overlay(fade_overlay_opacity());
-	m_subsystems->renderer.draw_layers(m_subsystems->renderer.screen());
+	renderer.add_fade_overlay(fade_overlay_opacity());
+	add_cursor_to_renderer(cursor_type::transparent);
+	renderer.draw_layers(renderer.screen());
 }
 
 //

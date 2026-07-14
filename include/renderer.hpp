@@ -30,7 +30,7 @@ enum layer {
 	CURSOR
 };
 
-// Renderer singleton.
+// Renderer subsystem.
 class renderer {
   public:
 	// Opens a window and creates a renderer.
@@ -69,8 +69,6 @@ class renderer {
 	void draw_blurred(float saturation, float strength);
 	// Draws everything added to the renderer's layers.
 	void draw_layers(const tr::gfx::render_target& target);
-	// Draws the cursor.
-	void draw_cursor(float hue, glm::vec2 mouse_pos);
 
 	// Marks the start of frame rendering.
 	void start_benchmark();

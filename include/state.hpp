@@ -33,23 +33,26 @@ class gamemode_selector_state;
 ////////////////////////////////////////////////////////////// STATE MACHINE //////////////////////////////////////////////////////////////
 
 // Current state singleton.
-class current_state : public tr::state_machine {
+class current_state : private tr::state_machine {
   public:
 	// Gets the current state instance.
 	static current_state& instance();
-
-	// Accesses the current state.
-	state* operator->();
 
 	// Handles an event and returns a signal.
 	tr::sys::signal handle_event(const tr::sys::event& event);
 	// Updates the state and returns a signal.
 	tr::sys::signal tick();
+	// Draws the state.
+	using state_machine::draw;
+
+	// Gets the tick benchmark.
+	using state_machine::tick_benchmark;
+	// Gets the update benchmark.
+	using state_machine::update_benchmark;
+	// Gets the draw benchmark.
+	using state_machine::draw_benchmark;
 
   private:
-	using state_machine::handle_event;
-	using state_machine::tick;
-
 	// Creates an initial state.
 	current_state();
 };
@@ -79,8 +82,8 @@ class name_entry_state final : public main_menu_state {
 	// The current substate.
 	substate m_substate;
 
-	// The opacity of the fade overlay.
-	float fade_overlay_opacity() override;
+	// Gets the opacity of the fade overlay.
+	float fade_overlay_opacity() const override;
 
 	// Function called upon exiting from the name entry screen.
 	void on_exit();
@@ -91,9 +94,11 @@ class name_entry_state final : public main_menu_state {
 // Title screen of the main menu.
 class title_state final : public main_menu_state {
   public:
-	// Creates a title state when starting.
+	// Creates a title state when starting the game.
 	title_state();
-	// Creates a title state when entering from the name entry state.
+	// Creates a title state when entering with a fade-in.
+	title_state(std::shared_ptr<subsystems> subsystems);
+	// Creates a title state when entering from a submenu.
 	title_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game);
 
 	// Updates the state.
@@ -115,8 +120,8 @@ class title_state final : public main_menu_state {
 	// The current substate.
 	substate m_substate;
 
-	// The opacity of the fade overlay.
-	float fade_overlay_opacity() override;
+	// Gets the opacity of the fade overlay.
+	float fade_overlay_opacity() const override;
 
 	// Sets up the UI when entering.
 	void set_up_ui();
@@ -149,8 +154,6 @@ class start_game_state final : public main_menu_state {
 	// Destroys the state.
 	~start_game_state() override;
 
-	// Signals whether the cursor should be drawn transparent.
-	bool transparent_cursor() const override;
 	// Updates the state.
 	tr::next_state tick() override;
 
@@ -180,8 +183,10 @@ class start_game_state final : public main_menu_state {
 	// Holds the result of an asynchronously loaded new set of widgets.
 	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
 
-	// The opacity of the fade overlay.
-	float fade_overlay_opacity() override;
+	// Gets the opacity of the fade overlay.
+	float fade_overlay_opacity() const override;
+	// Gets the type of cursor to draw.
+	state::cursor_type cursor_type() const override;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();
@@ -292,8 +297,6 @@ class gamemode_editor_state final : public main_menu_state {
 	gamemode_editor_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game, gamemode_editor data,
 						  gamemode gamemode, animate_subtitle animate_subtitle);
 
-	// Signals whether the cursor should be drawn transparent.
-	bool transparent_cursor() const override;
 	// Updates the state.
 	tr::next_state tick() override;
 
@@ -319,8 +322,10 @@ class gamemode_editor_state final : public main_menu_state {
 	// The pending gamemode.
 	gamemode m_pending;
 
-	// The opacity of the fade overlay.
-	float fade_overlay_opacity() override;
+	// Gets the opacity of the fade overlay.
+	float fade_overlay_opacity() const override;
+	// Gets the type of cursor to draw.
+	state::cursor_type cursor_type() const override;
 
 	// Sets up the UI when entering.
 	void set_up_ui(animate_title animate_title, animate_subtitle animate_subtitle);
@@ -627,8 +632,6 @@ class replays_state final : public main_menu_state {
 	// Creates a replays state coming from the title screen.
 	replays_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<playerless_game> game);
 
-	// Signals whether the cursor should be drawn transparent.
-	bool transparent_cursor() const override;
 	// Updates the state.
 	tr::next_state tick() override;
 
@@ -656,8 +659,10 @@ class replays_state final : public main_menu_state {
 	// Holds the result of an asynchronously loaded new set of widgets.
 	std::future<std::unordered_map<tag, std::unique_ptr<widget>>> m_next_widgets;
 
-	// The opacity of the fade overlay.
-	float fade_overlay_opacity() override;
+	// Gets the opacity of the fade overlay.
+	float fade_overlay_opacity() const override;
+	// Gets the type of cursor to draw.
+	state::cursor_type cursor_type() const override;
 
 	// Prepares the widgets for the next page.
 	std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets();
@@ -775,14 +780,10 @@ class game_state final : public state {
 	// Creates a new game state.
 	game_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<game> game, game_state_data data, fade_in fade_in);
 
-	// Signals whether the cursor should be drawn transparent.
-	bool transparent_cursor() const override;
 	// Handles an event.
 	tr::next_state handle_event(const tr::sys::event& event) override;
 	// Updates the state.
 	tr::next_state tick() override;
-	// Draws the state.
-	void draw() override;
 
   private:
 	// Substates of the game state.
@@ -814,6 +815,8 @@ class game_state final : public state {
 
 	// Adds a visual of the cursor position of the player in the replay to the renderer.
 	void add_replay_cursor_to_renderer(glm::vec2 pos) const;
+	// Draws the state.
+	void draw_game() override;
 };
 
 // Asynchronously creates a game state.
@@ -843,8 +846,6 @@ class pause_state final : public game_menu_state {
 	pause_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<game> game, savefile savefile, game_state_data data,
 				glm::vec2 mouse_pos, blur_in blur_in);
 
-	// Signals whether the cursor should be drawn transparent.
-	bool transparent_cursor() const override;
 	// Updates the state.
 	tr::next_state tick() override;
 
@@ -874,12 +875,14 @@ class pause_state final : public game_menu_state {
 	// The mouse position right before unpausing.
 	glm::vec2 m_end_mouse_pos;
 
-	// The opacity of the fade overlay.
-	float fade_overlay_opacity() override;
-	// The saturation of the background game.
-	float saturation_factor() override;
-	// The strength of the background blur.
-	float blur_strength() override;
+	// Gets the saturation of the background game.
+	float saturation_factor() const override;
+	// Gets the strength of the background blur.
+	float blur_strength() const override;
+	// Gets the opacity of the fade overlay.
+	float fade_overlay_opacity() const override;
+	// Gets the type of cursor to draw.
+	state::cursor_type cursor_type() const override;
 
 	// Sets up the full UI when entering.
 	void set_up_full_ui();
@@ -908,8 +911,6 @@ class game_over_state final : public game_menu_state {
 	// Creates a game over state.
 	game_over_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<game> game, savefile savefile, blur_in blur_in);
 
-	// Signals whether the cursor should be drawn transparent.
-	bool transparent_cursor() const override;
 	// Updates the state.
 	tr::next_state tick() override;
 
@@ -931,12 +932,14 @@ class game_over_state final : public game_menu_state {
 	// The current substate.
 	substate m_substate;
 
-	// The opacity of the fade overlay.
-	float fade_overlay_opacity() override;
-	// The saturation of the background game.
-	float saturation_factor() override;
-	// The strength of the background blur.
-	float blur_strength() override;
+	// Gets the saturation of the background game.
+	float saturation_factor() const override;
+	// Gets the strength of the background blur.
+	float blur_strength() const override;
+	// Gets the opacity of the fade overlay.
+	float fade_overlay_opacity() const override;
+	// Gets the type of cursor to draw.
+	state::cursor_type cursor_type() const override;
 
 	// Creates a text command for the "best time" widget.
 	text_command best_time_text() const;
@@ -1024,8 +1027,6 @@ class save_replay_state final : public game_menu_state {
 	// Creates the save replay state.
 	save_replay_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<game> game, savefile savefile, save_screen_flags flags);
 
-	// Signals whether the cursor should be drawn transparent.
-	bool transparent_cursor() const override;
 	// Updates the state.
 	tr::next_state tick() override;
 
@@ -1053,8 +1054,10 @@ class save_replay_state final : public game_menu_state {
 	// Gets the save screen flags from a substate value.
 	friend save_screen_flags to_flags(substate state);
 
-	// The opacity of the fade overlay.
-	float fade_overlay_opacity() override;
+	// Gets the opacity of the fade overlay.
+	float fade_overlay_opacity() const override;
+	// Gets the type of cursor to draw.
+	state::cursor_type cursor_type() const override;
 
 	// Sets up the UI exit animation.
 	void set_up_exit_animation();

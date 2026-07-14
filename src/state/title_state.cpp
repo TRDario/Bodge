@@ -52,7 +52,12 @@ constexpr shortcut_table SHORTCUTS{
 /////////////////////////////////////////////////////////////// TITLE STATE ///////////////////////////////////////////////////////////////
 
 title_state::title_state()
-	: main_menu_state{std::make_unique<subsystems>(), SELECTION_TREE, SHORTCUTS}, m_substate{substate::FADING_IN}
+	: title_state{std::make_unique<subsystems>()}
+{
+}
+
+title_state::title_state(std::shared_ptr<subsystems> subsystems)
+	: main_menu_state{std::move(subsystems), SELECTION_TREE, SHORTCUTS}, m_substate{substate::FADING_IN}
 {
 	set_up_ui();
 }
@@ -89,7 +94,7 @@ tr::next_state title_state::tick()
 
 //
 
-float title_state::fade_overlay_opacity()
+float title_state::fade_overlay_opacity() const
 {
 	switch (m_substate) {
 	case substate::FADING_IN:

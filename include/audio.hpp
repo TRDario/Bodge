@@ -39,7 +39,7 @@ inline constexpr tr::fsecs SKIP_MENU_SONG_INTRO_TIMESTAMP{103769 / 44100.0f};
 // Creates a list of filenames of available songs.
 std::vector<std::string> create_available_song_list();
 
-// Audio manager.
+// Audio subsystem.
 class audio {
   public:
 	// Creates an audio manager.

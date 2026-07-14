@@ -89,7 +89,7 @@ tr::next_state name_entry_state::tick()
 
 //
 
-float name_entry_state::fade_overlay_opacity()
+float name_entry_state::fade_overlay_opacity() const
 {
 	return m_substate == substate::FADING_IN ? 1 - m_elapsed / 1.0_sf : 0;
 }

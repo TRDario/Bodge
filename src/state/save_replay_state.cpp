@@ -115,11 +115,6 @@ save_replay_state::save_replay_state(std::shared_ptr<subsystems> subsystems, std
 
 //
 
-bool save_replay_state::transparent_cursor() const
-{
-	return to_base(m_substate) == substate_base::EXITING && to_flags(m_substate) | save_screen_flags::RESTARTING;
-}
-
 tr::next_state save_replay_state::tick()
 {
 	game_menu_state::tick();
@@ -149,7 +144,7 @@ save_screen_flags to_flags(save_replay_state::substate state)
 	return save_screen_flags(int(state) & int(save_screen_flags::MASK));
 }
 
-float save_replay_state::fade_overlay_opacity()
+float save_replay_state::fade_overlay_opacity() const
 {
 	if (to_base(m_substate) == substate_base::EXITING) {
 		return m_elapsed / 0.5_sf;
@@ -157,6 +152,12 @@ float save_replay_state::fade_overlay_opacity()
 	else {
 		return 0;
 	}
+}
+
+state::cursor_type save_replay_state::cursor_type() const
+{
+	return to_base(m_substate) == substate_base::EXITING && to_flags(m_substate) | save_screen_flags::RESTARTING ? cursor_type::transparent
+																												 : cursor_type::opaque;
 }
 
 void save_replay_state::set_up_exit_animation()
@@ -185,7 +186,7 @@ void save_replay_state::on_save()
 	game.replay.set_header(score_entry{description, current_timestamp(), game.final_score(), game.final_time(), flags}, name);
 	game.replay.save_to_directory();
 	if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
-		m_next_state = make_async<title_state>();
+		m_next_state = make_async<title_state>(m_subsystems);
 	}
 	else {
 		// clang-format off
@@ -209,7 +210,7 @@ void save_replay_state::on_discard()
 	m_elapsed = 0;
 	set_up_exit_animation();
 	if (!(to_flags(m_substate) & save_screen_flags::RESTARTING)) {
-		m_next_state = make_async<title_state>();
+		m_next_state = make_async<title_state>(m_subsystems);
 	}
 	else {
 		// clang-format off

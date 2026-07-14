@@ -119,6 +119,8 @@ void playerless_game::tick(audio& audio)
 
 void playerless_game::add_ball_trail_overlay_to_renderer(tr::gfx::renderer_2d& renderer) const
 {
+	constexpr std::array<glm::vec2, 4> OVERLAY_POSITIONS{{{0, 0}, {1000, 0}, {1000, 1000}, {0, 1000}}};
+
 	const tr::gfx::simple_color_mesh_ref overlay{renderer.new_color_fan(layer::BALL_TRAILS, 4, TRANSFORM, tr::gfx::REVERSE_ALPHA_BLENDING)};
 	std::ranges::copy(OVERLAY_POSITIONS, overlay.positions.begin());
 	std::ranges::fill(overlay.colors, "00000000"_rgba8);
@@ -677,7 +679,7 @@ void game::add_to_renderer(renderer& renderer, float primary_hue, float secondar
 	}
 	add_timer_to_renderer(renderer);
 	if (game_over()) {
-		m_player.add_to_renderer_dead(renderer, m_game_over_timer.elapsed(), primary_hue);
+		m_player.add_to_renderer_dead(renderer, primary_hue, m_game_over_timer.elapsed());
 	}
 	else {
 		m_player.add_to_renderer_alive(renderer, primary_hue, m_elapsed_time, m_style_cooldown_timer);

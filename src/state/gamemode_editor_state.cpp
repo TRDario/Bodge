@@ -151,11 +151,6 @@ gamemode_editor_state::gamemode_editor_state(std::shared_ptr<subsystems> subsyst
 
 //
 
-bool gamemode_editor_state::transparent_cursor() const
-{
-	return m_substate == substate::ENTERING_TEST_GAME;
-}
-
 tr::next_state gamemode_editor_state::tick()
 {
 	main_menu_state::tick();
@@ -179,7 +174,7 @@ tr::next_state gamemode_editor_state::tick()
 
 //
 
-float gamemode_editor_state::fade_overlay_opacity()
+float gamemode_editor_state::fade_overlay_opacity() const
 {
 	switch (m_substate) {
 	case substate::RETURNING_FROM_TEST_GAME:
@@ -190,6 +185,11 @@ float gamemode_editor_state::fade_overlay_opacity()
 	case substate::ENTERING_TEST_GAME:
 		return m_elapsed / 0.5_sf;
 	}
+}
+
+state::cursor_type gamemode_editor_state::cursor_type() const
+{
+	return m_substate == substate::ENTERING_TEST_GAME ? cursor_type::transparent : cursor_type::opaque;
 }
 
 void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subtitle animate_subtitle)

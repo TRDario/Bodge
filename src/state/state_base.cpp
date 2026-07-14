@@ -22,11 +22,6 @@ state::state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tr
 {
 }
 
-bool state::transparent_cursor() const
-{
-	return false;
-}
-
 tr::next_state state::handle_event(const tr::sys::event& event)
 {
 	if (event.is<tr::sys::quit_event>()) {
@@ -47,10 +42,47 @@ tr::next_state state::tick()
 	return tr::KEEP_STATE;
 }
 
+void state::draw()
+{
+	renderer& renderer{m_subsystems->renderer};
+	renderer.start_benchmark();
+	draw_game();
+	renderer.draw_benchmarks(debug_settings::instance().refresh_rate(), current_state::instance().tick_benchmark(),
+							 current_state::instance().draw_benchmark());
+	renderer.stop_benchmark();
+	tr::gfx::flip_backbuffer();
+	tr::gfx::clear_backbuffer();
+	renderer.fetch_benchmark();
+}
+
 tr::next_state state::next_state_if_after(ticks timestamp)
 {
 	return m_elapsed >= timestamp && m_next_state.wait_for(0s) == std::future_status::ready ? std::optional{m_next_state.get()}
 																							: tr::KEEP_STATE;
+}
+
+void state::add_cursor_to_renderer(cursor_type type)
+{
+	const glm::vec2 mouse_pos{m_subsystems->input.mouse_pos};
+
+	tr::rgba8 color{color_cast<tr::rgba8>(tr::hsv{float(m_subsystems->settings.primary_hue), 1, 1})};
+	if (type == cursor_type::transparent) {
+		color.a = 160;
+	}
+
+	tr::gfx::renderer_2d& renderer{m_subsystems->renderer.basic()};
+	tr::gfx::simple_color_mesh_ref quad{renderer.new_color_fan(layer::CURSOR, 4)};
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 12, mouse_pos.y - 1}, {8, 2}});
+	std::ranges::fill(quad.colors, color);
+	quad = renderer.new_color_fan(layer::CURSOR, 4);
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x + 4, mouse_pos.y - 1}, {8, 2}});
+	std::ranges::fill(quad.colors, color);
+	quad = renderer.new_color_fan(layer::CURSOR, 4);
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 1, mouse_pos.y - 12}, {2, 8}});
+	std::ranges::fill(quad.colors, color);
+	quad = renderer.new_color_fan(layer::CURSOR, 4);
+	tr::fill_rectangle_vertices(quad.positions, {{mouse_pos.x - 1, mouse_pos.y + 4}, {2, 8}});
+	std::ranges::fill(quad.colors, color);
 }
 
 ///////////////////////////////////////////////////////////// MAIN MENU STATE /////////////////////////////////////////////////////////////
@@ -67,11 +99,6 @@ main_menu_state::main_menu_state(std::shared_ptr<subsystems> subsystems, selecti
 {
 }
 
-float main_menu_state::fade_overlay_opacity()
-{
-	return 0;
-}
-
 tr::next_state main_menu_state::tick()
 {
 	state::tick();
@@ -79,22 +106,27 @@ tr::next_state main_menu_state::tick()
 	return tr::KEEP_STATE;
 }
 
-void main_menu_state::draw()
+void main_menu_state::draw_game()
 {
 	renderer& renderer{m_subsystems->renderer};
-	renderer.start_benchmark();
 	m_game->add_to_renderer(renderer, m_subsystems->settings.secondary_hue);
 	renderer.add_menu_game_overlay();
 	m_ui.add_to_renderer(renderer, m_subsystems->input.mouse_pos);
 	renderer.add_fade_overlay(fade_overlay_opacity());
-	renderer.draw_cursor(m_subsystems->settings.primary_hue, m_subsystems->input.mouse_pos);
+	add_cursor_to_renderer(cursor_type());
 	renderer.draw_layers(renderer.screen());
-	renderer.draw_benchmarks(debug_settings::instance().refresh_rate(), current_state::instance().tick_benchmark(),
-							 current_state::instance().draw_benchmark());
-	renderer.stop_benchmark();
-	tr::gfx::flip_backbuffer();
-	tr::gfx::clear_backbuffer();
-	renderer.fetch_benchmark();
+}
+
+//
+
+float main_menu_state::fade_overlay_opacity() const
+{
+	return 0;
+}
+
+state::cursor_type main_menu_state::cursor_type() const
+{
+	return cursor_type::opaque;
 }
 
 ///////////////////////////////////////////////////////////// GAME MENU STATE /////////////////////////////////////////////////////////////
@@ -117,10 +149,9 @@ tr::next_state game_menu_state::tick()
 	return tr::KEEP_STATE;
 }
 
-void game_menu_state::draw()
+void game_menu_state::draw_game()
 {
 	renderer& renderer{m_subsystems->renderer};
-	renderer.start_benchmark();
 	if (m_update_game) {
 		m_game->add_to_renderer(renderer, m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
 		renderer.draw_layers(renderer.blur_input());
@@ -128,27 +159,26 @@ void game_menu_state::draw()
 	renderer.draw_blurred(saturation_factor(), blur_strength());
 	m_ui.add_to_renderer(renderer, m_subsystems->input.mouse_pos);
 	renderer.add_fade_overlay(fade_overlay_opacity());
-	renderer.draw_cursor(m_subsystems->settings.primary_hue, m_subsystems->input.mouse_pos);
+	add_cursor_to_renderer(cursor_type());
 	renderer.draw_layers(renderer.screen());
-	renderer.draw_benchmarks(debug_settings::instance().refresh_rate(), current_state::instance().tick_benchmark(),
-							 current_state::instance().draw_benchmark());
-	renderer.stop_benchmark();
-	tr::gfx::flip_backbuffer();
-	tr::gfx::clear_backbuffer();
-	renderer.fetch_benchmark();
 }
 
-float game_menu_state::saturation_factor()
+float game_menu_state::saturation_factor() const
 {
 	return 0.35f;
 }
 
-float game_menu_state::blur_strength()
+float game_menu_state::blur_strength() const
 {
 	return 10.0f;
 }
 
-float game_menu_state::fade_overlay_opacity()
+float game_menu_state::fade_overlay_opacity() const
 {
 	return 0;
+}
+
+state::cursor_type game_menu_state::cursor_type() const
+{
+	return cursor_type::opaque;
 }
