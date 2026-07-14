@@ -54,6 +54,8 @@ save_replay_state::save_replay_state(std::shared_ptr<subsystems> subsystems, std
 		.text = localized_text{m_subsystems->localization, T_NAME}
 	});
 	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, {
+		.localization = m_subsystems->localization,
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 235}, {500, 235}, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
 		.font_size = 64,
@@ -65,6 +67,8 @@ save_replay_state::save_replay_state(std::shared_ptr<subsystems> subsystems, std
 		.text = localized_text{m_subsystems->localization, T_DESCRIPTION},
 	});
 	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, {
+		.localization = m_subsystems->localization,
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{600, 475}, {500, 475}, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
 		.width = 800,
@@ -73,6 +77,7 @@ save_replay_state::save_replay_state(std::shared_ptr<subsystems> subsystems, std
 		.status = [this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }
 	});
 	m_ui.emplace<text_button_widget>(T_SAVE, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.tooltip_text = [this] {
@@ -87,6 +92,7 @@ save_replay_state::save_replay_state(std::shared_ptr<subsystems> subsystems, std
 		.action = [this] { on_save(); }
 	});
 	m_ui.emplace<text_button_widget>(T_DISCARD, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = localized_text{m_subsystems->localization, T_DISCARD},
@@ -172,7 +178,8 @@ void save_replay_state::on_save()
 	}
 	else {
 		m_next_state =
-			make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_game->gamemode());
+			make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_game->gamemode(),
+											   g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
 	}
 }
 
@@ -186,6 +193,7 @@ void save_replay_state::on_discard()
 	}
 	else {
 		m_next_state =
-			make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_game->gamemode());
+			make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_game->gamemode(),
+											   g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
 	}
 }

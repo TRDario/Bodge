@@ -32,7 +32,9 @@ tr::next_state state::handle_event(const tr::sys::event& event)
 		return tr::DROP_STATE;
 	}
 
-	m_subsystems->input.handle_event(event);
+	const float scale{renderer::instance().scale() * tr::sys::window_pixel_density()};
+	const float mouse_sensitivity{m_subsystems->settings.mouse_sensitivity / 100.0f / scale};
+	m_subsystems->input.handle_event(event, mouse_sensitivity);
 	m_ui.handle_event(m_subsystems->input, event);
 	return tr::KEEP_STATE;
 }
@@ -78,10 +80,11 @@ tr::next_state main_menu_state::tick()
 
 void main_menu_state::draw()
 {
-	m_game->add_to_renderer(renderer::instance());
+	m_game->add_to_renderer(renderer::instance(), m_subsystems->settings.secondary_hue);
 	renderer::instance().add_menu_game_overlay();
 	m_ui.add_to_renderer(renderer::instance(), m_subsystems->input.mouse_pos);
 	renderer::instance().add_fade_overlay(fade_overlay_opacity());
+	renderer::instance().draw_cursor(m_subsystems->settings.primary_hue, m_subsystems->input.mouse_pos);
 	renderer::instance().draw_layers(renderer::instance().screen());
 }
 
@@ -108,12 +111,13 @@ tr::next_state game_menu_state::tick()
 void game_menu_state::draw()
 {
 	if (m_update_game) {
-		m_game->add_to_renderer(renderer::instance());
+		m_game->add_to_renderer(renderer::instance(), m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
 		renderer::instance().draw_layers(renderer::instance().blur_input());
 	}
 	renderer::instance().draw_blurred(saturation_factor(), blur_strength());
 	m_ui.add_to_renderer(renderer::instance(), m_subsystems->input.mouse_pos);
 	renderer::instance().add_fade_overlay(fade_overlay_opacity());
+	renderer::instance().draw_cursor(m_subsystems->settings.primary_hue, m_subsystems->input.mouse_pos);
 	renderer::instance().draw_layers(renderer::instance().screen());
 }
 

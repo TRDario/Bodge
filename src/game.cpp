@@ -172,11 +172,11 @@ tr::rgba8 different_player_result_color_picker::score_color(i64) const
 
 //
 
-game::game(results_color_picker results_color_picker, ::gamemode gamemode, u64 rng_seed)
+game::game(results_color_picker results_color_picker, ::gamemode gamemode, u64 rng_seed, std::optional<tr::bitmap>&& player_skin)
 	: playerless_game{std::move(gamemode), rng_seed}
 	, m_number_atlas{create_number_atlas(renderer::instance().text_engine)}
 	, m_result_color_picker{results_color_picker}
-	, m_player{m_gamemode.player}
+	, m_player{m_gamemode.player, std::move(player_skin)}
 	, m_lives_left{int(m_gamemode.player.starting_lives)}
 	, m_score{0}
 	, m_tock{false}
@@ -672,14 +672,14 @@ void game::add_to_renderer(renderer& renderer, float primary_hue, float secondar
 
 	playerless_game::add_to_renderer(renderer, secondary_hue);
 	for (const life_fragment& fragment : m_life_fragments) {
-		fragment.add_to_renderer(renderer);
+		fragment.add_to_renderer(renderer, primary_hue);
 	}
 	add_timer_to_renderer(renderer);
 	if (game_over()) {
-		m_player.add_to_renderer_dead(renderer, m_game_over_timer.elapsed());
+		m_player.add_to_renderer_dead(renderer, m_game_over_timer.elapsed(), primary_hue);
 	}
 	else {
-		m_player.add_to_renderer_alive(renderer, m_elapsed_time, m_style_cooldown_timer);
+		m_player.add_to_renderer_alive(renderer, primary_hue, m_elapsed_time, m_style_cooldown_timer);
 		add_lives_to_renderer(renderer.basic(), primary_hue);
 	}
 	add_score_to_renderer(renderer);
@@ -687,8 +687,8 @@ void game::add_to_renderer(renderer& renderer, float primary_hue, float secondar
 
 /////////////////////////////////////////////////////////////// ACTIVE GAME ///////////////////////////////////////////////////////////////
 
-active_game::active_game(const input& input, savefile savefile, ::gamemode gamemode, u64 seed)
-	: game{same_player_result_color_picker{savefile.best_results(gamemode)}, std::move(gamemode), seed}
+active_game::active_game(const input& input, savefile savefile, ::gamemode gamemode, u64 seed, std::optional<tr::bitmap>&& player_skin)
+	: game{same_player_result_color_picker{savefile.best_results(gamemode)}, std::move(gamemode), seed, std::move(player_skin)}
 	, replay{savefile.name(), this->gamemode(), seed}
 	, m_input{input}
 {
@@ -720,13 +720,14 @@ static results_color_picker replay_results_color_picker(const replay& replay)
 	}
 }
 
-replay_game::replay_game(replay&& replay)
-	: game{replay_results_color_picker(replay), replay.header().gamemode, replay.header().seed}, m_replay{std::move(replay)}
+replay_game::replay_game(replay&& replay, std::optional<tr::bitmap>&& player_skin)
+	: game{replay_results_color_picker(replay), replay.header().gamemode, replay.header().seed, std::move(player_skin)}
+	, m_replay{std::move(replay)}
 {
 }
 
-replay_game::replay_game(const replay_game& r)
-	: replay_game{replay{r.m_replay}}
+replay_game::replay_game(const replay_game& r, std::optional<tr::bitmap>&& player_skin)
+	: replay_game{replay{r.m_replay}, std::move(player_skin)}
 {
 }
 

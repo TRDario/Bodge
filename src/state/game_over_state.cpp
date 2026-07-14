@@ -108,6 +108,7 @@ game_over_state::game_over_state(std::shared_ptr<subsystems> subsystems, std::sh
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], {
+			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS[i]},
 			.status = [this] { return m_substate == substate::BLURRING_IN || m_substate == substate::GAME_OVER; },
@@ -263,7 +264,8 @@ void game_over_state::on_restart()
 	m_savefile.save_to_file();
 	set_up_exit_animation();
 	m_next_state =
-		make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_game->gamemode());
+		make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_game->gamemode(),
+										   g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
 }
 
 void game_over_state::on_save_and_exit()

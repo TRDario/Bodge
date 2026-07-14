@@ -40,6 +40,7 @@ basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(pro
 		  tr::sys::ttf_style::NORMAL,
 		  properties.font_size,
 		  tr::sys::UNLIMITED_WIDTH,
+		  properties.selected_hue,
 		  std::move(properties.status),
 		  [this] {
 			  if (this->m_selected) {

@@ -38,6 +38,8 @@ name_entry_state::name_entry_state()
 		.font_size = 64
 	});
 	m_ui.emplace<line_input_widget<20>>(T_INPUT, {
+		.localization = m_subsystems->localization,
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{500, 500}},
 		.unhide_time = 1.0_s,
 		.font_size = 64,
@@ -45,6 +47,7 @@ name_entry_state::name_entry_state()
 		.enter_action = [this] { on_exit(); }
 	});
 	m_ui.emplace<text_button_widget>(T_CONFIRM, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 1.0_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.unhide_time = 1.0_s,

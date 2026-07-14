@@ -122,6 +122,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		.font_size = 32
 	});
 	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {STARTING_COUNT_START_POS, {765, STARTING_COUNT_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.starting_count > 0; },
@@ -130,13 +131,15 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_COUNT_C, {
-		.animation = {STARTING_COUNT_START_POS, {875.5f, STARTING_COUNT_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.starting_count,
+		.animation = {STARTING_COUNT_START_POS, {875.5f, STARTING_COUNT_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.validation = [&mc = m_pending.ball.max_count](int v) { return u8(std::clamp(v, 0, int(mc))); }
 	});
 	m_ui.emplace<arrow_widget>(T_STARTING_COUNT_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {STARTING_COUNT_START_POS, {985, STARTING_COUNT_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.starting_count < m_pending.ball.max_count; },
@@ -145,6 +148,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_MAX_COUNT_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {MAX_COUNT_START_POS, {765, MAX_COUNT_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.max_count > std::max(1_u8, m_pending.ball.starting_count); },
@@ -153,13 +157,15 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_MAX_COUNT_C, {
-		.animation = {MAX_COUNT_START_POS, {875.5f, MAX_COUNT_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.max_count,
+		.animation = {MAX_COUNT_START_POS, {875.5f, MAX_COUNT_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.validation = [&sc = m_pending.ball.starting_count](int v) { return u8(std::clamp(v, std::max(int(sc), 1), 255)); }
 	});
 	m_ui.emplace<arrow_widget>(T_MAX_COUNT_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {MAX_COUNT_START_POS, {985, MAX_COUNT_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.max_count < 255; },
@@ -168,6 +174,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {SPAWN_INTERVAL_START_POS, {765, SPAWN_INTERVAL_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.spawn_interval > 1.0_s; },
@@ -176,13 +183,15 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<interval_input_widget<4>>(T_SPAWN_INTERVAL_C, {
-		.animation = {SPAWN_INTERVAL_START_POS, {875.5f, SPAWN_INTERVAL_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.spawn_interval,
+		.animation = {SPAWN_INTERVAL_START_POS, {875.5f, SPAWN_INTERVAL_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.validation = [](ticks v) { return std::clamp(v, 1_s, 60_s); }
 	});
 	m_ui.emplace<arrow_widget>(T_SPAWN_INTERVAL_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {SPAWN_INTERVAL_START_POS, {985, SPAWN_INTERVAL_START_POS.y}, 0.5_s}, 
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.spawn_interval < 60_s; },
@@ -191,6 +200,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {INITIAL_SIZE_START_POS, {765, INITIAL_SIZE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size > 10; },
@@ -199,13 +209,15 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_SIZE_C, {
-		.animation{INITIAL_SIZE_START_POS, {875.5f, INITIAL_SIZE_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.initial_size,
+		.animation{INITIAL_SIZE_START_POS, {875.5f, INITIAL_SIZE_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.validation = [](float v) { return std::clamp(v, 10.0f, 100.0f); }
 	});
 	m_ui.emplace<arrow_widget>(T_INITIAL_SIZE_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {INITIAL_SIZE_START_POS, {985, INITIAL_SIZE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_size < 100.0f; },
@@ -214,6 +226,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_SIZE_STEP_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {SIZE_STEP_START_POS, {765, SIZE_STEP_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.size_step > 0; },
@@ -222,13 +235,15 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.1f}">>(T_SIZE_STEP_C, {
-		.animation = {SIZE_STEP_START_POS, {875.5f, SIZE_STEP_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.size_step,
+		.animation = {SIZE_STEP_START_POS, {875.5f, SIZE_STEP_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.validation = [](float v) { return std::clamp(v, 0.0f, 10.0f); }
 	});
 	m_ui.emplace<arrow_widget>(T_SIZE_STEP_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {SIZE_STEP_START_POS, {985, SIZE_STEP_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.size_step < 10.0f; },
@@ -237,6 +252,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {INITIAL_VELOCITY_START_POS, {765, INITIAL_VELOCITY_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_velocity > 100; },
@@ -245,13 +261,15 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_VELOCITY_C, {
-		.animation = {INITIAL_VELOCITY_START_POS, {875.5f, INITIAL_VELOCITY_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.initial_velocity,
+		.animation = {INITIAL_VELOCITY_START_POS, {875.5f, INITIAL_VELOCITY_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.validation = [](float v) { return std::clamp(v, 100.0f, 5000.0f); }
 	});
 	m_ui.emplace<arrow_widget>(T_INITIAL_VELOCITY_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {INITIAL_VELOCITY_START_POS, {985, INITIAL_VELOCITY_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.initial_velocity < 5000.0f; },
@@ -260,6 +278,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {VELOCITY_STEP_START_POS, {765, VELOCITY_STEP_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.velocity_step > 0; },
@@ -268,13 +287,15 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		}
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_VELOCITY_STEP_C, {
-		.animation = {VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.velocity_step,
+		.animation = {VELOCITY_STEP_START_POS, {875.5f, VELOCITY_STEP_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.validation = [](float v) { return std::clamp(v, 0.0f, 1000.0f); }
 	});
 	m_ui.emplace<arrow_widget>(T_VELOCITY_STEP_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {VELOCITY_STEP_START_POS, {985, VELOCITY_STEP_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.ball.velocity_step < 1000.0f; },
@@ -293,6 +314,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 	}
 
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = localized_text{m_subsystems->localization, T_EXIT},

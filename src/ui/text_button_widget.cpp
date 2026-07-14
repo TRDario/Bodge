@@ -12,6 +12,7 @@ text_button_widget::text_button_widget(properties&& properties)
 	: text_widget{properties.animation,       properties.alignment, properties.unhide_time,     std::move(properties.tooltip_text),
 				  std::move(properties.text), properties.font,      tr::sys::ttf_style::NORMAL, properties.font_size,
 				  tr::sys::UNLIMITED_WIDTH}
+	, m_selected_hue{properties.selected_hue}
 	, m_status{std::move(properties.status)}
 	, m_action{std::move(properties.action)}
 	, m_action_sound{properties.action_sound}
@@ -34,7 +35,7 @@ void text_button_widget::tick()
 			m_tint.change(GRAY, 0.1_s);
 		}
 		else if (m_tint.done() && (m_hovered || m_selected) && !m_held && !m_action_animation_timer.active()) {
-			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->primary_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
+			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(m_selected_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
 		}
 	}
 	else {

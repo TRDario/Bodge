@@ -157,6 +157,7 @@ void score_widget::add_to_renderer(renderer& renderer)
 replay_widget::replay_widget(const properties& properties)
 	: replay_widget_data{properties.state, properties.replay_it}
 	, text_button_widget{{
+		  .selected_hue = properties.selected_hue,
 		  .animation = properties.animation,
 		  .alignment = properties.alignment,
 		  .unhide_time = properties.unhide_time,
@@ -173,8 +174,9 @@ replay_widget::replay_widget(const properties& properties)
 					  m_parent_state.m_elapsed = 0;
 					  m_parent_state.set_up_exit_animation();
 					  audio::instance().fade_song_out(0.5s);
-					  m_parent_state.m_next_state = make_game_state_async<replay_game>(m_parent_state.m_subsystems, replay_game_data{},
-																					   replay{(*m_replay_it)->first});
+					  m_parent_state.m_next_state =
+						  make_game_state_async<replay_game>(m_parent_state.m_subsystems, replay_game_data{}, replay{(*m_replay_it)->first},
+															 try_loading_player_skin(m_parent_state.m_subsystems->settings.player_skin));
 				  }
 			  },
 	  }}

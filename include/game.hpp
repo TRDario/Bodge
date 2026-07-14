@@ -95,7 +95,7 @@ using results_color_picker = std::variant<same_player_result_color_picker, diffe
 class game : private playerless_game {
   public:
 	// Creates a new game.
-	game(results_color_picker result_color_picker, ::gamemode gamemode, u64 rng_seed);
+	game(results_color_picker result_color_picker, ::gamemode gamemode, u64 rng_seed, std::optional<tr::bitmap>&& player_skin);
 	// Virtual destructor.
 	virtual ~game() = default;
 
@@ -231,7 +231,7 @@ class game : private playerless_game {
 class active_game final : public game {
   public:
 	// Creates a new active game.
-	active_game(const input& input, savefile savefile, ::gamemode gamemode, u64 seed = g_rng.generate<u64>());
+	active_game(const input& input, savefile savefile, ::gamemode gamemode, u64 seed, std::optional<tr::bitmap>&& player_skin);
 
 	// Updates the game state.
 	void tick() override;
@@ -250,9 +250,9 @@ class active_game final : public game {
 class replay_game final : public game {
   public:
 	// Creates a replay game from a replay.
-	replay_game(replay&& replay);
+	replay_game(replay&& replay, std::optional<tr::bitmap>&& player_skin);
 	// Creates a replay game using the same replay as an existing replay game.
-	replay_game(const replay_game& r);
+	replay_game(const replay_game& r, std::optional<tr::bitmap>&& player_skin);
 
 	// Gets whether the replay is done playing.
 	bool done() const;

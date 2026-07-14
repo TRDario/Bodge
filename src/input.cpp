@@ -17,7 +17,10 @@ bool input::held(tr::sys::mouse_button buttons) const
 //
 
 struct input::event_handler {
+	// Reference to the input object.
 	input& input;
+	// Mouse sensitivity multiplier.
+	float mouse_sensitivity;
 
 	void operator()(tr::sys::window_gain_focus_event) const
 	{
@@ -37,9 +40,7 @@ struct input::event_handler {
 	void operator()(tr::sys::mouse_motion_event event)
 	{
 		if (tr::sys::window_has_focus()) {
-			const float scale{renderer::instance().scale() * tr::sys::window_pixel_density()};
-			const float multiplier{active_settings::instance()->mouse_sensitivity / 100.0f / scale};
-			const glm::vec2 delta{event.delta * multiplier};
+			const glm::vec2 delta{event.delta * mouse_sensitivity};
 			input.mouse_pos = glm::clamp(input.mouse_pos + delta, 0.0f, 1000.0f);
 		}
 	}
@@ -57,7 +58,7 @@ struct input::event_handler {
 	void operator()(auto) const {}
 };
 
-void input::handle_event(const tr::sys::event& event)
+void input::handle_event(const tr::sys::event& event, float mouse_sensitivity)
 {
-	event.visit(event_handler{*this});
+	event.visit(event_handler{*this, mouse_sensitivity});
 }

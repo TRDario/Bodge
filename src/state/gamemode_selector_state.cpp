@@ -190,6 +190,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 		.font_size = 32
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = localized_text{m_subsystems->localization, T_EXIT},
@@ -209,6 +210,8 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 	}
 	for (usize i = 0; i < GAMEMODES_PER_PAGE; ++i) {
 		m_ui.emplace<gamemode_widget>(GAMEMODE_TAGS[i], {
+			.localization = m_subsystems->localization,
+			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{i % 2 == 0 ? 400 : 600, 160 + 75 * i}, {500, 160 + 75 * i}, 0.5_s},
 			.status = [this] { return m_substate == substate::IN_GAMEMODE_SELECTOR; },
 			.action = [this] (const gamemode_with_path& gp) { on_gamemode_selected(gp); },
@@ -216,6 +219,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 		});
 	}
 	m_ui.emplace<arrow_widget>(T_PAGE_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{-50, 942.5}, {10, 942.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
 		.type = arrow_type::LEFT,
@@ -231,6 +235,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 		},
 	});
 	m_ui.emplace<arrow_widget>(T_PAGE_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{1050, 942.5}, {990, 942.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
 		.type = arrow_type::RIGHT,
@@ -303,6 +308,8 @@ std::unordered_map<tag, std::unique_ptr<widget>> gamemode_selector_state::prepar
 	for (usize i = 0; i < GAMEMODES_PER_PAGE; ++i) {
 		// clang-format off
 		map.emplace(GAMEMODE_TAGS[i], std::make_unique<gamemode_widget>(gamemode_widget::properties{
+			.localization = m_subsystems->localization,
+			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{i % 2 == 0 ? 600 : 400, 160 + 75 * i}, {500, 160 + 75 * i}, 0.25_s},
 			.unhide_time = 0.25_s,
 			.status = [this] { return m_substate == substate::IN_GAMEMODE_SELECTOR; },

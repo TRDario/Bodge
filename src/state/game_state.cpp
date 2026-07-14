@@ -55,7 +55,9 @@ tr::next_state game_state::handle_event(const tr::sys::event& event)
 		return tr::DROP_STATE;
 	}
 
-	m_subsystems->input.handle_event(event);
+	const float scale{renderer::instance().scale() * tr::sys::window_pixel_density()};
+	const float mouse_sensitivity{m_subsystems->settings.mouse_sensitivity / 100.0f / scale};
+	m_subsystems->input.handle_event(event, mouse_sensitivity);
 	m_ui.handle_event(m_subsystems->input, event);
 	if (m_substate != substate::FADING_IN && event.is<tr::sys::key_down_event>() && event.as<tr::sys::key_down_event>().key == "Escape"_k) {
 		audio::instance().play_sound(sound::PAUSE, 0.8f, 0.0f);
@@ -163,7 +165,7 @@ tr::next_state game_state::tick()
 
 void game_state::draw()
 {
-	m_game->add_to_renderer(renderer::instance());
+	m_game->add_to_renderer(renderer::instance(), m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
 	if (std::holds_alternative<replay_game_data>(m_data)) {
 		m_ui.add_to_renderer(renderer::instance(), m_subsystems->input.mouse_pos);
 		add_replay_cursor_to_renderer(((replay_game&)*m_game).cursor_pos());

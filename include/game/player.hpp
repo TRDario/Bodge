@@ -17,7 +17,7 @@ class renderer;
 class player {
   public:
 	// Creates a player.
-	player(const player_settings& settings, const std::filesystem::path& skin_path);
+	player(const player_settings& settings, std::optional<tr::bitmap>&& skin);
 
 	// Gets whether the player is currently invincible.
 	bool invincible() const;
@@ -40,13 +40,8 @@ class player {
 	void add_to_renderer_dead(renderer& renderer, float hue, ticks time_since_game_over) const;
 
   private:
-	// Tag representing an uninitialized skin.
-	struct uninitialized_skin {};
-	// Tag representing the lack of a skin.
-	struct no_skin {};
-
 	// Optional player skin.
-	mutable std::variant<uninitialized_skin, no_skin, tr::bitmap, tr::gfx::texture> m_skin;
+	mutable std::variant<std::monostate, tr::bitmap, tr::gfx::texture> m_skin;
 	// The player's hitbox.
 	tr::circle m_hitbox;
 	// The player's trail.
@@ -75,3 +70,6 @@ class player {
 	// Adds the player's death fragments to the renderer.
 	void add_death_fragments_to_renderer(tr::gfx::renderer_2d& renderer, tr::rgb8 tint, ticks time_since_game_over) const;
 };
+
+// Tries to load a player skin bitmap.
+std::optional<tr::bitmap> try_loading_player_skin(std::string_view name);

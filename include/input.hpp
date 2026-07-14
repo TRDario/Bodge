@@ -25,7 +25,7 @@ class input {
 	bool held(tr::sys::mouse_button buttons) const;
 
 	// Handles an event.
-	void handle_event(const tr::sys::event& event);
+	void handle_event(const tr::sys::event& event, float mouse_sensitivity);
 
   private:
 	// The held keyboard modifiers.

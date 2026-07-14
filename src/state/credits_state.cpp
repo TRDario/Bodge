@@ -98,6 +98,7 @@ credits_state::credits_state(std::shared_ptr<subsystems> subsystems, std::shared
 		.text = constant_text{T_ZER0}
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = localized_text{m_subsystems->localization, T_EXIT},

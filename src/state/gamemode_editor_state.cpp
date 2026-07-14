@@ -210,6 +210,8 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		.font_size = 32
 	});
 	m_ui.emplace<line_input_widget<12>>(T_NAME, {
+		.localization = m_subsystems->localization,
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 240}, {500, 240}, 0.5_s},
 		.font_size = 120,
 		.status = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
@@ -222,6 +224,8 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		.font_size = 32
 	});
 	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, {
+		.localization = m_subsystems->localization,
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 365}, {500, 365}, 0.5_s},
 		.font_style = tr::sys::ttf_style::ITALIC,
 		.font_size = 32,
@@ -230,6 +234,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		.initial_text = m_pending.description
 	});
 	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{600, 450}, {500, 450}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_BALL_SETTINGS}, 
 		.font_size = 64,
@@ -237,6 +242,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		.action = [this] { on_enter_ball_settings(); }
 	});
 	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 550}, {500, 550}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_PLAYER_SETTINGS},
 		.font_size = 64,
@@ -248,6 +254,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		.text = localized_text{m_subsystems->localization, T_SONG}
 	});
 	m_ui.emplace<text_button_widget>(T_SONG_C, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 700}, {500, 700}, 0.5_s},
 		.text = [this] { return std::string{m_pending.song}; },
 		.font_size = 64,
@@ -277,6 +284,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	}};
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], {
+			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s},
 			.alignment = tr::align::BOTTOM_CENTER,
 			.tooltip_text = bottom_button_parameters[i].tooltip_text,
@@ -348,7 +356,8 @@ void gamemode_editor_state::on_test()
 	m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 	set_up_exit_animation(animate_title::YES, animate_subtitle::YES);
 	audio::instance().fade_song_out(0.5s);
-	m_next_state = make_game_state_async<active_game>(m_subsystems, test_game_data{m_type}, m_subsystems->input, savefile{}, m_pending);
+	m_next_state = make_game_state_async<active_game>(m_subsystems, test_game_data{m_type}, m_subsystems->input, savefile{}, m_pending,
+													  g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
 }
 
 void gamemode_editor_state::on_save()

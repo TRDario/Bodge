@@ -70,6 +70,7 @@ constexpr std::array<tr::rgba8, 15> ARROW_COLORS{{
 arrow_widget::arrow_widget(properties&& properties)
 	: widget{properties.animation, properties.alignment | (properties.type == arrow_type::RIGHT ? tr::halign::RIGHT : tr::halign::LEFT),
 			 properties.unhide_time, NO_TOOLTIP}
+	, m_selected_hue{properties.selected_hue}
 	, m_status{std::move(properties.status)}
 	, m_action{std::move(properties.action)}
 	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
@@ -123,7 +124,7 @@ void arrow_widget::tick()
 			m_tint.change(GRAY, 0.1_s);
 		}
 		else if (m_tint.done() && (m_hovered || m_selected) && !m_held && !m_action_animation_timer.active()) {
-			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->primary_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
+			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(m_selected_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
 		}
 	}
 	else {

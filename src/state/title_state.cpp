@@ -160,6 +160,7 @@ void title_state::set_up_ui()
 		const glm::vec2 end_pos{990 - 25 * i, 965 - (BUTTONS.size() - i - 1) * 50};
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(35.0f, 75.0f)};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], {
+			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{end_pos.x + offset, end_pos.y}, end_pos, 1_s},
 			.alignment = tr::align::CENTER_RIGHT,
 			.unhide_time = 1_s,

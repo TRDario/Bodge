@@ -102,6 +102,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 		.font_size = 32
 	});
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {STARTING_LIVES_START_POS, {765, STARTING_LIVES_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives > 0; },
@@ -110,13 +111,15 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_LIVES_C, {
-		.animation = {STARTING_LIVES_START_POS, {875.5f, STARTING_LIVES_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.player.starting_lives,
+		.animation = {STARTING_LIVES_START_POS, {875.5f, STARTING_LIVES_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.validation = [](u32 v) { return std::clamp(v, 0_u32, 255_u32); }
 	});
 	m_ui.emplace<arrow_widget>(T_STARTING_LIVES_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {STARTING_LIVES_START_POS, {985, STARTING_LIVES_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.starting_lives < 255; },
@@ -125,12 +128,14 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 		}
 	});
 	m_ui.emplace<text_button_widget>(T_SPAWN_LIFE_FRAGMENTS_C, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {SPAWN_LIFE_FRAGMENTS_START_POS, {875.5f, SPAWN_LIFE_FRAGMENTS_START_POS.y}, 0.5_s},
 		.text = [this] { return std::string{m_subsystems->localization[m_pending.player.spawn_life_fragments ? "on" : "off"]}; },
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.action = [this] { on_toggle_life_fragments(); }
 	});
 	m_ui.emplace<arrow_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {765, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] {
@@ -142,13 +147,15 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 		}
 	});
 	m_ui.emplace<interval_input_widget<4>>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_C, {
-		.animation = {LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {875.5f, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.player.life_fragment_spawn_interval,
+		.animation = {LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {875.5f, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.spawn_life_fragments; },
 		.validation = [](ticks v) { return std::clamp(v, 15_s, 100_s); }
 	});
 	m_ui.emplace<arrow_widget>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS, {985, LIFE_FRAGMENT_SPAWN_INTERVAL_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] {
@@ -160,6 +167,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {HITBOX_RADIUS_START_POS, {765, HITBOX_RADIUS_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius > 1.0f; },
@@ -168,13 +176,15 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 		}
 	});
 	m_ui.emplace<numeric_input_widget<float, 3, "{:.0f}">>(T_HITBOX_RADIUS_C, {
-		.animation = {HITBOX_RADIUS_START_POS, {875.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.player.hitbox_radius,
+		.animation = {HITBOX_RADIUS_START_POS, {875.5f, HITBOX_RADIUS_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.validation = [](float v) { return std::clamp(v, 1.0f, 100.0f); }
 	});
 	m_ui.emplace<arrow_widget>(T_HITBOX_RADIUS_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {HITBOX_RADIUS_START_POS, {985, HITBOX_RADIUS_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.hitbox_radius < 100.0f; },
@@ -183,6 +193,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {INERTIA_FACTOR_START_POS, {765, INERTIA_FACTOR_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.inertia_factor > 0.0f; },
@@ -191,13 +202,15 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 		}
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.2f}">>(T_INERTIA_FACTOR_C, {
-		.animation = {INERTIA_FACTOR_START_POS, {875.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s},
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.player.inertia_factor,
+		.animation = {INERTIA_FACTOR_START_POS, {875.5f, INERTIA_FACTOR_START_POS.y}, 0.5_s},
 		.status = [this] { return m_substate == substate::IN_EDITOR; },
 		.validation = [](float v) { return std::clamp(v, 0.0f, 0.99f); }
 	});
 	m_ui.emplace<arrow_widget>(T_INERTIA_FACTOR_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {INERTIA_FACTOR_START_POS, {985, INERTIA_FACTOR_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_EDITOR && m_pending.player.inertia_factor < 0.99f; },
@@ -216,6 +229,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 	}
 
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = localized_text{m_subsystems->localization, T_EXIT},

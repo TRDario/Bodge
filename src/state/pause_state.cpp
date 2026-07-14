@@ -71,7 +71,7 @@ pause_state::pause_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr
 	, m_start_mouse_pos{mouse_pos}
 {
 	if (blur_in == blur_in::YES) {
-		m_game->add_to_renderer(renderer::instance());
+		m_game->add_to_renderer(renderer::instance(), m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
 		renderer::instance().draw_layers(renderer::instance().blur_input());
 	}
 
@@ -200,6 +200,7 @@ void pause_state::set_up_full_ui()
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], {
+			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS_REGULAR[i]},
 			.status = button_commands[i].status,
@@ -236,6 +237,7 @@ void pause_state::set_up_limited_ui()
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], {
+			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS_SPECIAL[i]},
 			.status = button_commands[i].status,
@@ -294,13 +296,18 @@ void pause_state::on_restart()
 		const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 		m_savefile.add_score(m_game->gamemode(), score);
 		m_savefile.save_to_file();
-		m_next_state = make_game_state_async<active_game>(m_subsystems, m_data, m_subsystems->input, m_savefile, m_game->gamemode());
+		m_next_state =
+			make_game_state_async<active_game>(m_subsystems, m_data, m_subsystems->input, m_savefile, m_game->gamemode(),
+											   g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
 	}
 	else if (std::holds_alternative<replay_game_data>(m_data)) {
-		m_next_state = make_game_state_async<replay_game>(m_subsystems, m_data, (replay_game&)*m_game);
+		m_next_state = make_game_state_async<replay_game>(m_subsystems, m_data, std::ref((replay_game&)*m_game),
+														  try_loading_player_skin(m_subsystems->settings.player_skin));
 	}
 	else {
-		m_next_state = make_game_state_async<active_game>(m_subsystems, m_data, m_subsystems->input, m_savefile, m_game->gamemode());
+		m_next_state =
+			make_game_state_async<active_game>(m_subsystems, m_data, m_subsystems->input, m_savefile, m_game->gamemode(),
+											   g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
 	}
 }
 

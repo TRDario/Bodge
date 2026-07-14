@@ -9,19 +9,12 @@
 
 ////////////////////////////////////////////////////////////////// PLAYER /////////////////////////////////////////////////////////////////
 
-player::player(const player_settings& settings, const std::filesystem::path& skin_path)
+player::player(const player_settings& settings, std::optional<tr::bitmap>&& skin)
 	: m_hitbox{{500, 500}, settings.hitbox_radius}, m_trail{m_hitbox.c}, m_inertia{settings.inertia_factor}
 {
-	try {
-		tr::bitmap& skin{m_skin.emplace<tr::bitmap>(tr::load_bitmap_file(skin_path))};
-		if (skin.format() == tr::pixel_format::R8) {
-			skin = tr::bitmap{skin, tr::pixel_format::RGBA32};
-		}
+	if (skin.has_value()) {
+		m_skin = std::move(*skin);
 	}
-	catch (...) {
-		m_skin.emplace<no_skin>();
-	}
-
 	m_invincibility_timer.start();
 }
 
@@ -79,8 +72,12 @@ void player::update_fragments()
 void player::add_to_renderer_alive(renderer& renderer, float hue, ticks time_since_start,
 								   const decrementing_timer<0.1_s>& style_cooldown_timer) const
 {
-	if (std::holds_alternative<uninitialized_skin>(m_skin)) {
-		try_loading_skin(renderer.basic());
+	tr::bitmap* skin_bitmap{std::get_if<tr::bitmap>(&m_skin)};
+	if (skin_bitmap != nullptr) {
+		const tr::bitmap moved_skin_bitmap{std::move(*skin_bitmap)};
+		tr::gfx::texture& skin_texture{m_skin.emplace<tr::gfx::texture>(moved_skin_bitmap, true)};
+		skin_texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
+		renderer.basic().set_default_layer_texture(layer::PLAYER, skin_texture);
 	}
 
 	const tr::rgb8 tint{color_cast<tr::rgb8>(tr::hsv{hue, 1, 1})};
@@ -112,23 +109,6 @@ void player::add_to_renderer_dead(renderer& renderer, float hue, ticks time_sinc
 }
 
 //
-
-void player::try_loading_skin(tr::gfx::renderer_2d& renderer) const
-{
-	try {
-		tr::bitmap image{
-			tr::load_bitmap_file(debug_settings::instance().user_directory() / "skins" / active_settings::instance()->player_skin)};
-		if (image.format() == tr::pixel_format::R8) {
-			image = tr::bitmap{image, tr::pixel_format::RGBA32};
-		}
-		tr::gfx::texture& skin_texture{m_skin.emplace<tr::gfx::texture>(image, true)};
-		skin_texture.set_filtering(tr::gfx::min_filter::LMIPS_LINEAR, tr::gfx::mag_filter::LINEAR);
-		renderer.set_default_layer_texture(layer::PLAYER, skin_texture);
-	}
-	catch (...) {
-		m_skin.emplace<no_skin>();
-	}
-}
 
 void player::add_skin_to_renderer(tr::gfx::renderer_2d& renderer, u8 opacity, tr::angle rotation, float size) const
 {
@@ -213,5 +193,21 @@ void player::add_death_fragments_to_renderer(tr::gfx::renderer_2d& renderer, tr:
 		const tr::gfx::simple_color_mesh_ref mesh{renderer.new_color_fan(layer::PLAYER, 4)};
 		tr::fill_rectangle_vertices(mesh.positions, fragment.pos, {length / 2, 2}, {length, 4}, fragment.rot);
 		std::ranges::fill(mesh.colors, tr::rgba8{tint, opacity});
+	}
+}
+
+//
+
+std::optional<tr::bitmap> try_loading_player_skin(std::string_view name)
+{
+	if (name.empty()) {
+		return std::nullopt;
+	}
+
+	try {
+		return tr::load_bitmap_file(debug_settings::instance().data_directory() / "skins" / name);
+	}
+	catch (...) {
+		return std::nullopt;
 	}
 }

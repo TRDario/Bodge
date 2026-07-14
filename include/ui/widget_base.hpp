@@ -208,10 +208,11 @@ template <usize BufferSize> class text_input_widget : protected input_buffer<Buf
   public:
 	// Creates a line input widget.
 	text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size, int width,
-					  status_command status_command, std::string_view initial_text = {});
+					  const localization& localization, const u16& selected_hue, status_command status_command,
+					  std::string_view initial_text = {});
 	// Creates a line input widget with a custom text command.
 	text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size, int width,
-					  status_command status_command, text_command text);
+					  const u16& selected_hue, status_command status_command, text_command text);
 
 	// Gets whether the widget is interactible (delegates to the status command).
 	bool interactible() const override;
@@ -243,6 +244,8 @@ template <usize BufferSize> class text_input_widget : protected input_buffer<Buf
 	void tick() override;
 
   protected:
+	// Reference to the hue used when the widget is selected.
+	const u16& m_selected_hue;
 	// Command used to determine whether the input is interactible.
 	status_command m_status;
 	// The tint of the input.

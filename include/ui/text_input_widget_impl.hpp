@@ -12,9 +12,12 @@
 
 template <usize MaxChars>
 text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
-											   float font_size, int width, status_command status_command, std::string_view initial_text)
+											   float font_size, int width, const localization& localization, const u16& selected_hue,
+											   status_command status_command, std::string_view initial_text)
 	: input_buffer<MaxChars>{initial_text}
-	, text_widget{pos, alignment, unhide_time, NO_TOOLTIP, buffer_text{this->m_buffer}, font::LANGUAGE, style, font_size, width}
+	, text_widget{pos,   alignment, unhide_time, NO_TOOLTIP, buffer_text{localization, this->m_buffer}, font::LANGUAGE,
+				  style, font_size, width}
+	, m_selected_hue{selected_hue}
 	, m_status{std::move(status_command)}
 	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
 	, m_hovered{false}
@@ -25,9 +28,11 @@ text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align a
 
 template <usize MaxChars>
 text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
-											   float font_size, int width, status_command status_command, text_command text)
+											   float font_size, int width, const u16& selected_hue, status_command status_command,
+											   text_command text)
 	: input_buffer<MaxChars>{}
 	, text_widget{pos, alignment, unhide_time, NO_TOOLTIP, std::move(text), font::LANGUAGE, style, font_size, width}
+	, m_selected_hue{selected_hue}
 	, m_status{std::move(status_command)}
 	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
 	, m_hovered{false}
@@ -50,7 +55,7 @@ template <usize MaxChars> void text_input_widget<MaxChars>::tick()
 		}
 		// Slowly cycle between gray and a slight primary hue tint if hovered/selected.
 		else if (m_tint.done() && (m_hovered || m_selected) && !m_held) {
-			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(active_settings::instance()->primary_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
+			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(m_selected_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
 		}
 	}
 	else {

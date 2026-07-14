@@ -12,8 +12,9 @@
 
 template <usize MaxChars>
 multiline_input_widget<MaxChars>::multiline_input_widget(properties&& properties)
-	: text_input_widget<MaxChars * 4>{properties.animation, properties.alignment,  properties.unhide_time,      tr::sys::ttf_style::NORMAL,
-									  properties.font_size, int(properties.width), std::move(properties.status)}
+	: text_input_widget<MaxChars * 4>{properties.animation,       properties.alignment,    properties.unhide_time,
+									  tr::sys::ttf_style::NORMAL, properties.font_size,    int(properties.width),
+									  properties.localization,    properties.selected_hue, std::move(properties.status)}
 	, m_size{properties.width, renderer::instance().text_engine.line_skip(font::LANGUAGE, properties.font_size) * properties.max_lines +
 								   2 * OUTLINE_THICKNESS}
 	, m_max_lines{properties.max_lines}

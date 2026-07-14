@@ -136,6 +136,7 @@ std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_wid
 		// clang-format off
 		map.emplace(REPLAY_TAGS[i], std::make_unique<replay_widget>(replay_widget::properties{
 			.localization = m_subsystems->localization,
+			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = animation,
 			.unhide_time = 0.25_s,
 			.state = *this,
@@ -156,6 +157,7 @@ void replays_state::set_up_ui()
 		.font_size = 64
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = localized_text{m_subsystems->localization, T_EXIT},
@@ -177,12 +179,14 @@ void replays_state::set_up_ui()
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], {
 			.localization = m_subsystems->localization,
+			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s},
 			.state = *this,
 			.replay_it = replay_it != m_replays.end() ? std::optional{replay_it++} : std::nullopt
 		});
 	}
 	m_ui.emplace<arrow_widget>(T_PAGE_D, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{-50, 942.5}, {10, 942.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
 		.type = arrow_type::LEFT,
@@ -198,6 +202,7 @@ void replays_state::set_up_ui()
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_PAGE_I, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{1050, 942.5}, {990, 942.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
 		.type = arrow_type::RIGHT,

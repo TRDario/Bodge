@@ -59,6 +59,8 @@ class text_button_widget : public text_widget {
   public:
 	// Text button properties.
 	struct properties {
+		// Reference to the hue to use when a widget of this type is selected.
+		const u16& selected_hue;
 		// Initial position (or animation) of the button.
 		tweened_position animation;
 		// Alignment of the button.
@@ -110,6 +112,8 @@ class text_button_widget : public text_widget {
 	void add_to_renderer(renderer& renderer) override;
 
   private:
+	// Reference to the hue used when the arrow is selected.
+	const u16& m_selected_hue;
 	// Command used to determine whether the button is interactible.
 	status_command m_status;
 	// Action executed when the button is interacted with.
@@ -151,6 +155,12 @@ class basic_numeric_input_widget final : private basic_numeric_input_widget_data
   public:
 	// Numeric input widget properties.
 	struct properties {
+		// Reference to the hue to use when a widget of this type is selected.
+		const u16& selected_hue;
+		// Reference to the UI manager.
+		ui_manager& ui;
+		// Reference to the variable the widget is bound to.
+		T& variable;
 		// Initial position (or animation) of the input.
 		tweened_position animation;
 		// Alignment of the button.
@@ -159,10 +169,6 @@ class basic_numeric_input_widget final : private basic_numeric_input_widget_data
 		ticks unhide_time{0.5_s};
 		// Font size of the button.
 		float font_size{48};
-		// Reference to the UI manager.
-		ui_manager& ui;
-		// Reference to the variable the widget is bound to.
-		T& variable;
 		// Command used to query the status of the input.
 		status_command status;
 		// Command used to validate the value after input is finished.
@@ -217,6 +223,10 @@ template <usize MaxChars> class line_input_widget final : public text_input_widg
   public:
 	// Line input widget properties.
 	struct properties {
+		// Reference to a localization object used for the (EMPTY...) text.
+		const localization& localization;
+		// Reference to the hue to use when a widget of this type is selected.
+		const u16& selected_hue;
 		// Initial position (or animation) of the input.
 		tweened_position animation;
 		// Alignment of the input.
@@ -263,6 +273,10 @@ template <usize MaxChars> class multiline_input_widget final : public text_input
   public:
 	// Multiline input widget properties.
 	struct properties {
+		// Reference to the localization subsystem.
+		const localization& localization;
+		// Reference to the hue to use when a widget of this type is selected.
+		const u16& selected_hue;
 		// Initial position (or animation) of the input.
 		tweened_position animation;
 		// Alignment of the input.
@@ -438,6 +452,8 @@ class arrow_widget final : public widget {
   public:
 	// Arrow widget properties.
 	struct properties {
+		// Reference to the hue to use when a widget of this type is selected.
+		const u16& selected_hue;
 		// Initial animation of the widget.
 		tweened_position animation;
 		// Vertical alignment of the arrow widget.
@@ -482,6 +498,8 @@ class arrow_widget final : public widget {
 	void add_to_renderer(renderer& renderer) override;
 
   protected:
+	// Reference to the hue used when the arrow is selected.
+	const u16& m_selected_hue;
 	// Command used to determine whether the arrow is interactible.
 	status_command m_status;
 	// Action executed when the arrow is interacted with.
@@ -549,6 +567,10 @@ class gamemode_widget final : public gamemode_widget_data, public text_button_wi
   public:
 	// Gamemode widget properties.
 	struct properties {
+		// Reference to the localization subsystem.
+		const localization& localization;
+		// Reference to the hue used when the widget is selected.
+		const u16& selected_hue;
 		// Initial position (or animation) of the widget.
 		tweened_position animation;
 		// Alignment of the widget.
@@ -631,6 +653,8 @@ class replay_widget final : private replay_widget_data, public text_button_widge
 	struct properties {
 		// Reference to the localization subsystem.
 		const localization& localization;
+		// Reference to the hue used when the widget is selected.
+		const u16& selected_hue;
 		// Initial position (or animation) of the widget.
 		tweened_position animation;
 		// Alignment of the widget.

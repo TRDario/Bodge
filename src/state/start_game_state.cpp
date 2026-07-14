@@ -187,18 +187,21 @@ start_game_state::start_game_state(std::shared_ptr<subsystems> subsystems, std::
 		.color = YELLOW
 	});
 	m_ui.emplace<arrow_widget>(T_PREV, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{-50, 500}, {10, 500}, 0.5_s},
 		.type = arrow_type::LEFT,
 		.status = [this] { return m_substate == substate::IN_START_GAME; },
 		.action = [this] { on_previous_gamemode(); }
 	});
 	m_ui.emplace<arrow_widget>(T_NEXT, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{1050, 500}, {990, 500}, 0.5_s},
 		.type = arrow_type::RIGHT,
 		.status = [this] { return m_substate == substate::IN_START_GAME; },
 		.action = [this] { on_next_gamemode(); }
 	});
 	m_ui.emplace<text_button_widget>(T_START, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = localized_text{m_subsystems->localization, T_START},
@@ -206,6 +209,7 @@ start_game_state::start_game_state(std::shared_ptr<subsystems> subsystems, std::
 		.action = [this] { on_start(); }
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = localized_text{m_subsystems->localization, T_EXIT},
@@ -316,7 +320,8 @@ void start_game_state::on_start()
 	m_savefile.last_selected_gamemode = m_selected->gamemode;
 	audio::instance().fade_song_out(0.5s);
 	m_next_state =
-		make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_selected->gamemode);
+		make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_selected->gamemode,
+										   g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
 }
 
 void start_game_state::on_exit()
