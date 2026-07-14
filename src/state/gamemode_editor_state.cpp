@@ -277,21 +277,25 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	});
 
 	struct bottom_button_parameters {
+		const u16& selected_hue;
 		text_command tooltip_text;
 		status_command status_command;
 		action_command action_command;
 		sound sound;
 	};
 	const std::array<bottom_button_parameters, BOTTOM_BUTTONS.size()> bottom_button_parameters{{
-		{.tooltip_text = NO_TOOLTIP,
+		{.selected_hue = m_subsystems->settings.primary_hue,
+		 .tooltip_text = NO_TOOLTIP,
 		 .status_command = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
 		 .action_command = [this] { on_test(); },
 		 .sound = sound::CONFIRM},
-		{.tooltip_text = [this] { return m_ui.as<line_input_widget<12>>(T_NAME).contents().empty() ? std::string{m_subsystems->localization["save_gamemode_tt"]} : std::string{}; },
+		{.selected_hue = m_subsystems->settings.primary_hue,
+		 .tooltip_text = [this] { return m_ui.as<line_input_widget<12>>(T_NAME).contents().empty() ? std::string{m_subsystems->localization["save_gamemode_tt"]} : std::string{}; },
 		 .status_command = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR && !m_ui.as<line_input_widget<12>>(T_NAME).contents().empty(); },
 		 .action_command = [this] { on_save(); },
 		 .sound = sound::CONFIRM},
-		{.tooltip_text = NO_TOOLTIP,
+		{.selected_hue = m_subsystems->settings.secondary_hue,
+		 .tooltip_text = NO_TOOLTIP,
 		 .status_command = [this] { return m_substate == substate::IN_GAMEMODE_EDITOR; },
 		 .action_command = [this] { on_discard(); },
 		 .sound = sound::CANCEL}
@@ -300,7 +304,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], {
 			.audio = m_subsystems->audio,
 			.renderer = m_subsystems->renderer,
-			.selected_hue = m_subsystems->settings.primary_hue,
+			.selected_hue = bottom_button_parameters[i].selected_hue,
 			.animation = {BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s},
 			.alignment = tr::align::BOTTOM_CENTER,
 			.tooltip_text = bottom_button_parameters[i].tooltip_text,

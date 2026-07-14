@@ -194,7 +194,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.audio = m_subsystems->audio,
 		.renderer = m_subsystems->renderer,
-		.selected_hue = m_subsystems->settings.primary_hue,
+		.selected_hue = m_subsystems->settings.secondary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = localized_text{m_subsystems->localization, T_EXIT},

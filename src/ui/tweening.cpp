@@ -57,7 +57,7 @@ tweened_position& tweened_position::operator=(glm::vec2 r)
 
 void tweened_color::tick()
 {
-	if (m_duration != 0 && ++m_elapsed == m_duration) {
+	if (m_duration != 0 && ++m_elapsed == m_duration && !m_cycling) {
 		m_duration = 0;
 	}
 }

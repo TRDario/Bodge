@@ -151,17 +151,18 @@ void title_state::set_up_ui()
 	version.pos.move_y(998 - version.size().y, 1_s);
 
 	struct button_parameters {
+		const u16& selected_hue;
 		action_command action;
 		sound sound;
 	};
 	const std::array<button_parameters, BUTTONS.size()> button_parameters{{
-		{[this] { on_start_game(); }, sound::CONFIRM},
-		{[this] { on_gamemode_manager(); }, sound::CONFIRM},
-		{[this] { on_scoreboards(); }, sound::CONFIRM},
-		{[this] { on_replays(); }, sound::CONFIRM},
-		{[this] { on_settings(); }, sound::CONFIRM},
-		{[this] { on_credits(); }, sound::CONFIRM},
-		{[this] { on_exit(); }, sound::CANCEL},
+		{m_subsystems->settings.primary_hue, [this] { on_start_game(); }, sound::CONFIRM},
+		{m_subsystems->settings.primary_hue, [this] { on_gamemode_manager(); }, sound::CONFIRM},
+		{m_subsystems->settings.primary_hue, [this] { on_scoreboards(); }, sound::CONFIRM},
+		{m_subsystems->settings.primary_hue, [this] { on_replays(); }, sound::CONFIRM},
+		{m_subsystems->settings.primary_hue, [this] { on_settings(); }, sound::CONFIRM},
+		{m_subsystems->settings.primary_hue, [this] { on_credits(); }, sound::CONFIRM},
+		{m_subsystems->settings.secondary_hue, [this] { on_exit(); }, sound::CANCEL},
 	}};
 	for (usize i = 0; i < BUTTONS.size(); ++i) {
 		const glm::vec2 end_pos{990 - 25 * i, 965 - (BUTTONS.size() - i - 1) * 50};
@@ -169,7 +170,7 @@ void title_state::set_up_ui()
 		m_ui.emplace<text_button_widget>(BUTTONS[i], {
 			.audio = m_subsystems->audio,
 			.renderer = m_subsystems->renderer,
-			.selected_hue = m_subsystems->settings.primary_hue,
+			.selected_hue = button_parameters[i].selected_hue,
 			.animation = {{end_pos.x + offset, end_pos.y}, end_pos, 1_s},
 			.alignment = tr::align::CENTER_RIGHT,
 			.unhide_time = 1_s,

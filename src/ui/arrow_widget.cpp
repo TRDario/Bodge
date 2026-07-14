@@ -125,7 +125,7 @@ void arrow_widget::tick()
 			m_tint.change(GRAY, 0.1_s);
 		}
 		else if (m_tint.done() && (m_hovered || m_selected) && !m_held && !m_action_animation_timer.active()) {
-			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(m_selected_hue), 0.2f, 1.0f}), 4_s, cycle::YES);
+			m_tint.change(tr::color_cast<tr::rgba8>(tr::hsv{float(m_selected_hue), 0.2f, 1.0f}), 2.5_s, cycle::YES);
 		}
 	}
 	else {

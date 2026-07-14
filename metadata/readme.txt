@@ -50,6 +50,7 @@
 |                                                                                                                     |
 | v1.3.3 (N/A)                                                                                                        |
 | * Changed the savefile format and moved it to <USER DIRECTORY>/savefile.dat.                                        |
+| * Tweaked the appearance of highlighted buttons.                                                                    |
 | v1.3.2 (01 Mar 2026)                                                                                                |
 | * Added support for custom player skins.                                                                            |
 | * Made the cursor appear partially transparent in-game.                                                             |

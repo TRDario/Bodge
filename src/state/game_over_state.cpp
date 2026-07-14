@@ -55,13 +55,6 @@ game_over_state::game_over_state(std::shared_ptr<subsystems> subsystems, std::sh
 	const float label_h{result_h - m_subsystems->renderer.text_engine.line_skip(font::LANGUAGE, 48) + 14};
 	const float best_h{result_h + m_subsystems->renderer.text_engine.line_skip(font::LANGUAGE, 48) - 14};
 
-	const std::array<action_command, BUTTONS.size()> action_commands{
-		[this] { on_save_and_restart(); },
-		[this] { on_restart(); },
-		[this] { on_save_and_exit(); },
-		[this] { on_exit(); },
-	};
-
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
 		.renderer = m_subsystems->renderer,
@@ -111,17 +104,28 @@ game_over_state::game_over_state(std::shared_ptr<subsystems> subsystems, std::sh
 		.font_size = 24,
 		.color = YELLOW
 	});
+
+	struct button_parameters {
+		const u16& selected_hue;
+		action_command action;
+	};
+	const std::array<button_parameters, 4> button_parameters{{
+		{m_subsystems->settings.primary_hue, [this] { on_save_and_restart(); }},
+		{m_subsystems->settings.primary_hue, [this] { on_restart(); }},
+		{m_subsystems->settings.primary_hue, [this] { on_save_and_exit(); }},
+		{m_subsystems->settings.secondary_hue, [this] { on_exit(); }}
+	}};
 	for (usize i = 0; i < BUTTONS.size(); ++i) {
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], {
 			.audio = m_subsystems->audio,
 			.renderer = m_subsystems->renderer,
-			.selected_hue = m_subsystems->settings.primary_hue,
+			.selected_hue = button_parameters[i].selected_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS[i]},
 			.status = [this] { return m_substate == substate::BLURRING_IN || m_substate == substate::GAME_OVER; },
-			.action = std::move(action_commands[i]),
+			.action = std::move(button_parameters[i].action),
 		});
 	}
 	// clang-format on

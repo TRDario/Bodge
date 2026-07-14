@@ -435,18 +435,22 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	});
 
 	struct bottom_button_parameters {
+		const u16& selected_hue;
 		status_command status;
 		action_command action;
 		sound sound;
 	};
 	const std::array<bottom_button_parameters, BOTTOM_BUTTONS.size()> bottom_button_parameters{{
-		{[this] { return m_substate != substate::EXITING && m_pending != m_subsystems->settings; },
+		{m_subsystems->settings.primary_hue,
+		 [this] { return m_substate != substate::EXITING && m_pending != m_subsystems->settings; },
 		 [this] { on_revert(); },
 		 sound::CONFIRM},
-		{[this] { return m_substate != substate::EXITING && m_pending != m_subsystems->settings; },
+		{m_subsystems->settings.primary_hue,
+		 [this] { return m_substate != substate::EXITING && m_pending != m_subsystems->settings; },
 		 [this] { on_apply(); },
 		 sound::CONFIRM},
-		{[this] { return m_substate != substate::EXITING && m_pending == m_subsystems->settings; },
+		{m_subsystems->settings.secondary_hue,
+		 [this] { return m_substate != substate::EXITING && m_pending == m_subsystems->settings; },
 		 [this] { on_exit(); },
 		 sound::CANCEL},
 	}};
@@ -454,7 +458,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], {
 			.audio = m_subsystems->audio,
 			.renderer = m_subsystems->renderer,
-			.selected_hue = m_subsystems->settings.primary_hue,
+			.selected_hue = bottom_button_parameters[i].selected_hue,
 			.animation = {BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s},
 			.alignment = tr::align::BOTTOM_CENTER,
 			.text = localized_text{m_subsystems->localization, BOTTOM_BUTTONS[i]},

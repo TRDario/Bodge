@@ -181,20 +181,26 @@ void pause_state::set_up_full_ui()
 		.font_size = 64
 	});
 
-	struct button_commands {
+	struct button_parameters {
+		const u16& selected_hue;
 		status_command status;
 		action_command action;
 	};
-	std::array<button_commands, BUTTONS_REGULAR.size()> button_commands{{
-		{[this] { return m_substate == substate::PAUSED || m_substate == substate::PAUSING; },
+	std::array<button_parameters, BUTTONS_REGULAR.size()> button_parameters{{
+		{m_subsystems->settings.primary_hue,
+		 [this] { return m_substate == substate::PAUSED || m_substate == substate::PAUSING; },
 		 [this] { on_unpause(); }},
-		{[this] { return m_substate == substate::PAUSED; },
+		{m_subsystems->settings.primary_hue,
+		 [this] { return m_substate == substate::PAUSED; },
 		 [this] { on_save_and_restart(); }},
-		{[this] { return m_substate == substate::PAUSED; },
+		{m_subsystems->settings.primary_hue,
+		 [this] { return m_substate == substate::PAUSED; },
 		 [this] { on_restart(); }},
-		{[this] { return m_substate == substate::PAUSED; },
+		{m_subsystems->settings.primary_hue,
+		 [this] { return m_substate == substate::PAUSED; },
 		 [this] { on_save_and_quit(); }},
-		{[this] { return m_substate == substate::PAUSED; },
+		{m_subsystems->settings.secondary_hue,
+		 [this] { return m_substate == substate::PAUSED; },
 		 [this] { on_quit(); }},
 	}};
 	for (usize i = 0; i < BUTTONS_REGULAR.size(); ++i) {
@@ -203,11 +209,11 @@ void pause_state::set_up_full_ui()
 		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], {
 			.audio = m_subsystems->audio,
 			.renderer = m_subsystems->renderer,
-			.selected_hue = m_subsystems->settings.primary_hue,
+			.selected_hue = button_parameters[i].selected_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS_REGULAR[i]},
-			.status = button_commands[i].status,
-			.action = button_commands[i].action
+			.status = button_parameters[i].status,
+			.action = button_parameters[i].action
 		});
 	}
 	// clang-format on
@@ -225,16 +231,20 @@ void pause_state::set_up_limited_ui()
 		.font_size = 64
 	});
 
-	struct button_commands {
+	struct button_parameters {
+		const u16& selected_hue;
 		status_command status;
 		action_command action;
 	};
-	std::array<button_commands, BUTTONS_SPECIAL.size()> button_commands{{
-		{[this] { return m_substate == substate::PAUSED || m_substate == substate::PAUSING; },
+	std::array<button_parameters, BUTTONS_SPECIAL.size()> button_parameters{{
+		{m_subsystems->settings.primary_hue,
+		 [this] { return m_substate == substate::PAUSED || m_substate == substate::PAUSING; },
 		 [this] { on_unpause(); }},
-		{[this] { return m_substate == substate::PAUSED; },
+		{m_subsystems->settings.primary_hue,
+		 [this] { return m_substate == substate::PAUSED; },
 		 [this] { on_restart(); }},
-		{[this] { return m_substate == substate::PAUSED; },
+		{m_subsystems->settings.secondary_hue,
+		 [this] { return m_substate == substate::PAUSED; },
 		 [this] { on_quit(); }},
 	}};
 	for (usize i = 0; i < BUTTONS_SPECIAL.size(); ++i) {
@@ -246,8 +256,8 @@ void pause_state::set_up_limited_ui()
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS_SPECIAL[i]},
-			.status = button_commands[i].status,
-			.action = button_commands[i].action
+			.status = button_parameters[i].status,
+			.action = button_parameters[i].action
 		});
 	}
 	// clang-format on

@@ -59,7 +59,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<subsystem
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.audio = m_subsystems->audio,
 		.renderer = m_subsystems->renderer,
-		.selected_hue = m_subsystems->settings.primary_hue,
+		.selected_hue = m_subsystems->settings.secondary_hue,
 		.animation = bool(animate_title) ? tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s} : tweened_position{{500, 1000}},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,

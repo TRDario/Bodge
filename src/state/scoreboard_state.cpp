@@ -111,7 +111,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.audio = m_subsystems->audio,
 		.renderer = m_subsystems->renderer,
-		.selected_hue = m_subsystems->settings.primary_hue,
+		.selected_hue = m_subsystems->settings.secondary_hue,
 		.animation = {{500, 1000}},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.unhide_time = 0_s,
