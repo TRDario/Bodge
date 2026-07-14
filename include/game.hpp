@@ -112,14 +112,14 @@ class game : private playerless_game {
 	using playerless_game::gamemode;
 
 	// Updates the game.
-	virtual void tick(audio& audio, renderer& renderer) = 0;
+	virtual void tick(audio& audio, float ui_scale) = 0;
 
 	// Adds the game to the renderer.
 	void add_to_renderer(renderer& renderer, float primary_hue, float secondary_hue) const;
 
   protected:
 	// Base update function taking in a player input.
-	void tick(audio& audio, renderer& renderer, const glm::vec2& input);
+	void tick(audio& audio, float ui_scale, const glm::vec2& input);
 
   private:
 	// Information needed for rendering the timer display.
@@ -238,7 +238,7 @@ class active_game final : public game {
 				std::optional<tr::bitmap>&& player_skin);
 
 	// Updates the game state.
-	void tick(audio& audio, renderer& renderer) override;
+	void tick(audio& audio, float ui_scale) override;
 
 	// Replay recorded of the game.
 	replay replay;
@@ -264,7 +264,7 @@ class replay_game final : public game {
 	glm::vec2 cursor_pos() const;
 
 	// Updates the game state.
-	void tick(audio& audio, renderer& renderer) override;
+	void tick(audio& audio, float ui_scale) override;
 
   private:
 	// The replay being read from.

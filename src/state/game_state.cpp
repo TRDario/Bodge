@@ -81,13 +81,13 @@ tr::next_state game_state::tick()
 		if (std::holds_alternative<replay_game_data>(m_data)) {
 			if (m_subsystems->input.held(tr::sys::keymod::SHIFT)) {
 				if (m_elapsed % 4 == 0) {
-					m_game->tick(m_subsystems->audio, m_subsystems->renderer);
+					m_game->tick(m_subsystems->audio, m_subsystems->renderer.scale());
 				}
 				set_song_speed_if_needed(0.25f);
 			}
 			else if (m_subsystems->input.held(tr::sys::keymod::CTRL)) {
 				for (int i = 0; i < 4; ++i) {
-					m_game->tick(m_subsystems->audio, m_subsystems->renderer);
+					m_game->tick(m_subsystems->audio, m_subsystems->renderer.scale());
 					if (((replay_game&)*m_game).done()) {
 						break;
 					}
@@ -95,7 +95,7 @@ tr::next_state game_state::tick()
 				set_song_speed_if_needed(4.0f);
 			}
 			else {
-				m_game->tick(m_subsystems->audio, m_subsystems->renderer);
+				m_game->tick(m_subsystems->audio, m_subsystems->renderer.scale());
 				set_song_speed_if_needed(1.0f);
 			}
 
@@ -118,7 +118,7 @@ tr::next_state game_state::tick()
 			}
 		}
 		else {
-			m_game->tick(m_subsystems->audio, m_subsystems->renderer);
+			m_game->tick(m_subsystems->audio, m_subsystems->renderer.scale());
 			if (m_game->game_over()) {
 				m_substate = substate::GAME_OVER;
 				m_elapsed = 0;
@@ -130,7 +130,7 @@ tr::next_state game_state::tick()
 		}
 		return tr::KEEP_STATE;
 	case substate::GAME_OVER:
-		m_game->tick(m_subsystems->audio, m_subsystems->renderer);
+		m_game->tick(m_subsystems->audio, m_subsystems->renderer.scale());
 		if (m_elapsed >= 0.75_s) {
 			m_subsystems->renderer.set_default_transform(TRANSFORM);
 			switch (m_data.index()) {

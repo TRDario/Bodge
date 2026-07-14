@@ -210,7 +210,7 @@ ticks game::final_time() const
 
 //
 
-void game::tick(audio& audio, renderer& renderer, const glm::vec2& input)
+void game::tick(audio& audio, float ui_scale, const glm::vec2& input)
 {
 	play_tick_sound_if_needed(audio);
 	playerless_game::tick(audio);
@@ -218,9 +218,9 @@ void game::tick(audio& audio, renderer& renderer, const glm::vec2& input)
 	update_life_fragments(audio);
 	if (!game_over()) {
 		m_player.tick(input);
-		check_if_timer_obstructed(renderer.scale());
+		check_if_timer_obstructed(ui_scale);
 		check_if_lives_obstructed();
-		check_if_score_obstructed(renderer.scale());
+		check_if_score_obstructed(ui_scale);
 		check_if_player_was_hit(audio);
 		check_if_player_collected_life_fragments(audio);
 		check_for_score_ticks();
@@ -229,7 +229,6 @@ void game::tick(audio& audio, renderer& renderer, const glm::vec2& input)
 	else {
 		m_player.update_fragments();
 	}
-	set_screen_shake(renderer);
 }
 
 void game::play_tick_sound_if_needed(audio& audio)
@@ -512,10 +511,8 @@ void game::check_for_style_points(audio& audio)
 
 void game::set_screen_shake(renderer& renderer) const
 {
-	if (m_screen_shake_timer.active()) {
-		const glm::vec2 tl{tr::magth(40 * (1 - m_screen_shake_timer.elapsed_ratio()), g_rng.generate_angle())};
-		renderer.set_default_transform(tr::ortho(tr::frect2{tl, glm::vec2{1000}}));
-	}
+	const glm::vec2 tl{tr::magth(40 * (1 - m_screen_shake_timer.elapsed_ratio()), g_rng.generate_angle())};
+	renderer.set_default_transform(tr::ortho(tr::frect2{tl, glm::vec2{1000}}));
 }
 
 //
@@ -673,6 +670,7 @@ void game::add_to_renderer(renderer& renderer, float primary_hue, float secondar
 		renderer.basic().set_default_layer_texture(layer::GAME_OVERLAY, atlas);
 	}
 
+	set_screen_shake(renderer);
 	playerless_game::add_to_renderer(renderer, secondary_hue);
 	for (const life_fragment& fragment : m_life_fragments) {
 		fragment.add_to_renderer(renderer, primary_hue);
@@ -700,10 +698,10 @@ active_game::active_game(const input& input, text_engine& text_engine, savefile 
 
 //
 
-void active_game::tick(audio& audio, renderer& renderer)
+void active_game::tick(audio& audio, float ui_scale)
 {
 	const bool was_game_over{game_over()};
-	game::tick(audio, renderer, m_input.mouse_pos);
+	game::tick(audio, ui_scale, m_input.mouse_pos);
 	if (!was_game_over) {
 		replay.append(m_input.mouse_pos);
 	}
@@ -749,7 +747,7 @@ glm::vec2 replay_game::cursor_pos() const
 
 //
 
-void replay_game::tick(audio& audio, renderer& renderer)
+void replay_game::tick(audio& audio, float ui_scale)
 {
-	game::tick(audio, renderer, done() ? m_replay.prev_input() : m_replay.next_input());
+	game::tick(audio, ui_scale, done() ? m_replay.prev_input() : m_replay.next_input());
 }

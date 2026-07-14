@@ -144,7 +144,7 @@ tr::next_state game_menu_state::tick()
 {
 	state::tick();
 	if (m_update_game) {
-		m_game->tick(m_subsystems->audio, m_subsystems->renderer);
+		m_game->tick(m_subsystems->audio, m_subsystems->renderer.scale());
 	}
 	return tr::KEEP_STATE;
 }
