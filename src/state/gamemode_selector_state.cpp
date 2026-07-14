@@ -190,6 +190,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 		.font_size = 32
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -219,6 +220,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 		});
 	}
 	m_ui.emplace<arrow_widget>(T_PAGE_D, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{-50, 942.5}, {10, 942.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
@@ -235,6 +237,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 		},
 	});
 	m_ui.emplace<arrow_widget>(T_PAGE_I, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{1050, 942.5}, {990, 942.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,

@@ -5,6 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "../audio.hpp"
 #include "../game.hpp"
 #include "../input.hpp"
 #include "../ui.hpp"
@@ -26,6 +27,8 @@ class state : public tr::state {
 		input input;
 		// Localization manager.
 		localization localization;
+		// Audio manager.
+		audio audio;
 	};
 
 	// Creates a state with an associated selection tree and shortcut table.

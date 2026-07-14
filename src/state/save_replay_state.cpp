@@ -54,6 +54,7 @@ save_replay_state::save_replay_state(std::shared_ptr<subsystems> subsystems, std
 		.text = localized_text{m_subsystems->localization, T_NAME}
 	});
 	m_ui.emplace<line_input_widget<20>>(T_NAME_INPUT, {
+		.audio = m_subsystems->audio,
 		.localization = m_subsystems->localization,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 235}, {500, 235}, 0.5_s},
@@ -67,6 +68,7 @@ save_replay_state::save_replay_state(std::shared_ptr<subsystems> subsystems, std
 		.text = localized_text{m_subsystems->localization, T_DESCRIPTION},
 	});
 	m_ui.emplace<multiline_input_widget<255>>(T_DESCRIPTION_INPUT, {
+		.audio = m_subsystems->audio,
 		.localization = m_subsystems->localization,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{600, 475}, {500, 475}, 0.5_s},
@@ -77,6 +79,7 @@ save_replay_state::save_replay_state(std::shared_ptr<subsystems> subsystems, std
 		.status = [this] { return to_base(m_substate) == substate_base::SAVING_REPLAY; }
 	});
 	m_ui.emplace<text_button_widget>(T_SAVE, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -92,6 +95,7 @@ save_replay_state::save_replay_state(std::shared_ptr<subsystems> subsystems, std
 		.action = [this] { on_save(); }
 	});
 	m_ui.emplace<text_button_widget>(T_DISCARD, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,

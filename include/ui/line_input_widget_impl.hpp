@@ -12,8 +12,9 @@
 template <usize MaxChars>
 line_input_widget<MaxChars>::line_input_widget(properties&& properties)
 	: text_input_widget<MaxChars * 4>{
-		  properties.animation,     properties.alignment,    properties.unhide_time,  properties.font_style,        properties.font_size,
-		  tr::sys::UNLIMITED_WIDTH, properties.localization, properties.selected_hue, std::move(properties.status), properties.initial_text,
+		  properties.animation,    properties.alignment,         properties.unhide_time,  properties.font_style,
+		  properties.font_size,    tr::sys::UNLIMITED_WIDTH,     properties.audio,        properties.localization,
+		  properties.selected_hue, std::move(properties.status), properties.initial_text,
 	  }
 	, m_enter_action{std::move(properties.enter_action)}
 {
@@ -32,14 +33,14 @@ template <usize MaxChars> void line_input_widget<MaxChars>::on_write(std::string
 {
 	if (tr::utf8::length(this->m_buffer) + tr::utf8::length(input) <= MaxChars) {
 		this->m_buffer.append(input);
-		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+		this->m_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <usize MaxChars> void line_input_widget<MaxChars>::on_enter()
 {
 	m_enter_action();
-	audio::instance().play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
+	this->m_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 
 template <usize MaxChars> void line_input_widget<MaxChars>::on_paste()
@@ -56,7 +57,7 @@ template <usize MaxChars> void line_input_widget<MaxChars>::on_paste()
 		const auto end{(overflow > 0) ? tr::utf8::next(clipboard.begin(), clipboard_length - overflow) : clipboard.end()};
 		this->m_buffer.append(clipboard.begin(), end);
 
-		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+		this->m_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 

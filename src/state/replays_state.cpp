@@ -86,7 +86,7 @@ tr::next_state replays_state::tick()
 	switch (m_substate) {
 	case substate::RETURNING_FROM_REPLAY:
 		if (m_elapsed == 1) {
-			audio::instance().play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 1.0s);
+			m_subsystems->audio.play_song("menu", SKIP_MENU_SONG_INTRO_TIMESTAMP, 1.0s);
 		}
 		else if (m_elapsed >= 0.5_s) {
 			m_elapsed = 0;
@@ -157,6 +157,7 @@ void replays_state::set_up_ui()
 		.font_size = 64
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -186,6 +187,7 @@ void replays_state::set_up_ui()
 		});
 	}
 	m_ui.emplace<arrow_widget>(T_PAGE_D, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{-50, 942.5}, {10, 942.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
@@ -202,6 +204,7 @@ void replays_state::set_up_ui()
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_PAGE_I, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{1050, 942.5}, {990, 942.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,

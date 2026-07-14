@@ -178,6 +178,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	}
 
 	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
@@ -186,6 +187,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.action = [this] { on_change_display_mode(); }
 	});
 	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_D, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {WINDOW_SIZE_START_POS, {765, WINDOW_SIZE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
@@ -198,6 +200,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		}
 	});
 	m_ui.emplace<numeric_input_widget<u16, 4>>(T_WINDOW_SIZE_C, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.window_size,
@@ -206,6 +209,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.validation = [](u16 v) { return std::clamp(v, MIN_WINDOW_SIZE, max_window_size()); }
 	});
 	m_ui.emplace<arrow_widget>(T_WINDOW_SIZE_I, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {WINDOW_SIZE_START_POS, {985, WINDOW_SIZE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -218,6 +222,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		}
 	});
 	m_ui.emplace<text_button_widget>(T_VSYNC_C, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
@@ -226,6 +231,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.action = [&vsync = m_pending.vsync] { vsync = !vsync; },
 	});
 	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_D, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {MOUSE_SENSITIVITY_START_POS, {765, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
@@ -235,6 +241,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.mouse_sensitivity,
@@ -243,6 +250,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.validation = [](int v) { return u8(std::clamp(v, 25, 250)); }
 	});
 	m_ui.emplace<arrow_widget>(T_MOUSE_SENSITIVITY_I, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {MOUSE_SENSITIVITY_START_POS, {985, MOUSE_SENSITIVITY_START_POS.y}, 0.5_s}, 
 		.type = arrow_type::RIGHT,
@@ -252,6 +260,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		}
 	});
 	m_ui.emplace<text_button_widget>(T_PLAYER_SKIN_C, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {PLAYER_SKIN_START_POS, {930, PLAYER_SKIN_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
@@ -270,6 +279,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.settings = m_pending
 	});
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_D, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {PRIMARY_HUE_START_POS, {745, PRIMARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
@@ -279,6 +289,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		}
 	});
 	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.primary_hue,
@@ -287,6 +298,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.validation = [](int v) { return u16(v % 360); }
 	});
 	m_ui.emplace<arrow_widget>(T_PRIMARY_HUE_I, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {PRIMARY_HUE_START_POS, {930, PRIMARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -301,6 +313,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.hue = m_pending.primary_hue
 	});
 	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_D, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {SECONDARY_HUE_START_POS, {745, SECONDARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
@@ -310,6 +323,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		}
 	});
 	m_ui.emplace<numeric_input_widget<u16, 3>>(T_SECONDARY_HUE_C, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.secondary_hue,
@@ -318,6 +332,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.validation = [](int v) { return u16(v % 360); }
 	});
 	m_ui.emplace<arrow_widget>(T_SECONDARY_HUE_I, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {SECONDARY_HUE_START_POS, {930, SECONDARY_HUE_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -332,6 +347,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.hue = m_pending.secondary_hue
 	});
 	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_D, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {SFX_VOLUME_START_POS, {765, SFX_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
@@ -341,6 +357,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.sfx_volume,
@@ -349,6 +366,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.validation = [](int v) { return u8(std::min(v, 100)); }
 	});
 	m_ui.emplace<arrow_widget>(T_SFX_VOLUME_I, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {SFX_VOLUME_START_POS, {985, SFX_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -358,6 +376,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_D, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {MUSIC_VOLUME_START_POS, {765, MUSIC_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::LEFT,
@@ -367,6 +386,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		}
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.music_volume,
@@ -375,6 +395,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		.validation = [](int v) { return u8(std::min(v, 100)); }
 	});
 	m_ui.emplace<arrow_widget>(T_MUSIC_VOLUME_I, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {MUSIC_VOLUME_START_POS, {985, MUSIC_VOLUME_START_POS.y}, 0.5_s},
 		.type = arrow_type::RIGHT,
@@ -384,6 +405,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 		}
 	});
 	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
@@ -418,6 +440,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	}};
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], {
+			.audio = m_subsystems->audio,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s},
 			.alignment = tr::align::BOTTOM_CENTER,
@@ -537,7 +560,7 @@ void settings_state::on_apply()
 		m_subsystems->localization.reload(m_pending.language);
 	}
 
-	audio::instance().set_volume(m_pending.sfx_volume, m_pending.music_volume);
+	m_subsystems->audio.set_volume(m_pending.sfx_volume, m_pending.music_volume);
 
 	m_subsystems->settings = m_pending;
 	m_subsystems->settings.save_to_file();

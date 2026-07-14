@@ -7,6 +7,8 @@
 #pragma once
 #include "global.hpp"
 
+struct settings;
+
 // List of available sound effects.
 enum class sound {
 	HOVER,
@@ -37,11 +39,13 @@ inline constexpr tr::fsecs SKIP_MENU_SONG_INTRO_TIMESTAMP{103769 / 44100.0f};
 // Creates a list of filenames of available songs.
 std::vector<std::string> create_available_song_list();
 
-// Audio manager singleton.
+// Audio manager.
 class audio {
   public:
-	// Gets the audio manager instance.
-	static audio& instance();
+	// Creates an audio manager.
+	audio(const settings& settings);
+	// Shuts down the audio manager.
+	~audio();
 
 	// Sets the audio volume.
 	void set_volume(float sfx_volume, float music_volume);
@@ -66,9 +70,4 @@ class audio {
 	std::array<std::optional<tr::audio::buffer>, int(sound::COUNT)> m_sounds;
 	// The currently playing song.
 	std::optional<tr::audio::source> m_current_song;
-
-	// Initializes the audio manager.
-	audio();
-	// Shuts down the audio manager.
-	~audio();
 };

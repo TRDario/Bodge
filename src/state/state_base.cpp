@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////// STATE //////////////////////////////////////////////////////////////////
 
 state::subsystems::subsystems()
-	: localization{settings.language}
+	: localization{settings.language}, audio{settings}
 {
 }
 
@@ -74,7 +74,7 @@ float main_menu_state::fade_overlay_opacity()
 tr::next_state main_menu_state::tick()
 {
 	state::tick();
-	m_game->tick();
+	m_game->tick(m_subsystems->audio);
 	return tr::KEEP_STATE;
 }
 

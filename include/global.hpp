@@ -3,7 +3,6 @@
 // Provides various functionality used throughout the codebase.                                                                          //
 //                                                                                                                                       //
 // Globals & Singletons:                                                                                                                 //
-//  • audio::instance()           - Audio subsystem.                                                                                     //
 //  • current_state::instance()   - Container for the current state.                                                                     //
 //  • debug_settings::instance()  - Active debug settings.                                                                               //
 //  • renderer::instance()        - Windowing and renderer manager.                                                                      //

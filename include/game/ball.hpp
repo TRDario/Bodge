@@ -7,6 +7,7 @@
 #pragma once
 #include "trail.hpp"
 
+class audio;
 class renderer;
 
 /////////////////////////////////////////////////////////////////// BALL //////////////////////////////////////////////////////////////////
@@ -27,7 +28,7 @@ class ball {
 	const glm::vec2& velocity() const;
 
 	// Updates the ball's state.
-	void tick();
+	void tick(audio& audio);
 
 	// Adds the ball to the renderer.
 	void add_to_renderer(renderer& renderer, float hue) const;
@@ -44,10 +45,10 @@ class ball {
 	// Time elapsed since the ball last hit something.
 	ticks m_time_since_last_collision;
 
-	friend void handle_collision(ball& a, ball& b);
+	friend void handle_collision(audio& audio, ball& a, ball& b);
 };
 
 // Gets whether two balls are colliding.
 bool colliding(const ball& a, const ball& b);
 // Handles the collision between two balls.
-void handle_collision(ball& a, ball& b);
+void handle_collision(audio& audio, ball& a, ball& b);

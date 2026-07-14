@@ -87,12 +87,6 @@ audio::~audio()
 	}
 }
 
-audio& audio::instance()
-{
-	static audio instance{};
-	return instance;
-}
-
 //
 
 void audio::set_volume(float sfx_volume, float music_volume)

@@ -40,6 +40,7 @@ basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(pro
 		  tr::sys::ttf_style::NORMAL,
 		  properties.font_size,
 		  tr::sys::UNLIMITED_WIDTH,
+		  properties.audio,
 		  properties.selected_hue,
 		  std::move(properties.status),
 		  [this] {
@@ -84,14 +85,14 @@ template <class T, usize Digits, class Formatter> void basic_numeric_input_widge
 {
 	if (input.size() == 1 && (std::isdigit(input.front()) || input.front() == '.') && this->m_buffer.size() < Digits) {
 		this->m_buffer.append(input);
-		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+		this->m_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <class T, usize Digits, class Formatter> void basic_numeric_input_widget<T, Digits, Formatter>::on_enter()
 {
 	this->m_ui.clear_selection();
-	audio::instance().play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
+	this->m_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 
 //

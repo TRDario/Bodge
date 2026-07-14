@@ -18,11 +18,11 @@ constexpr ticks BALL_COLLISION_ANIMATION_TIME{0.1_s};
 //////////////////////////////////////////////////////////// INTERNAL HELPERS /////////////////////////////////////////////////////////////
 
 // Plays a sound emitted by a ball.
-static void play_ball_sound(glm::vec2 pos, float velocity)
+static void play_ball_sound(audio& audio, glm::vec2 pos, float velocity)
 {
 	const float pan{(pos.x - 500) / 500};
 	const float pitch{std::clamp(velocity / 600, 0.75f, 1.25f)};
-	audio::instance().play_sound(sound::BOUNCE, 0.15f, pan, g_rng.generate(pitch - 0.2f, pitch + 0.2f));
+	audio.play_sound(sound::BOUNCE, 0.15f, pan, g_rng.generate(pitch - 0.2f, pitch + 0.2f));
 }
 
 ////////////////////////////////////////////////////////////////// BALL ///////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ const glm::vec2& ball::velocity() const
 
 //
 
-void ball::tick()
+void ball::tick(audio& audio)
 {
 	++m_age;
 	++m_time_since_last_collision;
@@ -88,7 +88,7 @@ void ball::tick()
 		}
 
 		if (clamped != target) {
-			play_ball_sound(clamped, glm::length(m_velocity));
+			play_ball_sound(audio, clamped, glm::length(m_velocity));
 		}
 
 		m_hitbox.c = clamped;
@@ -164,7 +164,7 @@ bool colliding(const ball& a, const ball& b)
 	return tr::intersecting(a.hitbox(), b.hitbox()) && glm::dot(a.hitbox().c - b.hitbox().c, b.velocity() - a.velocity()) >= 0;
 }
 
-void handle_collision(ball& a, ball& b)
+void handle_collision(audio& audio, ball& a, ball& b)
 {
 	const glm::vec2 dist_vec{a.m_hitbox.c - b.m_hitbox.c};
 	const glm::vec2 vel_diff{a.m_velocity - b.m_velocity};
@@ -174,7 +174,7 @@ void handle_collision(ball& a, ball& b)
 	const float b_mass{b.m_hitbox.r};
 	const float total_mass{a_mass + b_mass};
 
-	play_ball_sound(b.m_hitbox.c + dist_vec / 2.0f, std::max(glm::length(a.m_velocity), glm::length(b.m_velocity)));
+	play_ball_sound(audio, b.m_hitbox.c + dist_vec / 2.0f, std::max(glm::length(a.m_velocity), glm::length(b.m_velocity)));
 
 	a.m_velocity -= 2 * b_mass / total_mass * impulse_vec;
 	b.m_velocity -= 2 * a_mass / total_mass * -impulse_vec;

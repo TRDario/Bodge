@@ -12,9 +12,9 @@
 
 template <usize MaxChars>
 multiline_input_widget<MaxChars>::multiline_input_widget(properties&& properties)
-	: text_input_widget<MaxChars * 4>{properties.animation,       properties.alignment,    properties.unhide_time,
-									  tr::sys::ttf_style::NORMAL, properties.font_size,    int(properties.width),
-									  properties.localization,    properties.selected_hue, std::move(properties.status)}
+	: text_input_widget<MaxChars * 4>{
+		  properties.animation,  properties.alignment, properties.unhide_time,  tr::sys::ttf_style::NORMAL, properties.font_size,
+		  int(properties.width), properties.audio,     properties.localization, properties.selected_hue,    std::move(properties.status)}
 	, m_size{properties.width, renderer::instance().text_engine.line_skip(font::LANGUAGE, properties.font_size) * properties.max_lines +
 								   2 * OUTLINE_THICKNESS}
 	, m_max_lines{properties.max_lines}
@@ -47,7 +47,7 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::on_write(std::s
 			this->m_buffer.resize(this->m_buffer.size() - input.size());
 		}
 		else {
-			audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+			this->m_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 		}
 	}
 }
@@ -56,7 +56,7 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::on_enter()
 {
 	if (tr::utf8::length(this->m_buffer) < MaxChars && renderer::instance().text_engine.count_lines(this->text()) < m_max_lines) {
 		this->m_buffer.append('\n');
-		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+		this->m_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
@@ -80,7 +80,7 @@ template <usize MaxChars> void multiline_input_widget<MaxChars>::on_paste()
 				this->m_buffer = new_string;
 			}
 			else {
-				audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+				this->m_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 			}
 		}
 	}

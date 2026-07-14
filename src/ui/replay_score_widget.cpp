@@ -168,12 +168,12 @@ replay_widget::replay_widget(const properties& properties)
 		  .font_size = 34,
 		  .status = [this] { return m_parent_state.m_substate == replays_state::substate::IN_REPLAYS && m_replay_it.has_value(); },
 		  .action =
-			  [this] {
+			  [this, &audio = properties.audio] {
 				  if (m_replay_it.has_value()) {
 					  m_parent_state.m_substate = replays_state::substate::STARTING_REPLAY;
 					  m_parent_state.m_elapsed = 0;
 					  m_parent_state.set_up_exit_animation();
-					  audio::instance().fade_song_out(0.5s);
+					  audio.fade_song_out(0.5s);
 					  m_parent_state.m_next_state =
 						  make_game_state_async<replay_game>(m_parent_state.m_subsystems, replay_game_data{}, replay{(*m_replay_it)->first},
 															 try_loading_player_skin(m_parent_state.m_subsystems->settings.player_skin));

@@ -70,6 +70,7 @@ constexpr std::array<tr::rgba8, 15> ARROW_COLORS{{
 arrow_widget::arrow_widget(properties&& properties)
 	: widget{properties.animation, properties.alignment | (properties.type == arrow_type::RIGHT ? tr::halign::RIGHT : tr::halign::LEFT),
 			 properties.unhide_time, NO_TOOLTIP}
+	, m_audio{properties.audio}
 	, m_selected_hue{properties.selected_hue}
 	, m_status{std::move(properties.status)}
 	, m_action{std::move(properties.action)}
@@ -149,7 +150,7 @@ void arrow_widget::on_action()
 	m_action();
 	m_action_animation_timer.start();
 	m_tint = WHITE;
-	audio::instance().play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
+	m_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 
 void arrow_widget::on_hover()
@@ -158,7 +159,7 @@ void arrow_widget::on_hover()
 		m_hovered = true;
 		if (!m_selected) {
 			m_tint.change(WHITE, 0.1_s);
-			audio::instance().play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
+			m_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }

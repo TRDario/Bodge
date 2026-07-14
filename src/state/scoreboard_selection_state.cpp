@@ -55,6 +55,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<subsystem
 		.font_size = 32
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = bool(animate_title) ? tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s} : tweened_position{{500, 1000}},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -65,6 +66,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<subsystem
 		.action_sound = sound::CANCEL
 	});
 	m_ui.emplace<text_button_widget>(T_VIEW_TIMES, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 450}, {500, 450}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_VIEW_TIMES},
@@ -73,6 +75,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<subsystem
 		.action = [this] { on_view_times(); }
 	});
 	m_ui.emplace<text_button_widget>(T_VIEW_SCORES, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{600, 550}, {500, 550}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_VIEW_SCORES},

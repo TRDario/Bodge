@@ -59,6 +59,8 @@ class text_button_widget : public text_widget {
   public:
 	// Text button properties.
 	struct properties {
+		// Reference to the audio subsystem.
+		audio& audio;
 		// Reference to the hue to use when a widget of this type is selected.
 		const u16& selected_hue;
 		// Initial position (or animation) of the button.
@@ -112,6 +114,8 @@ class text_button_widget : public text_widget {
 	void add_to_renderer(renderer& renderer) override;
 
   private:
+	// Reference to the audio subsystem.
+	audio& m_audio;
 	// Reference to the hue used when the arrow is selected.
 	const u16& m_selected_hue;
 	// Command used to determine whether the button is interactible.
@@ -155,6 +159,8 @@ class basic_numeric_input_widget final : private basic_numeric_input_widget_data
   public:
 	// Numeric input widget properties.
 	struct properties {
+		// Reference to the audio subsystem.
+		audio& audio;
 		// Reference to the hue to use when a widget of this type is selected.
 		const u16& selected_hue;
 		// Reference to the UI manager.
@@ -223,6 +229,8 @@ template <usize MaxChars> class line_input_widget final : public text_input_widg
   public:
 	// Line input widget properties.
 	struct properties {
+		// Reference to the audio subsystem.
+		audio& audio;
 		// Reference to a localization object used for the (EMPTY...) text.
 		const localization& localization;
 		// Reference to the hue to use when a widget of this type is selected.
@@ -273,6 +281,8 @@ template <usize MaxChars> class multiline_input_widget final : public text_input
   public:
 	// Multiline input widget properties.
 	struct properties {
+		// Reference to the audio subsystem.
+		audio& audio;
 		// Reference to the localization subsystem.
 		const localization& localization;
 		// Reference to the hue to use when a widget of this type is selected.
@@ -452,6 +462,8 @@ class arrow_widget final : public widget {
   public:
 	// Arrow widget properties.
 	struct properties {
+		// Reference to the audio subsystem.
+		audio& audio;
 		// Reference to the hue to use when a widget of this type is selected.
 		const u16& selected_hue;
 		// Initial animation of the widget.
@@ -498,6 +510,8 @@ class arrow_widget final : public widget {
 	void add_to_renderer(renderer& renderer) override;
 
   protected:
+	// Reference to the audio subsystem.
+	audio& m_audio;
 	// Reference to the hue used when the arrow is selected.
 	const u16& m_selected_hue;
 	// Command used to determine whether the arrow is interactible.
@@ -562,7 +576,7 @@ struct gamemode_widget_data {
 	std::optional<gamemode_with_path> gp;
 };
 
-// Button widget used to display replay information and select a replay to be played.
+// Button widget representing a gamemode.
 class gamemode_widget final : public gamemode_widget_data, public text_button_widget {
   public:
 	// Gamemode widget properties.

@@ -108,6 +108,7 @@ game_over_state::game_over_state(std::shared_ptr<subsystems> subsystems, std::sh
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], {
+			.audio = m_subsystems->audio,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS[i]},

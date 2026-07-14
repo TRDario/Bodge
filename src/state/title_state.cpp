@@ -71,7 +71,7 @@ tr::next_state title_state::tick()
 	switch (m_substate) {
 	case substate::FADING_IN:
 		if (m_elapsed == 1) {
-			audio::instance().play_song("menu", 1.0s);
+			m_subsystems->audio.play_song("menu", 1.0s);
 		}
 		else if (m_elapsed >= 1.0_s) {
 			m_elapsed = 0;
@@ -160,6 +160,7 @@ void title_state::set_up_ui()
 		const glm::vec2 end_pos{990 - 25 * i, 965 - (BUTTONS.size() - i - 1) * 50};
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(35.0f, 75.0f)};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], {
+			.audio = m_subsystems->audio,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{end_pos.x + offset, end_pos.y}, end_pos, 1_s},
 			.alignment = tr::align::CENTER_RIGHT,
@@ -242,5 +243,5 @@ void title_state::on_exit()
 	m_substate = substate::EXITING_GAME;
 	m_elapsed = 0;
 	set_up_exit_animation();
-	audio::instance().fade_song_out(0.5s);
+	m_subsystems->audio.fade_song_out(0.5s);
 }

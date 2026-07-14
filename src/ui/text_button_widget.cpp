@@ -12,6 +12,7 @@ text_button_widget::text_button_widget(properties&& properties)
 	: text_widget{properties.animation,       properties.alignment, properties.unhide_time,     std::move(properties.tooltip_text),
 				  std::move(properties.text), properties.font,      tr::sys::ttf_style::NORMAL, properties.font_size,
 				  tr::sys::UNLIMITED_WIDTH}
+	, m_audio{properties.audio}
 	, m_selected_hue{properties.selected_hue}
 	, m_status{std::move(properties.status)}
 	, m_action{std::move(properties.action)}
@@ -73,7 +74,7 @@ void text_button_widget::on_action()
 	m_action();
 	m_action_animation_timer.start();
 	m_tint = WHITE;
-	audio::instance().play_sound(m_action_sound, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
+	m_audio.play_sound(m_action_sound, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 }
 
 void text_button_widget::on_hover()
@@ -82,7 +83,7 @@ void text_button_widget::on_hover()
 		m_hovered = true;
 		if (!m_selected) {
 			m_tint.change(WHITE, 0.1_s);
-			audio::instance().play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
+			m_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }

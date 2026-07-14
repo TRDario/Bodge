@@ -105,6 +105,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 		.font_size = 32
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{500, 1000}},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -136,6 +137,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 	}
 
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_D, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{-50, 892.5}, {10, 892.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
@@ -150,6 +152,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 		.text = [this] { return std::string{m_selected->gamemode.localized_name(m_subsystems->localization)}; }
 	});
 	m_ui.emplace<arrow_widget>(T_GAMEMODE_I, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{1050, 892.5}, {990, 892.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
@@ -158,6 +161,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 		.action = [this] { on_gamemode_increment(); }
 	});
 	m_ui.emplace<arrow_widget>(T_PAGE_D, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{-50, 942.5}, {10, 942.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,
@@ -174,6 +178,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 		}
 	});
 	m_ui.emplace<arrow_widget>(T_PAGE_I, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{1050, 942.5}, {990, 942.5}, 0.5_s},
 		.alignment = tr::valign::BOTTOM,

@@ -144,6 +144,7 @@ void save_score_state::set_up_ui()
 		.text = localized_text{m_subsystems->localization, T_DESCRIPTION}
 	});
 	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, {
+		.audio = m_subsystems->audio,
 		.localization = m_subsystems->localization,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{600, 475}, {500, 475}, 0.5_s},
@@ -154,6 +155,7 @@ void save_score_state::set_up_ui()
 		.status = [this] { return to_base(m_substate) == substate_base::SAVING_SCORE; }
 	});
 	m_ui.emplace<text_button_widget>(T_SAVE, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -162,6 +164,7 @@ void save_score_state::set_up_ui()
 		.action = [this] { on_save(); }
 	});
 	m_ui.emplace<text_button_widget>(T_CANCEL, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,

@@ -68,6 +68,7 @@ gamemode_manager_state::gamemode_manager_state(std::shared_ptr<subsystems> subsy
 	for (usize i = 0; i < CENTER_BUTTONS.size(); ++i) {
 		const float y{500.0f - ((CENTER_BUTTONS.size() - 1) * 50.0f) + i * 100};
 		m_ui.emplace<text_button_widget>(CENTER_BUTTONS[i].tag, {
+			.audio = m_subsystems->audio,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {glm::vec2{i % 2 == 0 ? 600 : 400, y}, glm::vec2{500, y}, 0.5_s},
 			.tooltip_text = localized_text{m_subsystems->localization, CENTER_BUTTONS[i].tooltip},
@@ -79,6 +80,7 @@ gamemode_manager_state::gamemode_manager_state(std::shared_ptr<subsystems> subsy
 	}
 
 	m_ui.emplace<text_button_widget>(T_EXIT, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,

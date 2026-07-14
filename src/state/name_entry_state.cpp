@@ -38,6 +38,7 @@ name_entry_state::name_entry_state()
 		.font_size = 64
 	});
 	m_ui.emplace<line_input_widget<20>>(T_INPUT, {
+		.audio = m_subsystems->audio,
 		.localization = m_subsystems->localization,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{500, 500}},
@@ -47,6 +48,7 @@ name_entry_state::name_entry_state()
 		.enter_action = [this] { on_exit(); }
 	});
 	m_ui.emplace<text_button_widget>(T_CONFIRM, {
+		.audio = m_subsystems->audio,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 1.0_s},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -68,7 +70,7 @@ tr::next_state name_entry_state::tick()
 	switch (m_substate) {
 	case substate::FADING_IN:
 		if (m_elapsed == 1) {
-			audio::instance().play_song("menu", 1.0s);
+			m_subsystems->audio.play_song("menu", 1.0s);
 		}
 		else if (m_elapsed >= 1.0_s) {
 			m_elapsed = 0;

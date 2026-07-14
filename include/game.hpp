@@ -17,6 +17,7 @@
 #include "gamemode.hpp"
 #include "replay.hpp"
 
+class audio;
 class input;
 
 ///////////////////////////////////////////////////////////// PLAYERLESS_GAME /////////////////////////////////////////////////////////////
@@ -31,7 +32,7 @@ class playerless_game {
 	const gamemode& gamemode() const;
 
 	// Updates the game state.
-	void tick();
+	void tick(audio& audio);
 
 	// Adds the game to the renderer.
 	void add_to_renderer(renderer& renderer, float secondary_hue) const;
@@ -109,14 +110,14 @@ class game : private playerless_game {
 	using playerless_game::gamemode;
 
 	// Updates the game.
-	virtual void tick() = 0;
+	virtual void tick(audio& audio) = 0;
 
 	// Adds the game to the renderer.
 	void add_to_renderer(renderer& renderer, float primary_hue, float secondary_hue) const;
 
   protected:
 	// Base update function taking in a player input.
-	void tick(const glm::vec2& input);
+	void tick(audio& audio, const glm::vec2& input);
 
   private:
 	// Information needed for rendering the timer display.
@@ -185,11 +186,11 @@ class game : private playerless_game {
 	score_render_info score_render_info() const;
 
 	// Plays the tick second on second marks.
-	void play_tick_sound_if_needed();
+	void play_tick_sound_if_needed(audio& audio);
 	// Updates the various game timers.
 	void update_timers();
 	// Updates the collectible life fragments.
-	void update_life_fragments();
+	void update_life_fragments(audio& audio);
 	// Checks if the player is hovering over the timer display and increments or decrements the related timer based on the result.
 	void check_if_timer_obstructed(float renderer_scale);
 	// Checks if the player is hovering over the lives display and increments or decrements the related timer based on the result.
@@ -197,11 +198,11 @@ class game : private playerless_game {
 	// Checks if the player is hovering over the score display and increments or decrements the related timer based on the result.
 	void check_if_score_obstructed(float renderer_scale);
 	// Checks for and handles the player getting hit.
-	void check_if_player_was_hit();
+	void check_if_player_was_hit(audio& audio);
 	// Sets up the fragments used for the shattered life animation.
 	void set_up_shattered_life_fragments();
 	// Checks for and handles the player collecting life fragments.
-	void check_if_player_collected_life_fragments();
+	void check_if_player_collected_life_fragments(audio& audio);
 	// Adds to the score.
 	void add_to_score(i64 change);
 	// Checks for and applies score ticks.
@@ -209,7 +210,7 @@ class game : private playerless_game {
 	// Determines whether the player is in a ball's style region.
 	bool player_in_ball_style_region(const ball& ball, float ball_velocity) const;
 	// Checks for and applies style points.
-	void check_for_style_points();
+	void check_for_style_points(audio& audio);
 	// Applies screenshake.
 	void set_screen_shake(renderer& renderer) const;
 
@@ -234,7 +235,7 @@ class active_game final : public game {
 	active_game(const input& input, savefile savefile, ::gamemode gamemode, u64 seed, std::optional<tr::bitmap>&& player_skin);
 
 	// Updates the game state.
-	void tick() override;
+	void tick(audio& audio) override;
 
 	// Replay recorded of the game.
 	replay replay;
@@ -260,7 +261,7 @@ class replay_game final : public game {
 	glm::vec2 cursor_pos() const;
 
 	// Updates the game state.
-	void tick() override;
+	void tick(audio& audio) override;
 
   private:
 	// The replay being read from.

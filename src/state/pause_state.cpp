@@ -110,7 +110,7 @@ tr::next_state pause_state::tick()
 		}
 
 		if (m_elapsed >= 0.5_s) {
-			audio::instance().unpause_song();
+			m_subsystems->audio.unpause_song();
 			return m_next_state.get();
 		}
 		else {
@@ -200,6 +200,7 @@ void pause_state::set_up_full_ui()
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], {
+			.audio = m_subsystems->audio,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS_REGULAR[i]},
@@ -237,6 +238,7 @@ void pause_state::set_up_limited_ui()
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(50.0f, 150.0f)};
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], {
+			.audio = m_subsystems->audio,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS_SPECIAL[i]},
@@ -274,7 +276,7 @@ void pause_state::on_unpause()
 	m_substate = substate::UNPAUSING;
 	m_end_mouse_pos = m_subsystems->input.mouse_pos;
 	set_up_exit_animation();
-	audio::instance().play_sound(sound::UNPAUSE, 0.8f, 0.0f);
+	m_subsystems->audio.play_sound(sound::UNPAUSE, 0.8f, 0.0f);
 	m_next_state = make_async<game_state>(m_subsystems, m_game, m_data, fade_in::NO);
 }
 

@@ -12,11 +12,12 @@
 
 template <usize MaxChars>
 text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
-											   float font_size, int width, const localization& localization, const u16& selected_hue,
-											   status_command status_command, std::string_view initial_text)
+											   float font_size, int width, audio& audio, const localization& localization,
+											   const u16& selected_hue, status_command status_command, std::string_view initial_text)
 	: input_buffer<MaxChars>{initial_text}
 	, text_widget{pos,   alignment, unhide_time, NO_TOOLTIP, buffer_text{localization, this->m_buffer}, font::LANGUAGE,
 				  style, font_size, width}
+	, m_audio{audio}
 	, m_selected_hue{selected_hue}
 	, m_status{std::move(status_command)}
 	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
@@ -28,10 +29,11 @@ text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align a
 
 template <usize MaxChars>
 text_input_widget<MaxChars>::text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style,
-											   float font_size, int width, const u16& selected_hue, status_command status_command,
-											   text_command text)
+											   float font_size, int width, audio& audio, const u16& selected_hue,
+											   status_command status_command, text_command text)
 	: input_buffer<MaxChars>{}
 	, text_widget{pos, alignment, unhide_time, NO_TOOLTIP, std::move(text), font::LANGUAGE, style, font_size, width}
+	, m_audio{audio}
 	, m_selected_hue{selected_hue}
 	, m_status{std::move(status_command)}
 	, m_tint{m_status() ? GRAY : DISABLED_GRAY}
@@ -92,7 +94,7 @@ template <usize MaxChars> void text_input_widget<MaxChars>::on_hover()
 		m_hovered = true;
 		if (!m_selected) {
 			m_tint.change(WHITE, 0.1_s);
-			audio::instance().play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
+			m_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }
@@ -130,7 +132,7 @@ template <usize MaxChars> void text_input_widget<MaxChars>::on_selected()
 			m_tint.change(WHITE, 0.1_s);
 		}
 		else {
-			audio::instance().play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
+			m_audio.play_sound(sound::CONFIRM, 0.5f, 0.0f, g_rng.generate(0.9f, 1.1f));
 		}
 	}
 }
@@ -149,14 +151,14 @@ template <usize MaxChars> void text_input_widget<MaxChars>::on_erase()
 {
 	if (!this->m_buffer.empty()) {
 		tr::utf8::pop_back(this->m_buffer);
-		audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+		m_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 	}
 }
 
 template <usize MaxChars> void text_input_widget<MaxChars>::on_clear()
 {
 	this->m_buffer.clear();
-	audio::instance().play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
+	m_audio.play_sound(sound::TYPE, 0.2f, 0.0f, g_rng.generate(0.75f, 1.25f));
 }
 
 template <usize MaxChars> void text_input_widget<MaxChars>::on_copy()
