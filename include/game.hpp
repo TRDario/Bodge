@@ -19,6 +19,7 @@
 
 class audio;
 class input;
+class text_engine;
 
 ///////////////////////////////////////////////////////////// PLAYERLESS_GAME /////////////////////////////////////////////////////////////
 
@@ -96,7 +97,8 @@ using results_color_picker = std::variant<same_player_result_color_picker, diffe
 class game : private playerless_game {
   public:
 	// Creates a new game.
-	game(results_color_picker result_color_picker, ::gamemode gamemode, u64 rng_seed, std::optional<tr::bitmap>&& player_skin);
+	game(text_engine& text_engine, results_color_picker result_color_picker, ::gamemode gamemode, u64 rng_seed,
+		 std::optional<tr::bitmap>&& player_skin);
 	// Virtual destructor.
 	virtual ~game() = default;
 
@@ -110,14 +112,14 @@ class game : private playerless_game {
 	using playerless_game::gamemode;
 
 	// Updates the game.
-	virtual void tick(audio& audio) = 0;
+	virtual void tick(audio& audio, renderer& renderer) = 0;
 
 	// Adds the game to the renderer.
 	void add_to_renderer(renderer& renderer, float primary_hue, float secondary_hue) const;
 
   protected:
 	// Base update function taking in a player input.
-	void tick(audio& audio, const glm::vec2& input);
+	void tick(audio& audio, renderer& renderer, const glm::vec2& input);
 
   private:
 	// Information needed for rendering the timer display.
@@ -232,10 +234,11 @@ class game : private playerless_game {
 class active_game final : public game {
   public:
 	// Creates a new active game.
-	active_game(const input& input, savefile savefile, ::gamemode gamemode, u64 seed, std::optional<tr::bitmap>&& player_skin);
+	active_game(const input& input, text_engine& text_engine, savefile savefile, ::gamemode gamemode, u64 seed,
+				std::optional<tr::bitmap>&& player_skin);
 
 	// Updates the game state.
-	void tick(audio& audio) override;
+	void tick(audio& audio, renderer& renderer) override;
 
 	// Replay recorded of the game.
 	replay replay;
@@ -251,9 +254,9 @@ class active_game final : public game {
 class replay_game final : public game {
   public:
 	// Creates a replay game from a replay.
-	replay_game(replay&& replay, std::optional<tr::bitmap>&& player_skin);
+	replay_game(text_engine& text_engine, replay&& replay, std::optional<tr::bitmap>&& player_skin);
 	// Creates a replay game using the same replay as an existing replay game.
-	replay_game(const replay_game& r, std::optional<tr::bitmap>&& player_skin);
+	replay_game(text_engine& text_engine, const replay_game& r, std::optional<tr::bitmap>&& player_skin);
 
 	// Gets whether the replay is done playing.
 	bool done() const;
@@ -261,7 +264,7 @@ class replay_game final : public game {
 	glm::vec2 cursor_pos() const;
 
 	// Updates the game state.
-	void tick(audio& audio) override;
+	void tick(audio& audio, renderer& renderer) override;
 
   private:
 	// The replay being read from.

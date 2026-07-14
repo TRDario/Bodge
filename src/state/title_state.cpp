@@ -126,6 +126,7 @@ void title_state::set_up_ui()
 	});
 
 	widget& copyright{m_ui.emplace<label_widget>(T_COPYRIGHT, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{4, 1000}},
 		.alignment = tr::align::TOP_LEFT,
 		.unhide_time = 1_s,
@@ -133,6 +134,7 @@ void title_state::set_up_ui()
 		.font_size = 24
 	})};
 	widget& version{m_ui.emplace<label_widget>(T_VERSION, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{996, 1000}},
 		.alignment = tr::align::TOP_RIGHT,
 		.unhide_time = 1_s,
@@ -161,6 +163,7 @@ void title_state::set_up_ui()
 		const float offset{(i % 2 == 0 ? -1.0f : 1.0f) * g_rng.generate(35.0f, 75.0f)};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], {
 			.audio = m_subsystems->audio,
+			.renderer = m_subsystems->renderer,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{end_pos.x + offset, end_pos.y}, end_pos, 1_s},
 			.alignment = tr::align::CENTER_RIGHT,

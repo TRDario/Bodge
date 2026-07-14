@@ -7,6 +7,8 @@
 #pragma once
 #include "../global.hpp"
 
+class renderer;
+
 /////////////////////////////////////////////////////////////// TEXT ENGINE ///////////////////////////////////////////////////////////////
 
 // Font slots. Multiple may actually point to the same font.
@@ -41,7 +43,7 @@ struct text {
 class text_engine {
   public:
 	// Constructs a text engine.
-	text_engine(std::string language_font_name);
+	text_engine(renderer& renderer, std::string language_font_name);
 	// Destroys the text engine.
 	~text_engine();
 
@@ -98,6 +100,8 @@ class text_engine {
 		base* operator->();
 	};
 
+	// Reference to the main renderer.
+	renderer& m_renderer;
 	// Text engine mutex.
 	std::mutex m_mutex;
 	// Fonts that are always loaded.

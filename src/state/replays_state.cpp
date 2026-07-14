@@ -135,7 +135,9 @@ std::unordered_map<tag, std::unique_ptr<widget>> replays_state::prepare_next_wid
 		const tweened_position animation{{i % 2 == 0 ? 600 : 400, 183 + 125 * i}, {500, 183 + 125 * i}, 0.25_s};
 		// clang-format off
 		map.emplace(REPLAY_TAGS[i], std::make_unique<replay_widget>(replay_widget::properties{
+			.audio = m_subsystems->audio,
 			.localization = m_subsystems->localization,
+			.renderer = m_subsystems->renderer,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = animation,
 			.unhide_time = 0.25_s,
@@ -151,6 +153,7 @@ void replays_state::set_up_ui()
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
 		.text = localized_text{m_subsystems->localization, T_TITLE},
@@ -158,6 +161,7 @@ void replays_state::set_up_ui()
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -168,6 +172,7 @@ void replays_state::set_up_ui()
 	});
 	if (m_replays.empty()) {
 		m_ui.emplace<label_widget>(T_NO_REPLAYS_FOUND, {
+			.renderer = m_subsystems->renderer,
 			.animation = {{600, 467}, {500, 467}, 0.5_s},
 			.alignment = tr::align::TOP_CENTER,
 			.text = localized_text{m_subsystems->localization, T_NO_REPLAYS_FOUND},
@@ -179,7 +184,9 @@ void replays_state::set_up_ui()
 	replay_map::iterator replay_it{m_replays.begin()};
 	for (usize i = 0; i < REPLAYS_PER_PAGE; ++i) {
 		m_ui.emplace<replay_widget>(REPLAY_TAGS[i], {
+			.audio = m_subsystems->audio,
 			.localization = m_subsystems->localization,
+			.renderer = m_subsystems->renderer,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{i % 2 == 0 ? 400 : 600, 183 + 125 * i}, {500, 183 + 125 * i}, 0.5_s},
 			.state = *this,
@@ -196,6 +203,7 @@ void replays_state::set_up_ui()
 		.action = [this] { on_page_decrement(); }
 	});
 	m_ui.emplace<label_widget>(T_PAGE_C, {
+		.renderer = m_subsystems->renderer,
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = [this] {

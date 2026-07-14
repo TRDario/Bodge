@@ -819,7 +819,7 @@ class game_state final : public state {
 // Asynchronously creates a game state.
 template <class T, class... Ts>
 std::future<tr::next_state> make_game_state_async(std::shared_ptr<state::subsystems> subsystems, game_state_data data, Ts... gargs)
-	requires(std::constructible_from<T, Ts...>)
+	requires(std::constructible_from<T, std::unwrap_ref_decay_t<Ts>...>)
 {
 	constexpr auto ctor{[](std::shared_ptr<state::subsystems> subsystems, game_state_data data, auto... gargs) {
 		return (tr::next_state)std::make_unique<game_state>(std::move(subsystems), std::make_shared<T>(std::move(gargs)...), data,

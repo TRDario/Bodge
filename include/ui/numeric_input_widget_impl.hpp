@@ -37,6 +37,7 @@ basic_numeric_input_widget<T, Digits, Formatter>::basic_numeric_input_widget(pro
 		  properties.animation,
 		  properties.alignment,
 		  properties.unhide_time,
+		  properties.renderer,
 		  tr::sys::ttf_style::NORMAL,
 		  properties.font_size,
 		  tr::sys::UNLIMITED_WIDTH,

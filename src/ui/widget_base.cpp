@@ -120,8 +120,8 @@ void widget::tick()
 
 /////////////////////////////////////////////////////////////// TEXT WIDGET ///////////////////////////////////////////////////////////////
 
-text_widget::text_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_command tooltip_text, text_command text,
-						 font font, tr::sys::ttf_style style, float font_size, int max_width)
+text_widget::text_widget(tweened_position pos, tr::align alignment, ticks unhide_time, renderer& renderer, text_command tooltip_text,
+						 text_command text, font font, tr::sys::ttf_style style, float font_size, int max_width)
 	: widget{pos, alignment, unhide_time, tooltip_text}
 	, m_font{font}
 	, m_style{style}
@@ -129,10 +129,10 @@ text_widget::text_widget(tweened_position pos, tr::align alignment, ticks unhide
 	, m_max_width{max_width}
 	, m_text{text}
 	, m_last_text{text()}
-	, m_cache{renderer::instance().text_engine.render_text(
+	, m_cache{renderer.text_engine.render_text(
 		  ::text{
 			  m_last_text,
-			  renderer::instance().text_engine.determine_font(m_last_text, m_font),
+			  renderer.text_engine.determine_font(m_last_text, m_font),
 			  m_style,
 			  m_font_size,
 			  m_font_size / 12,
@@ -145,7 +145,7 @@ text_widget::text_widget(tweened_position pos, tr::align alignment, ticks unhide
 
 glm::vec2 text_widget::size() const
 {
-	return m_last_size / renderer::instance().scale();
+	return m_last_size;
 }
 
 void text_widget::release_graphical_resources()
@@ -155,24 +155,24 @@ void text_widget::release_graphical_resources()
 
 void text_widget::add_to_renderer_raw(renderer& renderer, tr::rgba8 tint)
 {
-	update_cache(renderer.text_engine);
+	update_cache(renderer);
 
 	tint.a *= opacity();
 
 	const tr::gfx::texture& texture{tr::get<tr::gfx::texture>(m_cache)};
 	const tr::gfx::simple_textured_mesh_ref quad{renderer.basic().new_textured_fan(layer::UI, 4, texture)};
 	tr::fill_rectangle_vertices(quad.positions, {tl(), text_widget::size()});
-	tr::fill_rectangle_vertices(quad.uvs, {{}, m_last_size / glm::vec2{texture.size()}});
+	tr::fill_rectangle_vertices(quad.uvs, {{0.0f, 0.0f}, {1.0f, 1.0f}});
 	std::ranges::fill(quad.tints, tint);
 }
 
-void text_widget::update_cache(text_engine& text_engine) const
+void text_widget::update_cache(renderer& renderer) const
 {
 	std::string text_string{m_text()};
 	if (std::holds_alternative<std::monostate>(m_cache) || m_last_text != text_string) {
-		const font font{text_engine.determine_font(text_string, m_font)};
+		const font font{renderer.text_engine.determine_font(text_string, m_font)};
 		const text text{text_string, font, m_style, m_font_size, m_font_size / 12, float(m_max_width)};
-		const tr::bitmap render{text_engine.render_text(text, tr::halign::CENTER)};
+		const tr::bitmap render{renderer.text_engine.render_text(text, tr::halign::CENTER)};
 		tr::gfx::texture* const cache_texture{std::get_if<tr::gfx::texture>(&m_cache)};
 		if (cache_texture == nullptr || cache_too_small(*cache_texture, render)) {
 			[[maybe_unused]] tr::gfx::texture& texture{m_cache.emplace<tr::gfx::texture>(render)};
@@ -182,7 +182,7 @@ void text_widget::update_cache(text_engine& text_engine) const
 			cache_texture->clear({});
 			cache_texture->set_region({}, render);
 		}
-		m_last_size = render.size();
+		m_last_size = glm::vec2{render.size()} / renderer.scale();
 		m_last_text = std::move(text_string);
 	}
 	else {

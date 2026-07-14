@@ -52,8 +52,8 @@ game_over_state::game_over_state(std::shared_ptr<subsystems> subsystems, std::sh
 	, m_substate{blur_in == blur_in::YES ? substate::BLURRING_IN : substate::GAME_OVER}
 {
 	const float result_h{(500 - (BUTTONS.size() - 0.75f) * 30) + 4};
-	const float label_h{result_h - renderer::instance().text_engine.line_skip(font::LANGUAGE, 48) + 14};
-	const float best_h{result_h + renderer::instance().text_engine.line_skip(font::LANGUAGE, 48) - 14};
+	const float label_h{result_h - m_subsystems->renderer.text_engine.line_skip(font::LANGUAGE, 48) + 14};
+	const float best_h{result_h + m_subsystems->renderer.text_engine.line_skip(font::LANGUAGE, 48) - 14};
 
 	const std::array<action_command, BUTTONS.size()> action_commands{
 		[this] { on_save_and_restart(); },
@@ -64,41 +64,48 @@ game_over_state::game_over_state(std::shared_ptr<subsystems> subsystems, std::sh
 
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_TIME_LABEL, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{175, label_h}, {275, label_h}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_TIME_LABEL},
 		.font_size = 24,
 		.color = YELLOW
 	});
 	m_ui.emplace<label_widget>(T_TIME, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{175, result_h}, {275, result_h}, 0.5_s},
 		.text = constant_text{format_time(m_game->final_time())},
 		.font_size = 64,
 		.color = YELLOW
 	});
 	m_ui.emplace<label_widget>(T_BEST_TIME, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{175, best_h}, {275, best_h}, 0.5_s},
 		.text = best_time_text(),
 		.font_size = 24,
 		.color = YELLOW
 	});
 	m_ui.emplace<label_widget>(T_SCORE_LABEL, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{825, label_h}, {725, label_h}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_SCORE_LABEL},
 		.font_size = 24,
 		.color = YELLOW
 	});
 	m_ui.emplace<label_widget>(T_SCORE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{825, result_h}, {725, result_h}, 0.5_s},
 		.text = constant_text{format_score(m_game->final_score())},
 		.font_size = 64,
 		.color = YELLOW
 	});
 	m_ui.emplace<label_widget>(T_BEST_SCORE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{825, best_h}, {725, best_h}, 0.5_s},
 		.text = best_score_text(),
 		.font_size = 24,
@@ -109,6 +116,7 @@ game_over_state::game_over_state(std::shared_ptr<subsystems> subsystems, std::sh
 		const float y{500.0f - (BUTTONS.size() + 3) * 30 + (i + 4) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS[i], {
 			.audio = m_subsystems->audio,
+			.renderer = m_subsystems->renderer,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS[i]},
@@ -264,9 +272,18 @@ void game_over_state::on_restart()
 	m_savefile.add_score(m_game->gamemode(), score);
 	m_savefile.save_to_file();
 	set_up_exit_animation();
-	m_next_state =
-		make_game_state_async<active_game>(m_subsystems, regular_game_data{}, m_subsystems->input, m_savefile, m_game->gamemode(),
-										   g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
+	// clang-format off
+	m_next_state = make_game_state_async<active_game>(
+		m_subsystems,
+		regular_game_data{},
+		std::cref(m_subsystems->input),
+		std::ref(m_subsystems->renderer.text_engine),
+		m_savefile,
+		m_game->gamemode(),
+		g_rng.generate<u64>(),
+		try_loading_player_skin(m_subsystems->settings.player_skin)
+	);
+	// clang-format on
 }
 
 void game_over_state::on_save_and_exit()

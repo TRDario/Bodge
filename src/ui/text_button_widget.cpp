@@ -9,8 +9,15 @@
 //////////////////////////////////////////////////////////// TEXT BUTTON WIDGET ///////////////////////////////////////////////////////////
 
 text_button_widget::text_button_widget(properties&& properties)
-	: text_widget{properties.animation,       properties.alignment, properties.unhide_time,     std::move(properties.tooltip_text),
-				  std::move(properties.text), properties.font,      tr::sys::ttf_style::NORMAL, properties.font_size,
+	: text_widget{properties.animation,
+				  properties.alignment,
+				  properties.unhide_time,
+				  properties.renderer,
+				  std::move(properties.tooltip_text),
+				  std::move(properties.text),
+				  properties.font,
+				  tr::sys::ttf_style::NORMAL,
+				  properties.font_size,
 				  tr::sys::UNLIMITED_WIDTH}
 	, m_audio{properties.audio}
 	, m_selected_hue{properties.selected_hue}

@@ -26,6 +26,7 @@ game_state::game_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr<g
 	// clang-format off
 	if (std::holds_alternative<replay_game_data>(m_data)) {
 		m_ui.emplace<label_widget>(T_REPLAY, {
+			.renderer = m_subsystems->renderer,
 			.animation = {{4, 1000}},
 			.alignment = tr::align::BOTTOM_LEFT,
 			.unhide_time =  0,
@@ -55,7 +56,7 @@ tr::next_state game_state::handle_event(const tr::sys::event& event)
 		return tr::DROP_STATE;
 	}
 
-	const float scale{renderer::instance().scale() * tr::sys::window_pixel_density()};
+	const float scale{m_subsystems->renderer.scale() * tr::sys::window_pixel_density()};
 	const float mouse_sensitivity{m_subsystems->settings.mouse_sensitivity / 100.0f / scale};
 	m_subsystems->input.handle_event(event, mouse_sensitivity);
 	m_ui.handle_event(m_subsystems->input, event);
@@ -85,13 +86,13 @@ tr::next_state game_state::tick()
 		if (std::holds_alternative<replay_game_data>(m_data)) {
 			if (m_subsystems->input.held(tr::sys::keymod::SHIFT)) {
 				if (m_elapsed % 4 == 0) {
-					m_game->tick(m_subsystems->audio);
+					m_game->tick(m_subsystems->audio, m_subsystems->renderer);
 				}
 				set_song_speed_if_needed(0.25f);
 			}
 			else if (m_subsystems->input.held(tr::sys::keymod::CTRL)) {
 				for (int i = 0; i < 4; ++i) {
-					m_game->tick(m_subsystems->audio);
+					m_game->tick(m_subsystems->audio, m_subsystems->renderer);
 					if (((replay_game&)*m_game).done()) {
 						break;
 					}
@@ -99,7 +100,7 @@ tr::next_state game_state::tick()
 				set_song_speed_if_needed(4.0f);
 			}
 			else {
-				m_game->tick(m_subsystems->audio);
+				m_game->tick(m_subsystems->audio, m_subsystems->renderer);
 				set_song_speed_if_needed(1.0f);
 			}
 
@@ -122,7 +123,7 @@ tr::next_state game_state::tick()
 			}
 		}
 		else {
-			m_game->tick(m_subsystems->audio);
+			m_game->tick(m_subsystems->audio, m_subsystems->renderer);
 			if (m_game->game_over()) {
 				m_substate = substate::GAME_OVER;
 				m_elapsed = 0;
@@ -134,9 +135,9 @@ tr::next_state game_state::tick()
 		}
 		return tr::KEEP_STATE;
 	case substate::GAME_OVER:
-		m_game->tick(m_subsystems->audio);
+		m_game->tick(m_subsystems->audio, m_subsystems->renderer);
 		if (m_elapsed >= 0.75_s) {
-			renderer::instance().set_default_transform(TRANSFORM);
+			m_subsystems->renderer.set_default_transform(TRANSFORM);
 			switch (m_data.index()) {
 			case tr::type_index<regular_game_data, game_state_data>:
 				return m_next_state.get();
@@ -156,7 +157,7 @@ tr::next_state game_state::tick()
 		return tr::KEEP_STATE;
 	case substate::EXITING:
 		if (m_elapsed >= 1_s) {
-			renderer::instance().set_default_transform(TRANSFORM);
+			m_subsystems->renderer.set_default_transform(TRANSFORM);
 			return m_next_state.get();
 		}
 		return tr::KEEP_STATE;
@@ -165,13 +166,13 @@ tr::next_state game_state::tick()
 
 void game_state::draw()
 {
-	m_game->add_to_renderer(renderer::instance(), m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
+	m_game->add_to_renderer(m_subsystems->renderer, m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
 	if (std::holds_alternative<replay_game_data>(m_data)) {
-		m_ui.add_to_renderer(renderer::instance(), m_subsystems->input.mouse_pos);
+		m_ui.add_to_renderer(m_subsystems->renderer, m_subsystems->input.mouse_pos);
 		add_replay_cursor_to_renderer(((replay_game&)*m_game).cursor_pos());
 	}
-	renderer::instance().add_fade_overlay(fade_overlay_opacity());
-	renderer::instance().draw_layers(renderer::instance().screen());
+	m_subsystems->renderer.add_fade_overlay(fade_overlay_opacity());
+	m_subsystems->renderer.draw_layers(m_subsystems->renderer.screen());
 }
 
 //
@@ -203,10 +204,10 @@ void game_state::add_replay_cursor_to_renderer(glm::vec2 pos) const
 	const tr::rgb8 base_color{color_cast<tr::rgb8>(tr::hsv{float(m_subsystems->settings.primary_hue), 1, 1})};
 	const tr::rgba8 color{base_color.r, base_color.g, base_color.b, 160};
 
-	tr::gfx::simple_color_mesh_ref quad{renderer::instance().basic().new_color_fan(layer::UI, 4)};
+	tr::gfx::simple_color_mesh_ref quad{m_subsystems->renderer.basic().new_color_fan(layer::UI, 4)};
 	tr::fill_rectangle_vertices(quad.positions, pos, SIZE / 2.0f, SIZE, 45_deg);
 	std::ranges::fill(quad.colors, color);
-	quad = renderer::instance().basic().new_color_fan(layer::UI, 4);
+	quad = m_subsystems->renderer.basic().new_color_fan(layer::UI, 4);
 	tr::fill_rectangle_vertices(quad.positions, pos, SIZE / 2.0f, SIZE, -45_deg);
 	std::ranges::fill(quad.colors, color);
 }

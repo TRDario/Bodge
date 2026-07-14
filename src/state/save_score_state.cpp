@@ -101,51 +101,59 @@ save_screen_flags to_flags(save_score_state::substate state)
 
 void save_score_state::set_up_ui()
 {
-	const float label_h{296 - renderer::instance().text_engine.line_skip(font::LANGUAGE, 32)};
+	const float label_h{296 - m_subsystems->renderer.text_engine.line_skip(font::LANGUAGE, 32)};
 
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
 		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_RESULTS, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{500, 100}, {500, 200}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_RESULTS},
 		.color = YELLOW
 	});
 	m_ui.emplace<label_widget>(T_TIME_LABEL, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{225, label_h}, {325, label_h}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_TIME_LABEL},
 		.font_size = 32,
 		.color = YELLOW
 	});
 	m_ui.emplace<label_widget>(T_TIME, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{225, 300}, {325, 300}, 0.5_s},
 		.text = constant_text{format_time(m_score.time)},
 		.font_size = 64,
 		.color = YELLOW
 	});
 	m_ui.emplace<label_widget>(T_SCORE_LABEL, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{775, label_h}, {675, label_h}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_SCORE_LABEL},
 		.font_size = 32,
 		.color = YELLOW
 	});
 	m_ui.emplace<label_widget>(T_SCORE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{775, 300}, {675, 300}, 0.5_s},
 		.text = constant_text{format_score(m_score.score)},
 		.font_size = 64,
 		.color = YELLOW
 	});
 	m_ui.emplace<label_widget>(T_DESCRIPTION, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{600, 440}, {500, 440}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_DESCRIPTION}
 	});
 	m_ui.emplace<multiline_input_widget<255>>(T_INPUT, {
 		.audio = m_subsystems->audio,
 		.localization = m_subsystems->localization,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{600, 475}, {500, 475}, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
@@ -156,6 +164,7 @@ void save_score_state::set_up_ui()
 	});
 	m_ui.emplace<text_button_widget>(T_SAVE, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -165,6 +174,7 @@ void save_score_state::set_up_ui()
 	});
 	m_ui.emplace<text_button_widget>(T_CANCEL, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,

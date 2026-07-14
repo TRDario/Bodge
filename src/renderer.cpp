@@ -82,17 +82,12 @@ renderer::window_specific_components::~window_specific_components()
 //
 
 renderer::renderer(const localization& localization, const settings& settings)
-	: text_engine{localization.available_languages.contains(settings.language) ? localization.available_languages.at(settings.language).font
-																			   : std::string{}}
+	: text_engine{*this, localization.available_languages.contains(settings.language)
+							 ? localization.available_languages.at(settings.language).font
+							 : std::string{}}
 	, m_window_specific{settings}
 {
 	set_default_transform(TRANSFORM);
-}
-
-renderer& renderer::instance()
-{
-	static renderer instance{};
-	return instance;
 }
 
 //

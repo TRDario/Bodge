@@ -114,6 +114,7 @@ score_widget::score_widget(const properties& properties)
 		  properties.animation,
 		  properties.alignment,
 		  properties.unhide_time,
+		  properties.renderer,
 		  constant_text{format_score_tooltip(properties.localization, properties.score)},
 		  constant_text(format_score_text(properties.score, properties.type, properties.rank)),
 		  font::LANGUAGE,
@@ -157,6 +158,8 @@ void score_widget::add_to_renderer(renderer& renderer)
 replay_widget::replay_widget(const properties& properties)
 	: replay_widget_data{properties.state, properties.replay_it}
 	, text_button_widget{{
+		  .audio = properties.audio,
+		  .renderer = properties.renderer,
 		  .selected_hue = properties.selected_hue,
 		  .animation = properties.animation,
 		  .alignment = properties.alignment,
@@ -168,15 +171,21 @@ replay_widget::replay_widget(const properties& properties)
 		  .font_size = 34,
 		  .status = [this] { return m_parent_state.m_substate == replays_state::substate::IN_REPLAYS && m_replay_it.has_value(); },
 		  .action =
-			  [this, &audio = properties.audio] {
+			  [this, &audio = properties.audio, &text_engine = properties.renderer.text_engine] {
 				  if (m_replay_it.has_value()) {
 					  m_parent_state.m_substate = replays_state::substate::STARTING_REPLAY;
 					  m_parent_state.m_elapsed = 0;
 					  m_parent_state.set_up_exit_animation();
 					  audio.fade_song_out(0.5s);
-					  m_parent_state.m_next_state =
-						  make_game_state_async<replay_game>(m_parent_state.m_subsystems, replay_game_data{}, replay{(*m_replay_it)->first},
-															 try_loading_player_skin(m_parent_state.m_subsystems->settings.player_skin));
+					  // clang-format off
+					  m_parent_state.m_next_state = make_game_state_async<replay_game>(
+						  m_parent_state.m_subsystems,
+						  replay_game_data{},
+						  std::ref(text_engine),
+						  replay{(*m_replay_it)->first},
+						  try_loading_player_skin(m_parent_state.m_subsystems->settings.player_skin)
+					  );
+					  // clang-format on
 				  }
 			  },
 	  }}

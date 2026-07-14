@@ -69,7 +69,8 @@ tr::sys::ttfont& text_engine::find_font(font font)
 
 //
 
-text_engine::text_engine(std::string language_font_name)
+text_engine::text_engine(renderer& renderer, std::string language_font_name)
+	: m_renderer{renderer}
 {
 	m_standard_fonts.emplace(load_font("charge_vector_b.otf"), load_font("linux_biolinum_rb.ttf"));
 	try {
@@ -173,47 +174,47 @@ float text_engine::line_skip(font font, float size)
 	std::lock_guard font_lock{m_mutex};
 
 	tr::sys::ttfont& font_ref{find_font(font)};
-	font_ref.resize(size * renderer::instance().scale());
-	return font_ref.line_skip() / renderer::instance().scale();
+	font_ref.resize(size * m_renderer.scale());
+	return font_ref.line_skip() / m_renderer.scale();
 }
 
 glm::vec2 text_engine::text_size(const text& text)
 {
 	std::lock_guard font_lock{m_mutex};
 
-	const int scaled_outline{int(text.outline * renderer::instance().scale())};
+	const int scaled_outline{int(text.outline * m_renderer.scale())};
 	float max_width{text.max_width};
 	int outline_max_width{tr::sys::UNLIMITED_WIDTH};
 	if (text.max_width != tr::sys::UNLIMITED_WIDTH) {
-		max_width = (text.max_width - 2 * text.outline) * renderer::instance().scale();
+		max_width = (text.max_width - 2 * text.outline) * m_renderer.scale();
 		outline_max_width = int(max_width + 2 * scaled_outline);
 	}
 
 	tr::sys::ttfont& font_ref{find_font(text.font)};
-	font_ref.resize(text.size * renderer::instance().scale());
+	font_ref.resize(text.size * m_renderer.scale());
 	font_ref.set_style(text.style);
 	font_ref.set_outline(scaled_outline);
 	glm::ivec2 text_size{0, font_ref.text_size(text.string, outline_max_width).y};
 	for (std::string_view line : split_into_lines(text.string, font_ref, outline_max_width)) {
 		text_size.x = std::max(text_size.x, font_ref.measure_text(line, outline_max_width).size);
 	}
-	return glm::vec2{text_size} / renderer::instance().scale();
+	return glm::vec2{text_size} / m_renderer.scale();
 }
 
 usize text_engine::count_lines(const text& text)
 {
 	std::lock_guard font_lock{m_mutex};
 
-	const int scaled_outline{int(text.outline * renderer::instance().scale())};
+	const int scaled_outline{int(text.outline * m_renderer.scale())};
 	float max_width{text.max_width};
 	int outline_max_width{tr::sys::UNLIMITED_WIDTH};
 	if (text.max_width != tr::sys::UNLIMITED_WIDTH) {
-		max_width = (text.max_width - 2 * text.outline) * renderer::instance().scale();
+		max_width = (text.max_width - 2 * text.outline) * m_renderer.scale();
 		outline_max_width = int(max_width + 2 * scaled_outline);
 	}
 
 	tr::sys::ttfont& font_ref{find_font(text.font)};
-	font_ref.resize(text.size * renderer::instance().scale());
+	font_ref.resize(text.size * m_renderer.scale());
 	font_ref.set_style(text.style);
 	font_ref.set_outline(scaled_outline);
 	return tr::sys::split_into_lines(text.string, font_ref, outline_max_width).size();
@@ -223,16 +224,16 @@ tr::bitmap text_engine::render_text(const text& text, tr::halign align)
 {
 	std::lock_guard font_lock{m_mutex};
 
-	const int scaled_outline{int(text.outline * renderer::instance().scale())};
+	const int scaled_outline{int(text.outline * m_renderer.scale())};
 	float max_width{text.max_width};
 	int outline_max_width{tr::sys::UNLIMITED_WIDTH};
 	if (text.max_width != tr::sys::UNLIMITED_WIDTH) {
-		max_width = (text.max_width - 2 * text.outline) * renderer::instance().scale();
+		max_width = (text.max_width - 2 * text.outline) * m_renderer.scale();
 		outline_max_width = int(max_width + 2 * scaled_outline);
 	}
 
 	tr::sys::ttfont& font_ref{find_font(text.font)};
-	font_ref.resize(text.size * renderer::instance().scale());
+	font_ref.resize(text.size * m_renderer.scale());
 	font_ref.set_style(text.style);
 	font_ref.set_outline(scaled_outline);
 	tr::bitmap render{font_ref.render(text.string, outline_max_width, align, DARK_GRAY)};
@@ -246,10 +247,10 @@ tr::bitmap text_engine::render_gradient_glyph(u32 glyph, font font, tr::sys::ttf
 {
 	std::lock_guard font_lock{m_mutex};
 
-	const int scaled_outline{int(outline * renderer::instance().scale())};
+	const int scaled_outline{int(outline * m_renderer.scale())};
 
 	tr::sys::ttfont& font_ref{find_font(font)};
-	font_ref.resize(size * renderer::instance().scale());
+	font_ref.resize(size * m_renderer.scale());
 	font_ref.set_style(style);
 	font_ref.set_outline(scaled_outline);
 	tr::bitmap render{font_ref.render(glyph, "00000080"_rgba8)};

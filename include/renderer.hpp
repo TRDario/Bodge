@@ -33,8 +33,8 @@ enum layer {
 // Renderer singleton.
 class renderer {
   public:
-	// Gets the renderer instance.
-	static renderer& instance();
+	// Opens a window and creates a renderer.
+	renderer(const localization& localization, const settings& settings);
 
 	// Reopens the window according to settings.
 	void reopen_window(const settings& settings);
@@ -121,7 +121,4 @@ class renderer {
 
 	// Window-dependent renderer components.
 	std::optional<window_specific_components> m_window_specific;
-
-	// Initializes the renderer.
-	renderer();
 };

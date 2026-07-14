@@ -40,29 +40,34 @@ credits_state::credits_state(std::shared_ptr<subsystems> subsystems, std::shared
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
 		.text = localized_text{m_subsystems->localization, T_TITLE},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_BODGE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{400, 185}},
 		.unhide_time = DONT_UNHIDE,
 		.text = constant_text{T_BODGE},
 		.font_size = 128
 	});
 	m_ui.emplace<label_widget>(T_VERSION, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{600, 265}},
 		.unhide_time = DONT_UNHIDE,
 		.text = constant_text{T_VERSION},
 	});
 	m_ui.emplace<label_widget>(T_DEVELOPED_BY, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{400, 385}},
 		.unhide_time = DONT_UNHIDE,
 		.text = localized_text{m_subsystems->localization, T_DEVELOPED_BY},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_TRDARIO, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{600, 445}},
 		.unhide_time = DONT_UNHIDE,
 		.tooltip_text = localized_text{m_subsystems->localization, "trdario_tt"},
@@ -76,22 +81,26 @@ credits_state::credits_state(std::shared_ptr<subsystems> subsystems, std::shared
 		.file = "credits_art"
 	});
 	m_ui.emplace<label_widget>(T_PLAYTESTERS, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{400, 685}},
 		.unhide_time = DONT_UNHIDE,
 		.text = localized_text{m_subsystems->localization, T_PLAYTESTERS},
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_STARSURGE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{600, 745}},
 		.unhide_time = DONT_UNHIDE,
 		.text = constant_text{T_STARSURGE}
 	});
 	m_ui.emplace<label_widget>(T_TOWELI, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{400, 795}},
 		.unhide_time = DONT_UNHIDE,
 		.text = constant_text{T_TOWELI},
 	});
 	m_ui.emplace<label_widget>(T_ZER0, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{600, 845}},
 		.unhide_time = DONT_UNHIDE,
 		.tooltip_text = localized_text{m_subsystems->localization, "zer0_tt"},
@@ -99,6 +108,7 @@ credits_state::credits_state(std::shared_ptr<subsystems> subsystems, std::shared
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,

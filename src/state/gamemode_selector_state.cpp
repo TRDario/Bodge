@@ -176,6 +176,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = TITLE_POS,
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0_s,
@@ -183,6 +184,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_SUBTITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = bool(animate_subtitle) ? tweened_position{TOP_START_POS, {500, 64}, 0.5_s} : tweened_position{{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_subtitle) ? 0.5_s : 0_s,
@@ -191,6 +193,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -201,6 +204,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 	});
 	if (m_gamemodes.empty()) {
 		m_ui.emplace<label_widget>(T_NO_GAMEMODES_FOUND, {
+			.renderer = m_subsystems->renderer,
 			.animation = tweened_position{{600, 467}, {500, 467}, 0.5_s},
 			.alignment = tr::align::TOP_CENTER,
 			.text = localized_text{m_subsystems->localization, T_NO_GAMEMODES_FOUND},
@@ -211,7 +215,9 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 	}
 	for (usize i = 0; i < GAMEMODES_PER_PAGE; ++i) {
 		m_ui.emplace<gamemode_widget>(GAMEMODE_TAGS[i], {
+			.audio = m_subsystems->audio,
 			.localization = m_subsystems->localization,
+			.renderer = m_subsystems->renderer,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{i % 2 == 0 ? 400 : 600, 160 + 75 * i}, {500, 160 + 75 * i}, 0.5_s},
 			.status = [this] { return m_substate == substate::IN_GAMEMODE_SELECTOR; },
@@ -229,6 +235,7 @@ gamemode_selector_state::gamemode_selector_state(std::shared_ptr<subsystems> sub
 		.action = [this] { on_page_decrement(); }
 	});
 	m_ui.emplace<label_widget>(T_PAGE_C, {
+		.renderer = m_subsystems->renderer,
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = [this] {
@@ -311,7 +318,9 @@ std::unordered_map<tag, std::unique_ptr<widget>> gamemode_selector_state::prepar
 	for (usize i = 0; i < GAMEMODES_PER_PAGE; ++i) {
 		// clang-format off
 		map.emplace(GAMEMODE_TAGS[i], std::make_unique<gamemode_widget>(gamemode_widget::properties{
+			.audio = m_subsystems->audio,
 			.localization = m_subsystems->localization,
+			.renderer = m_subsystems->renderer,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{i % 2 == 0 ? 600 : 400, 160 + 75 * i}, {500, 160 + 75 * i}, 0.25_s},
 			.unhide_time = 0.25_s,

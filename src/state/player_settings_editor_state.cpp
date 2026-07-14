@@ -89,6 +89,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = TITLE_POS,
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0_s,
@@ -96,6 +97,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_SUBTITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
 		.text = localized_text{m_subsystems->localization, T_SUBTITLE},
@@ -113,6 +115,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_LIVES_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.player.starting_lives,
@@ -132,6 +135,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 	});
 	m_ui.emplace<text_button_widget>(T_SPAWN_LIFE_FRAGMENTS_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {SPAWN_LIFE_FRAGMENTS_START_POS, {875.5f, SPAWN_LIFE_FRAGMENTS_START_POS.y}, 0.5_s},
 		.text = [this] { return std::string{m_subsystems->localization[m_pending.player.spawn_life_fragments ? "on" : "off"]}; },
@@ -153,6 +157,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 	});
 	m_ui.emplace<interval_input_widget<4>>(T_LIFE_FRAGMENT_SPAWN_INTERVAL_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.player.life_fragment_spawn_interval,
@@ -185,6 +190,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 	});
 	m_ui.emplace<numeric_input_widget<float, 3, "{:.0f}">>(T_HITBOX_RADIUS_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.player.hitbox_radius,
@@ -214,6 +220,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.2f}">>(T_INERTIA_FACTOR_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.player.inertia_factor,
@@ -234,6 +241,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		m_ui.emplace<label_widget>(LABELS[i].tag, {
+			.renderer = m_subsystems->renderer,
 			.animation = {{-50, 375 + i * 75}, {15, 375 + i * 75}, 0.5_s},
 			.alignment = tr::align::CENTER_LEFT,
 			.tooltip_text = localized_text{m_subsystems->localization, LABELS[i].tooltip},
@@ -243,6 +251,7 @@ player_settings_editor_state::player_settings_editor_state(std::shared_ptr<subsy
 
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,

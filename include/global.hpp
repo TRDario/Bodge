@@ -5,7 +5,6 @@
 // Globals & Singletons:                                                                                                                 //
 //  • current_state::instance()   - Container for the current state.                                                                     //
 //  • debug_settings::instance()  - Active debug settings.                                                                               //
-//  • renderer::instance()        - Windowing and renderer manager.                                                                      //
 //  • g_rng                       - Global RNG (games use their own RNG for gameplay).                                                   //
 //                                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

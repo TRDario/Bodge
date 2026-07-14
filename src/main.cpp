@@ -1,5 +1,3 @@
-#include "../include/input.hpp"
-#include "../include/renderer.hpp"
 #include "../include/settings.hpp"
 #include "../include/state.hpp"
 
@@ -29,19 +27,8 @@ tr::sys::signal tick()
 
 tr::sys::signal draw()
 {
-	renderer::instance().start_benchmark();
 	current_state::instance().draw();
-	renderer::instance().draw_benchmarks(debug_settings::instance().refresh_rate(), current_state::instance().tick_benchmark(),
-										 current_state::instance().draw_benchmark());
-	renderer::instance().stop_benchmark();
-	tr::gfx::flip_backbuffer();
-	tr::gfx::clear_backbuffer();
-	renderer::instance().fetch_benchmark();
 	return tr::sys::signal::CONTINUE;
 }
 
-void shut_down()
-{
-	// Unfortunately necessary to call this manually because SDL_Quit gets called automatically before static destructors run.
-	renderer::instance().close_window();
-}
+void shut_down() {}

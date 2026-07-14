@@ -6,18 +6,19 @@
 
 #include "../../include/state/state_base.hpp"
 #include "../../include/renderer.hpp"
+#include "../../include/state.hpp"
 
 ////////////////////////////////////////////////////////////////// STATE //////////////////////////////////////////////////////////////////
 
 state::subsystems::subsystems()
-	: localization{settings.language}, audio{settings}
+	: localization{settings.language}, audio{settings}, renderer{localization, settings}
 {
 }
 
 //
 
 state::state(std::shared_ptr<subsystems> subsystems, selection_tree selection_tree, shortcut_table shortcuts)
-	: m_subsystems{std::move(subsystems)}, m_ui{selection_tree, shortcuts}, m_elapsed{0}
+	: m_subsystems{std::move(subsystems)}, m_ui{m_subsystems->audio, selection_tree, shortcuts}, m_elapsed{0}
 {
 }
 
@@ -32,7 +33,7 @@ tr::next_state state::handle_event(const tr::sys::event& event)
 		return tr::DROP_STATE;
 	}
 
-	const float scale{renderer::instance().scale() * tr::sys::window_pixel_density()};
+	const float scale{m_subsystems->renderer.scale() * tr::sys::window_pixel_density()};
 	const float mouse_sensitivity{m_subsystems->settings.mouse_sensitivity / 100.0f / scale};
 	m_subsystems->input.handle_event(event, mouse_sensitivity);
 	m_ui.handle_event(m_subsystems->input, event);
@@ -80,12 +81,20 @@ tr::next_state main_menu_state::tick()
 
 void main_menu_state::draw()
 {
-	m_game->add_to_renderer(renderer::instance(), m_subsystems->settings.secondary_hue);
-	renderer::instance().add_menu_game_overlay();
-	m_ui.add_to_renderer(renderer::instance(), m_subsystems->input.mouse_pos);
-	renderer::instance().add_fade_overlay(fade_overlay_opacity());
-	renderer::instance().draw_cursor(m_subsystems->settings.primary_hue, m_subsystems->input.mouse_pos);
-	renderer::instance().draw_layers(renderer::instance().screen());
+	renderer& renderer{m_subsystems->renderer};
+	renderer.start_benchmark();
+	m_game->add_to_renderer(renderer, m_subsystems->settings.secondary_hue);
+	renderer.add_menu_game_overlay();
+	m_ui.add_to_renderer(renderer, m_subsystems->input.mouse_pos);
+	renderer.add_fade_overlay(fade_overlay_opacity());
+	renderer.draw_cursor(m_subsystems->settings.primary_hue, m_subsystems->input.mouse_pos);
+	renderer.draw_layers(renderer.screen());
+	renderer.draw_benchmarks(debug_settings::instance().refresh_rate(), current_state::instance().tick_benchmark(),
+							 current_state::instance().draw_benchmark());
+	renderer.stop_benchmark();
+	tr::gfx::flip_backbuffer();
+	tr::gfx::clear_backbuffer();
+	renderer.fetch_benchmark();
 }
 
 ///////////////////////////////////////////////////////////// GAME MENU STATE /////////////////////////////////////////////////////////////
@@ -103,22 +112,30 @@ tr::next_state game_menu_state::tick()
 {
 	state::tick();
 	if (m_update_game) {
-		m_game->tick();
+		m_game->tick(m_subsystems->audio, m_subsystems->renderer);
 	}
 	return tr::KEEP_STATE;
 }
 
 void game_menu_state::draw()
 {
+	renderer& renderer{m_subsystems->renderer};
+	renderer.start_benchmark();
 	if (m_update_game) {
-		m_game->add_to_renderer(renderer::instance(), m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
-		renderer::instance().draw_layers(renderer::instance().blur_input());
+		m_game->add_to_renderer(renderer, m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
+		renderer.draw_layers(renderer.blur_input());
 	}
-	renderer::instance().draw_blurred(saturation_factor(), blur_strength());
-	m_ui.add_to_renderer(renderer::instance(), m_subsystems->input.mouse_pos);
-	renderer::instance().add_fade_overlay(fade_overlay_opacity());
-	renderer::instance().draw_cursor(m_subsystems->settings.primary_hue, m_subsystems->input.mouse_pos);
-	renderer::instance().draw_layers(renderer::instance().screen());
+	renderer.draw_blurred(saturation_factor(), blur_strength());
+	m_ui.add_to_renderer(renderer, m_subsystems->input.mouse_pos);
+	renderer.add_fade_overlay(fade_overlay_opacity());
+	renderer.draw_cursor(m_subsystems->settings.primary_hue, m_subsystems->input.mouse_pos);
+	renderer.draw_layers(renderer.screen());
+	renderer.draw_benchmarks(debug_settings::instance().refresh_rate(), current_state::instance().tick_benchmark(),
+							 current_state::instance().draw_benchmark());
+	renderer.stop_benchmark();
+	tr::gfx::flip_backbuffer();
+	tr::gfx::clear_backbuffer();
+	renderer.fetch_benchmark();
 }
 
 float game_menu_state::saturation_factor()

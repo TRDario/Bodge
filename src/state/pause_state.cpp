@@ -71,8 +71,8 @@ pause_state::pause_state(std::shared_ptr<subsystems> subsystems, std::shared_ptr
 	, m_start_mouse_pos{mouse_pos}
 {
 	if (blur_in == blur_in::YES) {
-		m_game->add_to_renderer(renderer::instance(), m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
-		renderer::instance().draw_layers(renderer::instance().blur_input());
+		m_game->add_to_renderer(m_subsystems->renderer, m_subsystems->settings.primary_hue, m_subsystems->settings.secondary_hue);
+		m_subsystems->renderer.draw_layers(m_subsystems->renderer.blur_input());
 	}
 
 	if (std::holds_alternative<regular_game_data>(m_data)) {
@@ -120,7 +120,7 @@ tr::next_state pause_state::tick()
 		if (m_elapsed < 0.5_s) {
 			return tr::KEEP_STATE;
 		}
-		renderer::instance().set_default_transform(TRANSFORM);
+		m_subsystems->renderer.set_default_transform(TRANSFORM);
 		return m_next_state.get();
 	case substate::SAVING:
 		return next_state_if_after(0.5_s);
@@ -128,7 +128,7 @@ tr::next_state pause_state::tick()
 		if (m_elapsed < 0.5_s) {
 			return tr::KEEP_STATE;
 		}
-		renderer::instance().set_default_transform(TRANSFORM);
+		m_subsystems->renderer.set_default_transform(TRANSFORM);
 		return m_next_state.get();
 	}
 }
@@ -175,6 +175,7 @@ void pause_state::set_up_full_ui()
 	// clang-format off
 	constexpr float TITLE_Y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30};
 	m_ui.emplace<label_widget>(T_PAUSED, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_PAUSED},
 		.font_size = 64
@@ -201,6 +202,7 @@ void pause_state::set_up_full_ui()
 		const float y{500.0f - (BUTTONS_REGULAR.size() + 1) * 30 + (i + 2) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS_REGULAR[i], {
 			.audio = m_subsystems->audio,
+			.renderer = m_subsystems->renderer,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS_REGULAR[i]},
@@ -217,6 +219,7 @@ void pause_state::set_up_limited_ui()
 	constexpr float TITLE_Y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30};
 	const tag title_tag{std::holds_alternative<replay_game_data>(m_data) ? T_REPLAY_PAUSED : T_TEST_PAUSED};
 	m_ui.emplace<label_widget>(title_tag, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{500, TITLE_Y - 100}, {500, TITLE_Y}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, title_tag},
 		.font_size = 64
@@ -239,6 +242,7 @@ void pause_state::set_up_limited_ui()
 		const float y{500.0f - (BUTTONS_SPECIAL.size() + 1) * 30 + (i + 2) * 60};
 		m_ui.emplace<text_button_widget>(BUTTONS_SPECIAL[i], {
 			.audio = m_subsystems->audio,
+			.renderer = m_subsystems->renderer,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {{500 + offset, y}, {500, y}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, BUTTONS_SPECIAL[i]},
@@ -298,18 +302,37 @@ void pause_state::on_restart()
 		const score_entry score{{}, current_timestamp(), m_game->final_score(), m_game->final_time(), score_flags};
 		m_savefile.add_score(m_game->gamemode(), score);
 		m_savefile.save_to_file();
-		m_next_state =
-			make_game_state_async<active_game>(m_subsystems, m_data, m_subsystems->input, m_savefile, m_game->gamemode(),
-											   g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
+		// clang-format off
+		m_next_state = make_game_state_async<active_game>(
+			m_subsystems,
+			m_data,
+			std::cref(m_subsystems->input),
+			std::ref(m_subsystems->renderer.text_engine),
+			m_savefile,
+			m_game->gamemode(),
+			g_rng.generate<u64>(),
+			try_loading_player_skin(m_subsystems->settings.player_skin)
+		);
+		// clang-format on
 	}
 	else if (std::holds_alternative<replay_game_data>(m_data)) {
-		m_next_state = make_game_state_async<replay_game>(m_subsystems, m_data, std::ref((replay_game&)*m_game),
+		m_next_state = make_game_state_async<replay_game>(m_subsystems, m_data, std::ref(m_subsystems->renderer.text_engine),
+														  std::ref((replay_game&)*m_game),
 														  try_loading_player_skin(m_subsystems->settings.player_skin));
 	}
 	else {
-		m_next_state =
-			make_game_state_async<active_game>(m_subsystems, m_data, m_subsystems->input, m_savefile, m_game->gamemode(),
-											   g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
+		// clang-format off
+		m_next_state = make_game_state_async<active_game>(
+			m_subsystems,
+			m_data,
+			std::cref(m_subsystems->input),
+			std::ref(m_subsystems->renderer.text_engine),
+			m_savefile,
+			m_game->gamemode(),
+			g_rng.generate<u64>(),
+			try_loading_player_skin(m_subsystems->settings.player_skin)
+		);
+		// clang-format on
 	}
 }
 

@@ -161,6 +161,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {TOP_START_POS, TITLE_POS, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
 		.text = localized_text{m_subsystems->localization, T_TITLE},
@@ -169,6 +170,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		m_ui.emplace<label_widget>(LABELS[i].tag, {
+			.renderer = m_subsystems->renderer,
 			.animation = {{-50, 121 + i * 75}, {15, 121 + i * 75}, 0.5_s},
 			.alignment = tr::align::CENTER_LEFT,
 			.tooltip_text = localized_text{m_subsystems->localization, LABELS[i].tooltip},
@@ -179,6 +181,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 
 	m_ui.emplace<text_button_widget>(T_DISPLAY_MODE_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {DISPLAY_MODE_START_POS, {985, DISPLAY_MODE_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
@@ -201,6 +204,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	});
 	m_ui.emplace<numeric_input_widget<u16, 4>>(T_WINDOW_SIZE_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.window_size,
@@ -223,6 +227,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	});
 	m_ui.emplace<text_button_widget>(T_VSYNC_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {VSYNC_START_POS, {985, VSYNC_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
@@ -242,6 +247,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MOUSE_SENSITIVITY_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.mouse_sensitivity,
@@ -261,6 +267,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	});
 	m_ui.emplace<text_button_widget>(T_PLAYER_SKIN_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {PLAYER_SKIN_START_POS, {930, PLAYER_SKIN_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
@@ -290,6 +297,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	});
 	m_ui.emplace<numeric_input_widget<u16, 3>>(T_PRIMARY_HUE_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.primary_hue,
@@ -324,6 +332,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	});
 	m_ui.emplace<numeric_input_widget<u16, 3>>(T_SECONDARY_HUE_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.secondary_hue,
@@ -358,6 +367,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_SFX_VOLUME_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.sfx_volume,
@@ -387,6 +397,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3, "{}%", "{}%">>(T_MUSIC_VOLUME_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.music_volume,
@@ -406,6 +417,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	});
 	m_ui.emplace<text_button_widget>(T_LANGUAGE_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {LANGUAGE_START_POS, {985, LANGUAGE_START_POS.y}, 0.5_s},
 		.alignment = tr::align::CENTER_RIGHT,
@@ -441,6 +453,7 @@ settings_state::settings_state(std::shared_ptr<subsystems> subsystems, std::shar
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], {
 			.audio = m_subsystems->audio,
+			.renderer = m_subsystems->renderer,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {BOTTOM_START_POS, {500, 1000 - 50 * BOTTOM_BUTTONS.size() + (i + 1) * 50}, 0.5_s},
 			.alignment = tr::align::BOTTOM_CENTER,
@@ -523,14 +536,14 @@ void settings_state::on_change_language()
 		language_it = available_languages.begin();
 	}
 	m_pending.language = language_it->first;
-	renderer::instance().text_engine.reload_language_preview_font(language_it->second.font);
+	m_subsystems->renderer.text_engine.reload_language_preview_font(language_it->second.font);
 }
 
 void settings_state::on_revert()
 {
 	m_pending = m_subsystems->settings;
 	const auto language_it{m_subsystems->localization.available_languages.find(m_pending.language)};
-	renderer::instance().text_engine.reload_language_preview_font(
+	m_subsystems->renderer.text_engine.reload_language_preview_font(
 		language_it != m_subsystems->localization.available_languages.end() ? language_it->second.font : std::string{});
 	const tr::rgba8 window_size_color{m_pending.display_mode == display_mode::WINDOWED ? GRAY : DISABLED_GRAY};
 	m_ui.as<label_widget>(T_WINDOW_SIZE).tint.change(window_size_color, 0.1_s);
@@ -547,13 +560,13 @@ void settings_state::on_apply()
 	}
 
 	if (restart_required) {
-		renderer::instance().reopen_window(m_pending);
+		m_subsystems->renderer.reopen_window(m_pending);
 	}
 	else if (m_pending.vsync != m_subsystems->settings.vsync) {
 		tr::sys::set_window_vsync(m_pending.vsync ? tr::sys::vsync::ADAPTIVE : tr::sys::vsync::DISABLED);
 	}
 	if (use_different_fonts) {
-		renderer::instance().text_engine.set_language_font();
+		m_subsystems->renderer.text_engine.set_language_font();
 	}
 
 	if (m_subsystems->settings.language != m_pending.language) {

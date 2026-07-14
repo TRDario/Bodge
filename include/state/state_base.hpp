@@ -8,6 +8,7 @@
 #include "../audio.hpp"
 #include "../game.hpp"
 #include "../input.hpp"
+#include "../renderer.hpp"
 #include "../ui.hpp"
 #include <future>
 
@@ -29,6 +30,8 @@ class state : public tr::state {
 		localization localization;
 		// Audio manager.
 		audio audio;
+		// Renderer.
+		renderer renderer;
 	};
 
 	// Creates a state with an associated selection tree and shortcut table.

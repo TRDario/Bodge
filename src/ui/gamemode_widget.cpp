@@ -11,6 +11,8 @@
 gamemode_widget::gamemode_widget(properties&& properties)
 	: gamemode_widget_data{std::move(properties.gamemode)}
 	, text_button_widget{{
+		  .audio = properties.audio,
+		  .renderer = properties.renderer,
 		  .selected_hue = properties.selected_hue,
 		  .animation = properties.animation,
 		  .alignment = properties.alignment,

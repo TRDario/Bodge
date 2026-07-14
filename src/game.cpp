@@ -172,9 +172,10 @@ tr::rgba8 different_player_result_color_picker::score_color(i64) const
 
 //
 
-game::game(results_color_picker results_color_picker, ::gamemode gamemode, u64 rng_seed, std::optional<tr::bitmap>&& player_skin)
+game::game(text_engine& text_engine, results_color_picker results_color_picker, ::gamemode gamemode, u64 rng_seed,
+		   std::optional<tr::bitmap>&& player_skin)
 	: playerless_game{std::move(gamemode), rng_seed}
-	, m_number_atlas{create_number_atlas(renderer::instance().text_engine)}
+	, m_number_atlas{create_number_atlas(text_engine)}
 	, m_result_color_picker{results_color_picker}
 	, m_player{m_gamemode.player, std::move(player_skin)}
 	, m_lives_left{int(m_gamemode.player.starting_lives)}
@@ -207,7 +208,7 @@ ticks game::final_time() const
 
 //
 
-void game::tick(audio& audio, const glm::vec2& input)
+void game::tick(audio& audio, renderer& renderer, const glm::vec2& input)
 {
 	play_tick_sound_if_needed(audio);
 	playerless_game::tick(audio);
@@ -215,9 +216,9 @@ void game::tick(audio& audio, const glm::vec2& input)
 	update_life_fragments(audio);
 	if (!game_over()) {
 		m_player.tick(input);
-		check_if_timer_obstructed(renderer::instance().scale());
+		check_if_timer_obstructed(renderer.scale());
 		check_if_lives_obstructed();
-		check_if_score_obstructed(renderer::instance().scale());
+		check_if_score_obstructed(renderer.scale());
 		check_if_player_was_hit(audio);
 		check_if_player_collected_life_fragments(audio);
 		check_for_score_ticks();
@@ -226,7 +227,7 @@ void game::tick(audio& audio, const glm::vec2& input)
 	else {
 		m_player.update_fragments();
 	}
-	set_screen_shake(renderer::instance());
+	set_screen_shake(renderer);
 }
 
 void game::play_tick_sound_if_needed(audio& audio)
@@ -687,8 +688,9 @@ void game::add_to_renderer(renderer& renderer, float primary_hue, float secondar
 
 /////////////////////////////////////////////////////////////// ACTIVE GAME ///////////////////////////////////////////////////////////////
 
-active_game::active_game(const input& input, savefile savefile, ::gamemode gamemode, u64 seed, std::optional<tr::bitmap>&& player_skin)
-	: game{same_player_result_color_picker{savefile.best_results(gamemode)}, std::move(gamemode), seed, std::move(player_skin)}
+active_game::active_game(const input& input, text_engine& text_engine, savefile savefile, ::gamemode gamemode, u64 seed,
+						 std::optional<tr::bitmap>&& player_skin)
+	: game{text_engine, same_player_result_color_picker{savefile.best_results(gamemode)}, std::move(gamemode), seed, std::move(player_skin)}
 	, replay{savefile.name(), this->gamemode(), seed}
 	, m_input{input}
 {
@@ -696,10 +698,10 @@ active_game::active_game(const input& input, savefile savefile, ::gamemode gamem
 
 //
 
-void active_game::tick(audio& audio)
+void active_game::tick(audio& audio, renderer& renderer)
 {
 	const bool was_game_over{game_over()};
-	game::tick(audio, m_input.mouse_pos);
+	game::tick(audio, renderer, m_input.mouse_pos);
 	if (!was_game_over) {
 		replay.append(m_input.mouse_pos);
 	}
@@ -720,14 +722,14 @@ static results_color_picker replay_results_color_picker(const replay& replay)
 	}
 }
 
-replay_game::replay_game(replay&& replay, std::optional<tr::bitmap>&& player_skin)
-	: game{replay_results_color_picker(replay), replay.header().gamemode, replay.header().seed, std::move(player_skin)}
+replay_game::replay_game(text_engine& text_engine, replay&& replay, std::optional<tr::bitmap>&& player_skin)
+	: game{text_engine, replay_results_color_picker(replay), replay.header().gamemode, replay.header().seed, std::move(player_skin)}
 	, m_replay{std::move(replay)}
 {
 }
 
-replay_game::replay_game(const replay_game& r, std::optional<tr::bitmap>&& player_skin)
-	: replay_game{replay{r.m_replay}, std::move(player_skin)}
+replay_game::replay_game(text_engine& text_engine, const replay_game& r, std::optional<tr::bitmap>&& player_skin)
+	: replay_game{text_engine, replay{r.m_replay}, std::move(player_skin)}
 {
 }
 
@@ -745,7 +747,7 @@ glm::vec2 replay_game::cursor_pos() const
 
 //
 
-void replay_game::tick(audio& audio)
+void replay_game::tick(audio& audio, renderer& renderer)
 {
-	game::tick(audio, done() ? m_replay.prev_input() : m_replay.next_input());
+	game::tick(audio, renderer, done() ? m_replay.prev_input() : m_replay.next_input());
 }

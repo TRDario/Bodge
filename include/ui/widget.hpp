@@ -22,6 +22,8 @@ class label_widget final : public text_widget {
   public:
 	// Label properties.
 	struct properties {
+		// Reference to the renderer subsystem.
+		renderer& renderer;
 		// Initial position (or animation) of the label.
 		tweened_position animation;
 		// Alignment of the label.
@@ -61,6 +63,8 @@ class text_button_widget : public text_widget {
 	struct properties {
 		// Reference to the audio subsystem.
 		audio& audio;
+		// Reference to the renderer subsystem.
+		renderer& renderer;
 		// Reference to the hue to use when a widget of this type is selected.
 		const u16& selected_hue;
 		// Initial position (or animation) of the button.
@@ -161,6 +165,8 @@ class basic_numeric_input_widget final : private basic_numeric_input_widget_data
 	struct properties {
 		// Reference to the audio subsystem.
 		audio& audio;
+		// Reference to the renderer subsystem.
+		renderer& renderer;
 		// Reference to the hue to use when a widget of this type is selected.
 		const u16& selected_hue;
 		// Reference to the UI manager.
@@ -233,6 +239,8 @@ template <usize MaxChars> class line_input_widget final : public text_input_widg
 		audio& audio;
 		// Reference to a localization object used for the (EMPTY...) text.
 		const localization& localization;
+		// Reference to the renderer subsystem.
+		renderer& renderer;
 		// Reference to the hue to use when a widget of this type is selected.
 		const u16& selected_hue;
 		// Initial position (or animation) of the input.
@@ -285,6 +293,8 @@ template <usize MaxChars> class multiline_input_widget final : public text_input
 		audio& audio;
 		// Reference to the localization subsystem.
 		const localization& localization;
+		// Reference to the renderer subsystem.
+		renderer& renderer;
 		// Reference to the hue to use when a widget of this type is selected.
 		const u16& selected_hue;
 		// Initial position (or animation) of the input.
@@ -326,6 +336,8 @@ template <usize MaxChars> class multiline_input_widget final : public text_input
 	// The thickness of the outline of the widget.
 	static constexpr float OUTLINE_THICKNESS{2.0f};
 
+	// Reference to the renderer text engine.
+	text_engine& m_text_engine;
 	// Size of the input box.
 	glm::vec2 m_size;
 	// Maximum allowed number of lines in the input.
@@ -581,8 +593,12 @@ class gamemode_widget final : public gamemode_widget_data, public text_button_wi
   public:
 	// Gamemode widget properties.
 	struct properties {
+		// Reference to the audio subsystem.
+		audio& audio;
 		// Reference to the localization subsystem.
 		const localization& localization;
+		// Reference to the renderer subsystem.
+		renderer& renderer;
 		// Reference to the hue used when the widget is selected.
 		const u16& selected_hue;
 		// Initial position (or animation) of the widget.
@@ -620,6 +636,8 @@ class score_widget final : public text_widget {
 	struct properties {
 		// Reference to the localization subsystem.
 		const localization& localization;
+		// Reference to the renderer subsystem.
+		renderer& renderer;
 		// Initial position (or animation) of the widget.
 		tweened_position animation;
 		// Alignment of the widget.
@@ -665,8 +683,12 @@ class replay_widget final : private replay_widget_data, public text_button_widge
   public:
 	// Replay widget properties.
 	struct properties {
+		// Reference to the audio subsystem.
+		audio& audio;
 		// Reference to the localization subsystem.
 		const localization& localization;
+		// Reference to the renderer subsystem.
+		renderer& renderer;
 		// Reference to the hue used when the widget is selected.
 		const u16& selected_hue;
 		// Initial position (or animation) of the widget.

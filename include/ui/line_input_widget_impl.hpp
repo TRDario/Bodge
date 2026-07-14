@@ -12,9 +12,9 @@
 template <usize MaxChars>
 line_input_widget<MaxChars>::line_input_widget(properties&& properties)
 	: text_input_widget<MaxChars * 4>{
-		  properties.animation,    properties.alignment,         properties.unhide_time,  properties.font_style,
-		  properties.font_size,    tr::sys::UNLIMITED_WIDTH,     properties.audio,        properties.localization,
-		  properties.selected_hue, std::move(properties.status), properties.initial_text,
+		  properties.animation,    properties.alignment,    properties.unhide_time,       properties.renderer,
+		  properties.font_style,   properties.font_size,    tr::sys::UNLIMITED_WIDTH,     properties.audio,
+		  properties.localization, properties.selected_hue, std::move(properties.status), properties.initial_text,
 	  }
 	, m_enter_action{std::move(properties.enter_action)}
 {

@@ -11,8 +11,8 @@
 
 /////////////////////////////////////////////////////////////// UI MANAGER ////////////////////////////////////////////////////////////////
 
-ui_manager::ui_manager(selection_tree selection_tree, shortcut_table shortcuts)
-	: m_selection_tree(selection_tree), m_shortcuts{shortcuts}
+ui_manager::ui_manager(audio& audio, selection_tree selection_tree, shortcut_table shortcuts)
+	: m_audio{audio}, m_selection_tree(selection_tree), m_shortcuts{shortcuts}
 {
 }
 
@@ -65,7 +65,7 @@ void ui_manager::change_selection(tr::opt_ref<kv_pair> new_selection)
 			new_selection->second->on_selected();
 		}
 		m_selection = new_selection;
-		m_subsystems->audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
+		m_audio.play_sound(sound::HOVER, 0.15f, 0.0f, g_rng.generate(0.9f, 1.1f));
 	}
 }
 

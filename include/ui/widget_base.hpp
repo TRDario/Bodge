@@ -165,8 +165,8 @@ class widget {
 class text_widget : public widget {
   public:
 	// Creates a text widget.
-	text_widget(tweened_position pos, tr::align alignment, ticks unhide_time, text_command tooltip_text, text_command text, font font,
-				tr::sys::ttf_style style, float font_size, int max_width);
+	text_widget(tweened_position pos, tr::align alignment, ticks unhide_time, renderer& renderer, text_command tooltip_text,
+				text_command text, font font, tr::sys::ttf_style style, float font_size, int max_width);
 
 	// Gets the size of the widget.
 	glm::vec2 size() const override;
@@ -192,7 +192,7 @@ class text_widget : public widget {
 	mutable glm::vec2 m_last_size;
 
 	// Updates the text cache.
-	void update_cache(text_engine& text_engine) const;
+	void update_cache(renderer& renderer) const;
 	// Adds the widget to the renderer (must be further specialized by descendant classes).
 	void add_to_renderer_raw(renderer& renderer, tr::rgba8 tint);
 };
@@ -209,12 +209,12 @@ template <usize BufferSize> struct input_buffer {
 template <usize BufferSize> class text_input_widget : protected input_buffer<BufferSize>, public text_widget {
   public:
 	// Creates a line input widget.
-	text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size, int width,
-					  audio& audio, const localization& localization, const u16& selected_hue, status_command status_command,
-					  std::string_view initial_text = {});
+	text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, renderer& renderer, tr::sys::ttf_style style,
+					  float font_size, int width, audio& audio, const localization& localization, const u16& selected_hue,
+					  status_command status_command, std::string_view initial_text = {});
 	// Creates a line input widget with a custom text command.
-	text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, tr::sys::ttf_style style, float font_size, int width,
-					  audio& audio, const u16& selected_hue, status_command status_command, text_command text);
+	text_input_widget(tweened_position pos, tr::align alignment, ticks unhide_time, renderer& renderer, tr::sys::ttf_style style,
+					  float font_size, int width, audio& audio, const u16& selected_hue, status_command status_command, text_command text);
 
 	// Gets whether the widget is interactible (delegates to the status command).
 	bool interactible() const override;

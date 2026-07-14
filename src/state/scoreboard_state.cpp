@@ -53,7 +53,8 @@ constexpr shortcut_table SHORTCUTS{
 ///////////////////////////////////////////////////////////// INTERNAL HELPERS ////////////////////////////////////////////////////////////
 
 // Creates a set of widgets for a new page of scores.
-static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const localization& localization, enum score_widget::type type,
+static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(const localization& localization, renderer& renderer,
+																			 enum score_widget::type type,
 																			 const std::vector<score_entry>& scores, int page)
 {
 	std::unordered_map<tag, std::unique_ptr<widget>> map;
@@ -62,6 +63,7 @@ static std::unordered_map<tag, std::unique_ptr<widget>> prepare_next_widgets(con
 		// clang-format off
 		map.emplace(SCORE_TAGS[i], std::make_unique<score_widget>(score_widget::properties{
 			.localization = localization,
+			.renderer = renderer,
 			.animation = {{i % 2 == 0 ? 600 : 400, 173 + 86 * i}, {500, 173 + 86 * i}, 0.25_s},
 			.unhide_time = 0.25_s,
 			.type = type,
@@ -91,6 +93,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = TITLE_POS,
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0_s,
@@ -98,6 +101,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_PLAYER_INFO, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0_s,
@@ -106,6 +110,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{500, 1000}},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -118,6 +123,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 
 	if (m_savefile.score_categories().empty()) {
 		m_ui.emplace<label_widget>(T_NO_SCORES_FOUND, {
+			.renderer = m_subsystems->renderer,
 			.animation = {{600, 500}, {500, 500}, 0.5_s},
 			.text = localized_text{m_subsystems->localization, T_NO_SCORES_FOUND},
 			.font_size = 64,
@@ -129,6 +135,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 	for (usize i = 0; i < SCORES_PER_PAGE; ++i) {
 		m_ui.emplace<score_widget>(SCORE_TAGS[i], {
 			.localization = m_subsystems->localization,
+			.renderer = m_subsystems->renderer,
 			.animation = {{i % 2 == 0 ? 400 : 600, 173 + 86 * i}, {500, 173 + 86 * i}, 0.5_s},
 			.type = (enum score_widget::type)(m_scoreboard),
 			.rank = m_page * SCORES_PER_PAGE + i + 1,
@@ -146,6 +153,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 		.action = [this] { on_gamemode_decrement(); }
 	});
 	m_ui.emplace<label_widget>(T_GAMEMODE_C, {
+		.renderer = m_subsystems->renderer,
 		.animation = {BOTTOM_START_POS, {500, 900}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.tooltip_text = [this] { return std::string{m_selected->gamemode.localized_description(m_subsystems->localization)}; },
@@ -170,6 +178,7 @@ scoreboard_state::scoreboard_state(std::shared_ptr<subsystems> subsystems, std::
 		.action = [this] { on_page_decrement(); }
 	});
 	m_ui.emplace<label_widget>(T_PAGE_C, {
+		.renderer = m_subsystems->renderer,
 		.animation = {BOTTOM_START_POS, {500, 950}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,
 		.text = [this] {
@@ -223,8 +232,8 @@ void scoreboard_state::set_up_page_switch_animation()
 	}
 	m_sorted_scores = m_selected->entries;
 	std::ranges::sort(m_sorted_scores, m_scoreboard == scoreboard::SCORE ? compare_scores : compare_times);
-	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, m_subsystems->localization,
-								(enum score_widget::type)(m_scoreboard), m_sorted_scores, m_page);
+	m_next_widgets = std::async(std::launch::async, prepare_next_widgets, std::cref(m_subsystems->localization),
+								std::ref(m_subsystems->renderer), (enum score_widget::type)(m_scoreboard), m_sorted_scores, m_page);
 }
 
 void scoreboard_state::set_up_exit_animation()

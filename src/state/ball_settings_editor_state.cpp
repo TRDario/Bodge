@@ -109,6 +109,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = TITLE_POS,
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0_s,
@@ -116,6 +117,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_SUBTITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {TOP_START_POS, {500, TITLE_POS.y + 64}, 0.5_s},
 		.alignment = tr::align::TOP_CENTER,
 		.text = localized_text{m_subsystems->localization, T_SUBTITLE},
@@ -133,6 +135,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_STARTING_COUNT_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.starting_count,
@@ -162,6 +165,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 	});
 	m_ui.emplace<numeric_input_widget<u8, 3>>(T_MAX_COUNT_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.max_count,
@@ -191,6 +195,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 	});
 	m_ui.emplace<interval_input_widget<4>>(T_SPAWN_INTERVAL_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.spawn_interval,
@@ -220,6 +225,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_SIZE_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.initial_size,
@@ -249,6 +255,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.1f}">>(T_SIZE_STEP_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.size_step,
@@ -278,6 +285,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_INITIAL_VELOCITY_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.initial_velocity,
@@ -307,6 +315,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 	});
 	m_ui.emplace<numeric_input_widget<float, 4, "{:.0f}">>(T_VELOCITY_STEP_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.ui = m_ui,
 		.variable = m_pending.ball.velocity_step,
@@ -327,6 +336,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 
 	for (usize i = 0; i < LABELS.size(); ++i) {
 		m_ui.emplace<label_widget>(LABELS[i].tag, {
+			.renderer = m_subsystems->renderer,
 			.animation = {{-50, 298 + i * 75}, {15, 298 + i * 75}, 0.5_s},
 			.alignment = tr::align::CENTER_LEFT,
 			.tooltip_text = localized_text{m_subsystems->localization, LABELS[i].tooltip},
@@ -336,6 +346,7 @@ ball_settings_editor_state::ball_settings_editor_state(std::shared_ptr<subsystem
 
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 0.5_s},
 		.alignment = tr::align::BOTTOM_CENTER,

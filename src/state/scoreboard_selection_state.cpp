@@ -41,6 +41,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<subsystem
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, TITLE_POS, 0.5_s} : tweened_position{TITLE_POS},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,
@@ -48,6 +49,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<subsystem
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_PLAYER_INFO, {
+		.renderer = m_subsystems->renderer,
 		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, {500, 64}, 0.5_s} : tweened_position{{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_title) ? 0.5_s : 0_s,
@@ -56,6 +58,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<subsystem
 	});
 	m_ui.emplace<text_button_widget>(T_EXIT, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = bool(animate_title) ? tweened_position{BOTTOM_START_POS, {500, 1000}, 0.5_s} : tweened_position{{500, 1000}},
 		.alignment = tr::align::BOTTOM_CENTER,
@@ -67,6 +70,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<subsystem
 	});
 	m_ui.emplace<text_button_widget>(T_VIEW_TIMES, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 450}, {500, 450}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_VIEW_TIMES},
@@ -76,6 +80,7 @@ scoreboard_selection_state::scoreboard_selection_state(std::shared_ptr<subsystem
 	});
 	m_ui.emplace<text_button_widget>(T_VIEW_SCORES, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{600, 550}, {500, 550}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_VIEW_SCORES},

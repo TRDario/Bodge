@@ -31,6 +31,7 @@ name_entry_state::name_entry_state()
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = {TOP_START_POS, TITLE_POS, 1.0_s},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 1.0_s,
@@ -40,6 +41,7 @@ name_entry_state::name_entry_state()
 	m_ui.emplace<line_input_widget<20>>(T_INPUT, {
 		.audio = m_subsystems->audio,
 		.localization = m_subsystems->localization,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{500, 500}},
 		.unhide_time = 1.0_s,
@@ -49,6 +51,7 @@ name_entry_state::name_entry_state()
 	});
 	m_ui.emplace<text_button_widget>(T_CONFIRM, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {BOTTOM_START_POS, {500, 1000}, 1.0_s},
 		.alignment = tr::align::BOTTOM_CENTER,

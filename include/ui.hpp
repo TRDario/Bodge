@@ -31,7 +31,7 @@ class input;
 class ui_manager {
   public:
 	// Creates an empty interface.
-	ui_manager(selection_tree selection_tree, shortcut_table shortcuts);
+	ui_manager(audio& audio, selection_tree selection_tree, shortcut_table shortcuts);
 
 	// Gets whether the UI contains a widget with a certain tag.
 	bool contains(tag tag) const;
@@ -75,6 +75,8 @@ class ui_manager {
 		const tag* tag;
 	};
 
+	// Reference to the audio subsystem.
+	audio& m_audio;
 	// Tree defining the keyboard navigation topology of the interface.
 	selection_tree m_selection_tree;
 	// List of widgets in the interface.

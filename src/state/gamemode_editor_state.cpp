@@ -196,6 +196,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 {
 	// clang-format off
 	m_ui.emplace<label_widget>(T_TITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = bool(animate_title) ? tweened_position{TOP_START_POS, TITLE_POS, 0.5_s} : tweened_position{TITLE_POS},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = 0,
@@ -203,6 +204,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		.font_size = 64
 	});
 	m_ui.emplace<label_widget>(T_SUBTITLE, {
+		.renderer = m_subsystems->renderer,
 		.animation = bool(animate_subtitle) ? tweened_position{TOP_START_POS, {500, 64}, 0.5_s} : tweened_position{{500, 64}},
 		.alignment = tr::align::TOP_CENTER,
 		.unhide_time = bool(animate_subtitle) ? 0.5_s : 0,
@@ -212,6 +214,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	m_ui.emplace<line_input_widget<12>>(T_NAME, {
 		.audio = m_subsystems->audio,
 		.localization = m_subsystems->localization,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 240}, {500, 240}, 0.5_s},
 		.font_size = 120,
@@ -220,6 +223,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		.initial_text = m_pending.name
 	});
 	m_ui.emplace<label_widget>(T_AUTHOR, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{600, 315}, {500, 315}, 0.5_s},
 		.text = constant_text{TR_FMT::format("{}: {}", m_subsystems->localization["by"], m_pending.author)},
 		.font_size = 32
@@ -227,6 +231,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	m_ui.emplace<line_input_widget<40>>(T_DESCRIPTION, {
 		.audio = m_subsystems->audio,
 		.localization = m_subsystems->localization,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 365}, {500, 365}, 0.5_s},
 		.font_style = tr::sys::ttf_style::ITALIC,
@@ -237,6 +242,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	});
 	m_ui.emplace<text_button_widget>(T_BALL_SETTINGS, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{600, 450}, {500, 450}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_BALL_SETTINGS}, 
@@ -246,6 +252,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	});
 	m_ui.emplace<text_button_widget>(T_PLAYER_SETTINGS, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 550}, {500, 550}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_PLAYER_SETTINGS},
@@ -254,11 +261,13 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 		.action = [this] { on_enter_player_settings(); }
 	});
 	m_ui.emplace<label_widget>(T_SONG, {
+		.renderer = m_subsystems->renderer,
 		.animation = {{600, 650}, {500, 650}, 0.5_s},
 		.text = localized_text{m_subsystems->localization, T_SONG}
 	});
 	m_ui.emplace<text_button_widget>(T_SONG_C, {
 		.audio = m_subsystems->audio,
+		.renderer = m_subsystems->renderer,
 		.selected_hue = m_subsystems->settings.primary_hue,
 		.animation = {{400, 700}, {500, 700}, 0.5_s},
 		.text = [this] { return std::string{m_pending.song}; },
@@ -290,6 +299,7 @@ void gamemode_editor_state::set_up_ui(animate_title animate_title, animate_subti
 	for (usize i = 0; i < BOTTOM_BUTTONS.size(); ++i) {
 		m_ui.emplace<text_button_widget>(BOTTOM_BUTTONS[i], {
 			.audio = m_subsystems->audio,
+			.renderer = m_subsystems->renderer,
 			.selected_hue = m_subsystems->settings.primary_hue,
 			.animation = {BOTTOM_START_POS, {500, 1000 - BOTTOM_BUTTONS.size() * 50 + (i + 1) * 50}, 0.5_s},
 			.alignment = tr::align::BOTTOM_CENTER,
@@ -362,8 +372,18 @@ void gamemode_editor_state::on_test()
 	m_pending.description = m_ui.as<line_input_widget<40>>(T_DESCRIPTION).contents();
 	set_up_exit_animation(animate_title::YES, animate_subtitle::YES);
 	m_subsystems->audio.fade_song_out(0.5s);
-	m_next_state = make_game_state_async<active_game>(m_subsystems, test_game_data{m_type}, m_subsystems->input, savefile{}, m_pending,
-													  g_rng.generate<u64>(), try_loading_player_skin(m_subsystems->settings.player_skin));
+	// clang-format off
+	m_next_state = make_game_state_async<active_game>(
+		m_subsystems,
+		test_game_data{m_type},
+		std::cref(m_subsystems->input),
+		std::ref(m_subsystems->renderer.text_engine),
+		savefile{},
+		m_pending,
+		g_rng.generate<u64>(),
+		try_loading_player_skin(m_subsystems->settings.player_skin)
+	);
+	// clang-format on
 }
 
 void gamemode_editor_state::on_save()
