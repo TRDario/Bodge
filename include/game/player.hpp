@@ -53,8 +53,6 @@ class player {
 	// Timer controlling the player's invincibility.
 	decrementing_timer<2_s> m_invincibility_timer;
 
-	// Tries to load a player skin from "player.png" in the user directory.
-	void try_loading_skin(tr::gfx::renderer_2d& renderer) const;
 	// Adds the player's skin to the renderer.
 	void add_skin_to_renderer(tr::gfx::renderer_2d& renderer, u8 opacity, tr::angle rotation, float size) const;
 	// Adds the skinless player visual's fill to the renderer.
